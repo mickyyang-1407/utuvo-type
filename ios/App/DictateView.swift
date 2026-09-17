@@ -161,20 +161,38 @@ struct DictateView: View {
     }
 
     private var micButton: some View {
-        Button {
-            model.toggle()
-            if model.isRecording { translatedText = nil }
-        } label: {
-            MicOrb(isRecording: model.isRecording)
+        VStack(spacing: 8) {
+            Button {
+                model.toggle()
+                if model.isRecording { translatedText = nil }
+            } label: {
+                MicOrb(isRecording: model.isRecording)
+            }
+            .disabled(model.isRewriting)
+            .accessibilityLabel(model.isRecording ? "停止" : "開始聽寫")
+            Text(micHint)
+                .font(.footnote)
+                .foregroundStyle(model.intent.isEdit ? Aurora.orange : Color.secondary)
+                .animation(.default, value: micHint)
         }
         .padding(.vertical, 6)
-        .accessibilityLabel(model.isRecording ? "停止" : "開始聽寫")
+    }
+
+    /// 跟鍵盤同一套文案（KeyboardMode 的 idle／recording hint），主 app 與鍵盤講同一種話。
+    private var micHint: String {
+        if model.isRewriting { return "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）" }
+        switch (model.intent, model.isRecording) {
+        case (.edit, true): return "說出要怎麼改，說完再點一下"
+        case (.edit, false): return KeyboardMode.edit(selection: "").idleHint
+        case (.dictate, true): return KeyboardMode.dictate.recordingHint
+        case (.dictate, false): return KeyboardMode.dictate.idleHint
+        }
     }
 
     @ViewBuilder
     private var transcriptSection: some View {
         if !model.liveTranscript.isEmpty {
-            card(title: "逐字稿", text: model.liveTranscript, secondary: true)
+            card(title: model.intent.isEdit ? "你的指示" : "逐字稿", text: model.liveTranscript, secondary: true)
         }
         if !model.finalText.isEmpty {
             card(title: "輸出", text: model.finalText, secondary: false)
@@ -195,6 +213,30 @@ struct DictateView: View {
     private var outputSection: some View {
         if !model.finalText.isEmpty {
             VStack(spacing: 10) {
+                // Typeless「Speak to edit」主 app 版：對整段輸出下口頭指示（改語氣、加一句、換字）。
+                HStack(spacing: 10) {
+                    Button {
+                        translatedText = nil
+                        model.startEdit()
+                    } label: {
+                        Label(model.intent.isEdit ? "說吧，我在聽" : "說出要怎麼改", systemImage: "wand.and.stars")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .auroraProminentButton()
+                    .tint(Aurora.orange)
+                    .disabled(model.isRecording || model.isRewriting || engineUnavailable)
+                    .accessibilityIdentifier("speakToEdit")
+
+                    if model.previousText != nil {
+                        Button {
+                            model.undoEdit()
+                        } label: {
+                            Label("還原", systemImage: "arrow.uturn.backward")
+                        }
+                        .auroraGlassButton()
+                        .disabled(model.isRecording || model.isRewriting)
+                    }
+                }
                 HStack(spacing: 10) {
                     Button {
                         UIPasteboard.general.string = model.finalText
