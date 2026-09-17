@@ -1,6 +1,4 @@
 import UIKit
-@preconcurrency import AVFAudio
-@preconcurrency import Speech
 import UTUVOTypeCore
 
 /// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 產品決定：功能對齊，外表是我們自己的）。
@@ -11,10 +9,13 @@ import UTUVOTypeCore
 /// 三種模式由 KeyboardMode.decide 決定；改寫／翻譯引擎見 OnDeviceAssistant。
 final class KeyboardViewController: UIInputViewController {
     // MARK: - Speech state
-    private var audioEngine = AVAudioEngine()
-    private var request: SFSpeechAudioBufferRecognitionRequest?
-    private var task: SFSpeechRecognitionTask?
+    // iOS 不讓鍵盤開麥克風：錄音與辨識在主 app（VoiceBridge／KeyboardVoiceHost），鍵盤只下指令、收逐字稿。
     private var isRecording = false
+    /// 這個鍵盤發出、還在等結果的指令 id。
+    private var activeCommandID: UUID?
+    private var bridgeObserver: DarwinObserver?
+    private static let pendingIDKey = "utuvo.type.voice.pendingID"
+    private static let pendingTranslateKey = "utuvo.type.voice.pendingTranslate"
     private var mode: KeyboardMode = .dictate
     private var pendingTranslateTarget: TranslationTarget?
     /// 目前由本鍵盤插進文件、還沒定稿的那段文字。
@@ -61,11 +62,13 @@ final class KeyboardViewController: UIInputViewController {
         super.viewDidLoad()
         KeyboardPresence.seen = true
         setupUI()
+        bridgeObserver = DarwinObserver(.update) { [weak self] in self?.bridgeUpdated() }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshContext()
+        adoptPendingCommand()
     }
 
     override func viewDidLayoutSubviews() {
@@ -491,9 +494,16 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    // MARK: - Speech
+    // MARK: - Speech（經主 app）
 
-    private var hasAccess: Bool { hasFullAccess } // RequestsOpenAccess；沒開＝無法用 server 辨識，也讀不到字典／歷史
+    private var hasAccess: Bool {
+        #if DEBUG && targetEnvironment(simulator)
+        // 模擬器「設定」裡的完整存取開關點不動；模擬器沒有 App Group 沙盒限制，Debug 直接放行好驗橋接。
+        return true
+        #else
+        return hasFullAccess // RequestsOpenAccess；沒開＝讀寫不到 App Group，橋接不通
+        #endif
+    }
 
     private func startRecognition() async {
         guard !isRecording else { return }
@@ -502,71 +512,109 @@ final class KeyboardViewController: UIInputViewController {
             return
         }
         mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: pendingTranslateTarget)
-        do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .measurement, options: .duckOthers)
-            try session.setActive(true, options: .notifyOthersOnDeactivation)
+        let id = UUID()
+        let command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
+        VoiceBridge.writeCommand(command)
+        activeCommandID = id
+        insertedText = ""
+        lastRawTranscript = ""
+        // 記住這個指令：跳去主 app 再回來時，鍵盤可能是新的 process，要靠這兩個值接回來。
+        KeyboardPresence.defaults.set(id.uuidString, forKey: Self.pendingIDKey)
+        if case .translate(let target) = mode {
+            KeyboardPresence.defaults.set(target.code, forKey: Self.pendingTranslateKey)
+        } else {
+            KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
+        }
 
-            // TCC 從背景執行緒回呼，continuation 不能綁在 MainActor（UIInputViewController 是 @MainActor），
-            // 否則 Swift 6 執行期直接 SIGTRAP。
-            let auth = await Self.requestSpeechAuthorization()
-            guard auth == .authorized else {
-                setHint("需要語音辨識權限", error: true)
-                return
-            }
-            guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language.rawValue)),
-                  recognizer.isAvailable else {
-                setHint("這個語言的辨識器目前不可用", error: true)
-                return
-            }
-            let request = SFSpeechAudioBufferRecognitionRequest()
-            request.shouldReportPartialResults = true
-            self.request = request
-
-            let input = audioEngine.inputNode
-            let format = input.outputFormat(forBus: 0)
-            // sampleRate 為 0（無可用輸入）時 installTap 會在引擎內部 assert，會連宿主 app 一起帶走。先擋。
-            guard format.sampleRate > 0, format.channelCount > 0 else {
-                setHint("找不到麥克風輸入，無法錄音", error: true)
-                self.request = nil
-                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-                return
-            }
-            input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                request.append(buffer)
-            }
-            try audioEngine.start()
-
-            insertedText = ""
-            lastRawTranscript = ""
-            task = recognizer.recognitionTask(with: request) { [weak self] result, error in
-                guard let self else { return }
-                DispatchQueue.main.async {
-                    if let result { self.handle(result: result) }
-                    if let error, (error as NSError).code != 216 {
-                        self.setHint("辨識中斷：\(error.localizedDescription)", error: true)
-                        if self.isRecording { self.stopRecognition() }
-                    }
-                }
-            }
+        switch VoiceBridge.startPlan(state: VoiceBridge.readState()) {
+        case .sendCommand:
+            VoiceBridge.post(.command)
             isRecording = true
             setRecordingAppearance(true)
             setHint(mode.recordingHint, error: false)
-        } catch {
-            setHint("無法啟動：\(error.localizedDescription)", error: true)
+        case .openApp:
+            let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id)
+            if openContainingApp(url) {
+                setHint("正在開啟 UTUVO Type 啟動麥克風…回來就在錄了", error: false)
+            } else {
+                activeCommandID = nil
+                setHint("請先打開 UTUVO Type app 一次，再回來點光球", error: true)
+            }
         }
     }
 
-    private func handle(result: SFSpeechRecognitionResult) {
-        let raw = result.bestTranscription.formattedString
-        lastRawTranscript = raw
-        showTranscript(raw)
+    private func stopRecognition() {
+        guard let id = activeCommandID else { return }
+        VoiceBridge.writeCommand(VoiceBridge.Command(action: .stop, id: id, language: language.rawValue, sentAt: Date()))
+        VoiceBridge.post(.command)
+        isRecording = false
+        setRecordingAppearance(false)
+        setHint("整理中…", error: false)
+    }
 
-        if result.isFinal {
-            finish(raw: raw)
-        } else if mode.insertsPartials {
-            applyEdit(to: raw)
+    /// 從主 app 回來：若主 app 正在替我上次發出的指令錄音，就接回錄音狀態。
+    private func adoptPendingCommand() {
+        guard activeCommandID == nil,
+              let raw = KeyboardPresence.defaults.string(forKey: Self.pendingIDKey),
+              let id = UUID(uuidString: raw),
+              let state = VoiceBridge.readState(), VoiceBridge.isAlive(state), state.commandID == id else { return }
+        let target = KeyboardPresence.defaults.string(forKey: Self.pendingTranslateKey)
+            .flatMap { code in TranslationTarget.all.first { $0.code == code } }
+        pendingTranslateTarget = target
+        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: target)
+        activeCommandID = id
+        bridgeUpdated()
+    }
+
+    /// 主 app 更新了 state：依是否屬於我的指令，顯示逐字稿、定稿或錯誤。
+    private func bridgeUpdated() {
+        guard let state = VoiceBridge.readState() else { return }
+        switch VoiceBridge.delivery(for: state, expecting: activeCommandID) {
+        case .ignore:
+            break
+        case .partial(let text):
+            if !isRecording && state.phase == .recording {
+                isRecording = true
+                setRecordingAppearance(true)
+                setHint(mode.recordingHint, error: false)
+            }
+            lastRawTranscript = text
+            showTranscript(text)
+            if mode.insertsPartials { applyEdit(to: text) }
+        case .final(let text):
+            clearPending()
+            if isRecording { isRecording = false; setRecordingAppearance(false) }
+            finish(raw: text)
+        case .failed(let message):
+            clearPending()
+            if isRecording { isRecording = false; setRecordingAppearance(false) }
+            mode = .dictate
+            pendingTranslateTarget = nil
+            setHint(message, error: true)
         }
+    }
+
+    private func clearPending() {
+        activeCommandID = nil
+        KeyboardPresence.defaults.removeObject(forKey: Self.pendingIDKey)
+        KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
+    }
+
+    /// 鍵盤 extension 不能用 UIApplication.shared.open；沿 responder chain 找到 UIApplication 再呼叫
+    /// `open(_:options:completionHandler:)`（iOS 18 起舊的 openURL: 已失效）。找不到就回 false。
+    private func openContainingApp(_ url: URL) -> Bool {
+        let selector = NSSelectorFromString("openURL:options:completionHandler:")
+        var responder: UIResponder? = self
+        while let current = responder {
+            if NSStringFromClass(type(of: current)).contains("UIApplication"), current.responds(to: selector) {
+                typealias OpenURL = @convention(c) (AnyObject, Selector, NSURL, NSDictionary, AnyObject?) -> Void
+                let imp = current.method(for: selector)
+                unsafeBitCast(imp, to: OpenURL.self)(current, selector, url as NSURL, NSDictionary(), nil)
+                return true
+            }
+            responder = current.next
+        }
+        return false
     }
 
     /// 定稿：依模式決定文件怎麼變。
@@ -633,23 +681,6 @@ final class KeyboardViewController: UIInputViewController {
         for _ in 0..<plan.deleteCount { textDocumentProxy.deleteBackward() }
         if !plan.insert.isEmpty { textDocumentProxy.insertText(plan.insert) }
         insertedText = target
-    }
-
-    nonisolated private static func requestSpeechAuthorization() async -> SFSpeechRecognizerAuthorizationStatus {
-        await withCheckedContinuation { (cont: CheckedContinuation<SFSpeechRecognizerAuthorizationStatus, Never>) in
-            SFSpeechRecognizer.requestAuthorization { status in cont.resume(returning: status) }
-        }
-    }
-
-    private func stopRecognition() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
-        request?.endAudio()
-        task?.finish()
-        isRecording = false
-        setRecordingAppearance(false)
-        setHint("整理中…", error: false)
-        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     // MARK: - Hints

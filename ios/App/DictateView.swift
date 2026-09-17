@@ -3,6 +3,7 @@ import SwiftUI
 /// 聽寫主畫面：品牌列、用量統計（Typeless Home insights）、鍵盤啟用教學、光球＋波形、輸出卡。
 struct DictateView: View {
     @StateObject private var model = DictationModel()
+    @ObservedObject private var voiceHost = KeyboardVoiceHost.shared
     @State private var translating = false
     @State private var translatedText: String?
     @State private var copied = false
@@ -17,6 +18,7 @@ struct DictateView: View {
                 ScrollView {
                     VStack(spacing: 18) {
                         header
+                        KeyboardSessionBanner(host: voiceHost)
                         insightsStrip
                         if !keyboardSeen && !keyboardGuideDismissed {
                             keyboardGuideCard
