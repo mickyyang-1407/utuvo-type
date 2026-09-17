@@ -3,7 +3,7 @@ import UIKit
 @preconcurrency import Speech
 import UTUVOTypeCore
 
-/// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 Micky：功能對齊 Typeless，外表要是我們自己的）。
+/// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 產品決定：功能對齊，外表是我們自己的）。
 /// 視覺語彙沿用主 app：橘色光球 MicOrb 當主角、Aurora 漸層、玻璃圓鈕；錄音時光暈呼吸＋放射狀波形環。
 ///   - 頂緣「即時字幕帶」：錄音時逐字稿在這裡跑（不是浮動膠囊）；閒置時顯示品牌與模式提示。
 ///   - 中央光球：點一下聽寫；有選取＝說出要怎麼改；長按出現弧形語言點，滑到放開就翻譯。
