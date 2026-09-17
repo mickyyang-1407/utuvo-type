@@ -3,13 +3,12 @@ import UIKit
 @preconcurrency import Speech
 import UTUVOTypeCore
 
-/// UTUVO Type 鍵盤——對齊 Typeless iOS 的鍵盤面：
-/// 品牌列＋語言膠囊／「點一下開始說」大麥克風／⌫／@／送出／地球鍵／錄音中浮動逐字稿膠囊。
-/// 三種模式由情境決定（KeyboardMode.decide）：
-///   - 聽寫：邊講邊把逐字稿插進游標處，定稿換成 core 清理後的版本、寫回歷史。
-///   - 說出要怎麼改：宿主 app 有選取文字時，講的話是指示，改寫結果取代選取。
-///   - 放開就翻譯：長按麥克風滑到語言、放開開始錄，定稿翻成該語言貼上。
-/// 改寫與翻譯的引擎：iOS 26 Apple Intelligence 裝置端模型優先，其次使用者自填的雲端 key，都沒有就明講。
+/// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 Micky：功能對齊 Typeless，外表要是我們自己的）。
+/// 視覺語彙沿用主 app：橘色光球 MicOrb 當主角、Aurora 漸層、玻璃圓鈕；錄音時光暈呼吸＋放射狀波形環。
+///   - 頂緣「即時字幕帶」：錄音時逐字稿在這裡跑（不是浮動膠囊）；閒置時顯示品牌與模式提示。
+///   - 中央光球：點一下聽寫；有選取＝說出要怎麼改；長按出現弧形語言點，滑到放開就翻譯。
+///   - 左側：語言小徽章（長按／點選單）、iOS<26 的地球；右側：⌫／@／送出 玻璃圓鈕直排。
+/// 三種模式由 KeyboardMode.decide 決定；改寫／翻譯引擎見 OnDeviceAssistant。
 final class KeyboardViewController: UIInputViewController {
     // MARK: - Speech state
     private var audioEngine = AVAudioEngine()
@@ -32,25 +31,31 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     // MARK: - UI
-    private let brandLabel = UILabel()
-    private let brandIcon = UIImageView(image: UIImage(systemName: "text.bubble.fill"))
-    private let languageButton = UIButton(type: .system)
+    /// 頂緣字幕帶（閒置＝品牌列；錄音＝逐字稿）。名稱沿用 transcriptPill 讓語音區程式碼不必改。
     private let transcriptPill = UIView()
     private let transcriptLabel = UILabel()
+    private let liveDot = UIView()
+    private let brandIcon = UIImageView(image: UIImage(systemName: "text.bubble.fill"))
+    private let brandLabel = UILabel()
     private let hintLabel = UILabel()
-    private let micButton = UIButton(type: .custom)
+    private let micButton = OrbButton()
+    private let waveRing = WaveRingView()
+    private let backdrop = CAGradientLayer()
+    private let languageButton = UIButton(type: .system)
     private let deleteButton = UIButton(type: .custom)
     private let atButton = UIButton(type: .custom)
     private let returnButton = UIButton(type: .custom)
     private let globeButton = UIButton(type: .custom)
-    private let translatePicker = UIStackView()
-    private var pickerPills: [UILabel] = []
+    private var pickerDots: [UIView] = []
+    private var pickerLabels: [UILabel] = []
     private var highlightedPick: Int?
-    private var micWidth: NSLayoutConstraint!
-    private var micHeight: NSLayoutConstraint!
     private var deleteRepeat: Timer?
 
-    private static let brandOrange = UIColor(red: 0.976, green: 0.451, blue: 0.086, alpha: 1)
+    static let brandOrange = UIColor(red: 0.976, green: 0.451, blue: 0.086, alpha: 1)
+    static let brandAmber = UIColor(red: 1.0, green: 0.72, blue: 0.29, alpha: 1)
+    private static let orbSize: CGFloat = 96
+    private static let orbCenterY: CGFloat = 150
+    private static let arcRadius: CGFloat = 108
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -61,6 +66,12 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         refreshContext()
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        backdrop.frame = view.bounds
+        layoutArc()
     }
 
     override func textDidChange(_ textInput: UITextInput?) {
@@ -80,89 +91,88 @@ final class KeyboardViewController: UIInputViewController {
         let preview = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: nil)
         setHint(preview.idleHint, error: false)
         if case .edit = preview {
-            micButton.configuration?.image = UIImage(systemName: "text.badge.checkmark")
+            micButton.glyph = "text.badge.checkmark"
+            micButton.setTint(edit: true)
         } else {
-            micButton.configuration?.image = UIImage(systemName: "mic.fill")
+            micButton.glyph = "mic.fill"
+            micButton.setTint(edit: false)
         }
     }
 
     // MARK: - Layout
 
     private func setupUI() {
-        let height = view.heightAnchor.constraint(equalToConstant: 296)
+        let height = view.heightAnchor.constraint(equalToConstant: 300)
         height.priority = UILayoutPriority(999)
         height.isActive = true
 
-        // 品牌列
+        // Aurora 底色：光球後方一團很淡的橘暈，讓玻璃有東西折射。
+        backdrop.type = .radial
+        backdrop.colors = [Self.brandOrange.withAlphaComponent(0.16).cgColor, Self.brandAmber.withAlphaComponent(0.05).cgColor, UIColor.clear.cgColor]
+        backdrop.locations = [0, 0.45, 1]
+        backdrop.startPoint = CGPoint(x: 0.5, y: 0.5)
+        backdrop.endPoint = CGPoint(x: 1.0, y: 1.0)
+        view.layer.insertSublayer(backdrop, at: 0)
+
+        // 頂緣字幕帶
         brandIcon.tintColor = Self.brandOrange
         brandIcon.contentMode = .scaleAspectFit
         brandLabel.text = "UTUVO Type"
-        brandLabel.font = .systemFont(ofSize: 15, weight: .semibold)
-        brandLabel.textColor = .label
-        let brandRow = UIStackView(arrangedSubviews: [brandIcon, brandLabel])
-        brandRow.axis = .horizontal
-        brandRow.spacing = 6
-        brandRow.alignment = .center
-
-        var langConfig = UIButton.Configuration.plain()
-        langConfig.cornerStyle = .capsule
-        langConfig.baseForegroundColor = .label
-        langConfig.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12)
-        languageButton.configuration = langConfig
-        languageButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
-        languageButton.showsMenuAsPrimaryAction = true
-        applyGlass(to: languageButton, radius: 16)
-        updateLanguageButton()
-
-        // 逐字稿膠囊
-        let waveIcon = UIImageView(image: UIImage(systemName: "waveform"))
-        waveIcon.tintColor = .label
-        waveIcon.contentMode = .scaleAspectFit
-        transcriptLabel.font = .systemFont(ofSize: 15)
+        brandLabel.font = .systemFont(ofSize: 13, weight: .semibold)
+        brandLabel.textColor = .secondaryLabel
+        liveDot.backgroundColor = Self.brandOrange
+        liveDot.layer.cornerRadius = 4
+        liveDot.isHidden = true
+        transcriptLabel.font = .systemFont(ofSize: 15, weight: .medium)
         transcriptLabel.textColor = .label
         transcriptLabel.numberOfLines = 1
         transcriptLabel.lineBreakMode = .byTruncatingHead
-        let pillRow = UIStackView(arrangedSubviews: [waveIcon, transcriptLabel])
-        pillRow.axis = .horizontal
-        pillRow.spacing = 8
-        pillRow.alignment = .center
-        pillRow.translatesAutoresizingMaskIntoConstraints = false
-        transcriptPill.addSubview(pillRow)
+        transcriptLabel.isHidden = true
+        let band = UIStackView(arrangedSubviews: [brandIcon, brandLabel, liveDot, transcriptLabel])
+        band.axis = .horizontal
+        band.spacing = 8
+        band.alignment = .center
+        band.translatesAutoresizingMaskIntoConstraints = false
+        transcriptPill.addSubview(band)
         NSLayoutConstraint.activate([
-            waveIcon.widthAnchor.constraint(equalToConstant: 18),
-            pillRow.leadingAnchor.constraint(equalTo: transcriptPill.leadingAnchor, constant: 14),
-            pillRow.trailingAnchor.constraint(equalTo: transcriptPill.trailingAnchor, constant: -14),
-            pillRow.topAnchor.constraint(equalTo: transcriptPill.topAnchor, constant: 8),
-            pillRow.bottomAnchor.constraint(equalTo: transcriptPill.bottomAnchor, constant: -8)
+            brandIcon.widthAnchor.constraint(equalToConstant: 16),
+            brandIcon.heightAnchor.constraint(equalToConstant: 16),
+            liveDot.widthAnchor.constraint(equalToConstant: 8),
+            liveDot.heightAnchor.constraint(equalToConstant: 8),
+            band.leadingAnchor.constraint(equalTo: transcriptPill.leadingAnchor, constant: 14),
+            band.trailingAnchor.constraint(lessThanOrEqualTo: transcriptPill.trailingAnchor, constant: -14),
+            band.topAnchor.constraint(equalTo: transcriptPill.topAnchor, constant: 7),
+            band.bottomAnchor.constraint(equalTo: transcriptPill.bottomAnchor, constant: -7)
         ])
-        applyGlass(to: transcriptPill, radius: 18, fallback: .systemBackground)
-        transcriptPill.layer.shadowColor = UIColor.black.cgColor
-        transcriptPill.layer.shadowOpacity = 0.10
-        transcriptPill.layer.shadowRadius = 10
-        transcriptPill.layer.shadowOffset = CGSize(width: 0, height: 4)
-        transcriptPill.isHidden = true
+        transcriptPill.layer.cornerRadius = 15
+        transcriptPill.backgroundColor = .clear
 
-        // 提示
+        // 提示（光球下方）
         hintLabel.font = .systemFont(ofSize: 13)
         hintLabel.textColor = .secondaryLabel
         hintLabel.textAlignment = .center
         hintLabel.numberOfLines = 2
 
-        // 麥克風
-        var micConfig = UIButton.Configuration.filled()
-        micConfig.cornerStyle = .capsule
-        micConfig.baseBackgroundColor = .label
-        micConfig.baseForegroundColor = .systemBackground
-        micConfig.image = UIImage(systemName: "mic.fill")
-        micConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 26, weight: .semibold)
-        micButton.configuration = micConfig
+        // 光球
         micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         let longPress = UILongPressGestureRecognizer(target: self, action: #selector(micLongPress(_:)))
         longPress.minimumPressDuration = 0.35
         longPress.cancelsTouchesInView = true
         micButton.addGestureRecognizer(longPress)
+        waveRing.isUserInteractionEnabled = false
 
-        // 圓鍵：⌫ 與 @；膠囊：送出；地球
+        // 語言徽章（左）
+        var langConfig = UIButton.Configuration.plain()
+        langConfig.cornerStyle = .capsule
+        langConfig.baseForegroundColor = .label
+        langConfig.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+        languageButton.configuration = langConfig
+        languageButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
+        languageButton.showsMenuAsPrimaryAction = true
+        applyGlass(to: languageButton, radius: 17)
+        updateLanguageButton()
+
+        // 右側直排：⌫／@／送出
         configureRound(deleteButton, symbol: "delete.left")
         configureRound(atButton, symbol: nil, title: "@")
         deleteButton.addTarget(self, action: #selector(backspace), for: .touchUpInside)
@@ -173,101 +183,134 @@ final class KeyboardViewController: UIInputViewController {
 
         var returnConfig = UIButton.Configuration.plain()
         returnConfig.cornerStyle = .capsule
-        returnConfig.baseForegroundColor = .label
+        returnConfig.baseForegroundColor = Self.brandOrange
         returnConfig.title = "換行"
-        returnConfig.contentInsets = NSDirectionalEdgeInsets(top: 12, leading: 28, bottom: 12, trailing: 28)
+        returnConfig.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
         returnButton.configuration = returnConfig
-        returnButton.titleLabel?.font = .systemFont(ofSize: 17, weight: .medium)
-        applyGlass(to: returnButton, radius: 24, fallback: .systemBackground)
+        returnButton.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        applyGlass(to: returnButton, radius: 20)
         returnButton.addTarget(self, action: #selector(insertNewline), for: .touchUpInside)
 
         var globeConfig = UIButton.Configuration.plain()
         globeConfig.image = UIImage(systemName: "globe")
         globeConfig.baseForegroundColor = .label
-        globeConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular)
+        globeConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
         globeButton.configuration = globeConfig
         globeButton.addTarget(self, action: #selector(handleInputModeList(from:with:)), for: .allTouchEvents)
-        // iOS 26 起系統會在自訂鍵盤下方自己放一條地球＋聽寫列，再畫一顆就重複了（模擬器實看）。
+        // iOS 26 起系統會在自訂鍵盤下方自己放一條地球＋聽寫列，再畫一顆就重複了。
         if #available(iOS 26.0, *) {
             globeButton.isHidden = true
         } else {
             globeButton.isHidden = !needsInputModeSwitchKey
         }
 
-        // 長按翻譯弧：五個語言膠囊，中間預設英文
-        translatePicker.axis = .horizontal
-        translatePicker.spacing = 8
-        translatePicker.alignment = .center
-        translatePicker.distribution = .fillProportionally
+        // 長按翻譯弧：五個小圓點沿光球上方的弧排列，中間預設英文。frame 在 layoutArc() 算。
         for (index, target) in TranslationTarget.quickPick.enumerated() {
-            let pill = UILabel()
-            pill.text = target.zh
-            pill.font = .systemFont(ofSize: 14, weight: .semibold)
-            pill.textAlignment = .center
-            pill.textColor = .label
-            pill.layer.cornerRadius = 17
-            pill.layer.masksToBounds = true
-            pill.backgroundColor = .secondarySystemFill
-            pill.translatesAutoresizingMaskIntoConstraints = false
-            pill.heightAnchor.constraint(equalToConstant: 34).isActive = true
-            pill.widthAnchor.constraint(greaterThanOrEqualToConstant: 60).isActive = true
-            pill.tag = index
-            pickerPills.append(pill)
-            translatePicker.addArrangedSubview(pill)
+            let dot = UIView()
+            dot.backgroundColor = .secondarySystemFill
+            dot.layer.cornerRadius = 22
+            dot.isHidden = true
+            dot.tag = index
+            let label = UILabel()
+            label.text = target.zh
+            label.font = .systemFont(ofSize: 11, weight: .semibold)
+            label.textColor = .label
+            label.textAlignment = .center
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.7
+            dot.addSubview(label)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                label.centerXAnchor.constraint(equalTo: dot.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
+                label.widthAnchor.constraint(lessThanOrEqualTo: dot.widthAnchor, constant: -6)
+            ])
+            pickerDots.append(dot)
+            pickerLabels.append(label)
+            view.addSubview(dot)
         }
-        translatePicker.isHidden = true
 
-        for v in [brandRow, languageButton, transcriptPill, hintLabel, micButton, deleteButton, atButton, returnButton, globeButton, translatePicker] {
+        for v in [transcriptPill, waveRing, micButton, hintLabel, languageButton, deleteButton, atButton, returnButton, globeButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(v)
         }
-        micWidth = micButton.widthAnchor.constraint(equalToConstant: 220)
-        micHeight = micButton.heightAnchor.constraint(equalToConstant: 72)
 
         NSLayoutConstraint.activate([
-            brandRow.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
-            brandRow.topAnchor.constraint(equalTo: view.topAnchor, constant: 12),
-            brandIcon.widthAnchor.constraint(equalToConstant: 18),
-            brandIcon.heightAnchor.constraint(equalToConstant: 18),
-            languageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            languageButton.centerYAnchor.constraint(equalTo: brandRow.centerYAnchor),
-
-            transcriptPill.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            transcriptPill.topAnchor.constraint(equalTo: brandRow.bottomAnchor, constant: 10),
-            transcriptPill.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 16),
-            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -16),
-
-            translatePicker.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            translatePicker.topAnchor.constraint(equalTo: brandRow.bottomAnchor, constant: 12),
+            transcriptPill.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -12),
+            transcriptPill.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
+            transcriptPill.heightAnchor.constraint(equalToConstant: 30),
 
             micButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            micButton.centerYAnchor.constraint(equalTo: view.topAnchor, constant: 146),
-            micWidth, micHeight,
+            micButton.centerYAnchor.constraint(equalTo: view.topAnchor, constant: Self.orbCenterY),
+            micButton.widthAnchor.constraint(equalToConstant: Self.orbSize),
+            micButton.heightAnchor.constraint(equalToConstant: Self.orbSize),
+            waveRing.centerXAnchor.constraint(equalTo: micButton.centerXAnchor),
+            waveRing.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
+            waveRing.widthAnchor.constraint(equalToConstant: Self.orbSize + 64),
+            waveRing.heightAnchor.constraint(equalToConstant: Self.orbSize + 64),
 
             hintLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            hintLabel.bottomAnchor.constraint(equalTo: micButton.topAnchor, constant: -10),
-            hintLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 90),
-            hintLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -90),
+            hintLabel.topAnchor.constraint(equalTo: micButton.bottomAnchor, constant: 14),
+            hintLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 84),
+            hintLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -84),
 
-            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -22),
-            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: 34),
-            deleteButton.widthAnchor.constraint(equalToConstant: 56),
-            deleteButton.heightAnchor.constraint(equalToConstant: 56),
-            atButton.trailingAnchor.constraint(equalTo: deleteButton.trailingAnchor),
-            atButton.topAnchor.constraint(equalTo: deleteButton.bottomAnchor, constant: 14),
-            atButton.widthAnchor.constraint(equalToConstant: 56),
-            atButton.heightAnchor.constraint(equalToConstant: 56),
+            languageButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            languageButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
 
-            returnButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            returnButton.topAnchor.constraint(equalTo: micButton.bottomAnchor, constant: 22),
-            returnButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 150),
+            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -60),
+            deleteButton.widthAnchor.constraint(equalToConstant: 48),
+            deleteButton.heightAnchor.constraint(equalToConstant: 48),
+            atButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
+            atButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
+            atButton.widthAnchor.constraint(equalToConstant: 48),
+            atButton.heightAnchor.constraint(equalToConstant: 48),
+            returnButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
+            returnButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: 60),
+            returnButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 48),
 
-            globeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 18),
-            globeButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
-            globeButton.widthAnchor.constraint(equalToConstant: 44),
-            globeButton.heightAnchor.constraint(equalToConstant: 44)
+            globeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            globeButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10),
+            globeButton.widthAnchor.constraint(equalToConstant: 40),
+            globeButton.heightAnchor.constraint(equalToConstant: 40)
         ])
         setHint(KeyboardMode.dictate.idleHint, error: false)
+        #if DEBUG
+        // 截圖用（模擬器沒麥克風、按住時截不到）：App Group 旗標 utuvo.type.keyboard.debugPose
+        //   = "recording" 擺出錄音中＋字幕帶；= "arc" 擺出長按弧形語言點。不會真的錄音。
+        if let pose = KeyboardPresence.defaults.string(forKey: "utuvo.type.keyboard.debugPose") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                guard let self else { return }
+                switch pose {
+                case "recording":
+                    self.setRecordingAppearance(true)
+                    self.showTranscript("明天下午三點在錄音室對 Atmos 母帶，記得帶")
+                    self.setHint(KeyboardMode.dictate.recordingHint, error: false)
+                case "arc":
+                    self.setArcVisible(true)
+                    self.highlightPick(2)
+                    self.setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
+                default: break
+                }
+            }
+        }
+        #endif
+    }
+
+    /// 五個語言點沿光球上方弧線排列：從 158° 到 22°（左上到右上），半徑 arcRadius。
+    private func layoutArc() {
+        let center = CGPoint(x: view.bounds.midX, y: Self.orbCenterY)
+        let count = pickerDots.count
+        guard count > 1 else { return }
+        let start = 158.0, end = 22.0
+        for (i, dot) in pickerDots.enumerated() {
+            let deg = start + (end - start) * Double(i) / Double(count - 1)
+            let rad = deg * .pi / 180
+            let p = CGPoint(x: center.x + CGFloat(cos(rad)) * Self.arcRadius, y: center.y - CGFloat(sin(rad)) * Self.arcRadius)
+            dot.bounds = CGRect(x: 0, y: 0, width: 44, height: 44)
+            dot.center = p
+        }
     }
 
     private func configureRound(_ button: UIButton, symbol: String?, title: String? = nil) {
@@ -276,13 +319,13 @@ final class KeyboardViewController: UIInputViewController {
         config.baseForegroundColor = .label
         if let symbol {
             config.image = UIImage(systemName: symbol)
-            config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 20, weight: .regular)
+            config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
         } else {
             config.title = title
         }
         button.configuration = config
-        button.titleLabel?.font = .systemFont(ofSize: 22, weight: .medium)
-        applyGlass(to: button, radius: 28)
+        button.titleLabel?.font = .systemFont(ofSize: 20, weight: .medium)
+        applyGlass(to: button, radius: 24)
     }
 
     /// iOS 26 Liquid Glass；以下退回系統填色。玻璃層墊在按鈕最底下，不吃觸控。
@@ -365,20 +408,19 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
-    /// 長按＝翻譯：按住出現語言弧，滑到語言放開就開始錄；放開在弧以外取消。
+    /// 長按＝翻譯：按住出現弧形語言點，滑到語言放開就開始錄；放開在弧以外取消。
     @objc private func micLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard !isRecording else { return }
         let point = gesture.location(in: view)
         switch gesture.state {
         case .began:
-            translatePicker.isHidden = false
-            transcriptPill.isHidden = true
+            setArcVisible(true)
             highlightPick(nearest(to: point) ?? 2)
             setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
         case .changed:
             highlightPick(nearest(to: point))
         case .ended:
-            translatePicker.isHidden = true
+            setArcVisible(false)
             if let index = highlightedPick {
                 pendingTranslateTarget = TranslationTarget.quickPick[index]
                 Task { await startRecognition() }
@@ -387,41 +429,64 @@ final class KeyboardViewController: UIInputViewController {
             }
             highlightPick(nil)
         case .cancelled, .failed:
-            translatePicker.isHidden = true
+            setArcVisible(false)
             highlightPick(nil)
             setHint(KeyboardMode.dictate.idleHint, error: false)
         default: break
         }
     }
 
+    private func setArcVisible(_ visible: Bool) {
+        // 弧最上面那顆會壓到頂緣字幕帶，弧出現時字幕帶先退場。
+        transcriptPill.alpha = visible ? 0 : 1
+        for dot in pickerDots {
+            dot.isHidden = !visible
+            dot.alpha = visible ? 0 : 1
+        }
+        guard visible else { return }
+        UIView.animate(withDuration: 0.18) { self.pickerDots.forEach { $0.alpha = 1 } }
+    }
+
+    /// 手指離弧上哪個點最近（弧以下太遠＝沒選）。
     private func nearest(to point: CGPoint) -> Int? {
-        let pickerFrame = translatePicker.frame
-        guard point.y < pickerFrame.maxY + 90 else { return nil }
+        let orbCenter = CGPoint(x: view.bounds.midX, y: Self.orbCenterY)
+        guard point.y < orbCenter.y + Self.orbSize / 2 else { return nil }
         var best: (Int, CGFloat)?
-        for pill in pickerPills {
-            let frame = pill.convert(pill.bounds, to: view)
-            let distance = abs(frame.midX - point.x)
-            if best == nil || distance < best!.1 { best = (pill.tag, distance) }
+        for dot in pickerDots {
+            let d = hypot(dot.center.x - point.x, dot.center.y - point.y)
+            if best == nil || d < best!.1 { best = (dot.tag, d) }
         }
         return best?.0
     }
 
     private func highlightPick(_ index: Int?) {
         highlightedPick = index
-        for pill in pickerPills {
-            let on = pill.tag == index
-            pill.backgroundColor = on ? .label : .secondarySystemFill
-            pill.textColor = on ? .systemBackground : .label
-            pill.transform = on ? CGAffineTransform(scaleX: 1.12, y: 1.12) : .identity
+        for (i, dot) in pickerDots.enumerated() {
+            let on = dot.tag == index
+            dot.backgroundColor = on ? Self.brandOrange : .secondarySystemFill
+            pickerLabels[i].textColor = on ? .white : .label
+            dot.transform = on ? CGAffineTransform(scaleX: 1.18, y: 1.18) : .identity
         }
     }
 
     private func setRecordingAppearance(_ recording: Bool) {
-        micWidth.constant = recording ? 88 : 220
-        micHeight.constant = recording ? 88 : 72
-        micButton.configuration?.baseBackgroundColor = recording ? Self.brandOrange : .label
-        micButton.configuration?.image = UIImage(systemName: recording ? "waveform" : "mic.fill")
-        UIView.animate(withDuration: 0.25, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0.4) {
+        micButton.setRecording(recording)
+        waveRing.setActive(recording)
+        // 字幕帶：錄音中品牌退場、橘點＋逐字稿進場
+        brandLabel.isHidden = recording
+        liveDot.isHidden = !recording
+        transcriptLabel.isHidden = !recording
+        if recording {
+            transcriptLabel.text = ""
+            let pulse = CABasicAnimation(keyPath: "opacity")
+            pulse.fromValue = 1; pulse.toValue = 0.25
+            pulse.duration = 0.7; pulse.autoreverses = true; pulse.repeatCount = .infinity
+            liveDot.layer.add(pulse, forKey: "pulse")
+        } else {
+            liveDot.layer.removeAnimation(forKey: "pulse")
+        }
+        UIView.animate(withDuration: 0.25) {
+            self.transcriptPill.backgroundColor = recording ? Self.brandOrange.withAlphaComponent(0.10) : .clear
             self.view.layoutIfNeeded()
         }
     }
@@ -609,6 +674,149 @@ private extension DictationLanguage {
         case .englishUS: return "EN"
         case .japanese: return "日本語"
         case .korean: return "한국어"
+        }
+    }
+}
+
+// MARK: - 光球與波形環（純 UIKit／CoreAnimation，鍵盤 extension 記憶體友善）
+
+/// 主 app MicOrb 的 UIKit 版：橘→琥珀漸層球＋白色 glyph＋橘色光暈；錄音時外圈呼吸環。
+final class OrbButton: UIControl {
+    private let gradient = CAGradientLayer()
+    private let sheen = CAGradientLayer()
+    private let ring = CAShapeLayer()
+    private let glyphView = UIImageView()
+    private var recording = false
+
+    var glyph: String = "mic.fill" {
+        didSet { glyphView.image = UIImage(systemName: glyph, withConfiguration: UIImage.SymbolConfiguration(pointSize: 34, weight: .semibold)) }
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        gradient.colors = [KeyboardViewController.brandAmber.cgColor, KeyboardViewController.brandOrange.cgColor]
+        gradient.startPoint = CGPoint(x: 0.2, y: 0)
+        gradient.endPoint = CGPoint(x: 0.8, y: 1)
+        layer.addSublayer(gradient)
+        sheen.colors = [UIColor.white.withAlphaComponent(0.38).cgColor, UIColor.clear.cgColor]
+        sheen.startPoint = CGPoint(x: 0.5, y: 0)
+        sheen.endPoint = CGPoint(x: 0.5, y: 0.55)
+        layer.addSublayer(sheen)
+        ring.fillColor = UIColor.clear.cgColor
+        ring.strokeColor = KeyboardViewController.brandOrange.cgColor
+        ring.lineWidth = 2
+        ring.opacity = 0
+        layer.addSublayer(ring)
+        glyphView.tintColor = .white
+        glyphView.contentMode = .center
+        addSubview(glyphView)
+        glyph = "mic.fill"
+        layer.shadowColor = KeyboardViewController.brandOrange.cgColor
+        layer.shadowOpacity = 0.35
+        layer.shadowRadius = 14
+        layer.shadowOffset = CGSize(width: 0, height: 6)
+        isAccessibilityElement = true
+        accessibilityLabel = "聽寫"
+        accessibilityTraits = .button
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        gradient.frame = bounds
+        gradient.cornerRadius = bounds.width / 2
+        sheen.frame = bounds
+        sheen.cornerRadius = bounds.width / 2
+        glyphView.frame = bounds
+        ring.frame = bounds
+        ring.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).cgPath
+    }
+
+    override var isHighlighted: Bool {
+        didSet { transform = isHighlighted ? CGAffineTransform(scaleX: 0.94, y: 0.94) : .identity }
+    }
+
+    /// 說出要怎麼改：球體偏薰衣草，一眼看出現在講的是指示。
+    func setTint(edit: Bool) {
+        let violet = UIColor(red: 0.68, green: 0.60, blue: 0.95, alpha: 1)
+        gradient.colors = edit
+            ? [violet.cgColor, UIColor(red: 0.55, green: 0.45, blue: 0.90, alpha: 1).cgColor]
+            : [KeyboardViewController.brandAmber.cgColor, KeyboardViewController.brandOrange.cgColor]
+    }
+
+    func setRecording(_ on: Bool) {
+        recording = on
+        glyph = on ? "stop.fill" : "mic.fill"
+        accessibilityLabel = on ? "停止" : "聽寫"
+        layer.shadowOpacity = on ? 0.7 : 0.35
+        layer.shadowRadius = on ? 24 : 14
+        ring.removeAllAnimations()
+        if on {
+            let scale = CABasicAnimation(keyPath: "transform.scale")
+            scale.fromValue = 1.0; scale.toValue = 1.45
+            let fade = CABasicAnimation(keyPath: "opacity")
+            fade.fromValue = 0.9; fade.toValue = 0
+            let group = CAAnimationGroup()
+            group.animations = [scale, fade]
+            group.duration = 1.4
+            group.repeatCount = .infinity
+            group.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            ring.add(group, forKey: "breathe")
+        } else {
+            ring.opacity = 0
+        }
+    }
+}
+
+/// 放射狀波形環：光球外圈 28 根短條，錄音時各自以不同節奏伸縮（純時間動畫，不接音量）。
+final class WaveRingView: UIView {
+    private var bars: [CALayer] = []
+    private let count = 28
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        for _ in 0..<count {
+            let bar = CALayer()
+            bar.backgroundColor = KeyboardViewController.brandOrange.withAlphaComponent(0.55).cgColor
+            bar.cornerRadius = 1.5
+            bar.opacity = 0
+            layer.addSublayer(bar)
+            bars.append(bar)
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        let c = CGPoint(x: bounds.midX, y: bounds.midY)
+        let radius = bounds.width / 2 - 14
+        for (i, bar) in bars.enumerated() {
+            let angle = CGFloat(i) / CGFloat(count) * 2 * .pi
+            bar.bounds = CGRect(x: 0, y: 0, width: 3, height: 10)
+            bar.position = CGPoint(x: c.x + cos(angle) * radius, y: c.y + sin(angle) * radius)
+            bar.setAffineTransform(CGAffineTransform(rotationAngle: angle + .pi / 2))
+        }
+    }
+
+    func setActive(_ on: Bool) {
+        for (i, bar) in bars.enumerated() {
+            bar.removeAllAnimations()
+            if on {
+                bar.opacity = 1
+                let grow = CABasicAnimation(keyPath: "bounds.size.height")
+                grow.fromValue = 6
+                grow.toValue = 12 + CGFloat((i * 7) % 11)
+                grow.duration = 0.32 + Double((i * 13) % 7) * 0.05
+                grow.autoreverses = true
+                grow.repeatCount = .infinity
+                grow.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
+                grow.beginTime = CACurrentMediaTime() + Double(i) * 0.02
+                bar.add(grow, forKey: "grow")
+            } else {
+                bar.opacity = 0
+            }
         }
     }
 }
