@@ -1,0 +1,41 @@
+{
+  "_comment": "UTUVO Type 字典範例：純結構示範，無真實個資、無 API key。正式 dictionary.json 在使用者機器上手動建立。",
+  "version": "0.1.0",
+  "terms": [
+    {
+      "canonical": "UTUVO",
+      "variants": ["utu vo", "utu-vo", "優土服", "優吐服"],
+      "category": "product-name"
+    },
+    {
+      "canonical": "pik",
+      "variants": ["pick", "p i k"],
+      "category": "product-name"
+    },
+    {
+      "canonical": "楊敏奇",
+      "variants": ["楊敏琦", "楊民奇", "Mickey Yang"],
+      "category": "proper-noun"
+    },
+    {
+      "canonical": "台灣藝術大學",
+      "variants": ["台藝大", "國立臺灣藝術大學", "台灣藝大"],
+      "category": "proper-noun"
+    },
+    {
+      "canonical": "臺北藝術大學",
+      "variants": ["北藝大", "國立臺北藝術大學", "台北藝大"],
+      "category": "proper-noun"
+    },
+    {
+      "canonical": "Dolby Atmos",
+      "variants": ["dolby atmos", "杜比全景聲"],
+      "category": "industry-term"
+    },
+    {
+      "canonical": "Tonmeister",
+      "variants": ["ton master", "音樂工程師"],
+      "category": "industry-term"
+    }
+  ]
+}

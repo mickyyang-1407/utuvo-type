@@ -1,0 +1,30 @@
+{"id": "short-01", "category": "short-dictation", "transcript": "我今天很累。", "expected": "我今天很累。", "assertions": ["no-filler", "punct-zh-tw", "is-short-sentence"]}
+{"id": "short-02", "category": "short-dictation", "transcript": "嗯今天天氣不錯啊。", "expected": "今天天氣不錯。", "assertions": ["filler-removed", "punct-zh-tw"]}
+{"id": "short-03", "category": "short-dictation", "transcript": "那個我等一下就到。", "expected": "我等一下就到。", "assertions": ["filler-removed"]}
+{"id": "mixed-01", "category": "mixed-zh-en", "transcript": "幫我訂一間 near Tokyo Station 的飯店。", "expected": "幫我訂一間 near Tokyo Station 的飯店。", "assertions": ["english-preserved", "punct-zh-tw"]}
+{"id": "mixed-02", "category": "mixed-zh-en", "transcript": "今天 sprint 進度大概完成八成。", "expected": "今天 sprint 進度大概完成八成。", "assertions": ["english-preserved", "no-translate"]}
+{"id": "mixed-03", "category": "mixed-zh-en", "transcript": "把 README 裡的 install 步驟翻成繁中。", "expected": "把 README 裡的 install 步驟翻成繁中。", "assertions": ["english-preserved"]}
+{"id": "noun-01", "category": "proper-noun", "transcript": "我們楊敏奇老師今天會到台藝大。", "expected": "我們楊敏奇老師今天會到台藝大。", "assertions": ["proper-noun-preserved"]}
+{"id": "noun-02", "category": "proper-noun", "transcript": "這台 Dolby Atmos 的監聽喇叭要送回原廠。", "expected": "這台 Dolby Atmos 的監聽喇叭要送回原廠。", "assertions": ["brand-preserved", "english-preserved"]}
+{"id": "noun-03", "category": "proper-noun", "transcript": "我下週二會去北藝大跟台藝大。", "expected": "我下週二會去北藝大跟台藝大。", "assertions": ["proper-noun-preserved"]}
+{"id": "corr-01", "category": "self-correction", "transcript": "明天不是週一，是週二開會。", "expected": "明天週二開會。", "assertions": ["self-correction-applied"]}
+{"id": "corr-02", "category": "self-correction", "transcript": "不是今天做，是明天做。", "expected": "明天做。", "assertions": ["self-correction-applied"]}
+{"id": "corr-03", "category": "self-correction", "transcript": "改成下週三開會。", "expected": "下週三開會。", "assertions": ["prefix-stripped"]}
+{"id": "list-01", "category": "list-cue", "transcript": "今天有三件事第一買牛奶第二回email第三寫報告。", "expected": "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。", "assertions": ["list-broken-into-lines"]}
+{"id": "list-02", "category": "list-cue", "transcript": "首先整理桌面其次回信最後趕稿。", "expected": "首先整理桌面\n其次回信\n最後趕稿。", "assertions": ["list-broken-into-lines"]}
+{"id": "list-03", "category": "list-cue", "transcript": "接下來是測試然後是驗收最後是上線。", "expected": "接下來是測試\n然後是驗收\n最後是上線。", "assertions": ["list-broken-into-lines"]}
+{"id": "todo-01", "category": "todo", "transcript": "幫我記一下買牛奶跟回email跟寫報告。", "expected": "幫我記一下買牛奶跟回email跟寫報告。", "assertions": ["no-list-broken-but-kept-cue"]}
+{"id": "todo-02", "category": "todo", "transcript": "記一下第一繳電費第二預約洗車第三買貓砂。", "expected": "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。", "assertions": ["list-broken-into-lines"]}
+{"id": "todo-03", "category": "todo", "transcript": "明天的待辦是繳電費預約洗車還有買貓砂。", "expected": "明天的待辦是繳電費預約洗車還有買貓砂。", "assertions": ["no-list-broken"]}
+{"id": "long-01", "category": "long-paragraph", "transcript": "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。", "expected": "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。", "assertions": ["paragraph-preserved", "english-preserved"]}
+{"id": "long-02", "category": "long-paragraph", "transcript": "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。", "expected": "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。", "assertions": ["paragraph-preserved", "english-preserved"]}
+{"id": "long-03", "category": "long-paragraph", "transcript": "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認七點半交付但中間還要插一次內部 review。", "expected": "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認7:30交付但中間還要插一次內部 review。", "assertions": ["paragraph-preserved", "english-preserved", "time-normalized"]}
+{"id": "meet-01", "category": "meeting-notes", "transcript": "二〇二六年八月十七日下午三點開會結論是先跑 benchmark 再決定 UI 進入時機。", "expected": "2026 年 8 月 17 日下午3:00開會結論是先跑 benchmark 再決定 UI 進入時機。", "assertions": ["date-normalized", "time-normalized"]}
+{"id": "meet-02", "category": "meeting-notes", "transcript": "會議時間是八月十八號早上十點半地點在公司會議室。", "expected": "會議時間是八月十八號早上10:30地點在公司會議室。", "assertions": ["time-normalized"]}
+{"id": "meet-03", "category": "meeting-notes", "transcript": "會議結論是專案預算一百二十萬元時程八週交付。", "expected": "會議結論是專案預算1,200,000元時程八週交付。", "assertions": ["amount-normalized"]}
+{"id": "sel-01", "category": "selection-edit", "transcript": "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>", "expected": "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>", "assertions": ["selected-preserved"]}
+{"id": "sel-02", "category": "selection-edit", "transcript": "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。", "expected": "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。", "assertions": ["selected-preserved", "english-preserved"]}
+{"id": "sel-03", "category": "selection-edit", "transcript": "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。", "expected": "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。", "assertions": ["selected-preserved"]}
+{"id": "md-01", "category": "markdown", "transcript": "# 標題\n內文有一些重點。\n- 第一點\n- 第二點\n", "expected": "# 標題\n內文有一些重點。\n- 第一點\n- 第二點", "assertions": ["markdown-preserved", "list-bullets-kept"]}
+{"id": "md-02", "category": "markdown", "transcript": "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告\n", "expected": "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告", "assertions": ["markdown-preserved", "checkbox-kept"]}
+{"id": "md-03", "category": "markdown", "transcript": "重點是 **不要** 翻譯 `code` 區塊。", "expected": "重點是 **不要** 翻譯 `code` 區塊。", "assertions": ["bold-preserved", "inline-code-preserved"]}

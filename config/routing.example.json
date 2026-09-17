@@ -1,0 +1,106 @@
+{
+  "_comment": "UTUVO Type routing example — no real keys, no remote URLs. 真實 routing.json 由使用者的機器手動建立，永遠不進 git。",
+  "version": "0.1.0",
+  "backends": {
+    "bailian": {
+      "enabled": true,
+      "asrModel": "qwen-audio-3.0-asr-flash-streaming",
+      "asrProtocol": "websocket-or-official-realtime-protocol",
+      "language": "zh-TW",
+      "mixedChineseEnglish": true,
+      "partialTranscript": true,
+      "contextEnabled": true,
+      "hotwordsFromDictionary": true,
+      "apiKeySource": "macOS-Keychain-or-environment-outside-repo"
+    },
+    "local": {
+      "enabled": true,
+      "asrRuntime": "existing-qwen3-asr-0.6b-adapter",
+      "editor": "small-local-editor-adapter-or-deterministic-only",
+      "autoDownload": false
+    }
+  },
+  "modes": {
+    "fast": {
+      "description": "短句／選取編輯／低延遲需求；走本機 ASR + deterministic，雲端 formatter 略過。",
+      "shortSentenceSkipLLM": true,
+      "formatter": "deterministic-only",
+      "allowLargeModel": false
+    },
+    "smart": {
+      "description": "一般口述預設模式；走百鍊 qwen3.7-flash。",
+      "defaultModel": "qwen3.7-flash-2026-07-15",
+      "shortSentenceModel": "qwen3.7-flash-2026-07-15",
+      "smallLocalEditorFallback": true,
+      "longTextMinChars": 400,
+      "longAudioMinSeconds": 90,
+      "longTextThresholdCanUsePlus": true,
+      "allowLargeModel": false
+    },
+    "editSelection": {
+      "description": "對已選取文字做改寫；長／高品質 opt-in plus。",
+      "defaultModel": "qwen3.7-flash-2026-07-15",
+      "highQualityModel": "qwen3.7-plus",
+      "highQualityMinChars": 80,
+      "allowLargeModel": "conditional"
+    },
+    "deep": {
+      "description": "長文／會議紀錄；opt-in 才允許 plus；27B 為 adapter，不自動下載。",
+      "requireOptIn": true,
+      "defaultModel": "qwen3.7-flash-2026-07-15",
+      "optInModel": "qwen3.7-plus",
+      "localDeepModel": "qwen3-27b-local",
+      "longTextMinChars": 400,
+      "longAudioMinSeconds": 90,
+      "explicitDeepPhraseRequiredUnlessManualMode": true,
+      "allowLargeModel": "opt-in"
+    }
+  },
+  "bailian": {
+    "_comment": "模型 fallback 鏈：primary 失敗就依序往下試。qwen3.7-plus 不進普通 fallback。",
+    "fallbackChain": [
+      "qwen3.7-flash-2026-07-15",
+      "qwen3.6-flash",
+      "qwen3.5-flash"
+    ],
+    "primary": "qwen3.7-flash-2026-07-15",
+    "forbiddenInOrdinaryDictation": [
+      "qwen3.7-plus",
+      "qwen3.7-max"
+    ],
+    "parameters": {
+      "enable_thinking": false,
+      "stream": true,
+      "temperature": 0.0,
+      "top_p": 0.9,
+      "max_output_tokens": 1024
+    },
+    "parsing": "content-only"
+  },
+  "plusOnlyConditions": {
+    "_comment": "plus 升級條件：全部成立才允許 qwen3.7-plus。任一條件為 false 都退回 flash。",
+    "modeIsEditSelection": true,
+    "highQualityFlag": true,
+    "minSelectedChars": 80,
+    "userOptIn": true
+  },
+  "localDeep": {
+    "_comment": "本機 27B 設定：adapter 介面已固定，權重不自動下載。",
+    "enabled": false,
+    "model": "qwen3-27b-local",
+    "minCharsForLocal": 400,
+    "autoDownload": false
+  },
+  "shortSentenceRule": {
+    "_comment": "短句定義與禁大模型規則。任何短於此上限的輸入都不准走 plus／max／27B。",
+    "maxChars": 12,
+    "mustNotHaveListCue": true,
+    "mustNotHaveSelfCorrection": true,
+    "mustNotHaveMarkdown": true,
+    "neverRoutesTo": [
+      "qwen3.7-plus",
+      "qwen3.7-max",
+      "qwen3-27b-local"
+    ]
+  }
+}

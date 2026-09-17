@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>UTUVO Type</string>
+	<key>CFBundleExecutable</key>
+	<string>utuvo-type</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.utuvo.type</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>UTUVO Type</string>
+	<key>CFBundleIconFile</key>
+	<string>UTUVOType</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>CFBundleVersion</key>
+	<string>0.1.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>UTUVO Type 只在你啟動聽寫時使用麥克風，把語音轉成可貼上的文字。</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>UTUVO Type 只在本機 on-device fallback 可用時使用語音辨識，不保存音訊。</string>
+</dict>
+</plist>

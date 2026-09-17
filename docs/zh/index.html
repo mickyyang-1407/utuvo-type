@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="UTUVO Type——免費開源、本機優先的 macOS 語音輸入。在你的 Mac 上轉錄、用確定性規則整理、貼到游標所在的地方。">
+<meta property="og:title" content="UTUVO Type"><meta property="og:description" content="UTUVO Type——免費開源、本機優先的 macOS 語音輸入。在你的 Mac 上轉錄、用確定性規則整理、貼到游標所在的地方。"><meta property="og:image" content="https://mickyyang-1407.github.io/utuvo-type/assets/og.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" hreflang="en" href="https://mickyyang-1407.github.io/utuvo-type/"><link rel="alternate" hreflang="zh-Hant" href="https://mickyyang-1407.github.io/utuvo-type/zh/">
+<link rel="icon" href="../assets/logo.png">
+<meta charset="utf-8">
+<title>UTUVO Type</title>
+<style>
+  :root{
+    --bg:#FBF7F2; --bg-2:#F3EDF7; --ink:#2A1F2E; --ink-2:#6B5E6F; --ink-3:#9C8FA0;
+    --orange:#F97316; --amber:#FFB84A; --plum:#2E1F47; --lav:#AD99F2; --mint:#4DBF80;
+    --glass:rgba(255,255,255,.55); --glass-rim:rgba(255,255,255,.75); --line:rgba(42,31,46,.08);
+    --shadow:0 18px 50px rgba(60,30,20,.10), 0 2px 6px rgba(60,30,20,.06);
+    --font:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC",BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--font);color:var(--ink);font-size:17px;line-height:1.6;background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;text-wrap:balance}
+  h1{font-size:clamp(2.6rem,6.2vw,4.6rem);font-weight:700}
+  h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:700}
+  h3{font-size:1.1rem;font-weight:650}
+  p{margin:0}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding-inline:24px}
+  section{position:relative;padding-block:96px}
+  .eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.08em;color:var(--orange)}
+  .lead{font-size:clamp(1.05rem,1.6vw,1.25rem);color:var(--ink-2);max-width:640px}
+
+  /* 桌布：跟 app 截圖用的同一套色團 */
+  .backdrop{position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#EFE8FF 0%,#FBF3EA 50%,#FFE7D2 100%)}
+  .backdrop i{position:absolute;border-radius:50%;filter:blur(120px);opacity:.75}
+  .backdrop .a{width:640px;height:640px;left:-200px;top:-220px;background:rgba(255,184,74,.55)}
+  .backdrop .b{width:560px;height:560px;right:-160px;top:120px;background:rgba(173,153,242,.5)}
+  .backdrop .c{width:520px;height:520px;right:20%;bottom:-260px;background:rgba(249,115,22,.28)}
+  .backdrop .d{width:520px;height:520px;left:-120px;bottom:-200px;background:rgba(140,204,255,.45)}
+
+  /* glass */
+  .glass{background:var(--glass);border:1px solid var(--glass-rim);border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:10;padding:14px 0}
+  nav .bar{display:flex;align-items:center;gap:14px;padding:8px 10px 8px 14px;border-radius:999px}
+  nav img{width:30px;height:30px;border-radius:8px}
+  nav .name{font-weight:700;letter-spacing:-.01em}
+  nav .links{margin-left:auto;display:flex;gap:4px;align-items:center}
+  nav .links a{text-decoration:none;font-size:.92rem;font-weight:600;color:var(--ink-2);padding:7px 12px;border-radius:999px}
+  nav .links a:hover{background:rgba(255,255,255,.6);color:var(--ink)}
+  .lang{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(42,31,46,.06);margin-left:6px}
+  .lang a{font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:999px;text-decoration:none;color:var(--ink-2)}
+  .lang a[aria-current]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:650;font-size:1rem;padding:.8em 1.5em;border-radius:999px;text-decoration:none;border:1px solid transparent;transition:transform .15s,box-shadow .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316);box-shadow:0 10px 28px rgba(249,115,22,.35),inset 0 1px 0 rgba(255,255,255,.45)}
+  .btn-glass{color:var(--ink);background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 6px 18px rgba(60,30,20,.08)}
+  .btn svg{width:1.1em;height:1.1em}
+
+  /* hero */
+  .hero{padding-block:56px 40px}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .hero .art{position:relative}
+  .hero .art img{width:100%;height:auto;display:block;filter:drop-shadow(0 30px 40px rgba(120,60,20,.18))}
+  .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+  .free{margin-top:18px;font-size:.9rem;color:var(--ink-3);font-weight:600}
+  .free b{color:var(--mint)}
+
+  /* popover showcase */
+  .showcase{padding-block:24px 80px}
+  .showcase .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  .showcase img.pop{width:min(100%,400px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
+  .steps{display:grid;gap:14px}
+  .step{display:flex;gap:16px;padding:18px 20px;border-radius:18px}
+  .step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316)}
+  .step small{display:block;color:var(--ink-2);font-size:.92rem;margin-top:2px}
+
+  /* modes */
+  .modes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
+  .mode{padding:22px 20px;border-radius:20px}
+  .mode .ic{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(249,115,22,.14);color:var(--orange);margin-bottom:14px}
+  .mode .ic svg{width:20px;height:20px}
+  .mode p{color:var(--ink-2);font-size:.95rem;margin-top:6px}
+
+  /* two-column feature blocks */
+  .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:48px}
+  .feature.rev .copy{order:2}
+  .feature img{width:100%;height:auto;display:block;border-radius:18px;filter:drop-shadow(0 24px 40px rgba(60,30,20,.14))}
+  .feature ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+  .feature li{display:flex;gap:10px;color:var(--ink-2)}
+  .feature li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:.55em}
+
+  /* overlay demo */
+  .capsules{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:20px}
+  .capsules img{height:38px;width:auto}
+
+  /* install */
+  .install .box{padding:32px;border-radius:24px}
+  .install pre{margin:18px 0 0;padding:18px 20px;border-radius:14px;background:rgba(46,31,71,.92);color:#F6EFFF;font-family:var(--mono);font-size:.9rem;line-height:1.7;overflow:auto}
+  .install pre b{color:#FFB84A;font-weight:600}
+  .req{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;color:var(--ink-2);font-size:.95rem}
+  .req b{color:var(--ink)}
+
+  footer{padding:60px 0 40px;color:var(--ink-3);font-size:.9rem;text-align:center}
+  footer a{color:var(--ink-2)}
+
+  @media (max-width:900px){
+    .hero .grid,.showcase .row,.feature{grid-template-columns:1fr}
+    .feature.rev .copy{order:0}
+    .modes{grid-template-columns:1fr 1fr}
+    nav .links > a:not(.gh){display:none}
+    section{padding-block:64px}
+  }
+  @media (max-width:520px){.modes{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
+
+<nav><div class="wrap"><div class="bar glass">
+  <img src="../assets/logo.png" alt=""><span class="name">UTUVO Type</span>
+  <div class="links">
+    <a href="#modes">模式</a><a href="#privacy">隱私</a><a href="#install">安裝</a>
+    <a class="gh" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
+    <div class="lang"><a href="../" data-lang="en">EN</a><a href="./" data-lang="zh" aria-current="page">中文</a></div>
+  </div>
+</div></div></nav>
+
+<section class="hero"><div class="wrap"><div class="grid">
+  <div>
+    <div class="eyebrow">本機優先的 macOS 語音輸入</div>
+    <h1 style="margin-top:14px">你說。<br>它打字。</h1>
+    <p class="lead" style="margin-top:20px">一個 menu bar 小工具，把你的聲音變成乾淨、可直接貼上的文字。轉錄在你的 Mac 上跑；整理先走確定性規則，模型只是輔助。你不點頭，什麼都不會離開這台機器。</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>下載 Mac 版</a>
+      <a class="btn btn-glass" href="https://github.com/mickyyang-1407/utuvo-type">看原始碼</a>
+    </div>
+    <p class="free"><b>免費</b>・開源・MIT・不用帳號、不用 API key</p>
+  </div>
+  <div class="art"><img src="../assets/hero-front.png" alt="UTUVO Type 標誌：玻璃語音泡泡與文字游標，旁邊是波形、三個點與麥克風"></div>
+</div></div></section>
+
+<section class="showcase"><div class="wrap"><div class="row">
+  <img class="pop" src="../assets/popover-light.png" alt="UTUVO Type 的 menu bar 面板：四種模式與開始聽寫按鈕">
+  <div class="steps">
+    <div class="step glass"><div class="n">1</div><div><h3>按快捷鍵</h3><small>預設 ⌥Space，按住就是 push-to-talk。想換哪顆鍵都行。</small></div></div>
+    <div class="step glass"><div class="n">2</div><div><h3>開口說</h3><small>小膠囊告訴你正在錄。Esc 取消。你沒按之前不會錄任何東西。</small></div></div>
+    <div class="step glass"><div class="n">3</div><div><h3>落在游標所在的地方</h3><small>標點、贅詞、數字、你的個人字典——整理好，貼進你正在用的 app。</small></div></div>
+  </div>
+</div></div></section>
+
+<section id="modes"><div class="wrap">
+  <div class="eyebrow">四種模式</div>
+  <h2 style="margin-top:12px">你決定要多少幫忙。</h2>
+  <p class="lead" style="margin-top:14px">Fast 永遠不呼叫大模型。其他模式只做你要求的事，模型失敗就退回確定性路徑。</p>
+  <div class="modes">
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>Fast Dictate</h3><p>本機轉錄＋規則整理。即時、可預期、沒有 LLM。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Smart Dictate</h3><p>本機小型 editor 順句子。還是在你的 Mac 上。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M4 4h10M4 8h7M4 12h5M14 15l6-6-2-2-6 6v2z"/></svg></div><h3>Edit Selection</h3><p>選一段文字，說你要改什麼。改寫結果直接取代選取。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></div><h3>Deep / Long Note</h3><p>長文筆記交給大一點的模型——本機 27B 或雲端，只在你選擇時。</p></div>
+  </div>
+</div></section>
+
+<section id="chinese"><div class="wrap">
+  <div class="feature">
+    <div class="copy">
+      <div class="eyebrow">為繁體中文而做</div>
+      <h2 style="margin-top:12px">看得懂的整理邏輯。</h2>
+      <p class="lead" style="margin-top:14px">大部分的修飾是規則，不是猜測。同樣的輸入永遠得到同樣的輸出。</p>
+      <ul>
+        <li>中文標點、中英之間的空格、贅詞去除</li>
+        <li>數字、日期、金額寫成你自己會打的樣子</li>
+        <li>台灣用語（軟體、日常詞）；夾雜的英文保持英文</li>
+        <li>個人字典：人名、產品名、術語</li>
+        <li>依 app 的預設：聊天用簡短風格、文件用完整風格</li>
+      </ul>
+    </div>
+    <img src="../assets/settings-general-light.png" alt="UTUVO Type 設定「一般」分頁：Liquid Glass 側欄與卡片">
+  </div>
+</div></section>
+
+<section id="privacy"><div class="wrap">
+  <div class="feature rev">
+    <div class="copy">
+      <div class="eyebrow">預設就是私密</div>
+      <h2 style="margin-top:12px">你的聲音留在你的 Mac 上。</h2>
+      <p class="lead" style="margin-top:14px">預設安裝完全本機：Qwen3-ASR 0.6B 透過 MLX 在 Apple silicon 上跑。沒有帳號、沒有遙測、裝好之後不需要網路。</p>
+      <ul>
+        <li>輔助使用只用來讀取目前輸入框與貼回——從不讀整個螢幕</li>
+        <li>錄音一定有膠囊與提示音，不會偷偷錄</li>
+        <li>雲端整理是獨立、需要你打開的 adapter，用你自己的 key，存在 Keychain</li>
+        <li>全部公開：路由規則看得到、benchmark 跑得動、prompt 查得到</li>
+      </ul>
+    </div>
+    <img src="../assets/settings-models-light.png" alt="UTUVO Type 設定「模型」分頁：本機模型與選配雲端模型">
+  </div>
+</div></section>
+
+<section id="native"><div class="wrap">
+  <div class="feature">
+    <div class="copy">
+      <div class="eyebrow">從頭到尾都是原生</div>
+      <h2 style="margin-top:12px">Liquid Glass。淡色與深色。</h2>
+      <p class="lead" style="margin-top:14px">Swift、AppKit 與 SwiftUI。依 macOS 26 的設計語言：Liquid Glass 面板、浮動側欄、一顆小小的狀態膠囊；macOS 14、15 退回一般材質。</p>
+      <div class="capsules">
+        <img src="../assets/overlay-listening-light.png" alt="聆聽中的膠囊：橘色波形">
+        <img src="../assets/overlay-processing-light.png" alt="處理中的膠囊：三個薰衣草色點">
+        <img src="../assets/overlay-listening-dark.png" alt="深色模式的聆聽膠囊">
+      </div>
+    </div>
+    <img src="../assets/popover-dark.png" alt="深色模式的 UTUVO Type 面板" style="width:min(100%,380px);margin:0 auto;border-radius:0">
+  </div>
+</div></section>
+
+<section id="install" class="install"><div class="wrap">
+  <div class="box glass">
+    <div class="eyebrow">Install</div>
+    <h2 style="margin-top:12px">三行指令。</h2>
+    <p class="lead" style="margin-top:12px">或直接從 Releases 下載已簽名、已公證的版本。從原始碼建置約一分鐘，外加一次性的 1.2 GB 模型下載。</p>
+<pre><b>git</b> clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
+<b>./scripts/bootstrap-runtime.sh</b>   # Python venv＋Qwen3-ASR 模型，一次性
+<b>./scripts/build-app.sh</b>           # dist/UTUVO Type.app</pre>
+    <div class="req"><span>本機引擎需要 <b>Apple silicon</b></span><span><b>macOS 14+</b>・26+ 有 Liquid Glass</span><span>Fast 需 <b>8 GB</b> 記憶體・本機 editor 建議 <b>16 GB</b></span><span>模型約占 <b>1.5 GB</b></span><span><b>Intel Mac</b> 可走雲端或系統內建語音</span></div>
+    <p class="lead" style="margin-top:16px;font-size:.95rem">DMG 很小：語音模型不在裡面。設定 → 一般 → <b>安裝本機引擎</b>會把 Qwen3-ASR 0.6B（約 1.2 GB，一次性）下載到你的 Application Support 資料夾。你沒按之前不會下載任何東西。</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>© 2026 UTUVO · <a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/LICENSE">MIT 授權</a>・「UTUVO Type」名稱與標誌不在授權範圍內。</p>
+  <p style="margin-top:6px">台北製造・<a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/PRIVACY.md">隱私</a>・<a href="https://github.com/mickyyang-1407/utuvo-type/issues">回報問題</a></p>
+</div></footer>
+<script>
+document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('type-lang',a.dataset.lang)}catch(e){}})});
+</script>
+
+</body>
+</html>

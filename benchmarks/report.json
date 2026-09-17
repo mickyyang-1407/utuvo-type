@@ -1,0 +1,983 @@
+{
+  "byPath" : {
+    "P1" : {
+      "samples" : [
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "short-dictation",
+          "expected" : "我今天很累。",
+          "id" : "short-01",
+          "normalized" : "我今天很累。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode short-sentence: flash only",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : true,
+          "transcript" : "我今天很累。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "short-dictation",
+          "expected" : "今天天氣不錯。",
+          "id" : "short-02",
+          "normalized" : "今天天氣不錯。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode short-sentence: flash only",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : true,
+          "transcript" : "嗯今天天氣不錯啊。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "short-dictation",
+          "expected" : "我等一下就到。",
+          "id" : "short-03",
+          "normalized" : "我等一下就到。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode short-sentence: flash only",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : true,
+          "transcript" : "那個我等一下就到。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "mixed-zh-en",
+          "expected" : "幫我訂一間 near Tokyo Station 的飯店。",
+          "id" : "mixed-01",
+          "normalized" : "幫我訂一間 near Tokyo Station 的飯店。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "幫我訂一間 near Tokyo Station 的飯店。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "mixed-zh-en",
+          "expected" : "今天 sprint 進度大概完成八成。",
+          "id" : "mixed-02",
+          "normalized" : "今天 sprint 進度大概完成八成。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "今天 sprint 進度大概完成八成。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "mixed-zh-en",
+          "expected" : "把 README 裡的 install 步驟翻成繁中。",
+          "id" : "mixed-03",
+          "normalized" : "把 README 裡的 install 步驟翻成繁中。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "把 README 裡的 install 步驟翻成繁中。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "proper-noun",
+          "expected" : "我們楊敏奇老師今天會到台藝大。",
+          "id" : "noun-01",
+          "normalized" : "我們楊敏奇老師今天會到台藝大。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "我們楊敏奇老師今天會到台藝大。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "proper-noun",
+          "expected" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。",
+          "id" : "noun-02",
+          "normalized" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "proper-noun",
+          "expected" : "我下週二會去北藝大跟台藝大。",
+          "id" : "noun-03",
+          "normalized" : "我下週二會去北藝大跟台藝大。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "我下週二會去北藝大跟台藝大。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "self-correction",
+          "expected" : "明天週二開會。",
+          "id" : "corr-01",
+          "normalized" : "明天週二開會。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "明天不是週一，是週二開會。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "self-correction",
+          "expected" : "明天做。",
+          "id" : "corr-02",
+          "normalized" : "明天做。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "不是今天做，是明天做。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "self-correction",
+          "expected" : "下週三開會。",
+          "id" : "corr-03",
+          "normalized" : "下週三開會。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "改成下週三開會。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "list-cue",
+          "expected" : "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。",
+          "id" : "list-01",
+          "normalized" : "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "今天有三件事第一買牛奶第二回email第三寫報告。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "list-cue",
+          "expected" : "首先整理桌面\n其次回信\n最後趕稿。",
+          "id" : "list-02",
+          "normalized" : "首先整理桌面\n其次回信\n最後趕稿。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "首先整理桌面其次回信最後趕稿。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "list-cue",
+          "expected" : "接下來是測試\n然後是驗收\n最後是上線。",
+          "id" : "list-03",
+          "normalized" : "接下來是測試\n然後是驗收\n最後是上線。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "接下來是測試然後是驗收最後是上線。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "todo",
+          "expected" : "幫我記一下買牛奶跟回email跟寫報告。",
+          "id" : "todo-01",
+          "normalized" : "幫我記一下買牛奶跟回email跟寫報告。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "幫我記一下買牛奶跟回email跟寫報告。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "todo",
+          "expected" : "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。",
+          "id" : "todo-02",
+          "normalized" : "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "記一下第一繳電費第二預約洗車第三買貓砂。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "todo",
+          "expected" : "明天的待辦是繳電費預約洗車還有買貓砂。",
+          "id" : "todo-03",
+          "normalized" : "明天的待辦是繳電費預約洗車還有買貓砂。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "明天的待辦是繳電費預約洗車還有買貓砂。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "long-paragraph",
+          "expected" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。",
+          "id" : "long-01",
+          "normalized" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "long-paragraph",
+          "expected" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。",
+          "id" : "long-02",
+          "normalized" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "long-paragraph",
+          "expected" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認7:30交付但中間還要插一次內部 review。",
+          "id" : "long-03",
+          "normalized" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認7:30交付但中間還要插一次內部 review。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認七點半交付但中間還要插一次內部 review。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "meeting-notes",
+          "expected" : "2026 年 8 月 17 日下午3:00開會結論是先跑 benchmark 再決定 UI 進入時機。",
+          "id" : "meet-01",
+          "normalized" : "2026 年 8 月 17 日下午3:00開會結論是先跑 benchmark 再決定 UI 進入時機。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "二〇二六年八月十七日下午三點開會結論是先跑 benchmark 再決定 UI 進入時機。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "meeting-notes",
+          "expected" : "會議時間是八月十八號早上10:30地點在公司會議室。",
+          "id" : "meet-02",
+          "normalized" : "會議時間是八月十八號早上10:30地點在公司會議室。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "會議時間是八月十八號早上十點半地點在公司會議室。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "meeting-notes",
+          "expected" : "會議結論是專案預算1,200,000元時程八週交付。",
+          "id" : "meet-03",
+          "normalized" : "會議結論是專案預算1,200,000元時程八週交付。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "會議結論是專案預算一百二十萬元時程八週交付。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "selection-preserved"
+          ],
+          "category" : "selection-edit",
+          "expected" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作<\/selected>",
+          "id" : "sel-01",
+          "normalized" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作<\/selected>",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "edit-selection default: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作<\/selected>"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "selection-preserved"
+          ],
+          "category" : "selection-edit",
+          "expected" : "<selected>這個 bug 很嚴重需要馬上修<\/selected> 改溫和一點。",
+          "id" : "sel-02",
+          "normalized" : "<selected>這個 bug 很嚴重需要馬上修<\/selected> 改溫和一點。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "edit-selection default: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "<selected>這個 bug 很嚴重需要馬上修<\/selected> 改溫和一點。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "selection-preserved"
+          ],
+          "category" : "selection-edit",
+          "expected" : "<selected>這是原本已經寫好的內容<\/selected> 把它改成更白話。",
+          "id" : "sel-03",
+          "normalized" : "<selected>這是原本已經寫好的內容<\/selected> 把它改成更白話。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "edit-selection default: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "<selected>這是原本已經寫好的內容<\/selected> 把它改成更白話。"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "markdown",
+          "expected" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點",
+          "id" : "md-01",
+          "normalized" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點\n"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "markdown",
+          "expected" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告",
+          "id" : "md-02",
+          "normalized" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告\n"
+        },
+        {
+          "appliedSteps" : [
+            "trim",
+            "filler",
+            "repeat",
+            "self-correction",
+            "number-date-amount",
+            "list",
+            "punctuation",
+            "collapse-whitespace"
+          ],
+          "category" : "markdown",
+          "expected" : "重點是 **不要** 翻譯 `code` 區塊。",
+          "id" : "md-03",
+          "normalized" : "重點是 **不要** 翻譯 `code` 區塊。",
+          "passed" : true,
+          "routing" : {
+            "allowedLargeModel" : false,
+            "fallbackChain" : [
+              "qwen3.7-flash-2026-07-15",
+              "qwen3.7-flash",
+              "qwen3.6-flash",
+              "qwen3.5-flash"
+            ],
+            "primaryModel" : "qwen3.7-flash-2026-07-15",
+            "reason" : "smart-mode long-text: flash",
+            "skipLLM" : false,
+            "useLocalDeep" : false
+          },
+          "shortSentence" : false,
+          "transcript" : "重點是 **不要** 翻譯 `code` 區塊。"
+        }
+      ],
+      "summary" : {
+        "failed" : 0,
+        "passRate" : 1,
+        "passed" : 30,
+        "total" : 30
+      }
+    }
+  },
+  "deterministicChecks" : {
+    "categoryCount" : 10,
+    "categoryCoverage" : [
+      "list-cue",
+      "long-paragraph",
+      "markdown",
+      "meeting-notes",
+      "mixed-zh-en",
+      "proper-noun",
+      "selection-edit",
+      "self-correction",
+      "short-dictation",
+      "todo"
+    ],
+    "fixtureCount" : 30,
+    "requiredCategoriesPresent" : true
+  },
+  "fixtureCount" : 30,
+  "fixturePath" : "benchmarks\/cases.jsonl",
+  "generatedAt" : "2026-09-11T00:59:11Z",
+  "pendingPaths" : [
+    "P2",
+    "P3",
+    "P4",
+    "P5"
+  ],
+  "schemaVersion" : "0.1.0"
+}

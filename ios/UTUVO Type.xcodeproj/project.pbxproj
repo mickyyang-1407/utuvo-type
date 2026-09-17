@@ -1,0 +1,663 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		138C08076C498E0C1623180B /* IOSSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */; };
+		1B5590E6B1C6178BFB301983 /* UTUVOTypeCore in Frameworks */ = {isa = PBXBuildFile; productRef = B317D0E8ED7CEEFD7EDA6DF9 /* UTUVOTypeCore */; };
+		1C042A2C20D7A6338752D1A2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */; };
+		21C0721A92650E0295AE6997 /* RecognitionRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */; };
+		2A44E1ABA6E6209DADA86738 /* IncrementalInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */; };
+		2C9E3E41E0ACC72FF538110D /* DictationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B6D3A506BD997A2ACFE627 /* DictationModel.swift */; };
+		2F41F7C4C19FB368CD4B95D8 /* DictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D408072BA3212A1784D9A225 /* DictionaryStore.swift */; };
+		36628DCAD4FE59B2C0074EEA /* Pipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7587A3A48848BDDB2709B57 /* Pipeline.swift */; };
+		3CA11A1EEE4B2946B60CA61F /* Pipeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7587A3A48848BDDB2709B57 /* Pipeline.swift */; };
+		4564746D8991EFDE04806539 /* UTUVOTypeCore in Frameworks */ = {isa = PBXBuildFile; productRef = C231CF0DA45A8B785CA9D0C8 /* UTUVOTypeCore */; };
+		477EE7BBA9F44D7EC4799C81 /* UTUVOKeyboard.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F846E0A1BC16A5D1EF443624 /* UTUVOKeyboard.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		52300235E9B175E5B007F7B7 /* DictionaryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D408072BA3212A1784D9A225 /* DictionaryStore.swift */; };
+		53866DA453F168C38B2D1F80 /* HistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625C2E308D068C260E36239 /* HistoryStore.swift */; };
+		667BD815F6FA9DF899175E25 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */; };
+		726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA0C89251811A64DB739280 /* HistoryListView.swift */; };
+		7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */; };
+		87A2A6459240E615D0B0E939 /* UTUVOTypeIOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */; };
+		93A50770D4B9115015D3160C /* DictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30B59DCC3A3BFFA70757B0B /* DictateView.swift */; };
+		A36D8966FC5562E7BB0AC7A5 /* KeyboardEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */; };
+		A797D4957289EFFCEE455F32 /* RecognitionRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9AB4A5937FEB2A31D0CCBA2 /* RecognitionRoute.swift */; };
+		A9DBB97B4C83F44A54E99F4E /* TranslationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1D205A2D6A1B9C70E34C7A /* TranslationService.swift */; };
+		AAD9249EAE86821325676DA6 /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6607F1098B5580A0BDD5D1C9 /* SettingsScreen.swift */; };
+		B198BB4EF1E248042AAB5A76 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 81CFAF9649C9C580BAD67B3B /* PrivacyInfo.xcprivacy */; };
+		C10EEB5E40AD726981559E34 /* StoresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBDD5FDDA5D270DFE283D651 /* StoresTests.swift */; };
+		D0E0A2973105C1069762C472 /* HistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625C2E308D068C260E36239 /* HistoryStore.swift */; };
+		D1CCDEC5BD6CDA12272F4E26 /* RecognitionRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9AB4A5937FEB2A31D0CCBA2 /* RecognitionRoute.swift */; };
+		E7658D9E021799058BEC67F5 /* IncrementalInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */; };
+		EDBAAA99C4B63E40A5C560E3 /* IOSSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */; };
+		FB27C9818DD9E3D2240934AC /* AuroraTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 456985F91CBBDBAEF7B0C229 /* AuroraTheme.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D100C509C0B59179E1431A19 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6261C68AB09D57F86AD421CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 65841D8F1CF2ACD2D10C5F3A;
+			remoteInfo = UTUVOTypeiOS;
+		};
+		EA2F3DAB2C005A317B63A76D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6261C68AB09D57F86AD421CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 86BE5302F0BC901B5D258C0B;
+			remoteInfo = UTUVOKeyboard;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C4AE2BBB89124D175DF75634 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				477EE7BBA9F44D7EC4799C81 /* UTUVOKeyboard.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		047E9034BEDE616313BA6807 /* UTUVOTypeiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UTUVOTypeiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncrementalInsert.swift; sourceTree = "<group>"; };
+		139AEEC09C09FB6C4B823983 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		1625C2E308D068C260E36239 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
+		24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardEditTests.swift; sourceTree = "<group>"; };
+		271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
+		3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSSecretStore.swift; sourceTree = "<group>"; };
+		36E906B061EFF52ADE02EAF0 /* utuvo-type */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "utuvo-type"; path = ..; sourceTree = SOURCE_ROOT; };
+		456985F91CBBDBAEF7B0C229 /* AuroraTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuroraTheme.swift; sourceTree = "<group>"; };
+		4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IOSPipelineTests.swift; sourceTree = "<group>"; };
+		5EA0C89251811A64DB739280 /* HistoryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryListView.swift; sourceTree = "<group>"; };
+		6607F1098B5580A0BDD5D1C9 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
+		73DA4012954FB4BEAB4BAD09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		81CFAF9649C9C580BAD67B3B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTUVOTypeIOSApp.swift; sourceTree = "<group>"; };
+		8EFF88A825C8B40B25334278 /* UTUVOKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOKeyboard.entitlements; sourceTree = "<group>"; };
+		A69C183B9C282AEAC715ABDC /* UTUVOTypeiOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = UTUVOTypeiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A8AD947DDC764E42B0CEC0A8 /* UTUVOTypeiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOTypeiOS.entitlements; sourceTree = "<group>"; };
+		B9AB4A5937FEB2A31D0CCBA2 /* RecognitionRoute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionRoute.swift; sourceTree = "<group>"; };
+		C8B6D3A506BD997A2ACFE627 /* DictationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationModel.swift; sourceTree = "<group>"; };
+		CBDD5FDDA5D270DFE283D651 /* StoresTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoresTests.swift; sourceTree = "<group>"; };
+		D408072BA3212A1784D9A225 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
+		D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionRouteTests.swift; sourceTree = "<group>"; };
+		DD1D205A2D6A1B9C70E34C7A /* TranslationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationService.swift; sourceTree = "<group>"; };
+		E30B59DCC3A3BFFA70757B0B /* DictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateView.swift; sourceTree = "<group>"; };
+		E7587A3A48848BDDB2709B57 /* Pipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pipeline.swift; sourceTree = "<group>"; };
+		F846E0A1BC16A5D1EF443624 /* UTUVOKeyboard.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = UTUVOKeyboard.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		6328A10556E81D62FB351367 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1B5590E6B1C6178BFB301983 /* UTUVOTypeCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8355DFC6560130CB15395CE2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4564746D8991EFDE04806539 /* UTUVOTypeCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0E666996278A6BAE600D7611 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				456985F91CBBDBAEF7B0C229 /* AuroraTheme.swift */,
+				E30B59DCC3A3BFFA70757B0B /* DictateView.swift */,
+				C8B6D3A506BD997A2ACFE627 /* DictationModel.swift */,
+				5EA0C89251811A64DB739280 /* HistoryListView.swift */,
+				139AEEC09C09FB6C4B823983 /* Info.plist */,
+				81CFAF9649C9C580BAD67B3B /* PrivacyInfo.xcprivacy */,
+				6607F1098B5580A0BDD5D1C9 /* SettingsScreen.swift */,
+				DD1D205A2D6A1B9C70E34C7A /* TranslationService.swift */,
+				A8AD947DDC764E42B0CEC0A8 /* UTUVOTypeiOS.entitlements */,
+				8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		614CA8B6243817E9DD40C0ED /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				36E906B061EFF52ADE02EAF0 /* utuvo-type */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		ADEDD0CEC5BEC26FCF5C564B = {
+			isa = PBXGroup;
+			children = (
+				0E666996278A6BAE600D7611 /* App */,
+				CA501DA36B1E40965F7E9727 /* iOSTests */,
+				D76346D01EC8DE311900767A /* Keyboard */,
+				614CA8B6243817E9DD40C0ED /* Packages */,
+				BCA94E44D624EA9540AE7AC4 /* Shared */,
+				E1CFED577C00A328343744A0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BCA94E44D624EA9540AE7AC4 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				D408072BA3212A1784D9A225 /* DictionaryStore.swift */,
+				1625C2E308D068C260E36239 /* HistoryStore.swift */,
+				130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */,
+				3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */,
+				E7587A3A48848BDDB2709B57 /* Pipeline.swift */,
+				B9AB4A5937FEB2A31D0CCBA2 /* RecognitionRoute.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		CA501DA36B1E40965F7E9727 /* iOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */,
+				24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */,
+				D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */,
+				CBDD5FDDA5D270DFE283D651 /* StoresTests.swift */,
+			);
+			path = iOSTests;
+			sourceTree = "<group>";
+		};
+		D76346D01EC8DE311900767A /* Keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				73DA4012954FB4BEAB4BAD09 /* Info.plist */,
+				271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */,
+				8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */,
+				8EFF88A825C8B40B25334278 /* UTUVOKeyboard.entitlements */,
+			);
+			path = Keyboard;
+			sourceTree = "<group>";
+		};
+		E1CFED577C00A328343744A0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F846E0A1BC16A5D1EF443624 /* UTUVOKeyboard.appex */,
+				047E9034BEDE616313BA6807 /* UTUVOTypeiOS.app */,
+				A69C183B9C282AEAC715ABDC /* UTUVOTypeiOSTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3AEFBA23456522BD790400DB /* UTUVOTypeiOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2C5C50D31BCAD4988F77076D /* Build configuration list for PBXNativeTarget "UTUVOTypeiOSTests" */;
+			buildPhases = (
+				9899D5398E251C9A8042E105 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				45A9C34B72B9FA73D204CD8D /* PBXTargetDependency */,
+			);
+			name = UTUVOTypeiOSTests;
+			packageProductDependencies = (
+			);
+			productName = UTUVOTypeiOSTests;
+			productReference = A69C183B9C282AEAC715ABDC /* UTUVOTypeiOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		65841D8F1CF2ACD2D10C5F3A /* UTUVOTypeiOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3525D432BE6281DCCDC31FA0 /* Build configuration list for PBXNativeTarget "UTUVOTypeiOS" */;
+			buildPhases = (
+				2B7F2ADBFC84A22C8E2DA83A /* Sources */,
+				7752711539AF6D299CE46893 /* Resources */,
+				8355DFC6560130CB15395CE2 /* Frameworks */,
+				C4AE2BBB89124D175DF75634 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				02E85DC088CE69865DCFB8AE /* PBXTargetDependency */,
+			);
+			name = UTUVOTypeiOS;
+			packageProductDependencies = (
+				C231CF0DA45A8B785CA9D0C8 /* UTUVOTypeCore */,
+			);
+			productName = UTUVOTypeiOS;
+			productReference = 047E9034BEDE616313BA6807 /* UTUVOTypeiOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		86BE5302F0BC901B5D258C0B /* UTUVOKeyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BDF2A8BDA1237FC8FD2E3CD7 /* Build configuration list for PBXNativeTarget "UTUVOKeyboard" */;
+			buildPhases = (
+				93AA35C882C0B9A632565F63 /* Sources */,
+				8F10E2F279AE214ED700CE39 /* Resources */,
+				6328A10556E81D62FB351367 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = UTUVOKeyboard;
+			packageProductDependencies = (
+				B317D0E8ED7CEEFD7EDA6DF9 /* UTUVOTypeCore */,
+			);
+			productName = UTUVOKeyboard;
+			productReference = F846E0A1BC16A5D1EF443624 /* UTUVOKeyboard.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6261C68AB09D57F86AD421CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 25712540FB2AC63918734458 /* Build configuration list for PBXProject "UTUVO Type" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = ADEDD0CEC5BEC26FCF5C564B;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0F43B24CF5E9417AC23F7B73 /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = E1CFED577C00A328343744A0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				86BE5302F0BC901B5D258C0B /* UTUVOKeyboard */,
+				65841D8F1CF2ACD2D10C5F3A /* UTUVOTypeiOS */,
+				3AEFBA23456522BD790400DB /* UTUVOTypeiOSTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7752711539AF6D299CE46893 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B198BB4EF1E248042AAB5A76 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8F10E2F279AE214ED700CE39 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1C042A2C20D7A6338752D1A2 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2B7F2ADBFC84A22C8E2DA83A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB27C9818DD9E3D2240934AC /* AuroraTheme.swift in Sources */,
+				93A50770D4B9115015D3160C /* DictateView.swift in Sources */,
+				2C9E3E41E0ACC72FF538110D /* DictationModel.swift in Sources */,
+				2F41F7C4C19FB368CD4B95D8 /* DictionaryStore.swift in Sources */,
+				726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */,
+				53866DA453F168C38B2D1F80 /* HistoryStore.swift in Sources */,
+				138C08076C498E0C1623180B /* IOSSecretStore.swift in Sources */,
+				E7658D9E021799058BEC67F5 /* IncrementalInsert.swift in Sources */,
+				36628DCAD4FE59B2C0074EEA /* Pipeline.swift in Sources */,
+				D1CCDEC5BD6CDA12272F4E26 /* RecognitionRoute.swift in Sources */,
+				AAD9249EAE86821325676DA6 /* SettingsScreen.swift in Sources */,
+				A9DBB97B4C83F44A54E99F4E /* TranslationService.swift in Sources */,
+				87A2A6459240E615D0B0E939 /* UTUVOTypeIOSApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		93AA35C882C0B9A632565F63 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				52300235E9B175E5B007F7B7 /* DictionaryStore.swift in Sources */,
+				D0E0A2973105C1069762C472 /* HistoryStore.swift in Sources */,
+				EDBAAA99C4B63E40A5C560E3 /* IOSSecretStore.swift in Sources */,
+				2A44E1ABA6E6209DADA86738 /* IncrementalInsert.swift in Sources */,
+				667BD815F6FA9DF899175E25 /* KeyboardViewController.swift in Sources */,
+				3CA11A1EEE4B2946B60CA61F /* Pipeline.swift in Sources */,
+				A797D4957289EFFCEE455F32 /* RecognitionRoute.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9899D5398E251C9A8042E105 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */,
+				A36D8966FC5562E7BB0AC7A5 /* KeyboardEditTests.swift in Sources */,
+				21C0721A92650E0295AE6997 /* RecognitionRouteTests.swift in Sources */,
+				C10EEB5E40AD726981559E34 /* StoresTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		02E85DC088CE69865DCFB8AE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 86BE5302F0BC901B5D258C0B /* UTUVOKeyboard */;
+			targetProxy = EA2F3DAB2C005A317B63A76D /* PBXContainerItemProxy */;
+		};
+		45A9C34B72B9FA73D204CD8D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 65841D8F1CF2ACD2D10C5F3A /* UTUVOTypeiOS */;
+			targetProxy = D100C509C0B59179E1431A19 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		050ED48343AEAE53CA23E9E3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/UTUVOTypeiOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.type.ios;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		2AAA1CDE4AA66BC067FEDC19 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/UTUVOTypeiOS.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = App/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.type.ios;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		92ABDC8A1112A5A796B38FD3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.UTUVOTypeiOSTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UTUVOTypeiOS.app/UTUVOTypeiOS";
+			};
+			name = Release;
+		};
+		A688E1E1310188D3D519B5C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Keyboard/UTUVOKeyboard.entitlements;
+				INFOPLIST_FILE = Keyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.type.ios.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A9E21C1F5E0E814C887FFDBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Keyboard/UTUVOKeyboard.entitlements;
+				INFOPLIST_FILE = Keyboard/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.type.ios.keyboard;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B6CD95CFFAE1BDFEF430BAEB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.utuvo.UTUVOTypeiOSTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/UTUVOTypeiOS.app/UTUVOTypeiOS";
+			};
+			name = Debug;
+		};
+		C054E1CF2E9679667B056F94 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		DE5992B918929F15B9C740CE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		25712540FB2AC63918734458 /* Build configuration list for PBXProject "UTUVO Type" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE5992B918929F15B9C740CE /* Debug */,
+				C054E1CF2E9679667B056F94 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2C5C50D31BCAD4988F77076D /* Build configuration list for PBXNativeTarget "UTUVOTypeiOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B6CD95CFFAE1BDFEF430BAEB /* Debug */,
+				92ABDC8A1112A5A796B38FD3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		3525D432BE6281DCCDC31FA0 /* Build configuration list for PBXNativeTarget "UTUVOTypeiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2AAA1CDE4AA66BC067FEDC19 /* Debug */,
+				050ED48343AEAE53CA23E9E3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BDF2A8BDA1237FC8FD2E3CD7 /* Build configuration list for PBXNativeTarget "UTUVOKeyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A9E21C1F5E0E814C887FFDBA /* Debug */,
+				A688E1E1310188D3D519B5C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		0F43B24CF5E9417AC23F7B73 /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		B317D0E8ED7CEEFD7EDA6DF9 /* UTUVOTypeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UTUVOTypeCore;
+		};
+		C231CF0DA45A8B785CA9D0C8 /* UTUVOTypeCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = UTUVOTypeCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 6261C68AB09D57F86AD421CE /* Project object */;
+}
