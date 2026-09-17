@@ -27,6 +27,8 @@ enum VoiceBridge {
         var id: UUID
         var language: String
         var sentAt: Date
+        /// 長按翻譯時的目標語言代碼（TranslationTarget.code）；主 app 一開始錄就預熱翻譯。
+        var translateTo: String? = nil
     }
 
     struct State: Codable, Equatable, Sendable {
@@ -37,6 +39,8 @@ enum VoiceBridge {
         var commandID: UUID?
         var partial: String = ""
         var final: String?
+        /// 主 app 已翻好的結果（有 translateTo 時）；nil＝鍵盤自己翻。
+        var translated: String?
         var error: String?
         /// "onDevice"／"server"
         var route: String?
@@ -81,7 +85,7 @@ enum VoiceBridge {
     enum Delivery: Equatable, Sendable {
         case ignore
         case partial(String)
-        case final(String)
+        case final(String, translated: String?)
         case failed(String)
     }
 
@@ -91,7 +95,7 @@ enum VoiceBridge {
         if state.phase == .failed || (state.error != nil && state.final == nil) {
             return .failed(state.error ?? "語音工作階段出錯")
         }
-        if let final = state.final { return .final(final) }
+        if let final = state.final { return .final(final, translated: state.translated) }
         switch state.phase {
         case .recording, .finishing: return .partial(state.partial)
         default: return .ignore
@@ -104,7 +108,7 @@ enum VoiceBridge {
 
     // MARK: - URL
 
-    static func sessionURL(language: String, commandID: UUID) -> URL {
+    static func sessionURL(language: String, commandID: UUID, returnTo hostBundleID: String? = nil, returnPath: String? = nil) -> URL {
         var comps = URLComponents()
         comps.scheme = urlScheme
         comps.host = urlHost
@@ -112,15 +116,34 @@ enum VoiceBridge {
             URLQueryItem(name: "lang", value: language),
             URLQueryItem(name: "id", value: commandID.uuidString),
         ]
+        if let hostBundleID, isPlausibleBundleID(hostBundleID) {
+            comps.queryItems?.append(URLQueryItem(name: "return", value: hostBundleID))
+        } else if let returnPath, isPlausibleAppPath(returnPath) {
+            comps.queryItems?.append(URLQueryItem(name: "returnPath", value: returnPath))
+        }
         return comps.url!
     }
 
-    static func parseSessionURL(_ url: URL) -> (language: String, commandID: UUID?)? {
+    static func parseSessionURL(_ url: URL) -> (language: String, commandID: UUID?, returnTo: String?, returnPath: String?)? {
         guard url.scheme == urlScheme, url.host == urlHost,
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
               let lang = items.first(where: { $0.name == "lang" })?.value, !lang.isEmpty else { return nil }
         let id = items.first(where: { $0.name == "id" })?.value.flatMap(UUID.init(uuidString:))
-        return (lang, id)
+        let back = items.first(where: { $0.name == "return" })?.value.flatMap { isPlausibleBundleID($0) ? $0 : nil }
+        let path = items.first(where: { $0.name == "returnPath" })?.value.flatMap { isPlausibleAppPath($0) ? $0 : nil }
+        return (lang, id, back, path)
+    }
+
+    /// 只接受絕對路徑、以 .app 結尾、不含 .. 的字串。
+    static func isPlausibleAppPath(_ s: String) -> Bool {
+        s.hasPrefix("/") && s.hasSuffix(".app") && !s.contains("..") && s.count <= 1024
+    }
+
+    /// URL 是外部可觸發的：只接受長得像 bundle id 的字串（反向網域、英數點橫線），不接受任意字串。
+    static func isPlausibleBundleID(_ s: String) -> Bool {
+        guard s.count <= 155, s.contains("."), !s.hasPrefix("."), !s.hasSuffix(".") else { return false }
+        return s.unicodeScalars.allSatisfy { CharacterSet.alphanumerics.contains($0) || $0 == "." || $0 == "-" }
+            && !s.contains("..")
     }
 
     // MARK: - IO（App Group 檔案＋Darwin notification）

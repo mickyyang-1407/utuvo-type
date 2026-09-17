@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 @preconcurrency import AVFAudio
 @preconcurrency import Speech
 
@@ -35,10 +35,14 @@ final class KeyboardVoiceHost: ObservableObject {
     /// `utuvotype://voice?lang=…&id=…`：鍵盤叫起主 app。
     func handle(url: URL) {
         guard let parsed = VoiceBridge.parseSessionURL(url) else { return }
-        Task { await begin(language: parsed.language, autostart: parsed.commandID) }
+        let target = parsed.returnTo ?? parsed.returnPath.flatMap(Self.bundleIdentifier(forAppPath:))
+        #if DEBUG
+        VoiceBridge.write(["returnTo": parsed.returnTo ?? "nil", "returnPath": parsed.returnPath ?? "nil", "resolved": target ?? "nil"], name: "debug-resolve.json")
+        #endif
+        Task { await begin(language: parsed.language, autostart: parsed.commandID, returnTo: target) }
     }
 
-    func begin(language: String, autostart commandID: UUID?) async {
+    func begin(language: String, autostart commandID: UUID?, returnTo hostBundleID: String? = nil) async {
         lastError = nil
         if !isActive {
             guard await Self.requestMicrophone() else {
@@ -65,8 +69,45 @@ final class KeyboardVoiceHost: ObservableObject {
         // 鍵盤寫好的 start 指令（URL 帶來的 id 要對得上，避免執行到舊指令）
         if let commandID, let cmd = VoiceBridge.readCommand(), cmd.id == commandID,
            cmd.action == .start, VoiceBridge.isFresh(cmd) {
-            startRecognition(id: cmd.id, language: cmd.language)
+            startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo)
+            if let hostBundleID { returnToPreviousApp(hostBundleID) }
         }
+    }
+
+    /// 鍵盤叫起主 app、麥克風開好之後，自動把使用者送回剛剛打字的 app。
+    /// iOS 沒有公開 API，也無法從 app 內觸發狀態列「◀ 返回」（iOS 26 由系統層處理，lldb 實測 app 內斷點不觸發）。
+    /// 做法：鍵盤用 `_hostApplicationBundleIdentifier` 取得宿主 bundle id 帶進 URL，這裡用 LSApplicationWorkspace 開回去。
+    /// 失敗就留在主 app，提示條教使用者手動點左上角。
+    private func returnToPreviousApp(_ bundleID: String) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(250))
+            let result = Self.openApplication(bundleID: bundleID)
+            #if DEBUG
+            VoiceBridge.write(["returnTo": bundleID, "result": result], name: "debug-return.json")
+            #endif
+        }
+    }
+
+    /// .app 路徑 → bundle id：先讀 Info.plist，讀不到（沙盒）再問 LSApplicationProxy。
+    static func bundleIdentifier(forAppPath path: String) -> String? {
+        if let id = Bundle(path: path)?.bundleIdentifier { return id }
+        guard let proxyClass = NSClassFromString("LSApplicationProxy") as? NSObject.Type else { return nil }
+        let sel = NSSelectorFromString("applicationProxyForBundleURL:")
+        guard proxyClass.responds(to: sel),
+              let proxy = proxyClass.perform(sel, with: URL(fileURLWithPath: path))?.takeUnretainedValue() as? NSObject else { return nil }
+        return proxy.value(forKey: "bundleIdentifier") as? String
+    }
+
+    private static func openApplication(bundleID: String) -> String {
+        guard let workspaceClass = NSClassFromString("LSApplicationWorkspace") as? NSObject.Type else { return "no-workspace-class" }
+        let defaultSel = NSSelectorFromString("defaultWorkspace")
+        guard workspaceClass.responds(to: defaultSel),
+              let workspace = workspaceClass.perform(defaultSel)?.takeUnretainedValue() as? NSObject else { return "no-default-workspace" }
+        let openSel = NSSelectorFromString("openApplicationWithBundleID:")
+        guard workspace.responds(to: openSel) else { return "no-open-selector" }
+        typealias Open = @convention(c) (AnyObject, Selector, NSString) -> Bool
+        let ok = unsafeBitCast(workspace.method(for: openSel), to: Open.self)(workspace, openSel, bundleID as NSString)
+        return ok ? "opened" : "refused"
     }
 
     /// 使用者在主 app 按「結束」、閒置逾時、或來電中斷。
@@ -98,14 +139,23 @@ final class KeyboardVoiceHost: ObservableObject {
         guard isActive, let cmd = VoiceBridge.readCommand(), VoiceBridge.isFresh(cmd) else { return }
         lastActivity = Date()
         switch cmd.action {
-        case .start: startRecognition(id: cmd.id, language: cmd.language)
+        case .start: startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo)
         case .stop: stopRecognition(id: cmd.id)
         case .cancel: cancelRecognition(id: cmd.id)
         case .endSession: endSession()
         }
     }
 
-    private func startRecognition(id: UUID, language: String) {
+    /// 這個指令要翻成哪個語言（nil＝不翻）、辨識語言是什麼。
+    private var pendingTranslation: (id: UUID, target: String, source: String)?
+
+    private func startRecognition(id: UUID, language: String, translateTo: String? = nil) {
+        if let translateTo {
+            pendingTranslation = (id, translateTo, language)
+            Task { await FastTranslator.shared.prewarm(sourceRaw: language, targetCode: translateTo) }
+        } else {
+            pendingTranslation = nil
+        }
         // 同一個 id 已經在錄（URL 與 Darwin 通知都送到）→ 不重來
         if state.commandID == id, state.phase == .recording { return }
         if task != nil { task?.cancel(); task = nil; box.set(nil) }
@@ -129,6 +179,9 @@ final class KeyboardVoiceHost: ObservableObject {
         }
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
+        request.addsPunctuation = true // 標點由辨識器直接給（iOS 16+），不靠後處理猜
+        // 個人字典的詞當提示（實機實測 Atmos→Amis、ADM→EDM）；辨識器上限 100 條。
+        request.contextualStrings = Self.contextualStrings()
         request.requiresOnDeviceRecognition = route == .onDevice
         box.set(request)
         task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText in
@@ -139,6 +192,7 @@ final class KeyboardVoiceHost: ObservableObject {
         state.commandID = id
         state.partial = ""
         state.final = nil
+        state.translated = nil
         state.error = nil
         state.route = route.rawValue
         lastActivity = Date()
@@ -221,10 +275,40 @@ final class KeyboardVoiceHost: ObservableObject {
         finalizeWatchdog?.cancel()
         task = nil
         box.set(nil)
+        if let pending = pendingTranslation, pending.id == id, !text.isEmpty {
+            pendingTranslation = nil
+            state.phase = .finishing
+            publish()
+            Task { @MainActor [weak self] in
+                // 主 app 翻（已預熱，實測約 0.65 s）；失敗就不帶 translated，鍵盤自己翻。
+                let translated = try? await FastTranslator.shared.translate(text, sourceRaw: pending.source, targetCode: pending.target)
+                guard let self, self.state.commandID == id else { return }
+                self.state.translated = translated
+                self.state.final = text
+                self.state.phase = .ready
+                self.lastActivity = Date()
+                self.publish()
+            }
+            return
+        }
+        state.translated = nil
         state.final = text
         state.phase = .ready
         lastActivity = Date()
         publish()
+    }
+
+    /// 個人字典（來源詞與輸出詞）去重，最多 100 條。
+    static func contextualStrings() -> [String] {
+        var seen = Set<String>()
+        var out: [String] = []
+        for (k, v) in DictionaryStore.shared.dictionary {
+            for term in [v, k] where !term.isEmpty && seen.insert(term).inserted {
+                out.append(term)
+                if out.count == 100 { return out }
+            }
+        }
+        return out
     }
 
     private func fail(_ message: String, commandID: UUID?) {

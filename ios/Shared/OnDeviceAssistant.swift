@@ -48,7 +48,16 @@ enum OnDeviceAssistant {
         return try await run(system: system, user: user)
     }
 
-    /// 翻譯成目標語言，只回翻譯。
+    /// 翻譯成目標語言，只回翻譯。系統翻譯（已裝語言包）優先，再來 Apple Intelligence／雲端 key。
+    @MainActor
+    static func translate(_ text: String, to target: TranslationTarget, sourceRaw: String) async throws -> String {
+        if let fast = try? await FastTranslator.shared.translate(text, sourceRaw: sourceRaw, targetCode: target.code) {
+            return fast
+        }
+        return try await translate(text, to: target)
+    }
+
+    /// 翻譯成目標語言，只回翻譯（LLM 路徑）。
     static func translate(_ text: String, to target: TranslationTarget) async throws -> String {
         let system = "你是翻譯引擎。把使用者的文字翻成\(target.zh)（\(target.en)），只輸出翻譯本身，不要解釋、不要引號。"
         return try await run(system: system, user: text)

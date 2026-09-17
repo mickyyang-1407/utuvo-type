@@ -18,14 +18,29 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.utuvo.type.voice</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>utuvotype</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>UTUVO Type 只在你按住聽寫時使用麥克風，把語音轉成文字。</string>
+	<string>UTUVO Type 在你聽寫、或從 UTUVO Type 鍵盤開啟語音時使用麥克風，把語音轉成文字。</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>UTUVO Type 使用 iOS 語音辨識把你的口述轉成文字。</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UISupportedInterfaceOrientations</key>

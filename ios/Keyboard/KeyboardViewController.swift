@@ -404,8 +404,10 @@ final class KeyboardViewController: UIInputViewController {
 
     @objc private func micTapped() {
         if isRecording {
+            Haptics.stop()
             stopRecognition()
         } else {
+            Haptics.start()
             pendingTranslateTarget = nil
             Task { await startRecognition() }
         }
@@ -417,6 +419,10 @@ final class KeyboardViewController: UIInputViewController {
         let point = gesture.location(in: view)
         switch gesture.state {
         case .began:
+            let sourceRaw = language.rawValue
+            Task { @MainActor in
+                for target in TranslationTarget.quickPick { await FastTranslator.shared.prewarm(sourceRaw: sourceRaw, targetCode: target.code) }
+            }
             setArcVisible(true)
             highlightPick(nearest(to: point) ?? 2)
             setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
@@ -425,6 +431,7 @@ final class KeyboardViewController: UIInputViewController {
         case .ended:
             setArcVisible(false)
             if let index = highlightedPick {
+                Haptics.start()
                 pendingTranslateTarget = TranslationTarget.quickPick[index]
                 Task { await startRecognition() }
             } else {
@@ -463,6 +470,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func highlightPick(_ index: Int?) {
+        if let index, index != highlightedPick { Haptics.selection() }
         highlightedPick = index
         for (i, dot) in pickerDots.enumerated() {
             let on = dot.tag == index
@@ -513,7 +521,8 @@ final class KeyboardViewController: UIInputViewController {
         }
         mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: pendingTranslateTarget)
         let id = UUID()
-        let command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
+        var command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
+        if case .translate(let target) = mode { command.translateTo = target.code }
         VoiceBridge.writeCommand(command)
         activeCommandID = id
         insertedText = ""
@@ -533,7 +542,9 @@ final class KeyboardViewController: UIInputViewController {
             setRecordingAppearance(true)
             setHint(mode.recordingHint, error: false)
         case .openApp:
-            let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id)
+            hostAppPath = nil
+            let hostID = hostBundleIdentifier()
+            let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id, returnTo: hostID, returnPath: hostID == nil ? hostAppPath : nil)
             if openContainingApp(url) {
                 setHint("正在開啟 UTUVO Type 啟動麥克風…回來就在錄了", error: false)
             } else {
@@ -581,10 +592,10 @@ final class KeyboardViewController: UIInputViewController {
             lastRawTranscript = text
             showTranscript(text)
             if mode.insertsPartials { applyEdit(to: text) }
-        case .final(let text):
+        case .final(let text, let translated):
             clearPending()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
-            finish(raw: text)
+            finish(raw: text, appTranslation: translated)
         case .failed(let message):
             clearPending()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
@@ -598,6 +609,58 @@ final class KeyboardViewController: UIInputViewController {
         activeCommandID = nil
         KeyboardPresence.defaults.removeObject(forKey: Self.pendingIDKey)
         KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
+    }
+
+    /// 宿主 app 的 bundle id（主 app 開好麥克風後用它把使用者送回來）。iOS 無公開 API，拿不到回 nil＝不自動跳回。
+    private func hostBundleIdentifier() -> String? {
+        var probe: [String: String] = [:]
+        defer {
+            #if DEBUG
+            VoiceBridge.write(probe, name: "debug-host-probe.json")
+            #endif
+        }
+        let selector = NSSelectorFromString("_hostApplicationBundleIdentifier")
+        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
+            guard let candidate, candidate.responds(to: selector) else { probe["bundle.\(label)"] = "no-selector"; continue }
+            let id = candidate.perform(selector)?.takeUnretainedValue() as? String
+            probe["bundle.\(label)"] = id ?? "nil"
+            // iOS 26 拿不到時回傳字面字串 "<null>"，要當空值。
+            if let id, VoiceBridge.isPlausibleBundleID(id) { return id }
+        }
+        // 退路：宿主 PID → RunningBoard 反查 bundle id
+        var pid: Int32 = 0
+        let pidSel = NSSelectorFromString("_hostProcessIdentifier")
+        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
+            guard let candidate, candidate.responds(to: pidSel) else { continue }
+            typealias PIDGetter = @convention(c) (AnyObject, Selector) -> Int32
+            let value = unsafeBitCast(candidate.method(for: pidSel), to: PIDGetter.self)(candidate, pidSel)
+            probe["pid.\(label)"] = String(value)
+            if value > 0 { pid = value; break }
+        }
+        guard pid > 0 else { return nil }
+        // PID → 執行檔路徑 → .app 目錄；主 app 再把路徑對回 bundle id。
+        if let appPath = Self.appBundlePath(forPID: pid) {
+            probe["appPath"] = appPath
+            hostAppPath = appPath
+        } else {
+            probe["appPath"] = "nil"
+        }
+        return nil
+    }
+
+    /// 宿主 app 的 .app 目錄（拿不到 bundle id 時的退路，交給主 app 解析）。
+    private var hostAppPath: String?
+
+    private static func appBundlePath(forPID pid: Int32) -> String? {
+        typealias ProcPidPath = @convention(c) (Int32, UnsafeMutableRawPointer, UInt32) -> Int32
+        guard let sym = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "proc_pidpath") else { return nil }
+        let fn = unsafeBitCast(sym, to: ProcPidPath.self)
+        var buffer = [CChar](repeating: 0, count: 4096)
+        let n = buffer.withUnsafeMutableBytes { fn(pid, $0.baseAddress!, UInt32($0.count)) }
+        guard n > 0 else { return nil }
+        let exe = String(cString: buffer)
+        guard let range = exe.range(of: ".app/", options: .backwards) else { return nil }
+        return String(exe[..<range.lowerBound]) + ".app"
     }
 
     /// 鍵盤 extension 不能用 UIApplication.shared.open；沿 responder chain 找到 UIApplication 再呼叫
@@ -618,7 +681,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     /// 定稿：依模式決定文件怎麼變。
-    private func finish(raw rawText: String) {
+    private func finish(raw rawText: String, appTranslation: String? = nil) {
         let raw = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         let finishedMode = mode
         pendingTranslateTarget = nil
@@ -658,10 +721,19 @@ final class KeyboardViewController: UIInputViewController {
         case .translate(let target):
             guard !raw.isEmpty else { refreshContext(); return }
             let (cleaned, _) = TextPipeline().clean(raw)
-            setHint("翻成\(target.zh)中…（\(OnDeviceAssistant.currentEngine().badge)）", error: false)
+            if let appTranslation, !appTranslation.isEmpty {
+                releaseOwnership()
+                textDocumentProxy.insertText(appTranslation)
+                HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: appTranslation, source: .keyboard))
+                transcriptPill.isHidden = true
+                refreshContext()
+                return
+            }
+            setHint("翻成\(target.zh)中…", error: false)
+            let sourceRaw = language.rawValue
             Task { @MainActor in
                 do {
-                    let result = try await OnDeviceAssistant.translate(cleaned, to: target)
+                    let result = try await OnDeviceAssistant.translate(cleaned, to: target, sourceRaw: sourceRaw)
                     releaseOwnership()
                     textDocumentProxy.insertText(result)
                     HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: result, source: .keyboard))
@@ -850,4 +922,17 @@ final class WaveRingView: UIView {
             }
         }
     }
+}
+
+/// 鍵盤觸覺回饋：開始錄音偏重、停止偏脆，一聽就分得出來；滑過翻譯語言給輕點。
+/// 鍵盤 extension 要開「允許完整存取」才會震（沒開時系統靜默忽略，不會出錯）。
+@MainActor
+enum Haptics {
+    private static let startGenerator = UIImpactFeedbackGenerator(style: .medium)
+    private static let stopGenerator = UIImpactFeedbackGenerator(style: .rigid)
+    private static let selectionGenerator = UISelectionFeedbackGenerator()
+
+    static func start() { startGenerator.impactOccurred(intensity: 1.0) }
+    static func stop() { stopGenerator.impactOccurred(intensity: 0.9) }
+    static func selection() { selectionGenerator.selectionChanged() }
 }
