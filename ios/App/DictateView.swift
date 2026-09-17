@@ -288,7 +288,7 @@ struct DictateView: View {
         Task {
             defer { translating = false }
             do {
-                translatedText = try await OnDeviceAssistant.translate(model.finalText, to: target)
+                translatedText = try await OnDeviceAssistant.translate(model.finalText, to: target, sourceRaw: model.language.rawValue)
             } catch {
                 translatedText = "⚠️ \(error.localizedDescription)"
             }

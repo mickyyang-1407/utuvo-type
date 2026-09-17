@@ -130,6 +130,8 @@ final class DictationModel: NSObject, ObservableObject {
 
             let request = SFSpeechAudioBufferRecognitionRequest()
             request.shouldReportPartialResults = true
+            request.addsPunctuation = true // 標點由辨識器直接給（iOS 16+），不靠後處理猜
+            request.contextualStrings = KeyboardVoiceHost.contextualStrings()
             request.requiresOnDeviceRecognition = chosenRoute == .onDevice
             self.request = request
 
