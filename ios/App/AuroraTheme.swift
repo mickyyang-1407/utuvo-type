@@ -1,18 +1,12 @@
 import SwiftUI
 
-/// iOS「Aurora」視覺語言——參考 Dribbble 高分 AI 語音聽寫 UI（2025 趨勢）：
-/// 暗色底、漸層光球、玻璃卡片、柔和光暈。全 app 共用，避免樣式散落。
+/// iOS 視覺：與 macOS 同一套品牌（橘→琥珀金、薰衣草），iOS 26 起走 Liquid Glass，深淺色都有。
+/// 玻璃只用在浮在內容上的卡片／膠囊；底下鋪柔和色團讓玻璃有東西折射（與 macOS AmbientBackdrop 同一組色）。
 enum Aurora {
-    // MARK: - 顏色
-    static let backgroundTop = Color(red: 0.043, green: 0.055, blue: 0.078)   // #0B0E14
-    static let backgroundBottom = Color(red: 0.071, green: 0.090, blue: 0.133)
-    static let orange = Color(red: 0.976, green: 0.451, blue: 0.086)          // 品牌橘 #F97316
-    /// 琥珀金＝漸層亮端，與 macOS `AppBrand.amber` 同一顆。
-    /// 2026-09-11：取代原本的粉紅 #EC4899——產品決定「不用粉紅」，
-    /// macOS 端 2026-08-23 已換掉，iOS 端這次補齊。
-    static let amber = Color(red: 1.0, green: 0.72, blue: 0.29)
-    /// 薰衣草＝次要動畫色，對齊 macOS `AppBrand.lavender`。
-    static let violet = Color(red: 0.68, green: 0.60, blue: 0.95)
+    static let orange = Color(red: 0.976, green: 0.451, blue: 0.086)   // 品牌橘 #F97316
+    static let amber = Color(red: 1.0, green: 0.72, blue: 0.29)         // 琥珀金（漸層亮端）
+    static let violet = Color(red: 0.68, green: 0.60, blue: 0.95)       // 薰衣草（次要動畫色）
+    static let mint = Color(red: 0.42, green: 0.75, blue: 0.52)
 
     static var orbGradient: LinearGradient {
         LinearGradient(colors: [amber, orange], startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -21,57 +15,91 @@ enum Aurora {
         LinearGradient(colors: [violet, orange, amber], startPoint: .leading, endPoint: .trailing)
     }
 
-    // MARK: - 玻璃卡片
-    struct GlassCard: ViewModifier {
-        var cornerRadius: CGFloat = 20
-        func body(content: Content) -> some View {
-            content
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .fill(Color.white.opacity(0.06))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.10), lineWidth: 1)
-                )
-        }
-    }
-
-    static func glass<S: View>(_ content: S) -> some View {
-        content.modifier(GlassCard())
-    }
-
-    // MARK: - 背景
-    /// 全域暗色漸層背景＋兩團品牌色柔光（Aurora 氛圍）。
+    /// 全域底：淡色＝奶油底＋琥珀／薰衣草色團；深色＝暖炭底同一組色團。靜態、不動畫。
     struct Backdrop: View {
+        @Environment(\.colorScheme) private var scheme
         var body: some View {
+            let dark = scheme == .dark
             ZStack {
-                LinearGradient(colors: [backgroundTop, backgroundBottom],
-                               startPoint: .top, endPoint: .bottom)
+                (dark ? Color(red: 0.118, green: 0.102, blue: 0.086) : Color(red: 1.0, green: 0.973, blue: 0.945))
                 GeometryReader { geo in
                     Circle()
-                        .fill(orange.opacity(0.14))
-                        .frame(width: geo.size.width * 0.9)
-                        .blur(radius: 80)
-                        .position(x: geo.size.width * 0.85, y: geo.size.height * 0.12)
-                    Circle()
-                        .fill(violet.opacity(0.12))
-                        .frame(width: geo.size.width * 0.8)
+                        .fill(Aurora.amber.opacity(dark ? 0.20 : 0.42))
+                        .frame(width: geo.size.width * 1.1)
                         .blur(radius: 90)
-                        .position(x: geo.size.width * 0.10, y: geo.size.height * 0.85)
+                        .position(x: geo.size.width * 0.15, y: geo.size.height * 0.08)
+                    Circle()
+                        .fill(Aurora.orange.opacity(dark ? 0.14 : 0.20))
+                        .frame(width: geo.size.width * 0.9)
+                        .blur(radius: 90)
+                        .position(x: geo.size.width * 0.95, y: geo.size.height * 0.30)
+                    Circle()
+                        .fill(Aurora.violet.opacity(dark ? 0.16 : 0.30))
+                        .frame(width: geo.size.width * 0.9)
+                        .blur(radius: 100)
+                        .position(x: geo.size.width * 0.85, y: geo.size.height * 0.85)
                 }
+                .drawingGroup()
             }
             .ignoresSafeArea()
         }
     }
 }
 
-/// 錄音波形：TimelineView 驅動的隨機高度柱狀動畫（錄音中顯示）。
+extension View {
+    /// 卡片：iOS 26 Liquid Glass；以下 material。
+    @ViewBuilder
+    func auroraGlass(cornerRadius: CGFloat = 20, tint: Color? = nil, interactive: Bool = false) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        if #available(iOS 26.0, *) {
+            let glass: Glass = (tint.map { Glass.regular.tint($0) } ?? .regular).interactive(interactive)
+            self.glassEffect(glass, in: shape)
+        } else {
+            self.background(.regularMaterial, in: shape)
+                .overlay(shape.strokeBorder(Color.primary.opacity(0.08)))
+        }
+    }
+
+    /// 內容卡片（不用玻璃，跟 macOS 一樣：內容層用半透明填色，玻璃留給控制層）。
+    func auroraCard(cornerRadius: CGFloat = 20) -> some View {
+        modifier(AuroraCard(cornerRadius: cornerRadius))
+    }
+
+    @ViewBuilder
+    func auroraProminentButton() -> some View {
+        if #available(iOS 26.0, *) {
+            self.buttonStyle(.glassProminent)
+        } else {
+            self.buttonStyle(.borderedProminent)
+        }
+    }
+
+    @ViewBuilder
+    func auroraGlassButton() -> some View {
+        if #available(iOS 26.0, *) {
+            self.buttonStyle(.glass)
+        } else {
+            self.buttonStyle(.bordered)
+        }
+    }
+}
+
+struct AuroraCard: ViewModifier {
+    var cornerRadius: CGFloat
+    @Environment(\.colorScheme) private var scheme
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+        content
+            .padding(16)
+            .background(shape.fill(scheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.55)))
+            .overlay(shape.strokeBorder(scheme == .dark ? Color.white.opacity(0.10) : Color.white.opacity(0.8), lineWidth: 1))
+    }
+}
+
+/// 錄音波形：TimelineView 驅動（純時間函數，不在 body 裡寫狀態）。
 struct WaveformBars: View {
     var isRecording: Bool
     var barCount: Int = 24
-    @State private var phase = false
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 0.08)) { timeline in
@@ -81,7 +109,6 @@ struct WaveformBars: View {
                     Capsule()
                         .fill(Aurora.accentGradient)
                         .frame(width: 3, height: height(index: i, time: t))
-                        .animation(.easeInOut(duration: 0.08), value: t)
                 }
             }
             .frame(height: 36)
@@ -96,7 +123,7 @@ struct WaveformBars: View {
     }
 }
 
-/// 麥克風光球：三層漸層＋錄音時呼吸脈衝光暈。
+/// 麥克風光球：品牌漸層＋錄音時呼吸光暈。
 struct MicOrb: View {
     var isRecording: Bool
 
@@ -108,15 +135,13 @@ struct MicOrb: View {
                     .frame(width: 128, height: 128)
                     .scaleEffect(isRecording ? 1.25 : 1.0)
                     .opacity(isRecording ? 0 : 0.9)
-                    .animation(.easeOut(duration: 1.4).repeatForever(autoreverses: false),
-                               value: isRecording)
+                    .animation(.easeOut(duration: 1.4).repeatForever(autoreverses: false), value: isRecording)
                 Circle()
                     .fill(Aurora.orange.opacity(0.22))
                     .frame(width: 140, height: 140)
                     .blur(radius: 24)
                     .scaleEffect(isRecording ? 1.12 : 1.0)
-                    .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true),
-                               value: isRecording)
+                    .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: isRecording)
             } else {
                 Circle()
                     .fill(Aurora.orange.opacity(0.14))
@@ -127,6 +152,9 @@ struct MicOrb: View {
             Circle()
                 .fill(Aurora.orbGradient)
                 .frame(width: 108, height: 108)
+                .overlay(
+                    Circle().fill(LinearGradient(colors: [Color.white.opacity(0.35), .clear], startPoint: .top, endPoint: .center))
+                )
                 .shadow(color: Aurora.orange.opacity(isRecording ? 0.65 : 0.30), radius: isRecording ? 26 : 14)
 
             Image(systemName: isRecording ? "stop.fill" : "mic.fill")

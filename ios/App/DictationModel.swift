@@ -3,27 +3,6 @@ import Foundation
 @preconcurrency import Speech
 import UTUVOTypeCore
 
-/// 聽寫語言（iOS v1：Apple Speech 支援的子集）。
-enum DictationLanguage: String, CaseIterable, Identifiable, Sendable {
-    case traditionalChinese = "zh-TW"
-    case simplifiedChinese = "zh-CN"
-    case englishUS = "en-US"
-    case japanese = "ja-JP"
-    case korean = "ko-KR"
-
-    var id: String { rawValue }
-
-    func localizedName(zh: Bool) -> String {
-        switch self {
-        case .traditionalChinese: return zh ? "繁體中文" : "Traditional Chinese"
-        case .simplifiedChinese: return zh ? "簡體中文" : "Simplified Chinese"
-        case .englishUS: return zh ? "英文（美國）" : "English (US)"
-        case .japanese: return zh ? "日文" : "Japanese"
-        case .korean: return zh ? "韓文" : "Korean"
-        }
-    }
-}
-
 /// app 內聽寫模型：錄音 → Apple Speech 辨識（優先裝置端）→ core Normalizer 清理 → 歷史。
 /// v1：「講話 → 出乾淨文字」主幹。
 @MainActor

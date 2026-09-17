@@ -26,6 +26,5 @@ struct RootView: View {
                 .tag(2)
         }
         .tint(Aurora.orange)
-        .preferredColorScheme(.dark)
     }
 }

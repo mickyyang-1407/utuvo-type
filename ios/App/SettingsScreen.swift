@@ -15,6 +15,21 @@ struct SettingsScreen: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("鍵盤") {
+                    Text("設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type，再打開「允許完整存取」。之後在任何輸入框按 🌐 切到 UTUVO Type。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
+                    } label: {
+                        Label("打開設定", systemImage: "arrow.up.forward.app")
+                    }
+                    LabeledContent("鍵盤狀態", value: KeyboardPresence.seen ? "已出現過" : "還沒啟用")
+                    Text("有選取文字時，鍵盤的麥克風會變成「說出要怎麼改」；長按麥克風滑到語言、放開就翻譯。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 Section("辨識與隱私") {
                     Toggle("只用裝置端辨識", isOn: $onDeviceOnly)
                     Text(onDeviceOnly
@@ -64,6 +79,13 @@ struct SettingsScreen: View {
                     }
                 }
 
+                Section("改寫與翻譯引擎") {
+                    LabeledContent("目前", value: OnDeviceAssistant.currentEngine().badge)
+                    Text("iOS 26 的 Apple Intelligence 會在裝置端改寫與翻譯，文字不離機；沒有的話才用下面你自己的雲端 key。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+
                 Section("雲端翻譯（選配）") {
                     SecureField(hasStoredKey ? "輸入新的 key 以取代" : "DashScope API Key", text: $apiKeyDraft)
                     HStack {
@@ -100,7 +122,7 @@ struct SettingsScreen: View {
                 }
 
                 Section("關於") {
-                    LabeledContent("版本", value: "0.1.0 (iOS)")
+                    LabeledContent("版本", value: "0.2.0 (iOS)")
                     LabeledContent("辨識引擎", value: "Apple Speech（裝置端優先）")
                     LabeledContent("文字清理", value: "UTUVOTypeCore deterministic normalizer")
                     LabeledContent("鍵盤", value: "同一套清理＋字典，寫回歷史")
