@@ -12,13 +12,51 @@ final class EngineInstaller: ObservableObject {
     @Published private(set) var lastLine = ""
     @Published private(set) var installed = false
     @Published private(set) var failed = false
+    /// 失敗原因的人話版（EngineInstallDiagnosis）；成功／未跑＝nil。
+    @Published private(set) var diagnosis: EngineInstallDiagnosis?
+    private var cancelledByUser = false
     /// 找不到引擎腳本（既非 repo 也非 bundle 內建）就是 nil；此時不顯示安裝步驟。
     @Published private(set) var root: String?
 
-    private init() { refresh() }
+    private init() {
+        refresh()
+        #if DEBUG
+        // 截圖／走查用：UTUVO_TYPE_DEBUG_INSTALL_FAILURE=xcodeLicense|network|wheel|unknown
+        // 把 installer 擺成「剛失敗」的樣子（引擎視為未安裝），不真的跑 bootstrap。
+        if let scenario = ProcessInfo.processInfo.environment["UTUVO_TYPE_DEBUG_INSTALL_FAILURE"] {
+            seedFailure(scenario: scenario)
+        }
+        #endif
+    }
+
+    #if DEBUG
+    private func seedFailure(scenario: String) {
+        let logs: [String: String] = [
+            "xcodeLicense": """
+            [bootstrap] venv 已存在，跳過建立
+            [bootstrap] 安裝相依套件（requirements.txt）
+              × Building wheel for webrtcvad (pyproject.toml) did not run successfully.
+              You have not agreed to the Xcode license agreements. Please run 'sudo xcodebuild -license' from within a Terminal window to review and agree to the Xcode and Apple SDKs license.
+              error: Command '['clang', ...]' returned non-zero exit status 69.
+            ERROR: Failed building wheel for webrtcvad
+            [bootstrap] ERROR: pip 安裝失敗
+            """,
+            "network": "curl: (28) Failed to connect to github.com port 443 after 30001 ms\n[bootstrap] ERROR: 下載獨立版 Python 失敗；請檢查網路後重跑",
+            "wheel": "ERROR: No matching distribution found for some-package==1.0\n[bootstrap] ERROR: pip 安裝失敗",
+            "unknown": "[bootstrap] ERROR: something new happened",
+        ]
+        log = logs[scenario] ?? logs["unknown"]!
+        failed = true
+        installed = false
+        diagnosis = EngineInstallDiagnosis.diagnose(log: log)
+    }
+    #endif
 
     func refresh() {
         root = RuntimeBootstrap.locateRepoRoot()
+        #if DEBUG
+        if ProcessInfo.processInfo.environment["UTUVO_TYPE_DEBUG_INSTALL_FAILURE"] != nil { installed = false; return }
+        #endif
         installed = root.map { RuntimeBootstrap.isEngineInstalled(root: $0) } ?? false
     }
 
@@ -26,6 +64,8 @@ final class EngineInstaller: ObservableObject {
         guard !isInstalling, let root else { return }
         isInstalling = true
         failed = false
+        diagnosis = nil
+        cancelledByUser = false
         log = ""
         lastLine = tr("準備安裝…", "Preparing…")
         // 字串先算好再進 @Sendable closure（closure 不能抓非 Sendable 的 tr）。
@@ -46,6 +86,7 @@ final class EngineInstaller: ObservableObject {
                     guard let self else { return }
                     self.isInstalling = false
                     self.failed = !ok
+                    self.diagnosis = ok ? nil : EngineInstallDiagnosis.diagnose(log: self.log, cancelled: self.cancelledByUser)
                     self.log += ok ? doneText : failText
                     self.refresh()
                 }
@@ -54,6 +95,7 @@ final class EngineInstaller: ObservableObject {
     }
 
     func cancel() {
+        cancelledByUser = true
         RuntimeBootstrap.terminateActive()
     }
 }
@@ -154,7 +196,8 @@ struct OnboardingCard: View {
             return installer.lastLine
         }
         if installer.failed {
-            return preferences.tr("安裝失敗；設定 → 一般有完整訊息，修正後可重試。", "Install failed; Settings → General has the full log. Fix and retry.")
+            // 原因與修法由下方 EngineInstallFailureView 講，這裡只留一句。
+            return preferences.tr("安裝沒有完成，下面有原因與修法。", "The install didn’t finish; cause and fix are below.")
         }
         let memory = Int(HardwareProfile.physicalMemoryGB.rounded())
         let base = preferences.tr("下載 Qwen3-ASR 0.6B（約 1.2 GB，一次性）到你的 Application Support。",
@@ -181,6 +224,11 @@ struct OnboardingCard: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(AppBrand.retroMuted)
             }
+        } else if installer.failed, let diagnosis = installer.diagnosis {
+            EngineInstallFailureView(preferences: preferences, diagnosis: diagnosis, log: installer.log, compact: true) {
+                installer.install(tr: preferences.tr)
+            }
+            .padding(.top, 4)
         } else {
             actionButton(
                 installer.failed ? preferences.tr("重試安裝", "Retry install") : preferences.tr("安裝本機引擎", "Install local engine"),
