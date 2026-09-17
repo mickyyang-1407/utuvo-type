@@ -275,7 +275,15 @@ struct SettingsView: View {
                     }
                 }
 
+                if installer.failed, let diagnosis = installer.diagnosis {
+                    EngineInstallFailureView(preferences: preferences, diagnosis: diagnosis, log: installer.log, compact: false) {
+                        installEngine(root: root)
+                    }
+                }
+
                 if !installer.log.isEmpty {
+                    // raw log 留給想看的人；一般使用者看上面的卡就夠。
+                    DisclosureGroup(preferences.tr("完整安裝紀錄", "Full install log")) {
                     ScrollView {
                         Text(installer.log)
                             .font(AppBrand.mono(9))
@@ -287,6 +295,8 @@ struct SettingsView: View {
                         RoundedRectangle(cornerRadius: 8, style: .continuous)
                             .fill(Color.black.opacity(0.05))
                     )
+                    }
+                    .font(AppBrand.ui(11))
                 }
             }
         }
