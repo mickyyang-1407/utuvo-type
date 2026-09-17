@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PRODUCT_ROOT=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
+# 引擎家目錄（venv＋模型）：DMG 版由 app 指到 ~/Library/Application Support/UTUVO Type/engine；
+# 從 repo 跑就是 repo root。
+ENGINE_HOME="${UTUVO_TYPE_ENGINE_HOME:-$PRODUCT_ROOT}"
+exec "$ENGINE_HOME/.runtime/bin/python" "$SCRIPT_DIR/utuvo-type-asr.py" "$@"

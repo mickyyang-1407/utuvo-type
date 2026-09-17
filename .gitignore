@@ -1,0 +1,17 @@
+.DS_Store
+.build/
+.swiftpm/
+.derivedData/
+.verify-test.log
+.build-app.log
+dist/
+.models/
+.runtime/
+.env
+.env.*
+config/*.json
+!config/*.example.json
+benchmarks/*.tmp
+*.xcuserstate
+__pycache__/
+release/

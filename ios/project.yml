@@ -1,0 +1,103 @@
+# UTUVO Type for iOS — xcodegen 專案定義
+# 產生：cd ios && xcodegen generate
+# 核心 UTUVOTypeCore 直接引用上層 SwiftPM package（純 Foundation，macOS/iOS 共用正本）。
+name: "UTUVO Type"
+options:
+  bundleIdPrefix: com.utuvo
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  UTUVOType:
+    path: ..
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+
+targets:
+  "UTUVOTypeiOS":
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+      - path: Shared
+    dependencies:
+      - package: UTUVOType
+        product: UTUVOTypeCore
+      - target: "UTUVOKeyboard"
+    entitlements:
+      path: App/UTUVOTypeiOS.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.utuvo.type]
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: "UTUVO Type"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSMicrophoneUsageDescription: "UTUVO Type 只在你按住聽寫時使用麥克風，把語音轉成文字。"
+        NSSpeechRecognitionUsageDescription: "UTUVO Type 使用 iOS 語音辨識把你的口述轉成文字。"
+        ITSAppUsesNonExemptEncryption: false
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios
+
+  "UTUVOKeyboard":
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: Keyboard
+      - path: Shared
+    dependencies:
+      - package: UTUVOType
+        product: UTUVOTypeCore
+    entitlements:
+      path: Keyboard/UTUVOKeyboard.entitlements
+      properties:
+        com.apple.security.application-groups: [group.com.utuvo.type]
+    info:
+      path: Keyboard/Info.plist
+      properties:
+        CFBundleDisplayName: "UTUVO Type"
+        # IOS4：鍵盤 target 自己的 usage description，文案照鍵盤實際場景寫，
+        # 不再靠 host app 的字串頂著。
+        NSMicrophoneUsageDescription: "UTUVO Type 鍵盤只在你按下麥克風鍵時錄音，把語音轉成文字插入游標處。"
+        NSSpeechRecognitionUsageDescription: "UTUVO Type 鍵盤使用 iOS 語音辨識把你的口述轉成文字；鍵盤版走伺服器辨識，音訊會送到 Apple。"
+        NSExtension:
+          NSExtensionAttributes:
+            PrimaryLanguage: zh-Hant
+            RequestsOpenAccess: true
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: "$(PRODUCT_MODULE_NAME).KeyboardViewController"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios.keyboard
+
+  "UTUVOTypeiOSTests":
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: iOSTests
+    dependencies:
+      - target: "UTUVOTypeiOS"
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/UTUVOTypeiOS.app/UTUVOTypeiOS"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  "UTUVOTypeiOS":
+    build:
+      targets:
+        "UTUVOTypeiOS": all
+        "UTUVOKeyboard": [run]
+        "UTUVOTypeiOSTests": [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - "UTUVOTypeiOSTests"

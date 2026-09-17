@@ -1,0 +1,12 @@
+# UTUVO Type 本機引擎相依（Apple Silicon）。版本對齊 2026-08-21 實測環境。
+mlx==0.32.1
+mlx-audio==0.5.0
+mlx-lm==0.31.3
+opencc-python-reimplemented==0.1.7
+# mlx_audio.server（本機 ASR server）的執行相依：mlx-audio 沒宣告成硬相依，
+# 乾淨 venv 缺這四個會 ModuleNotFoundError（2026-09-17 模擬 DMG 使用者抓到）。
+uvicorn==0.52.4
+fastapi==0.141.1
+python-multipart==0.0.32
+webrtcvad==2.0.10
+setuptools==80.10.2

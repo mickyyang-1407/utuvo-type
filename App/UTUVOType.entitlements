@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  UTUVO Type entitlements（notarization 用）。
+  App 未沙盒、不用 JIT／Apple Events；hardened runtime 只需宣告意圖，
+  實際的麥克風／輔助使用授權由 macOS TCC 把關。
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+</dict>
+</plist>

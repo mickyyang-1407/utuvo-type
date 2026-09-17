@@ -1,0 +1,229 @@
+<meta charset="utf-8">
+<title>UTUVO Type</title>
+<style>
+  :root{
+    --bg:#FBF7F2; --bg-2:#F3EDF7; --ink:#2A1F2E; --ink-2:#6B5E6F; --ink-3:#9C8FA0;
+    --orange:#F97316; --amber:#FFB84A; --plum:#2E1F47; --lav:#AD99F2; --mint:#4DBF80;
+    --glass:rgba(255,255,255,.55); --glass-rim:rgba(255,255,255,.75); --line:rgba(42,31,46,.08);
+    --shadow:0 18px 50px rgba(60,30,20,.10), 0 2px 6px rgba(60,30,20,.06);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:var(--font);color:var(--ink);font-size:17px;line-height:1.6;background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;text-wrap:balance}
+  h1{font-size:clamp(2.6rem,6.2vw,4.6rem);font-weight:700}
+  h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:700}
+  h3{font-size:1.1rem;font-weight:650}
+  p{margin:0}
+  a{color:inherit}
+  .wrap{max-width:1120px;margin:0 auto;padding-inline:24px}
+  section{position:relative;padding-block:96px}
+  .eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
+  .lead{font-size:clamp(1.05rem,1.6vw,1.25rem);color:var(--ink-2);max-width:640px}
+
+  /* 桌布：跟 app 截圖用的同一套色團 */
+  .backdrop{position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#EFE8FF 0%,#FBF3EA 50%,#FFE7D2 100%)}
+  .backdrop i{position:absolute;border-radius:50%;filter:blur(120px);opacity:.75}
+  .backdrop .a{width:640px;height:640px;left:-200px;top:-220px;background:rgba(255,184,74,.55)}
+  .backdrop .b{width:560px;height:560px;right:-160px;top:120px;background:rgba(173,153,242,.5)}
+  .backdrop .c{width:520px;height:520px;right:20%;bottom:-260px;background:rgba(249,115,22,.28)}
+  .backdrop .d{width:520px;height:520px;left:-120px;bottom:-200px;background:rgba(140,204,255,.45)}
+
+  /* glass */
+  .glass{background:var(--glass);border:1px solid var(--glass-rim);border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:10;padding:14px 0}
+  nav .bar{display:flex;align-items:center;gap:14px;padding:8px 10px 8px 14px;border-radius:999px}
+  nav img{width:30px;height:30px;border-radius:8px}
+  nav .name{font-weight:700;letter-spacing:-.01em}
+  nav .links{margin-left:auto;display:flex;gap:4px;align-items:center}
+  nav .links a{text-decoration:none;font-size:.92rem;font-weight:600;color:var(--ink-2);padding:7px 12px;border-radius:999px}
+  nav .links a:hover{background:rgba(255,255,255,.6);color:var(--ink)}
+  .lang{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(42,31,46,.06);margin-left:6px}
+  .lang a{font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:999px;text-decoration:none;color:var(--ink-2)}
+  .lang a[aria-current]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:650;font-size:1rem;padding:.8em 1.5em;border-radius:999px;text-decoration:none;border:1px solid transparent;transition:transform .15s,box-shadow .15s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316);box-shadow:0 10px 28px rgba(249,115,22,.35),inset 0 1px 0 rgba(255,255,255,.45)}
+  .btn-glass{color:var(--ink);background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 6px 18px rgba(60,30,20,.08)}
+  .btn svg{width:1.1em;height:1.1em}
+
+  /* hero */
+  .hero{padding-block:56px 40px}
+  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .hero .art{position:relative}
+  .hero .art img{width:100%;height:auto;display:block;filter:drop-shadow(0 30px 40px rgba(120,60,20,.18))}
+  .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+  .free{margin-top:18px;font-size:.9rem;color:var(--ink-3);font-weight:600}
+  .free b{color:var(--mint)}
+
+  /* popover showcase */
+  .showcase{padding-block:24px 80px}
+  .showcase .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+  .showcase img.pop{width:min(100%,400px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
+  .steps{display:grid;gap:14px}
+  .step{display:flex;gap:16px;padding:18px 20px;border-radius:18px}
+  .step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316)}
+  .step small{display:block;color:var(--ink-2);font-size:.92rem;margin-top:2px}
+
+  /* modes */
+  .modes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
+  .mode{padding:22px 20px;border-radius:20px}
+  .mode .ic{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(249,115,22,.14);color:var(--orange);margin-bottom:14px}
+  .mode .ic svg{width:20px;height:20px}
+  .mode p{color:var(--ink-2);font-size:.95rem;margin-top:6px}
+
+  /* two-column feature blocks */
+  .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:48px}
+  .feature.rev .copy{order:2}
+  .feature img{width:100%;height:auto;display:block;border-radius:18px;filter:drop-shadow(0 24px 40px rgba(60,30,20,.14))}
+  .feature ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+  .feature li{display:flex;gap:10px;color:var(--ink-2)}
+  .feature li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:.55em}
+
+  /* overlay demo */
+  .capsules{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:20px}
+  .capsules img{height:38px;width:auto}
+
+  /* install */
+  .install .box{padding:32px;border-radius:24px}
+  .install pre{margin:18px 0 0;padding:18px 20px;border-radius:14px;background:rgba(46,31,71,.92);color:#F6EFFF;font-family:var(--mono);font-size:.9rem;line-height:1.7;overflow:auto}
+  .install pre b{color:#FFB84A;font-weight:600}
+  .req{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;color:var(--ink-2);font-size:.95rem}
+  .req b{color:var(--ink)}
+
+  footer{padding:60px 0 40px;color:var(--ink-3);font-size:.9rem;text-align:center}
+  footer a{color:var(--ink-2)}
+
+  @media (max-width:900px){
+    .hero .grid,.showcase .row,.feature{grid-template-columns:1fr}
+    .feature.rev .copy{order:0}
+    .modes{grid-template-columns:1fr 1fr}
+    nav .links > a:not(.gh){display:none}
+    section{padding-block:64px}
+  }
+  @media (max-width:520px){.modes{grid-template-columns:1fr}}
+  @media (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+</style>
+
+<div class="backdrop" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
+
+<nav><div class="wrap"><div class="bar glass">
+  <img src="assets/logo.png" alt=""><span class="name">UTUVO Type</span>
+  <div class="links">
+    <a href="#modes">Modes</a><a href="#privacy">Privacy</a><a href="#install">Install</a>
+    <a class="gh" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
+    <div class="lang"><a href="./" data-lang="en">EN</a><a href="zh/" data-lang="zh">中文</a></div>
+  </div>
+</div></div></nav>
+
+<section class="hero"><div class="wrap"><div class="grid">
+  <div>
+    <div class="eyebrow">Local-first dictation for macOS</div>
+    <h1 style="margin-top:14px">Speak.<br>It types.</h1>
+    <p class="lead" style="margin-top:20px">A menu bar app that turns your voice into clean, paste-ready text. Transcription runs on your Mac. Cleanup is deterministic first, model second. Nothing leaves the machine unless you say so.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download for Mac</a>
+      <a class="btn btn-glass" href="https://github.com/mickyyang-1407/utuvo-type">View source</a>
+    </div>
+    <p class="free"><b>Free</b> · Open source · MIT · No account, no API key required</p>
+  </div>
+  <div class="art"><img src="assets/hero-front.png" alt="UTUVO Type mark: a glass speech bubble with a text cursor, beside a waveform, three dots and a microphone"></div>
+</div></div></section>
+
+<section class="showcase"><div class="wrap"><div class="row">
+  <img class="pop" src="assets/popover-light.png" alt="The UTUVO Type menu bar popover with four modes and a Start dictation button">
+  <div class="steps">
+    <div class="step glass"><div class="n">1</div><div><h3>Press the shortcut</h3><small>⌥Space by default, or hold it for push-to-talk. Any key you like.</small></div></div>
+    <div class="step glass"><div class="n">2</div><div><h3>Say it</h3><small>A small capsule shows you're live. Esc cancels. Nothing is recorded until you start.</small></div></div>
+    <div class="step glass"><div class="n">3</div><div><h3>It lands where your cursor is</h3><small>Punctuation, fillers, numbers and your own dictionary — cleaned up and pasted into the app you're in.</small></div></div>
+  </div>
+</div></div></section>
+
+<section id="modes"><div class="wrap">
+  <div class="eyebrow">Four modes</div>
+  <h2 style="margin-top:12px">Pick how much help you want.</h2>
+  <p class="lead" style="margin-top:14px">Fast never calls a large model. The others only do what you ask, and fall back to the deterministic path if a model fails.</p>
+  <div class="modes">
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>Fast Dictate</h3><p>Transcribe and normalize on-device. Instant, predictable, no LLM.</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Smart Dictate</h3><p>A small local editor tidies sentences. Still on your Mac.</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M4 4h10M4 8h7M4 12h5M14 15l6-6-2-2-6 6v2z"/></svg></div><h3>Edit Selection</h3><p>Select text, say what to change. The rewrite replaces the selection.</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></div><h3>Deep / Long Note</h3><p>Long-form notes with a larger model — local 27B or cloud, only when you choose it.</p></div>
+  </div>
+</div></section>
+
+<section id="chinese"><div class="wrap">
+  <div class="feature">
+    <div class="copy">
+      <div class="eyebrow">Built for Traditional Chinese</div>
+      <h2 style="margin-top:12px">Cleanup you can predict.</h2>
+      <p class="lead" style="margin-top:14px">Most of the polish is rules, not guesses. The same input gives the same output, every time.</p>
+      <ul>
+        <li>Chinese punctuation, spacing between CJK and Latin, filler words removed</li>
+        <li>Numbers, dates and amounts written the way you'd type them</li>
+        <li>Taiwan wording for software and everyday terms; mixed English stays English</li>
+        <li>A personal dictionary for names, products and jargon</li>
+        <li>Per-app presets: a terse style for chat, a fuller one for documents</li>
+      </ul>
+    </div>
+    <img src="assets/settings-general-light.png" alt="UTUVO Type settings, General tab, with Liquid Glass sidebar and cards">
+  </div>
+</div></section>
+
+<section id="privacy"><div class="wrap">
+  <div class="feature rev">
+    <div class="copy">
+      <div class="eyebrow">Private by default</div>
+      <h2 style="margin-top:12px">Your voice stays on your Mac.</h2>
+      <p class="lead" style="margin-top:14px">The default install is fully local: Qwen3-ASR 0.6B running through MLX on Apple silicon. No account, no telemetry, no network after setup.</p>
+      <ul>
+        <li>Accessibility is used to read the focused field and paste back — never the whole screen</li>
+        <li>Recording is always announced by the capsule and a sound cue</li>
+        <li>Cloud formatting is a separate, opt-in adapter with your own key, stored in the Keychain</li>
+        <li>Everything is in the open: read the routing rules, run the benchmark, audit the prompts</li>
+      </ul>
+    </div>
+    <img src="assets/settings-models-light.png" alt="UTUVO Type settings, Models tab, showing the local model and optional cloud models">
+  </div>
+</div></section>
+
+<section id="native"><div class="wrap">
+  <div class="feature">
+    <div class="copy">
+      <div class="eyebrow">Native, top to bottom</div>
+      <h2 style="margin-top:12px">Liquid Glass. Light and dark.</h2>
+      <p class="lead" style="margin-top:14px">Swift, AppKit and SwiftUI. Built against the macOS 26 design language with a Liquid Glass popover, floating sidebar and a tiny overlay capsule — and a plain material fallback on macOS 14 and 15.</p>
+      <div class="capsules">
+        <img src="assets/overlay-listening-light.png" alt="Listening capsule with an orange waveform">
+        <img src="assets/overlay-processing-light.png" alt="Processing capsule with three lavender dots">
+        <img src="assets/overlay-listening-dark.png" alt="Listening capsule in dark mode">
+      </div>
+    </div>
+    <img src="assets/popover-dark.png" alt="The UTUVO Type popover in dark mode" style="width:min(100%,380px);margin:0 auto;border-radius:0">
+  </div>
+</div></section>
+
+<section id="install" class="install"><div class="wrap">
+  <div class="box glass">
+    <div class="eyebrow">Install</div>
+    <h2 style="margin-top:12px">Three commands.</h2>
+    <p class="lead" style="margin-top:12px">Or grab the signed, notarized build from Releases. Building from source takes about a minute plus a one-time 1.2 GB model download.</p>
+<pre><b>git</b> clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
+<b>./scripts/bootstrap-runtime.sh</b>   # Python venv + Qwen3-ASR model, one time
+<b>./scripts/build-app.sh</b>           # dist/UTUVO Type.app</pre>
+    <div class="req"><span><b>Apple silicon</b> for the local engine</span><span><b>macOS 14+</b> · Liquid Glass on 26+</span><span><b>8 GB</b> memory for Fast · <b>16 GB</b> for the local editor</span><span><b>~1.5 GB</b> disk for the model</span><span><b>Intel Macs</b> can use cloud or built-in speech</span></div>
+    <p class="lead" style="margin-top:16px;font-size:.95rem">The DMG is small: the speech model is not inside it. Settings → General → <b>Install Local Engine</b> downloads Qwen3-ASR 0.6B (about 1.2 GB, once) into your Application Support folder. Nothing is downloaded until you click.</p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <p>© 2026 UTUVO · <a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/LICENSE">MIT License</a> · The UTUVO Type name and mark are not part of the license.</p>
+  <p style="margin-top:6px">Made in Taipei · <a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/mickyyang-1407/utuvo-type/issues">Issues</a></p>
+</div></footer>
+<script>
+</script>
