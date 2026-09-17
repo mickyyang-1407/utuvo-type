@@ -31,7 +31,7 @@ ZH = {
     'Local-first dictation for macOS': '本機優先的 macOS 語音輸入',
     'Speak.<br>It types.': '你說。<br>它打字。',
     "A menu bar app that turns your voice into clean, paste-ready text. Transcription runs on your Mac. Cleanup is deterministic first, model second. Nothing leaves the machine unless you say so.":
-        "住在 menu bar 的語音輸入。你講話，它在你的 Mac 上轉成文字、整理好，貼到游標所在的地方。整理大多靠規則，模型只在你選的模式裡介入。沒有打開雲端的話，不會有任何東西離開這台電腦。",
+        "你只需要說話，Type 會幫你轉成文字，本地端不上雲端。",
     'Download for Mac': '下載 Mac 版', 'View source': '看原始碼',
     '<b>Free</b> · Open source · MIT · No account, no API key required': '<b>免費</b>・開源・MIT・不用帳號、不用 API key',
     'UTUVO Type mark: a glass speech bubble with a text cursor, beside a waveform, three dots and a microphone': 'UTUVO Type 標誌：玻璃語音泡泡與文字游標，旁邊是波形、三個點與麥克風',
