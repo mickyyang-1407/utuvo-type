@@ -18,7 +18,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "2"
+    CURRENT_PROJECT_VERSION: "3"
 
 targets:
   "UTUVOTypeiOS":
@@ -42,11 +42,16 @@ targets:
         CFBundleDisplayName: "UTUVO Type"
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        NSMicrophoneUsageDescription: "UTUVO Type 只在你按住聽寫時使用麥克風，把語音轉成文字。"
+        NSMicrophoneUsageDescription: "UTUVO Type 在你聽寫、或從 UTUVO Type 鍵盤開啟語音時使用麥克風，把語音轉成文字。"
         NSSpeechRecognitionUsageDescription: "UTUVO Type 使用 iOS 語音辨識把你的口述轉成文字。"
         ITSAppUsesNonExemptEncryption: false
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        # 鍵盤不能開麥克風：鍵盤用這個 URL 叫起主 app，主 app 在背景替鍵盤錄音（VoiceBridge）。
+        CFBundleURLTypes:
+          - CFBundleURLName: com.utuvo.type.voice
+            CFBundleURLSchemes: [utuvotype]
+        UIBackgroundModes: [audio]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios

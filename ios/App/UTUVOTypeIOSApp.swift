@@ -12,6 +12,7 @@ struct UTUVOTypeIOSApp: App {
 
 struct RootView: View {
     @State private var tab = 0
+    @ObservedObject private var voiceHost = KeyboardVoiceHost.shared
 
     init() {
         #if DEBUG
@@ -39,5 +40,10 @@ struct RootView: View {
                 .tag(2)
         }
         .tint(Aurora.orange)
+        // 鍵盤叫起主 app：utuvotype://voice?lang=…&id=…
+        .onOpenURL { url in
+            tab = 0
+            voiceHost.handle(url: url)
+        }
     }
 }

@@ -58,12 +58,15 @@ final class DictationModel: NSObject, ObservableObject {
     }
 
     func toggle() {
+        // 主 app 自己要錄音：先收掉替鍵盤開的語音工作階段（兩邊搶同一個 AVAudioSession）。
+        if !isRecording, KeyboardVoiceHost.shared.isActive { KeyboardVoiceHost.shared.endSession() }
         if isRecording { stop() } else { intent = .dictate; Task { await start() } }
     }
 
     /// 「說出要怎麼改」：對目前輸出下口頭指示。沒有輸出或正在錄就不做。
     func startEdit() {
         guard !isRecording, !isRewriting, !finalText.isEmpty else { return }
+        if KeyboardVoiceHost.shared.isActive { KeyboardVoiceHost.shared.endSession() }
         intent = .edit(original: finalText)
         Task { await start() }
     }
