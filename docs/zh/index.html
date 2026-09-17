@@ -135,7 +135,7 @@
   <div>
     <div class="eyebrow">本機優先的 macOS 語音輸入</div>
     <h1 style="margin-top:14px">你說。<br>它打字。</h1>
-    <p class="lead" style="margin-top:20px">一個 menu bar 小工具，把你的聲音變成乾淨、可直接貼上的文字。轉錄在你的 Mac 上跑；整理先走確定性規則，模型只是輔助。你不點頭，什麼都不會離開這台機器。</p>
+    <p class="lead" style="margin-top:20px">住在 menu bar 的語音輸入。你講話，它在你的 Mac 上轉成文字、整理好，貼到游標所在的地方。整理大多靠規則，模型只在你選的模式裡介入。沒有打開雲端的話，不會有任何東西離開這台電腦。</p>
     <div class="cta">
       <a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>下載 Mac 版</a>
       <a class="btn btn-glass" href="https://github.com/mickyyang-1407/utuvo-type">看原始碼</a>
@@ -148,21 +148,21 @@
 <section class="showcase"><div class="wrap"><div class="row">
   <img class="pop" src="../assets/web/popover-light.webp" alt="UTUVO Type 的 menu bar 面板：四種模式與開始聽寫按鈕">
   <div class="steps">
-    <div class="step glass"><div class="n">1</div><div><h3>按快捷鍵</h3><small>預設 ⌥Space，按住就是 push-to-talk。想換哪顆鍵都行。</small></div></div>
-    <div class="step glass"><div class="n">2</div><div><h3>開口說</h3><small>小膠囊告訴你正在錄。Esc 取消。你沒按之前不會錄任何東西。</small></div></div>
-    <div class="step glass"><div class="n">3</div><div><h3>落在游標所在的地方</h3><small>標點、贅詞、數字、你的個人字典——整理好，貼進你正在用的 app。</small></div></div>
+    <div class="step glass"><div class="n">1</div><div><h3>按快捷鍵</h3><small>預設是 ⌥Space，按住不放就是 push-to-talk，快捷鍵可以自己改。</small></div></div>
+    <div class="step glass"><div class="n">2</div><div><h3>開口說</h3><small>螢幕上會出現一顆小膠囊表示正在錄音，按 Esc 取消。沒按快捷鍵的時候麥克風不會開。</small></div></div>
+    <div class="step glass"><div class="n">3</div><div><h3>貼到游標所在的地方</h3><small>整理完標點、贅詞、數字和你字典裡的詞之後，直接貼進你正在用的 app。</small></div></div>
   </div>
 </div></div></section>
 
 <section id="modes"><div class="wrap">
   <div class="eyebrow">四種模式</div>
-  <h2 style="margin-top:12px">你決定要多少幫忙。</h2>
-  <p class="lead" style="margin-top:14px">Fast 永遠不呼叫大模型。其他模式只做你要求的事，模型失敗就退回確定性路徑。</p>
+  <h2 style="margin-top:12px">差別在模型介入多少。</h2>
+  <p class="lead" style="margin-top:14px">Fast 完全不用大模型。其他三種只在你選的時候才用模型，模型出錯就退回規則路徑。</p>
   <div class="modes">
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>Fast Dictate</h3><p>本機轉錄＋規則整理。即時、可預期、沒有 LLM。</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Smart Dictate</h3><p>本機小型 editor 順句子。還是在你的 Mac 上。</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M4 4h10M4 8h7M4 12h5M14 15l6-6-2-2-6 6v2z"/></svg></div><h3>Edit Selection</h3><p>選一段文字，說你要改什麼。改寫結果直接取代選取。</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></div><h3>Deep / Long Note</h3><p>長文筆記交給大一點的模型——本機 27B 或雲端，只在你選擇時。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>Fast Dictate</h3><p>本機轉錄加規則整理，最快，結果也最可預期。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Smart Dictate</h3><p>本機的小型 editor 幫你順句子，一樣不出這台 Mac。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M4 4h10M4 8h7M4 12h5M14 15l6-6-2-2-6 6v2z"/></svg></div><h3>Edit Selection</h3><p>先選一段文字，再用講的說要改什麼，改好的版本直接取代原本那段。</p></div>
+    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></div><h3>Deep / Long Note</h3><p>長篇筆記交給比較大的模型，本機 27B 或雲端都可以，要你自己選才會用。</p></div>
   </div>
 </div></section>
 
@@ -170,14 +170,14 @@
   <div class="feature">
     <div class="copy">
       <div class="eyebrow">為繁體中文而做</div>
-      <h2 style="margin-top:12px">看得懂的整理邏輯。</h2>
-      <p class="lead" style="margin-top:14px">大部分的修飾是規則，不是猜測。同樣的輸入永遠得到同樣的輸出。</p>
+      <h2 style="margin-top:12px">整理的結果可以預期。</h2>
+      <p class="lead" style="margin-top:14px">大部分整理靠規則，同樣的輸入每次都得到同樣的輸出。</p>
       <ul>
-        <li>中文標點、中英之間的空格、贅詞去除</li>
-        <li>數字、日期、金額寫成你自己會打的樣子</li>
-        <li>台灣用語（軟體、日常詞）；夾雜的英文保持英文</li>
-        <li>個人字典：人名、產品名、術語</li>
-        <li>依 app 的預設：聊天用簡短風格、文件用完整風格</li>
+        <li>補中文標點，中英文之間留空格，去掉贅詞</li>
+        <li>數字、日期、金額照你平常打字的寫法</li>
+        <li>用台灣的用語，夾在中間的英文照原樣保留</li>
+        <li>個人字典，放人名、產品名和專有名詞</li>
+        <li>可以依 app 設定風格，例如聊天軟體用短句，文件用完整句子</li>
       </ul>
     </div>
     <img src="../assets/web/settings-general-light.webp" alt="UTUVO Type 設定「一般」分頁：Liquid Glass 側欄與卡片">
@@ -187,14 +187,14 @@
 <section id="privacy"><div class="wrap">
   <div class="feature rev">
     <div class="copy">
-      <div class="eyebrow">預設就是私密</div>
+      <div class="eyebrow">預設不連網</div>
       <h2 style="margin-top:12px">你的聲音留在你的 Mac 上。</h2>
-      <p class="lead" style="margin-top:14px">預設安裝完全本機：Qwen3-ASR 0.6B 透過 MLX 在 Apple silicon 上跑。沒有帳號、沒有遙測、裝好之後不需要網路。</p>
+      <p class="lead" style="margin-top:14px">預設安裝就是純本機，語音辨識用 Qwen3-ASR 0.6B，透過 MLX 在 Apple silicon 上跑。不用帳號，沒有遙測，模型裝好之後不需要網路。</p>
       <ul>
-        <li>輔助使用只用來讀取目前輸入框與貼回——從不讀整個螢幕</li>
-        <li>錄音一定有膠囊與提示音，不會偷偷錄</li>
-        <li>雲端整理是獨立、需要你打開的 adapter，用你自己的 key，存在 Keychain</li>
-        <li>全部公開：路由規則看得到、benchmark 跑得動、prompt 查得到</li>
+        <li>輔助使用權限只拿來讀目前的輸入框和貼回文字，不會讀整個螢幕</li>
+        <li>錄音時一定有膠囊和提示音</li>
+        <li>雲端整理要自己打開，用你自己的 API key，key 存在 Keychain</li>
+        <li>程式碼全部公開，路由規則、benchmark 和 prompt 都在 repo 裡</li>
       </ul>
     </div>
     <img src="../assets/web/settings-models-light.webp" alt="UTUVO Type 設定「模型」分頁：本機模型與選配雲端模型">
@@ -204,9 +204,9 @@
 <section id="native"><div class="wrap">
   <div class="feature">
     <div class="copy">
-      <div class="eyebrow">從頭到尾都是原生</div>
-      <h2 style="margin-top:12px">Liquid Glass。淡色與深色。</h2>
-      <p class="lead" style="margin-top:14px">Swift、AppKit 與 SwiftUI。依 macOS 26 的設計語言：Liquid Glass 面板、浮動側欄、一顆小小的狀態膠囊；macOS 14、15 退回一般材質。</p>
+      <div class="eyebrow">原生 macOS app</div>
+      <h2 style="margin-top:12px">Liquid Glass 介面，深淺色都有。</h2>
+      <p class="lead" style="margin-top:14px">用 Swift、AppKit 和 SwiftUI 寫的。介面照 macOS 26 的 Liquid Glass 做，menu bar 面板、浮動側欄和錄音時的小膠囊都是玻璃；macOS 14 和 15 會退回一般材質。</p>
       <div class="capsules">
         <img src="../assets/web/overlay-listening-light.webp" alt="聆聽中的膠囊：橘色波形">
         <img src="../assets/web/overlay-processing-light.webp" alt="處理中的膠囊：三個薰衣草色點">
@@ -221,12 +221,12 @@
   <div class="box glass">
     <div class="eyebrow">Install</div>
     <h2 style="margin-top:12px">三行指令。</h2>
-    <p class="lead" style="margin-top:12px">或直接從 Releases 下載已簽名、已公證的版本。從原始碼建置約一分鐘，外加一次性的 1.2 GB 模型下載。</p>
+    <p class="lead" style="margin-top:12px">也可以直接到 Releases 下載已簽名、已公證的版本。從原始碼建置大約一分鐘，另外要下載一次 1.2 GB 的模型。</p>
 <pre><b>git</b> clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
 <b>./scripts/bootstrap-runtime.sh</b>   # Python venv＋Qwen3-ASR 模型，一次性
 <b>./scripts/build-app.sh</b>           # dist/UTUVO Type.app</pre>
     <div class="req"><span>本機引擎需要 <b>Apple silicon</b></span><span><b>macOS 14+</b>・26+ 有 Liquid Glass</span><span>Fast 需 <b>8 GB</b> 記憶體・本機 editor 建議 <b>16 GB</b></span><span>模型約占 <b>1.5 GB</b></span><span><b>Intel Mac</b> 可走雲端或系統內建語音</span></div>
-    <p class="lead" style="margin-top:16px;font-size:.95rem">DMG 很小：語音模型不在裡面。設定 → 一般 → <b>安裝本機引擎</b>會把 Qwen3-ASR 0.6B（約 1.2 GB，一次性）下載到你的 Application Support 資料夾。你沒按之前不會下載任何東西。</p>
+    <p class="lead" style="margin-top:16px;font-size:.95rem">DMG 本身很小，語音模型不在裡面。開啟設定 → 一般 → <b>安裝本機引擎</b>，會把 Qwen3-ASR 0.6B（約 1.2 GB）下載到你的 Application Support 資料夾，只下載這一次，而且要你按了才會開始。</p>
   </div>
 </div></section>
 
