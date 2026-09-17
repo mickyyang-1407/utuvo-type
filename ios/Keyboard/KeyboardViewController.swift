@@ -534,7 +534,7 @@ final class KeyboardViewController: UIInputViewController {
                     }
                     textDocumentProxy.deleteBackward() // 有選取時刪掉的是整段選取
                     textDocumentProxy.insertText(result)
-                    HistoryStore.shared.append(DictationRecord(raw: "改：\(raw)", cleaned: result, source: .keyboard))
+                    HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
                     transcriptPill.isHidden = true
                     refreshContext()
                 } catch {

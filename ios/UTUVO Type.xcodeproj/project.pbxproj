@@ -11,6 +11,7 @@
 		138C08076C498E0C1623180B /* IOSSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */; };
 		1B5590E6B1C6178BFB301983 /* UTUVOTypeCore in Frameworks */ = {isa = PBXBuildFile; productRef = B317D0E8ED7CEEFD7EDA6DF9 /* UTUVOTypeCore */; };
 		1C042A2C20D7A6338752D1A2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */; };
+		219D35619DD3800FC4E4868A /* HistoryGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2104BC2CA42ED058CF9E673F /* HistoryGrouping.swift */; };
 		21C0721A92650E0295AE6997 /* RecognitionRouteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */; };
 		2A44E1ABA6E6209DADA86738 /* IncrementalInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */; };
 		2C9E3E41E0ACC72FF538110D /* DictationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8B6D3A506BD997A2ACFE627 /* DictationModel.swift */; };
@@ -31,6 +32,7 @@
 		6E9C0210F528285A618613BE /* DictationLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954219567B6FA9AA7395B3ED /* DictationLanguage.swift */; };
 		726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA0C89251811A64DB739280 /* HistoryListView.swift */; };
 		7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */; };
+		86877514C7BB1361BAB64C50 /* HistoryGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79102CBCC0EAEB7225D4556D /* HistoryGroupingTests.swift */; };
 		87A2A6459240E615D0B0E939 /* UTUVOTypeIOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */; };
 		93A50770D4B9115015D3160C /* DictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30B59DCC3A3BFFA70757B0B /* DictateView.swift */; };
 		A36D8966FC5562E7BB0AC7A5 /* KeyboardEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */; };
@@ -40,6 +42,7 @@
 		C10EEB5E40AD726981559E34 /* StoresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBDD5FDDA5D270DFE283D651 /* StoresTests.swift */; };
 		D0E0A2973105C1069762C472 /* HistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1625C2E308D068C260E36239 /* HistoryStore.swift */; };
 		D1CCDEC5BD6CDA12272F4E26 /* RecognitionRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9AB4A5937FEB2A31D0CCBA2 /* RecognitionRoute.swift */; };
+		D6B068B3EBF9846ED377BD06 /* HistoryGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2104BC2CA42ED058CF9E673F /* HistoryGrouping.swift */; };
 		E7658D9E021799058BEC67F5 /* IncrementalInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */; };
 		EDBAAA99C4B63E40A5C560E3 /* IOSSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */; };
 		F360A9EEF330E99993B86E00 /* OnDeviceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE67A6C416FE0D0CF17F651 /* OnDeviceAssistant.swift */; };
@@ -84,6 +87,7 @@
 		130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncrementalInsert.swift; sourceTree = "<group>"; };
 		139AEEC09C09FB6C4B823983 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		1625C2E308D068C260E36239 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
+		2104BC2CA42ED058CF9E673F /* HistoryGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryGrouping.swift; sourceTree = "<group>"; };
 		24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardEditTests.swift; sourceTree = "<group>"; };
 		271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
 		33D121440F4AAEADAD15601B /* KeyboardLogic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardLogic.swift; sourceTree = "<group>"; };
@@ -97,6 +101,7 @@
 		6607F1098B5580A0BDD5D1C9 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		6DE67A6C416FE0D0CF17F651 /* OnDeviceAssistant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceAssistant.swift; sourceTree = "<group>"; };
 		73DA4012954FB4BEAB4BAD09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		79102CBCC0EAEB7225D4556D /* HistoryGroupingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryGroupingTests.swift; sourceTree = "<group>"; };
 		81CFAF9649C9C580BAD67B3B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTUVOTypeIOSApp.swift; sourceTree = "<group>"; };
@@ -176,6 +181,7 @@
 			children = (
 				954219567B6FA9AA7395B3ED /* DictationLanguage.swift */,
 				D408072BA3212A1784D9A225 /* DictionaryStore.swift */,
+				2104BC2CA42ED058CF9E673F /* HistoryGrouping.swift */,
 				1625C2E308D068C260E36239 /* HistoryStore.swift */,
 				130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */,
 				3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */,
@@ -191,6 +197,7 @@
 		CA501DA36B1E40965F7E9727 /* iOSTests */ = {
 			isa = PBXGroup;
 			children = (
+				79102CBCC0EAEB7225D4556D /* HistoryGroupingTests.swift */,
 				4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */,
 				24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */,
 				544EF41C988021D9FC607C01 /* KeyboardLogicTests.swift */,
@@ -361,6 +368,7 @@
 				6252326424D7A835BEC8EBD5 /* DictationLanguage.swift in Sources */,
 				2C9E3E41E0ACC72FF538110D /* DictationModel.swift in Sources */,
 				2F41F7C4C19FB368CD4B95D8 /* DictionaryStore.swift in Sources */,
+				219D35619DD3800FC4E4868A /* HistoryGrouping.swift in Sources */,
 				726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */,
 				53866DA453F168C38B2D1F80 /* HistoryStore.swift in Sources */,
 				138C08076C498E0C1623180B /* IOSSecretStore.swift in Sources */,
@@ -381,6 +389,7 @@
 			files = (
 				6E9C0210F528285A618613BE /* DictationLanguage.swift in Sources */,
 				52300235E9B175E5B007F7B7 /* DictionaryStore.swift in Sources */,
+				D6B068B3EBF9846ED377BD06 /* HistoryGrouping.swift in Sources */,
 				D0E0A2973105C1069762C472 /* HistoryStore.swift in Sources */,
 				EDBAAA99C4B63E40A5C560E3 /* IOSSecretStore.swift in Sources */,
 				2A44E1ABA6E6209DADA86738 /* IncrementalInsert.swift in Sources */,
@@ -397,6 +406,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				86877514C7BB1361BAB64C50 /* HistoryGroupingTests.swift in Sources */,
 				7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */,
 				A36D8966FC5562E7BB0AC7A5 /* KeyboardEditTests.swift in Sources */,
 				579AD1618C81453D7762E5EA /* KeyboardLogicTests.swift in Sources */,

@@ -12,6 +12,18 @@ final class DictationModel: NSObject, ObservableObject {
     @Published var finalText = ""
     @Published var appliedSteps: [String] = []
     @Published var errorMessage: String?
+    /// 這次錄音是「聽寫」還是「說出要怎麼改」（Typeless 的 Speak to edit，主 app 版）。
+    /// 編輯模式：講的話是指示，不是內容；定稿後拿 OnDeviceAssistant 改寫 `original`，結果取代輸出。
+    enum Intent: Equatable {
+        case dictate
+        case edit(original: String)
+        var isEdit: Bool { if case .edit = self { return true } else { return false } }
+    }
+    @Published private(set) var intent: Intent = .dictate
+    /// 改寫引擎正在跑（錄音已停、結果未回）。
+    @Published private(set) var isRewriting = false
+    /// 上一版輸出（改寫前），給「還原」用；只保留一步。
+    @Published private(set) var previousText: String?
     /// 這次辨識實際走哪條路（IOS2）。錄音開始才確定，停止後保留給使用者看。
     @Published private(set) var route: RecognitionRoute?
     /// 「只用裝置端辨識」：開啟後，不支援裝置端的語言／機型會直接拒絕錄音，
@@ -37,16 +49,41 @@ final class DictationModel: NSObject, ObservableObject {
         let saved = UserDefaults.standard.string(forKey: "utuvo.type.ios.language")
         self.language = saved.flatMap(DictationLanguage.init(rawValue:)) ?? .traditionalChinese
         super.init()
+        #if DEBUG
+        // 截圖用：模擬器沒麥克風，`simctl launch … -utuvo.type.ios.previewOutput "文字"` 直接種一段輸出。
+        if let seed = UserDefaults.standard.string(forKey: "utuvo.type.ios.previewOutput"), !seed.isEmpty {
+            finalText = seed
+        }
+        #endif
     }
 
     func toggle() {
-        if isRecording { stop() } else { Task { await start() } }
+        if isRecording { stop() } else { intent = .dictate; Task { await start() } }
+    }
+
+    /// 「說出要怎麼改」：對目前輸出下口頭指示。沒有輸出或正在錄就不做。
+    func startEdit() {
+        guard !isRecording, !isRewriting, !finalText.isEmpty else { return }
+        intent = .edit(original: finalText)
+        Task { await start() }
+    }
+
+    /// 還原到改寫前那一版。
+    func undoEdit() {
+        guard let previous = previousText else { return }
+        finalText = previous
+        previousText = nil
     }
 
     func start() async {
+        // 任何一條早退（權限、辨識器、無輸入）都要把編輯意圖收掉，畫面才不會停在「說出要怎麼改」。
+        defer { if !isRecording { intent = .dictate } }
         errorMessage = nil
         liveTranscript = ""
-        finalText = ""
+        if !intent.isEdit {
+            finalText = ""
+            previousText = nil
+        }
         appliedSteps = []
         route = nil
 
@@ -132,7 +169,7 @@ final class DictationModel: NSObject, ObservableObject {
 
     /// 手動把目前逐字稿定稿（例如切頁時）。
     func finalizeNow() {
-        if !liveTranscript.isEmpty && finalText.isEmpty {
+        if !liveTranscript.isEmpty && (finalText.isEmpty || intent.isEdit) {
             commit(liveTranscript)
         }
         if isRecording { stop() }
@@ -157,15 +194,45 @@ final class DictationModel: NSObject, ObservableObject {
         }
     }
 
-    /// 逐字稿定稿：跑 core 管線清理＋寫歷史。
+    /// 逐字稿定稿：聽寫＝跑 core 管線清理＋寫歷史；編輯＝把講的話當指示丟給改寫引擎。
     private func commit(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        let (output, steps) = pipeline.clean(trimmed)
-        finalText = output
-        appliedSteps = steps
-        HistoryStore.shared.append(DictationRecord(raw: trimmed, cleaned: output, source: .app))
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        let finishedIntent = intent
+        intent = .dictate
+        guard !trimmed.isEmpty else { return }
+        switch finishedIntent {
+        case .dictate:
+            let (output, steps) = pipeline.clean(trimmed)
+            finalText = output
+            appliedSteps = steps
+            HistoryStore.shared.append(DictationRecord(raw: trimmed, cleaned: output, source: .app))
+        case .edit(let original):
+            let instruction = pipeline.clean(trimmed).output
+            rewrite(original, instruction: instruction)
+        }
+    }
+
+    /// 改寫：引擎順序在 OnDeviceAssistant（Apple Intelligence → 雲端 key → 明講不可用）。
+    private func rewrite(_ original: String, instruction: String) {
+        isRewriting = true
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { self.isRewriting = false }
+            do {
+                let result = try await OnDeviceAssistant.editSelection(original, instruction: instruction)
+                guard !result.isEmpty else {
+                    self.errorMessage = "改寫引擎回了空白，輸出沒有動。"
+                    return
+                }
+                self.previousText = original
+                self.finalText = result
+                self.liveTranscript = ""
+                HistoryStore.shared.append(DictationRecord.edit(instruction: instruction, result: result, source: .app))
+            } catch {
+                self.errorMessage = error.localizedDescription
+            }
+        }
     }
 
     /// `SFSpeechRecognizer.requestAuthorization` 的 completion 由 TCC 從背景執行緒呼叫。
@@ -181,6 +248,7 @@ final class DictationModel: NSObject, ObservableObject {
 
     private func cleanupAfterStop() {
         isRecording = false
+        intent = .dictate
         request = nil
         task = nil
     }
