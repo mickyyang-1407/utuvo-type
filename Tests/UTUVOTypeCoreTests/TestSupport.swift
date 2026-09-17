@@ -63,7 +63,9 @@ struct SecretLiteralScanner {
 
     /// 跳過的路徑／檔名（fixtures、build artifacts、test 自身的 fixture 資料）。
     static let skipDirectories: Set<String> = [
-        ".build", ".git", ".swiftpm", "DerivedData",
+        ".build", ".git", ".swiftpm", "DerivedData", ".derivedData",
+        // gitignored 的出貨產物：release/（xcarchive＋ipa＋Xcode Packaging.log 含 Apple ID session 字樣）、dist/
+        "release", "dist",
         "Tests/UTUVOTypeCoreTests/Resources",
         "Tests/UTUVOTypeCoreTests/SecretLiteralScannerTests.swift",
         "benchmarks/report.json"

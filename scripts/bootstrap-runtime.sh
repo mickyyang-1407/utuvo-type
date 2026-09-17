@@ -75,8 +75,10 @@ fi
 # 2. 相依套件
 say "安裝相依套件（requirements.txt）"
 "$RUNTIME/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true
-"$RUNTIME/bin/python" -m pip install --quiet -r "$REPO_ROOT/runtime/requirements.txt" \
-  || die "pip 安裝失敗；請檢查網路後重跑本腳本"
+# --only-binary=:all：DMG 使用者沒有編譯器（或沒同意 Xcode license），任何要從源碼編的套件都該在這裡
+# 直接紅、講清楚，而不是跑進 clang 之後噴 25 行 setuptools 警告。
+"$RUNTIME/bin/python" -m pip install --quiet --only-binary=:all: -r "$REPO_ROOT/runtime/requirements.txt" \
+  || die "pip 安裝失敗。若上面出現「No matching distribution」或 clang／Xcode license 字樣＝某套件沒有預編 wheel，請回報版本；若是逾時／連線錯誤請檢查網路後重跑"
 "$RUNTIME/bin/python" - <<'EOF' || die "相依驗證失敗：本機 ASR server 的 import 不過；請重跑本腳本"
 # 除了 mlx_audio 本體，也要驗 server 進程真正會 import 的東西（uvicorn／fastapi／webrtcvad→pkg_resources）；
 # 只驗 mlx_audio 會綠燈但 server 起不來（2026-09-17 模擬 DMG 使用者抓到）。

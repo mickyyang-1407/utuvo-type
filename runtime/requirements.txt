@@ -8,5 +8,7 @@ opencc-python-reimplemented==0.1.7
 uvicorn==0.52.4
 fastapi==0.141.1
 python-multipart==0.0.32
-webrtcvad==2.0.10
+# webrtcvad 官方套件沒有 arm64 wheel，pip 會用 clang 從源碼編——DMG 使用者沒同意 Xcode license
+# 就炸（2026-09-17 第二台機器實踩，exit 69）。webrtcvad-wheels 是同一份程式碼的預編 wheel，import 名稱仍是 webrtcvad。
+webrtcvad-wheels==2.0.14
 setuptools==80.10.2
