@@ -37,6 +37,26 @@ final class NormalizerTests: XCTestCase {
         XCTAssertEqual(out.cleaned, "今天天氣不錯")
     }
 
+    /// 2026-09-17 鍵盤實測：「在錄音室對 Atmos 母帶」的「對」被當贅詞刪掉（右邊是空白就算邊界）。
+    func testKeepsDuiAsPrepositionBeforeLatinWord() {
+        XCTAssertEqual(Normalizer().normalize("明天在錄音室對 Atmos 母帶").cleaned, "明天在錄音室對 Atmos 母帶")
+    }
+
+    /// 同一條規則的另一面：句尾的「不對」原本會被刪成「不」。
+    func testKeepsDuiInBuDui() {
+        XCTAssertEqual(Normalizer().normalize("這個不對").cleaned, "這個不對")
+    }
+
+    func testStillRemovesStandaloneDui() {
+        XCTAssertEqual(Normalizer().normalize("對，明天見").cleaned, "明天見")
+        XCTAssertEqual(Normalizer().normalize("好，對，就這樣").cleaned, "好，就這樣")
+    }
+
+    /// 「這個／那個」夾在中文與英文之間是實詞，不是贅詞。
+    func testKeepsZheGeBeforeLatinWord() {
+        XCTAssertEqual(Normalizer().normalize("我要用這個 app 記筆記").cleaned, "我要用這個 app 記筆記")
+    }
+
     func testFillerStageIsRecorded() {
         let n = Normalizer()
         let out = n.normalize("那個我今天很累")
