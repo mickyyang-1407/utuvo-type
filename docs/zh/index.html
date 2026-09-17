@@ -62,10 +62,10 @@
   .btn svg{width:1.1em;height:1.1em}
 
   /* hero */
-  .hero{padding-block:56px 40px}
-  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .hero{padding-block:48px 32px}
+  .hero .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
   .hero .art{position:relative}
-  .hero .art img{width:100%;height:auto;display:block;filter:drop-shadow(0 30px 40px rgba(120,60,20,.18))}
+  .hero .art img{width:min(100%,420px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 34px rgba(120,60,20,.18))}
   .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
   .free{margin-top:18px;font-size:.9rem;color:var(--ink-3);font-weight:600}
   .free b{color:var(--mint)}
@@ -73,7 +73,7 @@
   /* popover showcase */
   .showcase{padding-block:24px 80px}
   .showcase .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .showcase img.pop{width:min(100%,400px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
+  .showcase img.pop{width:min(100%,330px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
   .steps{display:grid;gap:14px}
   .step{display:flex;gap:16px;padding:18px 20px;border-radius:18px}
   .step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316)}
@@ -89,14 +89,14 @@
   /* two-column feature blocks */
   .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:48px}
   .feature.rev .copy{order:2}
-  .feature img{width:100%;height:auto;display:block;border-radius:18px;filter:drop-shadow(0 24px 40px rgba(60,30,20,.14))}
+  .feature img{width:min(100%,560px);height:auto;display:block;margin:0 auto;border-radius:16px;filter:drop-shadow(0 20px 34px rgba(60,30,20,.14))}
   .feature ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .feature li{display:flex;gap:10px;color:var(--ink-2)}
   .feature li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:.55em}
 
   /* overlay demo */
   .capsules{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:20px}
-  .capsules img{height:38px;width:auto}
+  .capsules img{height:32px;width:auto}
 
   /* install */
   .install .box{padding:32px;border-radius:24px}
@@ -123,7 +123,7 @@
 <div class="backdrop" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
 
 <nav><div class="wrap"><div class="bar glass">
-  <img src="../assets/logo.png" alt=""><span class="name">UTUVO Type</span>
+  <img src="../assets/web/logo.webp" alt=""><span class="name">UTUVO Type</span>
   <div class="links">
     <a href="#modes">模式</a><a href="#privacy">隱私</a><a href="#install">安裝</a>
     <a class="gh" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
@@ -142,11 +142,11 @@
     </div>
     <p class="free"><b>免費</b>・開源・MIT・不用帳號、不用 API key</p>
   </div>
-  <div class="art"><img src="../assets/hero-front.png" alt="UTUVO Type 標誌：玻璃語音泡泡與文字游標，旁邊是波形、三個點與麥克風"></div>
+  <div class="art"><img src="../assets/web/hero-front.webp" alt="UTUVO Type 標誌：玻璃語音泡泡與文字游標，旁邊是波形、三個點與麥克風"></div>
 </div></div></section>
 
 <section class="showcase"><div class="wrap"><div class="row">
-  <img class="pop" src="../assets/popover-light.png" alt="UTUVO Type 的 menu bar 面板：四種模式與開始聽寫按鈕">
+  <img class="pop" src="../assets/web/popover-light.webp" alt="UTUVO Type 的 menu bar 面板：四種模式與開始聽寫按鈕">
   <div class="steps">
     <div class="step glass"><div class="n">1</div><div><h3>按快捷鍵</h3><small>預設 ⌥Space，按住就是 push-to-talk。想換哪顆鍵都行。</small></div></div>
     <div class="step glass"><div class="n">2</div><div><h3>開口說</h3><small>小膠囊告訴你正在錄。Esc 取消。你沒按之前不會錄任何東西。</small></div></div>
@@ -180,7 +180,7 @@
         <li>依 app 的預設：聊天用簡短風格、文件用完整風格</li>
       </ul>
     </div>
-    <img src="../assets/settings-general-light.png" alt="UTUVO Type 設定「一般」分頁：Liquid Glass 側欄與卡片">
+    <img src="../assets/web/settings-general-light.webp" alt="UTUVO Type 設定「一般」分頁：Liquid Glass 側欄與卡片">
   </div>
 </div></section>
 
@@ -197,7 +197,7 @@
         <li>全部公開：路由規則看得到、benchmark 跑得動、prompt 查得到</li>
       </ul>
     </div>
-    <img src="../assets/settings-models-light.png" alt="UTUVO Type 設定「模型」分頁：本機模型與選配雲端模型">
+    <img src="../assets/web/settings-models-light.webp" alt="UTUVO Type 設定「模型」分頁：本機模型與選配雲端模型">
   </div>
 </div></section>
 
@@ -208,12 +208,12 @@
       <h2 style="margin-top:12px">Liquid Glass。淡色與深色。</h2>
       <p class="lead" style="margin-top:14px">Swift、AppKit 與 SwiftUI。依 macOS 26 的設計語言：Liquid Glass 面板、浮動側欄、一顆小小的狀態膠囊；macOS 14、15 退回一般材質。</p>
       <div class="capsules">
-        <img src="../assets/overlay-listening-light.png" alt="聆聽中的膠囊：橘色波形">
-        <img src="../assets/overlay-processing-light.png" alt="處理中的膠囊：三個薰衣草色點">
-        <img src="../assets/overlay-listening-dark.png" alt="深色模式的聆聽膠囊">
+        <img src="../assets/web/overlay-listening-light.webp" alt="聆聽中的膠囊：橘色波形">
+        <img src="../assets/web/overlay-processing-light.webp" alt="處理中的膠囊：三個薰衣草色點">
+        <img src="../assets/web/overlay-listening-dark.webp" alt="深色模式的聆聽膠囊">
       </div>
     </div>
-    <img src="../assets/popover-dark.png" alt="深色模式的 UTUVO Type 面板" style="width:min(100%,380px);margin:0 auto;border-radius:0">
+    <img src="../assets/web/popover-dark.webp" alt="深色模式的 UTUVO Type 面板" style="width:min(100%,300px);margin:0 auto;border-radius:0">
   </div>
 </div></section>
 
