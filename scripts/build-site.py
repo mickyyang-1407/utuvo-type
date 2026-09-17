@@ -21,7 +21,7 @@ HEAD = '''<!doctype html>
 
 DESC = {
     'en': "UTUVO Type — free, open-source, local-first voice dictation for macOS. Transcribes on your Mac, cleans up deterministically, pastes where your cursor is.",
-    'zh': "UTUVO Type——免費開源、本機優先的 macOS 語音輸入。在你的 Mac 上轉錄、用確定性規則整理、貼到游標所在的地方。",
+    'zh': "UTUVO Type，免費開源、本機優先的 macOS 語音輸入。在你的 Mac 上轉錄，用規則整理，貼到游標所在的地方。",
 }
 
 ZH = {
