@@ -236,11 +236,29 @@ public struct Normalizer: Sendable {
                 // 所以不能只靠 whitespace token boundary。句首／句尾，
                 // 或至少一側是標點／空白時，才視為 filler；中文句中的
                 // 「那個」若兩側都是文字則保留，避免誤刪事實內容。
-                let leftBoundary = index == 0 || !isTokenChar(chars[index - 1])
                 let rightIndex = index + target.count
+                let leftBoundary = index == 0 || !isTokenChar(chars[index - 1])
                 let rightBoundary = rightIndex == chars.count || !isTokenChar(chars[rightIndex])
-                if leftBoundary || rightBoundary {
+                // 兼作實詞的贅詞規則更嚴（2026-09-17 鍵盤實測「在錄音室對 Atmos 母帶」的「對」被刪、「這個不對」剩「不」）：
+                //   「對」「這個」：兩側都要是邊界（「對，明天見」刪、「不對」「對 Atmos」「這個不對」留）。
+                //   「那個」：空白不算邊界，只有句首句尾或標點算（「那個我今天」刪、「用那個 app」留）。
+                let leftHard = index == 0 || isHardBoundary(chars[index - 1])
+                let rightHard = rightIndex == chars.count || isHardBoundary(chars[rightIndex])
+                let isFiller: Bool
+                if bothSidesFillers.contains(filler) {
+                    isFiller = leftBoundary && rightBoundary
+                } else if hardSideFillers.contains(filler) {
+                    isFiller = leftHard || rightHard
+                } else {
+                    isFiller = leftBoundary || rightBoundary
+                }
+                if isFiller {
                     chars.removeSubrange(index..<rightIndex)
+                    // 刪掉贅詞後不留孤兒標點：「對，明天見」→「明天見」、「好，對，就這樣」→「好，就這樣」。
+                    if index < chars.count, isPunctuation(chars[index]),
+                       index == 0 || isPunctuation(chars[index - 1]) {
+                        chars.remove(at: index)
+                    }
                     continue
                 }
                 index += 1
@@ -248,6 +266,21 @@ public struct Normalizer: Sendable {
         }
         // 多餘空白留給 collapse-whitespace 統一壓。
         return String(chars)
+    }
+
+    /// 兼作實詞、兩側都要是邊界才算贅詞。
+    /// 「這個」句首常是主詞（「這個不對」「這個好吃」），刪了會丟內容，所以也要兩側都是邊界。
+    static let bothSidesFillers: Set<String> = ["對", "這個"]
+    /// 兼作實詞、至少一側要是「硬邊界」（句首句尾或標點，空白不算）才算贅詞。
+    /// 「那個」放句首幾乎都是口頭禪（「那個我今天很累」），保留句首可刪。
+    static let hardSideFillers: Set<String> = ["那個", "這個這個", "那個那個", "然後那個"]
+
+    static func isPunctuation(_ c: Character) -> Bool {
+        c.unicodeScalars.allSatisfy { CharacterSet.punctuationCharacters.contains($0) }
+    }
+
+    static func isHardBoundary(_ c: Character) -> Bool {
+        isPunctuation(c) || c.isNewline
     }
 
     /// 把同一個 token 重複出現的狀況壓回一次。
