@@ -76,6 +76,28 @@ enum ReturnKeyLabel {
     }
 }
 
+/// 依 app 的語氣（Typeless「different tones for each app」的鍵盤版）：
+/// 鍵盤 extension 看不到宿主 app 是誰，但看得到 return 鍵是「送出」還是「換行」——
+/// 送出＝聊天框（LINE／訊息／Slack），單句訊息不加句號；換行／完成＝文件，照原樣。
+enum ToneHint: Equatable, Sendable {
+    case chat
+    case document
+
+    static func infer(returnKeyType: UIReturnKeyType?) -> ToneHint {
+        returnKeyType == .send ? .chat : .document
+    }
+
+    private static let terminators: Set<Character> = ["。", "！", "？", ".", "!", "?"]
+
+    /// 聊天：一句話（只有結尾一個句號、40 字以內）就把句號拿掉；多句或長訊息不動。
+    static func apply(_ text: String, tone: ToneHint) -> String {
+        guard tone == .chat, let last = text.last, last == "。" else { return text }
+        let body = text.dropLast()
+        guard body.count <= 40, !body.contains(where: { terminators.contains($0) }) else { return text }
+        return String(body)
+    }
+}
+
 /// 主 app 首頁的用量統計（Typeless 2.6 的 Home insights）。
 /// 字數：CJK 每字算一，其他以空白切詞；省下時間＝打字 36 wpm 與口說 150 wpm 的差。
 struct UsageInsights: Equatable, Sendable {

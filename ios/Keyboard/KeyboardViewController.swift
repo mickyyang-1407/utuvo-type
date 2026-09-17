@@ -512,7 +512,8 @@ final class KeyboardViewController: UIInputViewController {
         mode = .dictate
         switch finishedMode {
         case .dictate:
-            let (cleaned, _) = TextPipeline().clean(raw)
+            let tone = ToneHint.infer(returnKeyType: textDocumentProxy.returnKeyType)
+            let cleaned = ToneHint.apply(TextPipeline().clean(raw).output, tone: tone)
             applyEdit(to: cleaned)
             if !raw.isEmpty {
                 HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: cleaned, source: .keyboard))
