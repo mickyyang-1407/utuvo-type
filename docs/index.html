@@ -62,10 +62,10 @@
   .btn svg{width:1.1em;height:1.1em}
 
   /* hero */
-  .hero{padding-block:56px 40px}
-  .hero .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+  .hero{padding-block:48px 32px}
+  .hero .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
   .hero .art{position:relative}
-  .hero .art img{width:100%;height:auto;display:block;filter:drop-shadow(0 30px 40px rgba(120,60,20,.18))}
+  .hero .art img{width:min(100%,420px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 34px rgba(120,60,20,.18))}
   .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
   .free{margin-top:18px;font-size:.9rem;color:var(--ink-3);font-weight:600}
   .free b{color:var(--mint)}
@@ -73,7 +73,7 @@
   /* popover showcase */
   .showcase{padding-block:24px 80px}
   .showcase .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .showcase img.pop{width:min(100%,400px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
+  .showcase img.pop{width:min(100%,330px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
   .steps{display:grid;gap:14px}
   .step{display:flex;gap:16px;padding:18px 20px;border-radius:18px}
   .step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316)}
@@ -89,14 +89,14 @@
   /* two-column feature blocks */
   .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:48px}
   .feature.rev .copy{order:2}
-  .feature img{width:100%;height:auto;display:block;border-radius:18px;filter:drop-shadow(0 24px 40px rgba(60,30,20,.14))}
+  .feature img{width:min(100%,560px);height:auto;display:block;margin:0 auto;border-radius:16px;filter:drop-shadow(0 20px 34px rgba(60,30,20,.14))}
   .feature ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
   .feature li{display:flex;gap:10px;color:var(--ink-2)}
   .feature li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:.55em}
 
   /* overlay demo */
   .capsules{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:20px}
-  .capsules img{height:38px;width:auto}
+  .capsules img{height:32px;width:auto}
 
   /* install */
   .install .box{padding:32px;border-radius:24px}
@@ -123,7 +123,7 @@
 <div class="backdrop" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
 
 <nav><div class="wrap"><div class="bar glass">
-  <img src="assets/logo.png" alt=""><span class="name">UTUVO Type</span>
+  <img src="assets/web/logo.webp" alt=""><span class="name">UTUVO Type</span>
   <div class="links">
     <a href="#modes">Modes</a><a href="#privacy">Privacy</a><a href="#install">Install</a>
     <a class="gh" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
@@ -142,11 +142,11 @@
     </div>
     <p class="free"><b>Free</b> · Open source · MIT · No account, no API key required</p>
   </div>
-  <div class="art"><img src="assets/hero-front.png" alt="UTUVO Type mark: a glass speech bubble with a text cursor, beside a waveform, three dots and a microphone"></div>
+  <div class="art"><img src="assets/web/hero-front.webp" alt="UTUVO Type mark: a glass speech bubble with a text cursor, beside a waveform, three dots and a microphone"></div>
 </div></div></section>
 
 <section class="showcase"><div class="wrap"><div class="row">
-  <img class="pop" src="assets/popover-light.png" alt="The UTUVO Type menu bar popover with four modes and a Start dictation button">
+  <img class="pop" src="assets/web/popover-light.webp" alt="The UTUVO Type menu bar popover with four modes and a Start dictation button">
   <div class="steps">
     <div class="step glass"><div class="n">1</div><div><h3>Press the shortcut</h3><small>⌥Space by default, or hold it for push-to-talk. Any key you like.</small></div></div>
     <div class="step glass"><div class="n">2</div><div><h3>Say it</h3><small>A small capsule shows you're live. Esc cancels. Nothing is recorded until you start.</small></div></div>
@@ -180,7 +180,7 @@
         <li>Per-app presets: a terse style for chat, a fuller one for documents</li>
       </ul>
     </div>
-    <img src="assets/settings-general-light.png" alt="UTUVO Type settings, General tab, with Liquid Glass sidebar and cards">
+    <img src="assets/web/settings-general-light.webp" alt="UTUVO Type settings, General tab, with Liquid Glass sidebar and cards">
   </div>
 </div></section>
 
@@ -197,7 +197,7 @@
         <li>Everything is in the open: read the routing rules, run the benchmark, audit the prompts</li>
       </ul>
     </div>
-    <img src="assets/settings-models-light.png" alt="UTUVO Type settings, Models tab, showing the local model and optional cloud models">
+    <img src="assets/web/settings-models-light.webp" alt="UTUVO Type settings, Models tab, showing the local model and optional cloud models">
   </div>
 </div></section>
 
@@ -208,12 +208,12 @@
       <h2 style="margin-top:12px">Liquid Glass. Light and dark.</h2>
       <p class="lead" style="margin-top:14px">Swift, AppKit and SwiftUI. Built against the macOS 26 design language with a Liquid Glass popover, floating sidebar and a tiny overlay capsule — and a plain material fallback on macOS 14 and 15.</p>
       <div class="capsules">
-        <img src="assets/overlay-listening-light.png" alt="Listening capsule with an orange waveform">
-        <img src="assets/overlay-processing-light.png" alt="Processing capsule with three lavender dots">
-        <img src="assets/overlay-listening-dark.png" alt="Listening capsule in dark mode">
+        <img src="assets/web/overlay-listening-light.webp" alt="Listening capsule with an orange waveform">
+        <img src="assets/web/overlay-processing-light.webp" alt="Processing capsule with three lavender dots">
+        <img src="assets/web/overlay-listening-dark.webp" alt="Listening capsule in dark mode">
       </div>
     </div>
-    <img src="assets/popover-dark.png" alt="The UTUVO Type popover in dark mode" style="width:min(100%,380px);margin:0 auto;border-radius:0">
+    <img src="assets/web/popover-dark.webp" alt="The UTUVO Type popover in dark mode" style="width:min(100%,300px);margin:0 auto;border-radius:0">
   </div>
 </div></section>
 
