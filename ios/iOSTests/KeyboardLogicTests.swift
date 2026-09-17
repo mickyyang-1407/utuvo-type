@@ -33,6 +33,27 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertEqual(ReturnKeyLabel.text(for: nil), "換行")
     }
 
+    func testToneChatDropsSingleTrailingPeriod() {
+        XCTAssertEqual(ToneHint.infer(returnKeyType: .send), .chat)
+        XCTAssertEqual(ToneHint.infer(returnKeyType: .default), .document)
+        XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .chat), "我十分鐘到")
+        XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .document), "我十分鐘到。")
+        // 多句不動、太長不動、沒句號不動
+        XCTAssertEqual(ToneHint.apply("先開會。再吃飯。", tone: .chat), "先開會。再吃飯。")
+        let long = String(repeating: "很", count: 41) + "。"
+        XCTAssertEqual(ToneHint.apply(long, tone: .chat), long)
+        XCTAssertEqual(ToneHint.apply("好", tone: .chat), "好")
+    }
+
+    func testPipelineAppliesTaiwanPhrasesBeforeDictionary() {
+        // 字典後套：使用者若把「軟體」再改成「Software」，字典要贏
+        // 字典規則：右側緊接文字時視為更長詞的一部分而不換，所以用句尾／標點前的位置測
+        let pipeline = TextPipeline(dictionary: ["軟體": "Software"])
+        XCTAssertEqual(pipeline.clean("我在用軟件，很好用").output, "我在用Software，很好用")
+        XCTAssertEqual(TextPipeline().clean("我在用軟件，很好用").output, "我在用軟體，很好用")
+        XCTAssertTrue(pipeline.clean("軟件").steps.first == "taiwan-phrases")
+    }
+
     func testWordCountMixesCJKAndLatin() {
         XCTAssertEqual(UsageInsights.wordCount("今天下午三點開會"), 8)
         XCTAssertEqual(UsageInsights.wordCount("meet at 3 pm today"), 5)
