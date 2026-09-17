@@ -37,7 +37,7 @@ struct HistoryListView: View {
                         if record.source == .keyboard {
                             Label("鍵盤", systemImage: "keyboard")
                                 .font(.caption2)
-                                .foregroundStyle(Aurora.amber)
+                                .foregroundStyle(Aurora.orange)
                         }
                         Spacer()
                         Button {

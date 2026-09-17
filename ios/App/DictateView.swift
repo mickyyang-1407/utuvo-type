@@ -1,19 +1,26 @@
 import SwiftUI
 
-/// 聽寫主畫面（Aurora 視覺）：光球＋波形＋玻璃卡。
+/// 聽寫主畫面：品牌列、用量統計（Typeless Home insights）、鍵盤啟用教學、光球＋波形、輸出卡。
 struct DictateView: View {
     @StateObject private var model = DictationModel()
-    @State private var translationTarget = "en"
     @State private var translating = false
     @State private var translatedText: String?
     @State private var copied = false
+    @State private var insights = UsageInsights.compute(records: HistoryStore.shared.load())
+    @State private var keyboardSeen = KeyboardPresence.seen
+    @AppStorage("utuvo.type.ios.keyboardGuideDismissed") private var keyboardGuideDismissed = false
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Aurora.Backdrop()
                 ScrollView {
-                    VStack(spacing: 22) {
+                    VStack(spacing: 18) {
+                        header
+                        insightsStrip
+                        if !keyboardSeen && !keyboardGuideDismissed {
+                            keyboardGuideCard
+                        }
                         languagePicker
                         WaveformBars(isRecording: model.isRecording)
                         micButton
@@ -24,15 +31,111 @@ struct DictateView: View {
                     .padding(16)
                 }
             }
-            .navigationTitle("UTUVO TYPE")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+            .toolbar(.hidden, for: .navigationBar)
+            .onAppear {
+                insights = UsageInsights.compute(records: HistoryStore.shared.load())
+                keyboardSeen = KeyboardPresence.seen
+            }
+            .onChange(of: model.finalText) { _, _ in
+                insights = UsageInsights.compute(records: HistoryStore.shared.load())
+            }
             .onDisappear { model.finalizeNow() }
         }
-        .preferredColorScheme(.dark)
     }
 
-    // MARK: - Subviews
+    // MARK: - Header / insights
+
+    private var header: some View {
+        HStack(spacing: 12) {
+            Image("BrandMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 44, height: 44)
+                .shadow(color: Aurora.orange.opacity(0.25), radius: 6, y: 3)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("UTUVO Type")
+                    .font(.title3.weight(.semibold))
+                Text("你只需要說話")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+        }
+        .padding(.top, 6)
+    }
+
+    private var insightsStrip: some View {
+        HStack(spacing: 10) {
+            insightTile(value: "\(insights.weekWords)", label: "本週字數")
+            insightTile(value: "\(insights.sessions)", label: "次聽寫")
+            insightTile(value: minutesText(insights.minutesSaved), label: "省下打字")
+        }
+    }
+
+    private func insightTile(value: String, label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(value)
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .auroraGlass(cornerRadius: 16)
+    }
+
+    private func minutesText(_ minutes: Double) -> String {
+        if minutes < 1 { return "<1 分" }
+        if minutes < 60 { return "\(Int(minutes.rounded())) 分" }
+        return String(format: "%.1f 時", minutes / 60)
+    }
+
+    /// 鍵盤還沒在任何 app 裡出現過＝很可能還沒啟用；教三步驟並直接開系統設定。
+    private var keyboardGuideCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "keyboard.badge.ellipsis")
+                    .foregroundStyle(Aurora.orange)
+                Text("在任何 app 裡用說的打字")
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Button("略過") { keyboardGuideDismissed = true }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            guideStep(1, "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type")
+            guideStep(2, "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）")
+            guideStep(3, "在任何輸入框按 🌐 切到 UTUVO Type，點麥克風開始說")
+            Button {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            } label: {
+                Label("打開設定", systemImage: "arrow.up.forward.app")
+                    .frame(maxWidth: .infinity)
+            }
+            .auroraProminentButton()
+            .tint(Aurora.orange)
+        }
+        .auroraCard()
+    }
+
+    private func guideStep(_ n: Int, _ text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text("\(n)")
+                .font(.caption.weight(.bold))
+                .foregroundStyle(.white)
+                .frame(width: 20, height: 20)
+                .background(Circle().fill(Aurora.orbGradient))
+            Text(text)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Dictation
 
     private var languagePicker: some View {
         Picker("語言", selection: $model.language) {
@@ -44,18 +147,16 @@ struct DictateView: View {
         .disabled(model.isRecording)
     }
 
-    /// IOS2：這次辨識走本機還是雲端，講在畫面上，不讓使用者用猜的。
+    /// 這次辨識走本機還是雲端，講在畫面上，不讓使用者用猜的。
     @ViewBuilder
     private var routeBadge: some View {
         if let route = model.route {
             Label(route.badgeText, systemImage: route.isPrivate ? "lock.fill" : "cloud.fill")
                 .font(.caption)
-                .foregroundStyle(route.isPrivate ? .green : .orange)
+                .foregroundStyle(route.isPrivate ? Aurora.mint : Aurora.orange)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(
-                    Capsule().fill((route.isPrivate ? Color.green : Color.orange).opacity(0.14))
-                )
+                .background(Capsule().fill((route.isPrivate ? Aurora.mint : Aurora.orange).opacity(0.14)))
         }
     }
 
@@ -66,7 +167,8 @@ struct DictateView: View {
         } label: {
             MicOrb(isRecording: model.isRecording)
         }
-        .padding(.vertical, 10)
+        .padding(.vertical, 6)
+        .accessibilityLabel(model.isRecording ? "停止" : "開始聽寫")
     }
 
     @ViewBuilder
@@ -83,7 +185,7 @@ struct DictateView: View {
         if let error = model.errorMessage {
             Label(error, systemImage: "exclamationmark.triangle.fill")
                 .font(.footnote)
-                .foregroundStyle(.orange)
+                .foregroundStyle(Aurora.orange)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 4)
         }
@@ -94,76 +196,73 @@ struct DictateView: View {
         if !model.finalText.isEmpty {
             VStack(spacing: 10) {
                 HStack(spacing: 10) {
-                    actionButton(
-                        icon: copied ? "checkmark" : "doc.on.doc",
-                        label: copied ? "已複製" : "複製"
-                    ) {
+                    Button {
                         UIPasteboard.general.string = model.finalText
                         copied = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
+                    } label: {
+                        Label(copied ? "已複製" : "複製", systemImage: copied ? "checkmark" : "doc.on.doc")
+                            .frame(maxWidth: .infinity)
                     }
+                    .auroraGlassButton()
+
                     Menu {
-                        ForEach(TranslationService.targets, id: \.code) { target in
-                            Button(target.zh) {
-                                translationTarget = target.zh
-                                runTranslation(targetName: target.zh)
-                            }
+                        ForEach(TranslationTarget.all) { target in
+                            Button(target.zh) { runTranslation(to: target) }
                         }
                     } label: {
                         Label(translating ? "翻譯中…" : "翻譯", systemImage: "character.book.closed")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .auroraProminentButton()
                     .tint(Aurora.violet)
-                    .disabled(translating || !TranslationService.shared.isConfigured)
+                    .disabled(translating || engineUnavailable)
                 }
-                if !TranslationService.shared.isConfigured {
-                    Text("翻譯需先在「設定 → 雲端翻譯」輸入 API key")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
+                Text(engineLine)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
-    // MARK: - Pieces
-
-    private func actionButton(icon: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(label, systemImage: icon)
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.bordered)
-        .tint(.white)
+    private var engineUnavailable: Bool {
+        if case .unavailable = OnDeviceAssistant.currentEngine() { return true }
+        return false
     }
 
-    private func runTranslation(targetName: String) {
+    private var engineLine: String {
+        switch OnDeviceAssistant.currentEngine() {
+        case .appleIntelligence: return "翻譯與改寫走 Apple Intelligence，文字不離機"
+        case .cloud: return "翻譯與改寫走你自己的雲端 key"
+        case .unavailable(let why): return why
+        }
+    }
+
+    private func runTranslation(to target: TranslationTarget) {
         translating = true
         translatedText = nil
         Task {
             defer { translating = false }
             do {
-                translatedText = try await TranslationService.shared.translate(model.finalText, to: targetName)
+                translatedText = try await OnDeviceAssistant.translate(model.finalText, to: target)
             } catch {
                 translatedText = "⚠️ \(error.localizedDescription)"
             }
         }
     }
 
-    /// Aurora 玻璃卡片：標題＋可選取內文。
     private func card(title: String, text: String, secondary: Bool) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(.caption.weight(.bold))
-                .kerning(1.2)
-                .foregroundStyle(Aurora.orange.opacity(0.9))
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Aurora.orange)
             Text(text)
                 .font(.body)
-                .foregroundStyle(secondary ? Color.white.opacity(0.55) : Color.white)
+                .foregroundStyle(secondary ? Color.secondary : Color.primary)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .modifier(Aurora.GlassCard())
+        .auroraCard()
     }
 }

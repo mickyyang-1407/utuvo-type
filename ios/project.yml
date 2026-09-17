@@ -15,6 +15,10 @@ packages:
 settings:
   base:
     SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: "RPNT54P79S"
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.2.0"
+    CURRENT_PROJECT_VERSION: "1"
 
 targets:
   "UTUVOTypeiOS":
@@ -23,6 +27,7 @@ targets:
     sources:
       - path: App
       - path: Shared
+      - path: Assets.xcassets
     dependencies:
       - package: UTUVOType
         product: UTUVOTypeCore
@@ -40,9 +45,13 @@ targets:
         NSMicrophoneUsageDescription: "UTUVO Type 只在你按住聽寫時使用麥克風，把語音轉成文字。"
         NSSpeechRecognitionUsageDescription: "UTUVO Type 使用 iOS 語音辨識把你的口述轉成文字。"
         ITSAppUsesNonExemptEncryption: false
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
 
   "UTUVOKeyboard":
     type: app-extension

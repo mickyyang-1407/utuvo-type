@@ -26,6 +26,15 @@ struct TranslationService {
     ]
 
     func translate(_ text: String, to targetName: String) async throws -> String {
+        let systemPrompt = """
+        You are a translation engine. Translate the user's text into \(targetName). \
+        Output ONLY the translation, no explanations, no quotes, no reasoning.
+        """
+        return try await complete(system: systemPrompt, user: text)
+    }
+
+    /// 通用 chat completion（翻譯與「說出要怎麼改」共用）：只回 content。
+    func complete(system systemPrompt: String, user text: String) async throws -> String {
         guard !apiKey.isEmpty else { throw TranslationError.notConfigured }
         guard let url = URL(string: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions") else {
             throw TranslationError.badURL
@@ -36,10 +45,6 @@ struct TranslationService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
 
-        let systemPrompt = """
-        You are a translation engine. Translate the user's text into \(targetName). \
-        Output ONLY the translation, no explanations, no quotes, no reasoning.
-        """
         let body: [String: Any] = [
             "model": "qwen3.7-flash",
             "temperature": 0,
