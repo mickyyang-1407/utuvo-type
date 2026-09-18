@@ -39,7 +39,9 @@ public struct NormalizerOptions: Sendable {
     public static let defaultFillers: Set<String> = [
         "嗯", "嗯嗯", "啊", "啊啊", "呃", "呃呃",
         "那個", "那個那個", "這個", "這個這個",
-        "就是說", "就是說說", "然後那個", "對", "欸"
+        "就是說", "就是說說", "然後那個", "對", "欸",
+        // 簡體（規則與繁體相同；「对」「这个」「那个」同樣受邊界限制）
+        "那个", "那个那个", "这个", "这个这个", "就是说", "然后那个", "对"
     ]
 }
 
@@ -270,10 +272,10 @@ public struct Normalizer: Sendable {
 
     /// 兼作實詞、兩側都要是邊界才算贅詞。
     /// 「這個」句首常是主詞（「這個不對」「這個好吃」），刪了會丟內容，所以也要兩側都是邊界。
-    static let bothSidesFillers: Set<String> = ["對", "這個"]
+    static let bothSidesFillers: Set<String> = ["對", "這個", "对", "这个"]
     /// 兼作實詞、至少一側要是「硬邊界」（句首句尾或標點，空白不算）才算贅詞。
     /// 「那個」放句首幾乎都是口頭禪（「那個我今天很累」），保留句首可刪。
-    static let hardSideFillers: Set<String> = ["那個", "這個這個", "那個那個", "然後那個"]
+    static let hardSideFillers: Set<String> = ["那個", "這個這個", "那個那個", "然後那個", "那个", "这个这个", "那个那个", "然后那个"]
 
     static func isPunctuation(_ c: Character) -> Bool {
         c.unicodeScalars.allSatisfy { CharacterSet.punctuationCharacters.contains($0) }

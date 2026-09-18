@@ -80,7 +80,8 @@ enum PausePunctuator {
                 if !boundaryHasPunct && gap >= commaGap {
                     let latin = isLatinish(last)
                     if gap >= periodGap {
-                        out += latin ? ". " : (endsWithQuestionParticle(out) ? "？" : "。")
+                        let question = ClauseRules.isQuestion(ClauseRules.lastClause(out))
+                        out += latin ? (question ? "? " : ". ") : (question ? "？" : "。")
                     } else {
                         out += latin ? ", " : "，"
                     }
@@ -90,7 +91,7 @@ enum PausePunctuator {
             }
             out += piece
         }
-        return out
+        return ClauseRules.finish(out)
     }
 
     static func isPunctuation(_ c: Character) -> Bool {
@@ -106,9 +107,98 @@ enum PausePunctuator {
         return isLatinish(left) && isLatinish(right)
     }
 
-    /// 中文問句尾：「嗎」幾乎一定是問句（「呢」「吧」太常是陳述，不猜）。
-    private static func endsWithQuestionParticle(_ s: String) -> Bool {
-        s.hasSuffix("嗎")
+}
+
+/// 不靠停頓的斷句規則（2026-09-18 產品決定：標點再優化）。都是保守規則，寧可少補不要補錯。
+enum ClauseRules {
+    /// 最後一個句號／問號／驚嘆號之後的那一句（逗號不算斷句）。
+    static func lastClause(_ s: String) -> String {
+        let enders: Set<Character> = ["。", "？", "！", ".", "?", "!"]
+        guard let i = s.lastIndex(where: { enders.contains($0) }) else { return s }
+        return String(s[s.index(after: i)...])
+    }
+
+    /// 正反問：出現在句中也是問句（「你可不可以拍給我看」）。
+    static let aNotA = ["是不是", "要不要", "可不可以", "能不能", "會不會", "有沒有", "好不好", "對不對", "行不行", "想不想", "去不去", "來不來", "在不在", "知不知道",
+                        // 簡體
+                        "会不会", "有没有", "对不对", "来不来"]
+    /// 句尾是這些＝問句（「你要吃什麼」「在哪裡」「幾點」）。
+    static let endingQuestionWords = ["什麼", "甚麼", "為什麼", "怎麼", "怎麼辦", "怎麼樣", "怎樣", "如何", "哪裡", "哪邊", "哪個", "哪些", "誰", "多少", "多久", "幾點", "幾個", "幾天", "幾次", "為何",
+                                       // 簡體
+                                       "什么", "为什么", "怎么", "怎么办", "怎么样", "哪里", "哪边", "哪个", "谁", "几点", "几个", "几天", "几次", "为何"]
+    /// 問句裡的疑問詞（配合句尾「呢」）。
+    static let questionWords = ["什麼", "甚麼", "怎麼", "為什麼", "哪", "誰", "幾", "多少", "多久", "如何",
+                                 "什么", "怎么", "为什么", "谁", "几"]
+    /// 這些開頭是「轉述」不是發問（「我不知道他是不是要來」）。
+    static let embedMarkers = ["我不知道", "不知道", "不確定", "不曉得", "我在想", "看看", "問問", "不管",
+                                "不确定", "不晓得", "问问"]
+    static let englishQuestionStarts = ["what", "why", "how", "when", "where", "who", "which", "can", "could", "do", "does", "did", "is", "are", "was", "were", "will", "would", "should", "shall", "may", "have", "has"]
+
+    static func isQuestion(_ rawClause: String) -> Bool {
+        let clause = rawClause.trimmingCharacters(in: .whitespacesAndNewlines.union(CharacterSet(charactersIn: "，,、")))
+        guard !clause.isEmpty else { return false }
+        if let first = clause.split(separator: " ").first, first.allSatisfy({ $0.isASCII }) {
+            let word = first.lowercased().trimmingCharacters(in: .punctuationCharacters)
+            return englishQuestionStarts.contains(word)
+        }
+        // 轉述開頭（允許前面有主詞，例如「我不確定…」「他不知道…」）：不是發問。
+        let head = String(clause.prefix(5))
+        if embedMarkers.contains(where: { head.contains($0) }) { return false }
+        // 「為什麼／怎麼」當疑問詞：句中出現就是問句（「不怎麼好」是陳述，排除前面有「不」）。
+        for word in ["為什麼", "为什么", "為何", "为何"] where clause.contains(word) { return true }
+        for word in ["怎麼", "怎么"] {
+            if let r = clause.range(of: word), r.lowerBound == clause.startIndex || clause[clause.index(before: r.lowerBound)] != "不" { return true }
+        }
+        if clause.hasSuffix("嗎") || clause.hasSuffix("吗") { return true }
+        if (clause.hasSuffix("麼") || clause.hasSuffix("么")),
+           !["這麼", "那麼", "多麼", "这么", "那么", "多么"].contains(where: { clause.hasSuffix($0) }) { return true }
+        if endingQuestionWords.contains(where: { clause.hasSuffix($0) }) { return true }
+        if aNotA.contains(where: { clause.contains($0) }) { return true }
+        if clause.hasSuffix("呢") {
+            // 「你呢」「那我呢」這種短句，或句中有疑問詞：問句；「還在做呢」：陳述。
+            return clause.count <= 4 || questionWords.contains(where: { clause.contains($0) })
+        }
+        return false
+    }
+
+    /// 轉折／因果詞前面補逗號：前面同一句已經至少 6 個字、而且前一個字不是黏著用法。
+    static let connectors = ["但是", "可是", "所以", "然後", "而且", "因為", "如果", "雖然", "結果", "只是",
+                              "然后", "因为", "虽然", "结果"]
+    /// 前一個字是這些就不斷（「就是因為」「的結果」「不只是」「並且而且」）。
+    static let gluedBefore: Set<Character> = ["是", "就", "正", "都", "也", "只", "才", "並", "還", "的", "不", "，", "、", "并", "还"]
+
+    static func connectorCommas(_ s: String) -> String {
+        var chars = Array(s)
+        var i = 0
+        var sinceBreak = 0
+        let breakers: Set<Character> = ["。", "？", "！", "，", "、", ".", "?", "!", ",", "；", ";", "：", ":", "\n"]
+        while i < chars.count {
+            if breakers.contains(chars[i]) { sinceBreak = 0; i += 1; continue }
+            if sinceBreak >= 6, i > 0, !gluedBefore.contains(chars[i - 1]),
+               let hit = connectors.first(where: { word in
+                   let w = Array(word)
+                   return i + w.count <= chars.count && Array(chars[i..<(i + w.count)]) == w
+               }) {
+                chars.insert("，", at: i)
+                i += 1 + hit.count
+                sinceBreak = hit.count
+                continue
+            }
+            if !chars[i].isWhitespace { sinceBreak += 1 }
+            i += 1
+        }
+        return String(chars)
+    }
+
+    /// 最後整理：補轉折逗號；最後一句是問句而且沒有句末標點就補問號。
+    static func finish(_ s: String) -> String {
+        var out = connectorCommas(s)
+        let trimmed = out.trimmingCharacters(in: .whitespaces)
+        guard let last = trimmed.last, !PausePunctuator.isPunctuation(last) else { return out }
+        if isQuestion(lastClause(trimmed)) {
+            out = trimmed + (PausePunctuator.isLatinish(last) ? "?" : "？")
+        }
+        return out
     }
 }
 

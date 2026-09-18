@@ -93,4 +93,43 @@ final class PunctuationTests: XCTestCase {
         XCTAssertTrue(gate.claim())
         XCTAssertFalse(gate.claim())
     }
+
+    // MARK: - 2026-09-18 不靠停頓的規則（問句、轉折逗號；繁簡都要）
+
+    func testQuestionsGetQuestionMark() {
+        for q in ["你明天有空嗎", "你要吃什麼", "我們約在哪裡", "你可不可以拍一下你的立可帶給我看",
+                  "這樣是不是比較好", "那你呢", "明天幾點", "你為什麼不早說", "Can you send it by Friday",
+                  "what time is it",
+                  // 簡體
+                  "你明天有空吗", "你要吃什么", "我们约在哪里", "你为什么不早说", "明天会不会下雨", "你怎么了"] {
+            let out = ClauseRules.finish(q)
+            XCTAssertTrue(out.hasSuffix("？") || out.hasSuffix("?"), "應該是問句：\(q) → \(out)")
+        }
+    }
+
+    func testStatementsDoNotGetQuestionMark() {
+        for s in ["我不知道他是不是要來", "哈哈，我現在用我自己的輸入方式在打字耶", "我還在做呢", "他多麼", "那麼",
+                  "什麼都好", "I will send it tomorrow", "我們要去金玉堂買文具", "這麼",
+                  "我不确定他会不会来", "这么", "我们明天见", "我不怎麼喜歡這首"] {
+            XCTAssertEqual(ClauseRules.finish(s), s, "不該補問號：\(s)")
+        }
+    }
+
+    func testQuestionMarkAtPeriodGapUsesClauseRules() {
+        let tokens = [TimedToken(text: "你要吃什麼", start: 0, duration: 1), TimedToken(text: "我請客", start: 1.8, duration: 0.8)]
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "你要吃什麼？我請客")
+    }
+
+    func testConnectorCommas() {
+        XCTAssertEqual(ClauseRules.connectorCommas("我今天本來想去錄音室但是下雨了"), "我今天本來想去錄音室，但是下雨了")
+        XCTAssertEqual(ClauseRules.connectorCommas("客戶還沒回信所以我們先等"), "客戶還沒回信，所以我們先等")
+        XCTAssertEqual(ClauseRules.connectorCommas("客户还没回信然后我们先等"), "客户还没回信，然后我们先等")
+    }
+
+    func testConnectorCommasLeaveGluedAndShortAlone() {
+        for s in ["所以我們先等", "就是因為下雨才沒去", "這次混音的結果很好", "他不只是老師", "好，但是不行", "我想但是",
+                  "就是因为下雨才没去", "这次混音的结果很好"] {
+            XCTAssertEqual(ClauseRules.connectorCommas(s), s, "不該補逗號：\(s)")
+        }
+    }
 }

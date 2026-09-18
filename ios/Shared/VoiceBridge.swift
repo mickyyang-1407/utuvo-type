@@ -56,8 +56,8 @@ enum VoiceBridge {
     static let commandTTL: TimeInterval = 30
     /// 按停止後主 app 等 final 的上限；逾時就拿最後的 partial 當 final。
     static let finalizeTimeout: TimeInterval = 3
-    /// 預設閒置多久自動結束語音工作階段（關麥克風、橘點消失）。
-    static let defaultIdleTimeout: TimeInterval = 5 * 60
+    /// 預設閒置多久自動結束語音工作階段（3 分鐘）（關麥克風、橘點消失）。
+    static let defaultIdleTimeout: TimeInterval = 3 * 60   // 2026-09-18 產品決定：5 分鐘太久
 
     static func isAlive(_ state: State?, now: Date = Date()) -> Bool {
         guard let state, state.phase != .ended else { return false }
