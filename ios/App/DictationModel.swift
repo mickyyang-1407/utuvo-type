@@ -115,10 +115,8 @@ final class DictationModel: NSObject, ObservableObject {
         self.recognizer = recognizer
 
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.record, mode: .measurement, options: .duckOthers)
-            try? session.setAllowHapticsAndSystemSoundsDuringRecording(true)
-            try session.setActive(true, options: .notifyOthersOnDeactivation)
+            // 跟鍵盤語音同一份設定：不打斷使用者正在聽的音樂、藍牙耳機繼續出聲。
+            try VoiceAudioSession.activate()
 
             // IOS2：裝置端優先，但「退回雲端」必須看得見，而且使用者可以直接禁止。
             let decision = RecognitionRoutePolicy.decide(

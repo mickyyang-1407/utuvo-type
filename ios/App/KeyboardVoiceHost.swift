@@ -360,12 +360,8 @@ final class KeyboardVoiceHost: ObservableObject {
     // MARK: - 音訊
 
     private func startEngine() throws {
-        let session = AVAudioSession.sharedInstance()
-        // mixWithOthers：不把使用者正在聽的音樂停掉。
-        try session.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
-        // 錄音中 iOS 預設把震動與系統音靜音——鍵盤的開始／停止震動會整個消失（真機回報）。
-        try? session.setAllowHapticsAndSystemSoundsDuringRecording(true)
-        try session.setActive(true)
+        // 不打斷使用者正在聽的音樂、藍牙耳機繼續出聲（見 VoiceAudioSession）。
+        try VoiceAudioSession.activate()
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
