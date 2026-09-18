@@ -16,7 +16,7 @@ HEAD = '''<!doctype html>
 <meta name="description" content="{desc}">
 <meta property="og:title" content="UTUVO Type"><meta property="og:description" content="{desc}"><meta property="og:image" content="{site}assets/og.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="{site}"><link rel="alternate" hreflang="zh-Hant" href="{site}zh/">
-<link rel="icon" href="{base}assets/logo.png">
+<link rel="icon" type="image/png" sizes="64x64" href="{base}assets/favicon.png"><link rel="apple-touch-icon" href="{base}assets/apple-touch-icon.png">
 '''
 
 DESC = {
