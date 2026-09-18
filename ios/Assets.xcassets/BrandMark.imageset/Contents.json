@@ -1,17 +1,20 @@
 {
   "images": [
     {
-      "filename": "BrandMark.png",
-      "idiom": "universal",
-      "scale": "1x"
-    },
-    {
-      "idiom": "universal",
-      "scale": "2x"
-    },
-    {
+      "filename": "BrandMark@3x.png",
       "idiom": "universal",
       "scale": "3x"
+    },
+    {
+      "filename": "BrandMark-dark@3x.png",
+      "idiom": "universal",
+      "scale": "3x",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ]
     }
   ],
   "info": {

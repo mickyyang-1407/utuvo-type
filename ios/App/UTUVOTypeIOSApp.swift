@@ -47,7 +47,7 @@ struct RootView: View {
     private var tabs: some View {
         TabView(selection: $tab) {
             DictateView()
-                .tabItem { Label("聽寫", systemImage: "mic.fill") }
+                .tabItem { Label("聽寫", image: "OrbGlyph") }
                 .tag(0)
             HistoryListView()
                 .tabItem { Label("歷史", systemImage: "clock.arrow.circlepath") }

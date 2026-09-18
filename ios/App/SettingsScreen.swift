@@ -25,7 +25,7 @@ struct SettingsScreen: View {
                         Label("打開設定", systemImage: "arrow.up.forward.app")
                     }
                     LabeledContent("鍵盤狀態", value: KeyboardPresence.seen ? "已出現過" : "還沒啟用")
-                    Text("有選取文字時，鍵盤的麥克風會變成「說出要怎麼改」；長按麥克風滑到語言、放開就翻譯。")
+                    Text("有選取文字時，鍵盤的光球會變成「說出要怎麼改」（轉成薰衣草色）；長按光球滑到語言、放開就翻譯。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     NavigationLink {

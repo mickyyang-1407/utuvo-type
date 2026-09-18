@@ -46,6 +46,8 @@ final class DictationModel: NSObject, ObservableObject {
     private let pipeline = TextPipeline()
     /// 這次錄音的音量紀錄（停頓斷句用）。
     private let levels = LevelLog()
+    /// 主畫面光球讀：目前麥克風音量（dBFS），沒在錄回 nil。
+    func liveLevel() -> Float? { levels.latest() }
 
     override init() {
         let saved = UserDefaults.standard.string(forKey: "utuvo.type.ios.language")

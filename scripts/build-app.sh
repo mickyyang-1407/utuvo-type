@@ -23,7 +23,15 @@ cp "$REPO_ROOT/runtime/requirements.txt" "$REPO_ROOT/runtime/utuvo-type-asr" \
    "$REPO_ROOT/runtime/utuvo-type-asr.py" "$REPO_ROOT/runtime/utuvo-type-editor.py" "$ENGINE/runtime/"
 chmod +x "$ENGINE/scripts/bootstrap-runtime.sh" "$ENGINE/runtime/utuvo-type-asr" "$ENGINE/runtime/"*.py
 cp "$REPO_ROOT/prompts/formatter-v1.txt" "$APP/Contents/Resources/formatter-v1.txt"
-cp "$REPO_ROOT/assets/branding/UTUVOType.icns" "$APP/Contents/Resources/UTUVOType.icns"
+# App icon：iOS／macOS 共用的 Icon Composer 正本（scripts/make-icon.py）。actool 同時產出
+# macOS 26+ 的 Liquid Glass（Assets.car，CFBundleIconName）與舊版 macOS 的 AppIcon.icns（CFBundleIconFile）。
+ICON_TMP="$(mktemp -d)"
+xcrun actool "$REPO_ROOT/assets/branding/AppIcon.icon" --compile "$ICON_TMP" --platform macosx \
+  --minimum-deployment-target 14.0 --app-icon AppIcon \
+  --output-partial-info-plist "$ICON_TMP/partial.plist" --output-format human-readable-text >/dev/null
+test -s "$ICON_TMP/Assets.car" && test -s "$ICON_TMP/AppIcon.icns"
+cp "$ICON_TMP/Assets.car" "$ICON_TMP/AppIcon.icns" "$APP/Contents/Resources/"
+rm -rf "$ICON_TMP"
 cp "$REPO_ROOT/assets/branding/utuvo-type-logo.png" "$APP/Contents/Resources/utuvo-type-logo.png"
 chmod +x "$APP/Contents/MacOS/utuvo-type"
 

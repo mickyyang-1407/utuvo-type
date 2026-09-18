@@ -197,9 +197,25 @@ final class LevelLog: @unchecked Sendable {
     private let lock = NSLock()
     private var samples: [LevelSample] = []
     private var elapsed: Double = 0
+    private var latestDB: Float = -120
+    private var latestAt: Double = 0
+    private var sink: VoiceLevelChannel?
 
     func reset() {
-        lock.lock(); samples.removeAll(keepingCapacity: true); elapsed = 0; lock.unlock()
+        lock.lock(); samples.removeAll(keepingCapacity: true); elapsed = 0; latestAt = 0; lock.unlock()
+    }
+
+    /// 光球用：每個 buffer 的音量同時寫進跨程序通道（鍵盤光球讀）。nil＝不寫。
+    func setLiveSink(_ channel: VoiceLevelChannel?) {
+        lock.lock(); let old = sink; sink = channel; lock.unlock()
+        if channel == nil { old?.clear() }
+    }
+
+    /// 同程序的光球讀最新音量；超過 VoiceLevelChannel.maxAge 沒更新＝沒在錄，回 nil。
+    func latest(now: Double = CFAbsoluteTimeGetCurrent()) -> Float? {
+        lock.lock(); defer { lock.unlock() }
+        let age = now - latestAt
+        return age >= 0 && age <= VoiceLevelChannel.maxAge ? latestDB : nil
     }
 
     /// 音訊執行緒呼叫：算這個 buffer 的 RMS（第一聲道）。
@@ -211,10 +227,15 @@ final class LevelLog: @unchecked Sendable {
         let rms = (sum / Float(frames)).squareRoot()
         let db = 20 * log10(rms + 1e-9)
         let duration = Double(frames) / buffer.format.sampleRate
+        let now = CFAbsoluteTimeGetCurrent()
         lock.lock()
         samples.append(LevelSample(time: elapsed, duration: duration, db: db))
         elapsed += duration
+        latestDB = db
+        latestAt = now
+        let live = sink
         lock.unlock()
+        live?.write(db: db, at: now)
     }
 
     var snapshot: [LevelSample] {

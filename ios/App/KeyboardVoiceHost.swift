@@ -116,6 +116,9 @@ final class KeyboardVoiceHost: ObservableObject {
     }
 
     /// 使用者在主 app 按「結束」、閒置逾時、或來電中斷。
+    /// 工作階段畫面的光球讀：目前麥克風音量（dBFS），沒在錄回 nil。
+    func liveLevel() -> Float? { box.levels.latest() }
+
     func endSession() {
         guard isActive else {
             // 還沒開成功就失敗（例如權限被拒）：清掉錯誤，工作階段畫面才會收起來。
@@ -454,8 +457,12 @@ final class RequestBox: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         return _request
     }
+    /// 鍵盤光球的即時音量通道（App Group 小檔案）；只在主執行緒建立。
+    private lazy var channel = VoiceLevelChannel(writable: true)
     func set(_ request: SFSpeechAudioBufferRecognitionRequest?) {
         if request != nil { levels.reset() }
+        // 開始辨識才寫音量給鍵盤；停止時寫一筆立即過期的值，鍵盤光球馬上收。
+        levels.setLiveSink(request != nil ? channel : nil)
         lock.lock(); _request = request; lock.unlock()
     }
     /// 音訊執行緒：送進辨識並記錄音量（沒有辨識在跑就丟掉）。

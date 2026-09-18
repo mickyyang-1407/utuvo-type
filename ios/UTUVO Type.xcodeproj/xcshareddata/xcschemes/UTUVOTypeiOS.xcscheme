@@ -50,6 +50,20 @@
                ReferencedContainer = "container:UTUVO Type.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "41DFD27E44E055600FA1BE08"
+               BuildableName = "UTUVOTypeiOSUITests.xctest"
+               BlueprintName = "UTUVOTypeiOSUITests"
+               ReferencedContainer = "container:UTUVO Type.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -76,6 +90,17 @@
                BlueprintIdentifier = "3AEFBA23456522BD790400DB"
                BuildableName = "UTUVOTypeiOSTests.xctest"
                BlueprintName = "UTUVOTypeiOSTests"
+               ReferencedContainer = "container:UTUVO Type.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "41DFD27E44E055600FA1BE08"
+               BuildableName = "UTUVOTypeiOSUITests.xctest"
+               BlueprintName = "UTUVOTypeiOSUITests"
                ReferencedContainer = "container:UTUVO Type.xcodeproj">
             </BuildableReference>
          </TestableReference>

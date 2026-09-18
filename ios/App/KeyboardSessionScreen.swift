@@ -9,17 +9,12 @@ struct KeyboardSessionScreen: View {
         ZStack {
             Aurora.Backdrop()
             VStack(spacing: 22) {
-                Spacer(minLength: 40)
-                ZStack {
-                    Circle()
-                        .fill(Aurora.orange.opacity(0.16))
-                        .frame(width: 150, height: 150)
-                        .blur(radius: 20)
-                    Image(systemName: host.lastError == nil ? "keyboard.badge.waveform" : "exclamationmark.triangle.fill")
-                        .font(.system(size: 54, weight: .semibold))
-                        .foregroundStyle(Aurora.orange)
-                        .symbolEffect(.pulse, options: .repeating, isActive: host.phase == .recording)
-                }
+                Spacer(minLength: 24)
+                // 鍵盤在講話時，這顆光球跟著你的聲音動（音量就是主 app 替鍵盤錄的那一路）。
+                LiveOrb(phase: orbPhase, sphereFraction: 0.56, level: { [host] in host.liveLevel() })
+                    .frame(width: 240, height: 240)
+                    .padding(.vertical, -30)
+                    .accessibilityHidden(true)
                 VStack(spacing: 8) {
                     Text(title)
                         .font(.title2.weight(.semibold))
@@ -67,6 +62,15 @@ struct KeyboardSessionScreen: View {
             }
         }
         .accessibilityIdentifier("keyboardSessionScreen")
+    }
+
+    private var orbPhase: OrbView.Phase {
+        if host.lastError != nil { return .error }
+        switch host.phase {
+        case .recording: return .listening
+        case .finishing: return .processing
+        default: return .idle
+        }
     }
 
     private var title: String {
