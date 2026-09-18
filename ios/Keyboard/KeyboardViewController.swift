@@ -68,6 +68,11 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        // 換 app 會讓鍵盤重新出現：先讓舊宿主的證據退役，再讀這次的。
+        HostAppResolver.noteKeyboardAppeared()
+        HostAppResolver.harvest()
+        // 新的 extension process 第一次出現時 arbiter 約 200 ms 後才有資料，補讀一次。
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { HostAppResolver.harvest() }
         refreshContext()
         adoptPendingCommand()
     }
@@ -80,11 +85,13 @@ final class KeyboardViewController: UIInputViewController {
 
     override func textDidChange(_ textInput: UITextInput?) {
         super.textDidChange(textInput)
+        HostAppResolver.harvest()
         refreshContext()
     }
 
     override func selectionDidChange(_ textInput: UITextInput?) {
         super.selectionDidChange(textInput)
+        HostAppResolver.harvest()
         refreshContext()
     }
 
@@ -543,9 +550,11 @@ final class KeyboardViewController: UIInputViewController {
             setRecordingAppearance(true)
             setHint(mode.recordingHint, error: false)
         case .openApp:
-            hostAppPath = nil
-            let hostID = hostBundleIdentifier()
-            let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id, returnTo: hostID, returnPath: hostID == nil ? hostAppPath : nil)
+            let host = HostAppResolver.currentHost(for: self)
+            #if DEBUG
+            VoiceBridge.write(HostAppResolver.diagnostics(host), name: "debug-host-probe.json")
+            #endif
+            let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id, returnTo: host.hostId)
             // 開始震動要先播完再切 app，否則切換會把它吃掉（真機回報第一下沒震）。
             try? await Task.sleep(for: .milliseconds(90))
             if openContainingApp(url) {
@@ -612,81 +621,6 @@ final class KeyboardViewController: UIInputViewController {
         activeCommandID = nil
         KeyboardPresence.defaults.removeObject(forKey: Self.pendingIDKey)
         KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
-    }
-
-    /// 宿主 app 的 bundle id（主 app 開好麥克風後用它把使用者送回來）。iOS 無公開 API，拿不到回 nil＝不自動跳回。
-    private func hostBundleIdentifier() -> String? {
-        var probe: [String: String] = [:]
-        defer {
-            #if DEBUG
-            VoiceBridge.write(probe, name: "debug-host-probe.json")
-            #endif
-        }
-        let selector = NSSelectorFromString("_hostApplicationBundleIdentifier")
-        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
-            guard let candidate, candidate.responds(to: selector) else { probe["bundle.\(label)"] = "no-selector"; continue }
-            let id = candidate.perform(selector)?.takeUnretainedValue() as? String
-            probe["bundle.\(label)"] = id ?? "nil"
-            // iOS 26 拿不到時回傳字面字串 "<null>"，要當空值。
-            if let id, VoiceBridge.isPlausibleBundleID(id) { return id }
-        }
-        // 退路：宿主 PID → RunningBoard 反查 bundle id
-        var pid: Int32 = 0
-        let pidSel = NSSelectorFromString("_hostProcessIdentifier")
-        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
-            guard let candidate, candidate.responds(to: pidSel) else { continue }
-            typealias PIDGetter = @convention(c) (AnyObject, Selector) -> Int32
-            let value = unsafeBitCast(candidate.method(for: pidSel), to: PIDGetter.self)(candidate, pidSel)
-            probe["pid.\(label)"] = String(value)
-            if value > 0 { pid = value; break }
-        }
-        // 宿主 audit token → SecTask 簽章身分（系統／App Store app 的簽章身分＝bundle id）。
-        let tokenSel = NSSelectorFromString("_hostAuditToken")
-        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
-            guard let candidate, candidate.responds(to: tokenSel) else { continue }
-            typealias TokenGetter = @convention(c) (AnyObject, Selector) -> audit_token_t
-            let token = unsafeBitCast(candidate.method(for: tokenSel), to: TokenGetter.self)(candidate, tokenSel)
-            let ident = Self.signingIdentifier(of: token)
-            probe["secTask.\(label)"] = ident ?? "nil"
-            if let ident, VoiceBridge.isPlausibleBundleID(ident) { return ident }
-        }
-        guard pid > 0 else { return nil }
-        // PID → 執行檔路徑 → .app 目錄；主 app 再把路徑對回 bundle id（真機沙盒會擋，模擬器可用）。
-        if let appPath = Self.appBundlePath(forPID: pid) {
-            probe["appPath"] = appPath
-            hostAppPath = appPath
-        } else {
-            probe["appPath"] = "nil"
-        }
-        return nil
-    }
-
-    /// audit token → 簽章身分（SecTask 在 iOS SDK 沒公開標頭，dlsym 取）。
-    private static func signingIdentifier(of token: audit_token_t) -> String? {
-        typealias Create = @convention(c) (CFAllocator?, audit_token_t) -> Unmanaged<AnyObject>?
-        typealias CopyID = @convention(c) (AnyObject, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> Unmanaged<CFString>?
-        let handle = UnsafeMutableRawPointer(bitPattern: -2)
-        guard let createSym = dlsym(handle, "SecTaskCreateWithAuditToken"),
-              let copySym = dlsym(handle, "SecTaskCopySigningIdentifier") else { return nil }
-        let create = unsafeBitCast(createSym, to: Create.self)
-        let copy = unsafeBitCast(copySym, to: CopyID.self)
-        guard let task = create(nil, token)?.takeRetainedValue() else { return nil }
-        return copy(task, nil)?.takeRetainedValue() as String?
-    }
-
-    /// 宿主 app 的 .app 目錄（拿不到 bundle id 時的退路，交給主 app 解析）。
-    private var hostAppPath: String?
-
-    private static func appBundlePath(forPID pid: Int32) -> String? {
-        typealias ProcPidPath = @convention(c) (Int32, UnsafeMutableRawPointer, UInt32) -> Int32
-        guard let sym = dlsym(UnsafeMutableRawPointer(bitPattern: -2), "proc_pidpath") else { return nil }
-        let fn = unsafeBitCast(sym, to: ProcPidPath.self)
-        var buffer = [CChar](repeating: 0, count: 4096)
-        let n = buffer.withUnsafeMutableBytes { fn(pid, $0.baseAddress!, UInt32($0.count)) }
-        guard n > 0 else { return nil }
-        let exe = String(cString: buffer)
-        guard let range = exe.range(of: ".app/", options: .backwards) else { return nil }
-        return String(exe[..<range.lowerBound]) + ".app"
     }
 
     /// 鍵盤 extension 不能用 UIApplication.shared.open；沿 responder chain 找到 UIApplication 再呼叫

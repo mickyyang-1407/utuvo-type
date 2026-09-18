@@ -133,15 +133,6 @@ final class VoiceBridgeTests: XCTestCase {
         XCTAssertTrue(VoiceBridge.isPlausibleBundleID("com.apple.mobilesafari"))
     }
 
-    func testReturnPathValidation() {
-        XCTAssertTrue(VoiceBridge.isPlausibleAppPath("/Applications/MobileSafari.app"))
-        XCTAssertFalse(VoiceBridge.isPlausibleAppPath("relative/Foo.app"))
-        XCTAssertFalse(VoiceBridge.isPlausibleAppPath("/private/var/../etc/passwd.app"))
-        XCTAssertFalse(VoiceBridge.isPlausibleAppPath("/Applications/MobileSafari.app/MobileSafari"))
-        let url = VoiceBridge.sessionURL(language: "zh-TW", commandID: UUID(), returnTo: nil, returnPath: "/Applications/MobileSafari.app")
-        XCTAssertEqual(VoiceBridge.parseSessionURL(url)?.returnPath, "/Applications/MobileSafari.app")
-    }
-
     func testParseRejectsForeignURLs() {
         XCTAssertNil(VoiceBridge.parseSessionURL(URL(string: "https://example.com/voice?lang=zh-TW")!))
         XCTAssertNil(VoiceBridge.parseSessionURL(URL(string: "utuvotype://other?lang=zh-TW")!))
