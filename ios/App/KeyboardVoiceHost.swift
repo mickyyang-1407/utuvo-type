@@ -12,6 +12,8 @@ final class KeyboardVoiceHost: ObservableObject {
     @Published private(set) var phase: VoiceBridge.State.Phase = .ended
     @Published private(set) var lastError: String?
     @Published private(set) var idleEndsAt: Date?
+    /// 叫起主 app 的那個 app（能解析到才有）；工作階段畫面用它顯示「回到剛剛的 app」。
+    @Published private(set) var returnTarget: String?
 
     private let engine = AVAudioEngine()
     private let box = RequestBox()
@@ -70,6 +72,7 @@ final class KeyboardVoiceHost: ObservableObject {
         if let commandID, let cmd = VoiceBridge.readCommand(), cmd.id == commandID,
            cmd.action == .start, VoiceBridge.isFresh(cmd) {
             startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo)
+            returnTarget = hostBundleID
             if let hostBundleID { returnToPreviousApp(hostBundleID) }
         }
     }
@@ -78,6 +81,12 @@ final class KeyboardVoiceHost: ObservableObject {
     /// iOS 沒有公開 API，也無法從 app 內觸發狀態列「◀ 返回」（iOS 26 由系統層處理，lldb 實測 app 內斷點不觸發）。
     /// 做法：鍵盤用 `_hostApplicationBundleIdentifier` 取得宿主 bundle id 帶進 URL，這裡用 LSApplicationWorkspace 開回去。
     /// 失敗就留在主 app，提示條教使用者手動點左上角。
+    /// 工作階段畫面的「回到剛剛的 app」按鈕。
+    func returnNow() {
+        guard let returnTarget else { return }
+        _ = Self.openApplication(bundleID: returnTarget)
+    }
+
     private func returnToPreviousApp(_ bundleID: String) {
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(250))
@@ -112,7 +121,13 @@ final class KeyboardVoiceHost: ObservableObject {
 
     /// 使用者在主 app 按「結束」、閒置逾時、或來電中斷。
     func endSession() {
-        guard isActive else { return }
+        guard isActive else {
+            // 還沒開成功就失敗（例如權限被拒）：清掉錯誤，工作階段畫面才會收起來。
+            lastError = nil
+            returnTarget = nil
+            return
+        }
+        returnTarget = nil
         finalizeWatchdog?.cancel()
         task?.cancel()
         task = nil
@@ -330,6 +345,8 @@ final class KeyboardVoiceHost: ObservableObject {
         let session = AVAudioSession.sharedInstance()
         // mixWithOthers：不把使用者正在聽的音樂停掉。
         try session.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .defaultToSpeaker])
+        // 錄音中 iOS 預設把震動與系統音靜音——鍵盤的開始／停止震動會整個消失（真機回報）。
+        try? session.setAllowHapticsAndSystemSoundsDuringRecording(true)
         try session.setActive(true)
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)

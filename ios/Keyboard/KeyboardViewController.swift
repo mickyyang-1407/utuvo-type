@@ -63,6 +63,7 @@ final class KeyboardViewController: UIInputViewController {
         KeyboardPresence.seen = true
         setupUI()
         bridgeObserver = DarwinObserver(.update) { [weak self] in self?.bridgeUpdated() }
+        Haptics.prepare()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -545,6 +546,8 @@ final class KeyboardViewController: UIInputViewController {
             hostAppPath = nil
             let hostID = hostBundleIdentifier()
             let url = VoiceBridge.sessionURL(language: language.rawValue, commandID: id, returnTo: hostID, returnPath: hostID == nil ? hostAppPath : nil)
+            // 開始震動要先播完再切 app，否則切換會把它吃掉（真機回報第一下沒震）。
+            try? await Task.sleep(for: .milliseconds(90))
             if openContainingApp(url) {
                 setHint("正在開啟 UTUVO Type 啟動麥克風…回來就在錄了", error: false)
             } else {
@@ -637,8 +640,18 @@ final class KeyboardViewController: UIInputViewController {
             probe["pid.\(label)"] = String(value)
             if value > 0 { pid = value; break }
         }
+        // 宿主 audit token → SecTask 簽章身分（系統／App Store app 的簽章身分＝bundle id）。
+        let tokenSel = NSSelectorFromString("_hostAuditToken")
+        for (label, candidate) in [("self", self as UIViewController?), ("parent", parent)] {
+            guard let candidate, candidate.responds(to: tokenSel) else { continue }
+            typealias TokenGetter = @convention(c) (AnyObject, Selector) -> audit_token_t
+            let token = unsafeBitCast(candidate.method(for: tokenSel), to: TokenGetter.self)(candidate, tokenSel)
+            let ident = Self.signingIdentifier(of: token)
+            probe["secTask.\(label)"] = ident ?? "nil"
+            if let ident, VoiceBridge.isPlausibleBundleID(ident) { return ident }
+        }
         guard pid > 0 else { return nil }
-        // PID → 執行檔路徑 → .app 目錄；主 app 再把路徑對回 bundle id。
+        // PID → 執行檔路徑 → .app 目錄；主 app 再把路徑對回 bundle id（真機沙盒會擋，模擬器可用）。
         if let appPath = Self.appBundlePath(forPID: pid) {
             probe["appPath"] = appPath
             hostAppPath = appPath
@@ -646,6 +659,19 @@ final class KeyboardViewController: UIInputViewController {
             probe["appPath"] = "nil"
         }
         return nil
+    }
+
+    /// audit token → 簽章身分（SecTask 在 iOS SDK 沒公開標頭，dlsym 取）。
+    private static func signingIdentifier(of token: audit_token_t) -> String? {
+        typealias Create = @convention(c) (CFAllocator?, audit_token_t) -> Unmanaged<AnyObject>?
+        typealias CopyID = @convention(c) (AnyObject, UnsafeMutablePointer<Unmanaged<CFError>?>?) -> Unmanaged<CFString>?
+        let handle = UnsafeMutableRawPointer(bitPattern: -2)
+        guard let createSym = dlsym(handle, "SecTaskCreateWithAuditToken"),
+              let copySym = dlsym(handle, "SecTaskCopySigningIdentifier") else { return nil }
+        let create = unsafeBitCast(createSym, to: Create.self)
+        let copy = unsafeBitCast(copySym, to: CopyID.self)
+        guard let task = create(nil, token)?.takeRetainedValue() else { return nil }
+        return copy(task, nil)?.takeRetainedValue() as String?
     }
 
     /// 宿主 app 的 .app 目錄（拿不到 bundle id 時的退路，交給主 app 解析）。
@@ -783,41 +809,77 @@ private extension DictationLanguage {
 
 // MARK: - 光球與波形環（純 UIKit／CoreAnimation，鍵盤 extension 記憶體友善）
 
-/// 主 app MicOrb 的 UIKit 版：橘→琥珀漸層球＋白色 glyph＋橘色光暈；錄音時外圈呼吸環。
+/// 光球：iOS 26+ 用系統 Liquid Glass（橘色染色、互動形變），跟 iOS 27 圖示同一種材質；
+/// 不再疊白色亮面反光（Micky：廉價）。iOS 26 以下退回霧面漸層＋細邊光。
 final class OrbButton: UIControl {
-    private let gradient = CAGradientLayer()
-    private let sheen = CAGradientLayer()
-    private let ring = CAShapeLayer()
     private let glyphView = UIImageView()
-    private var recording = false
+    private let ring = CAShapeLayer()
+    private var glassView: UIVisualEffectView?
+    private let fallback = CAGradientLayer()
+    private let rim = CAShapeLayer()
+    /// iOS 27 圖示材質：上亮下深（很淡）＋邊緣錐形鏡面光（左上最亮）。
+    private let depth = CAGradientLayer()
+    private let specular = CAGradientLayer()
+    private let specularMask = CAShapeLayer()
+    private var edit = false
+
+    private static let orange = KeyboardViewController.brandOrange
+    private static let violet = UIColor(red: 0.62, green: 0.52, blue: 0.95, alpha: 1)
 
     var glyph: String = "mic.fill" {
-        didSet { glyphView.image = UIImage(systemName: glyph, withConfiguration: UIImage.SymbolConfiguration(pointSize: 34, weight: .semibold)) }
+        didSet { glyphView.image = UIImage(systemName: glyph, withConfiguration: UIImage.SymbolConfiguration(pointSize: 32, weight: .semibold)) }
     }
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        gradient.colors = [KeyboardViewController.brandAmber.cgColor, KeyboardViewController.brandOrange.cgColor]
-        gradient.startPoint = CGPoint(x: 0.2, y: 0)
-        gradient.endPoint = CGPoint(x: 0.8, y: 1)
-        layer.addSublayer(gradient)
-        sheen.colors = [UIColor.white.withAlphaComponent(0.38).cgColor, UIColor.clear.cgColor]
-        sheen.startPoint = CGPoint(x: 0.5, y: 0)
-        sheen.endPoint = CGPoint(x: 0.5, y: 0.55)
-        layer.addSublayer(sheen)
+        if #available(iOS 26.0, *) {
+            let glass = UIGlassEffect(style: .regular)
+            glass.tintColor = Self.orange.withAlphaComponent(0.88)
+            glass.isInteractive = true
+            let view = UIVisualEffectView(effect: glass)
+            view.isUserInteractionEnabled = false
+            view.clipsToBounds = true
+            addSubview(view)
+            glassView = view
+        } else {
+            // 霧面：上亮下深的同色漸層，沒有白色反光帶。
+            fallback.colors = [Self.orange.withAlphaComponent(0.92).cgColor, Self.orange.cgColor]
+            fallback.startPoint = CGPoint(x: 0.5, y: 0)
+            fallback.endPoint = CGPoint(x: 0.5, y: 1)
+            layer.addSublayer(fallback)
+        }
+        depth.colors = [UIColor.white.withAlphaComponent(0.10).cgColor, UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.08).cgColor]
+        depth.locations = [0, 0.45, 1]
+        depth.startPoint = CGPoint(x: 0.5, y: 0)
+        depth.endPoint = CGPoint(x: 0.5, y: 1)
+        layer.addSublayer(depth)
+        specular.type = .conic
+        specular.startPoint = CGPoint(x: 0.5, y: 0.5)
+        specular.endPoint = CGPoint(x: 0, y: 0)   // 起點方向＝左上
+        specular.colors = [0.55, 0.05, 0.18, 0.05, 0.55].map { UIColor.white.withAlphaComponent($0).cgColor }
+        specular.locations = [0, 0.25, 0.5, 0.75, 1]
+        specularMask.fillColor = UIColor.clear.cgColor
+        specularMask.strokeColor = UIColor.black.cgColor
+        specularMask.lineWidth = 1.2
+        specular.mask = specularMask
+        layer.addSublayer(specular)
         ring.fillColor = UIColor.clear.cgColor
-        ring.strokeColor = KeyboardViewController.brandOrange.cgColor
-        ring.lineWidth = 2
+        ring.strokeColor = Self.orange.withAlphaComponent(0.55).cgColor
+        ring.lineWidth = 1.5
         ring.opacity = 0
         layer.addSublayer(ring)
         glyphView.tintColor = .white
         glyphView.contentMode = .center
+        glyphView.layer.shadowColor = UIColor.black.cgColor
+        glyphView.layer.shadowOpacity = 0.12
+        glyphView.layer.shadowRadius = 3
+        glyphView.layer.shadowOffset = CGSize(width: 0, height: 1)
         addSubview(glyphView)
         glyph = "mic.fill"
-        layer.shadowColor = KeyboardViewController.brandOrange.cgColor
-        layer.shadowOpacity = 0.35
-        layer.shadowRadius = 14
-        layer.shadowOffset = CGSize(width: 0, height: 6)
+        layer.shadowColor = Self.orange.cgColor
+        layer.shadowOpacity = 0.22
+        layer.shadowRadius = 18
+        layer.shadowOffset = CGSize(width: 0, height: 8)
         isAccessibilityElement = true
         accessibilityLabel = "聽寫"
         accessibilityTraits = .button
@@ -827,42 +889,61 @@ final class OrbButton: UIControl {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        gradient.frame = bounds
-        gradient.cornerRadius = bounds.width / 2
-        sheen.frame = bounds
-        sheen.cornerRadius = bounds.width / 2
+        let radius = bounds.width / 2
+        glassView?.frame = bounds
+        glassView?.layer.cornerRadius = radius
+        fallback.frame = bounds
+        fallback.cornerRadius = radius
+        rim.frame = bounds
+        rim.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 0.5, dy: 0.5)).cgPath
+        depth.frame = bounds
+        depth.cornerRadius = radius
+        specular.frame = bounds
+        specularMask.frame = bounds
+        specularMask.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 0.6, dy: 0.6)).cgPath
         glyphView.frame = bounds
+        bringSubviewToFront(glyphView)
         ring.frame = bounds
         ring.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).cgPath
     }
 
     override var isHighlighted: Bool {
-        didSet { transform = isHighlighted ? CGAffineTransform(scaleX: 0.94, y: 0.94) : .identity }
+        didSet {
+            // 玻璃自己有互動形變；非玻璃才手動縮。
+            guard glassView == nil else { return }
+            transform = isHighlighted ? CGAffineTransform(scaleX: 0.95, y: 0.95) : .identity
+        }
     }
 
-    /// 說出要怎麼改：球體偏薰衣草，一眼看出現在講的是指示。
+    /// 說出要怎麼改：玻璃轉薰衣草，一眼看出現在講的是指示。
     func setTint(edit: Bool) {
-        let violet = UIColor(red: 0.68, green: 0.60, blue: 0.95, alpha: 1)
-        gradient.colors = edit
-            ? [violet.cgColor, UIColor(red: 0.55, green: 0.45, blue: 0.90, alpha: 1).cgColor]
-            : [KeyboardViewController.brandAmber.cgColor, KeyboardViewController.brandOrange.cgColor]
+        self.edit = edit
+        let color = edit ? Self.violet : Self.orange
+        if #available(iOS 26.0, *), let glassView {
+            let glass = UIGlassEffect(style: .regular)
+            glass.tintColor = color.withAlphaComponent(0.88)
+            glass.isInteractive = true
+            glassView.effect = glass
+        } else {
+            fallback.colors = [color.withAlphaComponent(0.92).cgColor, color.cgColor]
+        }
+        layer.shadowColor = color.cgColor
     }
 
     func setRecording(_ on: Bool) {
-        recording = on
-        glyph = on ? "stop.fill" : "mic.fill"
+        glyph = on ? "stop.fill" : (edit ? "text.badge.checkmark" : "mic.fill")
         accessibilityLabel = on ? "停止" : "聽寫"
-        layer.shadowOpacity = on ? 0.7 : 0.35
-        layer.shadowRadius = on ? 24 : 14
+        layer.shadowOpacity = on ? 0.4 : 0.22
+        layer.shadowRadius = on ? 26 : 18
         ring.removeAllAnimations()
         if on {
             let scale = CABasicAnimation(keyPath: "transform.scale")
-            scale.fromValue = 1.0; scale.toValue = 1.45
+            scale.fromValue = 1.0; scale.toValue = 1.4
             let fade = CABasicAnimation(keyPath: "opacity")
-            fade.fromValue = 0.9; fade.toValue = 0
+            fade.fromValue = 0.7; fade.toValue = 0
             let group = CAAnimationGroup()
             group.animations = [scale, fade]
-            group.duration = 1.4
+            group.duration = 1.6
             group.repeatCount = .infinity
             group.timingFunction = CAMediaTimingFunction(name: .easeOut)
             ring.add(group, forKey: "breathe")
@@ -881,7 +962,7 @@ final class WaveRingView: UIView {
         super.init(frame: frame)
         for _ in 0..<count {
             let bar = CALayer()
-            bar.backgroundColor = KeyboardViewController.brandOrange.withAlphaComponent(0.55).cgColor
+            bar.backgroundColor = KeyboardViewController.brandOrange.withAlphaComponent(0.35).cgColor
             bar.cornerRadius = 1.5
             bar.opacity = 0
             layer.addSublayer(bar)
@@ -932,7 +1013,11 @@ enum Haptics {
     private static let stopGenerator = UIImpactFeedbackGenerator(style: .rigid)
     private static let selectionGenerator = UISelectionFeedbackGenerator()
 
-    static func start() { startGenerator.impactOccurred(intensity: 1.0) }
-    static func stop() { stopGenerator.impactOccurred(intensity: 0.9) }
+    static func prepare() {
+        startGenerator.prepare()
+        stopGenerator.prepare()
+    }
+    static func start() { startGenerator.impactOccurred(intensity: 1.0); startGenerator.prepare() }
+    static func stop() { stopGenerator.impactOccurred(intensity: 0.9); stopGenerator.prepare() }
     static func selection() { selectionGenerator.selectionChanged() }
 }

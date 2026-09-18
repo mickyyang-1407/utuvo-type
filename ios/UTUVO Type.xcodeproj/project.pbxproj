@@ -38,7 +38,6 @@
 		726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA0C89251811A64DB739280 /* HistoryListView.swift */; };
 		7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */; };
 		86877514C7BB1361BAB64C50 /* HistoryGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79102CBCC0EAEB7225D4556D /* HistoryGroupingTests.swift */; };
-		87817827A7622E17C2A82398 /* KeyboardSessionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93F57FD2878ED688DA8C7BB6 /* KeyboardSessionBanner.swift */; };
 		87A2A6459240E615D0B0E939 /* UTUVOTypeIOSApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */; };
 		93A50770D4B9115015D3160C /* DictateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30B59DCC3A3BFFA70757B0B /* DictateView.swift */; };
 		A36D8966FC5562E7BB0AC7A5 /* KeyboardEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */; };
@@ -53,6 +52,7 @@
 		E9033E508F5165CB571A1D7C /* FastTranslator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480D51CCBFCE5FD11B49F187 /* FastTranslator.swift */; };
 		EDBAAA99C4B63E40A5C560E3 /* IOSSecretStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3664A4F1091CCA4931F14A8D /* IOSSecretStore.swift */; };
 		F360A9EEF330E99993B86E00 /* OnDeviceAssistant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6DE67A6C416FE0D0CF17F651 /* OnDeviceAssistant.swift */; };
+		F391341C8C60599DE4070007 /* KeyboardSessionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10B34DA5377202FBBEDEDD3A /* KeyboardSessionScreen.swift */; };
 		F6A09398EC2CE99E40DEA173 /* VoiceBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6B1163414890F74B925A2EE /* VoiceBridge.swift */; };
 		F70C23779E7F176A4981E1BB /* zhtw-sample.wav in Resources */ = {isa = PBXBuildFile; fileRef = 423BCE208858F1C9259954B5 /* zhtw-sample.wav */; };
 		FB27C9818DD9E3D2240934AC /* AuroraTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 456985F91CBBDBAEF7B0C229 /* AuroraTheme.swift */; };
@@ -93,6 +93,7 @@
 /* Begin PBXFileReference section */
 		020DC5181D800FE0A2809A0A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		047E9034BEDE616313BA6807 /* UTUVOTypeiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UTUVOTypeiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		10B34DA5377202FBBEDEDD3A /* KeyboardSessionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSessionScreen.swift; sourceTree = "<group>"; };
 		130CF1A3271CFB5BD2399ED7 /* IncrementalInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncrementalInsert.swift; sourceTree = "<group>"; };
 		139AEEC09C09FB6C4B823983 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		1625C2E308D068C260E36239 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
@@ -119,7 +120,6 @@
 		8E177C586B87735863CCF64A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EF51B09E698DEA9D4C72421 /* UTUVOTypeIOSApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UTUVOTypeIOSApp.swift; sourceTree = "<group>"; };
 		8EFF88A825C8B40B25334278 /* UTUVOKeyboard.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOKeyboard.entitlements; sourceTree = "<group>"; };
-		93F57FD2878ED688DA8C7BB6 /* KeyboardSessionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardSessionBanner.swift; sourceTree = "<group>"; };
 		954219567B6FA9AA7395B3ED /* DictationLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictationLanguage.swift; sourceTree = "<group>"; };
 		A69C183B9C282AEAC715ABDC /* UTUVOTypeiOSTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = UTUVOTypeiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8AD947DDC764E42B0CEC0A8 /* UTUVOTypeiOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UTUVOTypeiOS.entitlements; sourceTree = "<group>"; };
@@ -163,7 +163,7 @@
 				C8B6D3A506BD997A2ACFE627 /* DictationModel.swift */,
 				5EA0C89251811A64DB739280 /* HistoryListView.swift */,
 				139AEEC09C09FB6C4B823983 /* Info.plist */,
-				93F57FD2878ED688DA8C7BB6 /* KeyboardSessionBanner.swift */,
+				10B34DA5377202FBBEDEDD3A /* KeyboardSessionScreen.swift */,
 				B4408F4F1EEFDEDD0F4B9DD6 /* KeyboardVoiceHost.swift */,
 				81CFAF9649C9C580BAD67B3B /* PrivacyInfo.xcprivacy */,
 				6607F1098B5580A0BDD5D1C9 /* SettingsScreen.swift */,
@@ -415,7 +415,7 @@
 				138C08076C498E0C1623180B /* IOSSecretStore.swift in Sources */,
 				E7658D9E021799058BEC67F5 /* IncrementalInsert.swift in Sources */,
 				5ACE525E044811B1AA85D965 /* KeyboardLogic.swift in Sources */,
-				87817827A7622E17C2A82398 /* KeyboardSessionBanner.swift in Sources */,
+				F391341C8C60599DE4070007 /* KeyboardSessionScreen.swift in Sources */,
 				577C76041A1FF48C2EC19440 /* KeyboardVoiceHost.swift in Sources */,
 				4BA79C75C068C5FDD0ED7134 /* OnDeviceAssistant.swift in Sources */,
 				36628DCAD4FE59B2C0074EEA /* Pipeline.swift in Sources */,
@@ -616,7 +616,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = RPNT54P79S;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -676,7 +676,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = RPNT54P79S;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

@@ -123,43 +123,74 @@ struct WaveformBars: View {
     }
 }
 
-/// 麥克風光球：品牌漸層＋錄音時呼吸光暈。
+/// 麥克風光球：iOS 26+ 系統 Liquid Glass（橘色染色），跟 iOS 27 圖示同一種材質；
+/// 錄音時外圈呼吸。不疊白色亮面反光。
 struct MicOrb: View {
     var isRecording: Bool
 
     var body: some View {
         ZStack {
-            if isRecording {
+            // 錄音時的呼吸外圈：時間函數驅動，不在 body 裡寫狀態。
+            TimelineView(.animation(minimumInterval: 1.0 / 30, paused: !isRecording)) { timeline in
+                let phase = isRecording ? timeline.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.6) / 1.6 : 0
                 Circle()
-                    .stroke(Aurora.orbGradient, lineWidth: 2)
-                    .frame(width: 128, height: 128)
-                    .scaleEffect(isRecording ? 1.25 : 1.0)
-                    .opacity(isRecording ? 0 : 0.9)
-                    .animation(.easeOut(duration: 1.4).repeatForever(autoreverses: false), value: isRecording)
-                Circle()
-                    .fill(Aurora.orange.opacity(0.22))
-                    .frame(width: 140, height: 140)
-                    .blur(radius: 24)
-                    .scaleEffect(isRecording ? 1.12 : 1.0)
-                    .animation(.easeInOut(duration: 1.1).repeatForever(autoreverses: true), value: isRecording)
-            } else {
-                Circle()
-                    .fill(Aurora.orange.opacity(0.14))
-                    .frame(width: 132, height: 132)
-                    .blur(radius: 18)
+                    .stroke(Aurora.orange.opacity(0.55), lineWidth: 1.5)
+                    .frame(width: 112, height: 112)
+                    .scaleEffect(1 + 0.3 * phase)
+                    .opacity(isRecording ? 0.7 * (1 - phase) : 0)
             }
-
-            Circle()
-                .fill(Aurora.orbGradient)
+            orb
                 .frame(width: 108, height: 108)
-                .overlay(
-                    Circle().fill(LinearGradient(colors: [Color.white.opacity(0.35), .clear], startPoint: .top, endPoint: .center))
-                )
-                .shadow(color: Aurora.orange.opacity(isRecording ? 0.65 : 0.30), radius: isRecording ? 26 : 14)
-
+                .shadow(color: Aurora.orange.opacity(isRecording ? 0.40 : 0.22), radius: isRecording ? 26 : 18, y: 8)
             Image(systemName: isRecording ? "stop.fill" : "mic.fill")
-                .font(.system(size: 40, weight: .semibold))
+                .font(.system(size: 38, weight: .semibold))
                 .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
         }
+        .frame(width: 140, height: 140)
+    }
+
+    /// iOS 27 圖示材質：同色上亮下深（差很小）、邊緣一圈細鏡面光（左上最亮往下淡）、柔和外陰影；沒有白色反光帶。
+    @ViewBuilder
+    private var orb: some View {
+        if #available(iOS 26.0, *) {
+            Circle()
+                .fill(.clear)
+                .glassEffect(.regular.tint(Aurora.orange.opacity(0.88)).interactive(), in: Circle())
+                .overlay(OrbMaterial.depth)
+                .overlay(OrbMaterial.rim)
+        } else {
+            Circle()
+                .fill(Aurora.orange)
+                .overlay(OrbMaterial.depth)
+                .overlay(OrbMaterial.rim)
+        }
+    }
+}
+
+/// 光球材質層（主 app 與鍵盤共用同一組參數語意）。
+enum OrbMaterial {
+    /// 上亮下深：頂端白 10%、底端黑 8%，看起來是體積不是反光。
+    static var depth: some View {
+        Circle()
+            .fill(LinearGradient(stops: [
+                .init(color: .white.opacity(0.10), location: 0),
+                .init(color: .clear, location: 0.45),
+                .init(color: .black.opacity(0.08), location: 1),
+            ], startPoint: .top, endPoint: .bottom))
+            .allowsHitTesting(false)
+    }
+
+    /// 邊緣鏡面光：左上 55% 白、中段透明、右下 15% 白。
+    static var rim: some View {
+        Circle()
+            .strokeBorder(AngularGradient(stops: [
+                .init(color: .white.opacity(0.55), location: 0.0),
+                .init(color: .white.opacity(0.05), location: 0.25),
+                .init(color: .white.opacity(0.18), location: 0.5),
+                .init(color: .white.opacity(0.05), location: 0.75),
+                .init(color: .white.opacity(0.55), location: 1.0),
+            ], center: .center, startAngle: .degrees(225), endAngle: .degrees(585)), lineWidth: 1.2)
+            .allowsHitTesting(false)
     }
 }
