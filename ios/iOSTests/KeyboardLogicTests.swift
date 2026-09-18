@@ -20,9 +20,28 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertFalse(KeyboardMode.translate(target: ja).insertsPartials)
     }
 
-    func testQuickPickHasEnglishInTheMiddle() {
-        XCTAssertEqual(TranslationTarget.quickPick.count, 5)
-        XCTAssertEqual(TranslationTarget.quickPick[2].code, "en")
+    func testQuickPickDefaultsHaveEnglishInTheMiddle() {
+        XCTAssertEqual(QuickPickStore.resolve(nil), ["ja", "ko", "en", "zh-Hant", "fr"])
+        XCTAssertEqual(QuickPickStore.resolve(nil)[2], "en")
+    }
+
+    func testQuickPickResolveCleansUnknownDuplicatesAndCaps() {
+        XCTAssertEqual(QuickPickStore.resolve(["de", "xx", "de", "es"]), ["de", "es"], "不認得的、重複的丟掉")
+        XCTAssertEqual(QuickPickStore.resolve(["en", "ja", "ko", "fr", "de", "es", "it"]).count, 5, "最多 5 個")
+        XCTAssertEqual(QuickPickStore.resolve([]), QuickPickStore.defaultCodes, "空的回預設，鍵盤長按不能沒語言")
+    }
+
+    func testQuickPickToggle() {
+        XCTAssertEqual(QuickPickStore.toggled("de", in: ["en"]), ["en", "de"], "加到最後")
+        XCTAssertEqual(QuickPickStore.toggled("en", in: ["en", "de"]), ["de"], "已選就移除")
+        XCTAssertEqual(QuickPickStore.toggled("en", in: ["en"]), ["en"], "最後一個不能移除")
+        XCTAssertEqual(QuickPickStore.toggled("it", in: ["en", "ja", "ko", "fr", "de"]), ["en", "ja", "ko", "fr", "de"], "滿 5 個不加")
+    }
+
+    func testQuickPickPersistsThroughDefaults() {
+        let suite = UserDefaults(suiteName: "test.quickpick.\(UUID().uuidString)")!
+        QuickPickStore.setCodes(["vi", "th", "id"], in: suite)
+        XCTAssertEqual(QuickPickStore.targets(in: suite).map(\.zh), ["越南文", "泰文", "印尼文"])
     }
 
     func testReturnKeyLabels() {

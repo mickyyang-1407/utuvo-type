@@ -144,6 +144,64 @@ final class SpeedBenchTests: XCTestCase {
                      label, installSecs, secs, box.first ?? -1, endToFinal, box.error ?? "-", box.text))
     }
 
+    // MARK: - 標點
+
+    /// 跟主 app 同一條路：buffer 即時餵辨識器＋LevelLog 記音量 → 靜音段斷句 → Apple Intelligence 補（長句）。
+    @MainActor
+    func testBenchPunctuation() async throws {
+        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "zh-TW")), recognizer.isAvailable else {
+            print("BENCH punct SF unavailable"); return
+        }
+        let file = try AVAudioFile(forReading: Bundle(for: Self.self).url(forResource: "zhtw-long", withExtension: "wav")!)
+        let whole = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length))!
+        try file.read(into: whole)
+        let chunk = AVAudioFrameCount(file.processingFormat.sampleRate * 0.064)   // 約等於 1024 frame @16k
+        let request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        request.addsPunctuation = true
+        let levels = LevelLog()
+        AIPunctuator.shared.prewarm()   // 跟 app 一樣：一開始錄就預熱
+        let gate = OnceGate()
+        var tokens: [TimedToken] = []
+        var text = ""
+        let done = OnceGate()
+        let finished = AsyncStream<Void>.makeStream()
+        let task = recognizer.recognitionTask(with: request) { result, error in
+            if let result, result.isFinal, gate.claim() {
+                tokens = result.bestTranscription.segments.map { TimedToken(text: $0.substring, start: $0.timestamp, duration: $0.duration) }
+                text = result.bestTranscription.formattedString
+                if done.claim() { finished.continuation.finish() }
+            } else if error != nil, done.claim() { finished.continuation.finish() }
+        }
+        var offset: AVAudioFrameCount = 0
+        while offset < whole.frameLength {
+            let n = min(chunk, whole.frameLength - offset)
+            let c = AVAudioPCMBuffer(pcmFormat: whole.format, frameCapacity: n)!
+            c.frameLength = n
+            c.floatChannelData![0].update(from: whole.floatChannelData![0].advanced(by: Int(offset)), count: Int(n))
+            request.append(c)
+            levels.record(c)
+            offset += n
+            try await Task.sleep(for: .milliseconds(64))
+        }
+        let stop = Date()
+        request.endAudio()
+        for await _ in finished.stream {}
+        let recognizeEnd = Date().timeIntervalSince(stop)
+        task.cancel()
+        let silences = SilenceDetector.intervals(levels.snapshot)
+        print("BENCH punct recognizer(\(String(format: "%.2f", recognizeEnd))s): \(text)")
+        print("BENCH punct silences: " + silences.map { String(format: "%.2f+%.2f", $0.start, $0.duration) }.joined(separator: " "))
+        let paused = PausePunctuator.punctuate(tokens, silences: silences)
+        print("BENCH punct pause: \(paused) keepsText=\(PunctuationGuard.preservesText(original: text, candidate: paused))")
+        for run in 1...2 {
+            if run == 2 { AIPunctuator.shared.prewarm(); try await Task.sleep(for: .seconds(3)) }
+            let t0 = Date()
+            let refined = await AIPunctuator.shared.refine(paused, timeout: .seconds(6))
+            print(String(format: "BENCH punct AI run%d %.2fs: %@", run, Date().timeIntervalSince(t0), refined ?? "nil (timeout/rejected/unavailable)"))
+        }
+    }
+
     // MARK: - 翻譯
 
     private let sentence = "明天下午三點我們在錄音室對 Atmos 母帶，記得帶 ADM 檔案，然後順便確認一下交付規格。"

@@ -195,9 +195,10 @@ final class KeyboardVoiceHost: ObservableObject {
         request.contextualStrings = Self.contextualStrings()
         request.requiresOnDeviceRecognition = route == .onDevice
         box.set(request)
-        task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText in
-            self?.ingest(id: id, text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText)
+        task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText, tokens in
+            self?.ingest(id: id, text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText, tokens: tokens)
         }
+        AIPunctuator.shared.prewarm()
         lastError = nil
         state.phase = .recording
         state.commandID = id
@@ -265,11 +266,18 @@ final class KeyboardVoiceHost: ObservableObject {
         publish()
     }
 
-    private func ingest(id: UUID, text: String?, isFinal: Bool, errorCode: Int?, errorText: String?) {
+    private func ingest(id: UUID, text: String?, isFinal: Bool, errorCode: Int?, errorText: String?, tokens: [TimedToken] = []) {
         guard state.commandID == id, state.phase == .recording || state.phase == .finishing else { return }
         if let text {
             state.partial = text
-            if isFinal { deliverFinal(id: id, text: text); return }
+            if isFinal {
+                // 停頓補標點（零延遲）；片段拼不回原文時保留辨識器原樣。
+                let silences = SilenceDetector.intervals(box.levels.snapshot)
+                let paused = tokens.isEmpty ? text : PausePunctuator.punctuate(tokens, silences: silences)
+                let base = PunctuationGuard.preservesText(original: text, candidate: paused) ? paused : text
+                deliverFinal(id: id, text: base)
+                return
+            }
             publish()
         }
         if let errorCode {
@@ -282,10 +290,21 @@ final class KeyboardVoiceHost: ObservableObject {
         }
     }
 
-    private func deliverFinal(id: UUID, text: String) {
+    private func deliverFinal(id: UUID, text: String, refined: Bool = false) {
         finalizeWatchdog?.cancel()
         task = nil
         box.set(nil)
+        // Apple Intelligence 補標點（已預熱；1.4 s 上限；改到任何字就不用）。
+        if !refined, AIPunctuator.refineEnabled, AIPunctuator.shared.isAvailable, text.count >= AIPunctuator.minimumLength {
+            state.phase = .finishing
+            publish()
+            Task { @MainActor [weak self] in
+                let better = await AIPunctuator.shared.refine(text)
+                guard let self, self.state.commandID == id else { return }
+                self.deliverFinal(id: id, text: better ?? text, refined: true)
+            }
+            return
+        }
         if let pending = pendingTranslation, pending.id == id, !text.isEmpty {
             pendingTranslation = nil
             state.phase = .finishing
@@ -392,21 +411,25 @@ final class KeyboardVoiceHost: ObservableObject {
 
     nonisolated private static func installTap(on node: AVAudioInputNode, format: AVAudioFormat, box: RequestBox) {
         node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            box.request?.append(buffer)
+            box.feed(buffer)
         }
     }
 
     nonisolated private static func makeTask(
         recognizer: SFSpeechRecognizer,
         request: SFSpeechAudioBufferRecognitionRequest,
-        onResult: @escaping @MainActor @Sendable (String?, Bool, Int?, String?) -> Void
+        onResult: @escaping @MainActor @Sendable (String?, Bool, Int?, String?, [TimedToken]) -> Void
     ) -> SFSpeechRecognitionTask {
         recognizer.recognitionTask(with: request) { result, error in
             let text = result?.bestTranscription.formattedString
             let isFinal = result?.isFinal ?? false
             let code = (error as NSError?)?.code
             let message = error?.localizedDescription
-            Task { @MainActor in onResult(text, isFinal, code, message) }
+            // 定稿才需要時間戳（停頓補標點）；partial 不用，省成本。
+            let tokens: [TimedToken] = isFinal ? (result?.bestTranscription.segments.map {
+                TimedToken(text: $0.substring, start: $0.timestamp, duration: $0.duration)
+            } ?? []) : []
+            Task { @MainActor in onResult(text, isFinal, code, message, tokens) }
         }
     }
 
@@ -425,11 +448,20 @@ final class KeyboardVoiceHost: ObservableObject {
 final class RequestBox: @unchecked Sendable {
     private let lock = NSLock()
     private var _request: SFSpeechAudioBufferRecognitionRequest?
+    /// 這次辨識的音量紀錄（停頓斷句用）；開始新的辨識才清空，定稿後還讀得到。
+    let levels = LevelLog()
     var request: SFSpeechAudioBufferRecognitionRequest? {
         lock.lock(); defer { lock.unlock() }
         return _request
     }
     func set(_ request: SFSpeechAudioBufferRecognitionRequest?) {
+        if request != nil { levels.reset() }
         lock.lock(); _request = request; lock.unlock()
+    }
+    /// 音訊執行緒：送進辨識並記錄音量（沒有辨識在跑就丟掉）。
+    func feed(_ buffer: AVAudioPCMBuffer) {
+        guard let request else { return }
+        request.append(buffer)
+        levels.record(buffer)
     }
 }
