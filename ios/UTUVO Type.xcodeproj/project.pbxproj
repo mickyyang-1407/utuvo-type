@@ -40,6 +40,7 @@
 		667BD815F6FA9DF899175E25 /* KeyboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */; };
 		6E9C0210F528285A618613BE /* DictationLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954219567B6FA9AA7395B3ED /* DictationLanguage.swift */; };
 		726E2B8EC3470196D667E606 /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA0C89251811A64DB739280 /* HistoryListView.swift */; };
+		7371174DEF0E7431A4D8EF45 /* AppStoreScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BEEB6A35DB5F5C56657A7CC /* AppStoreScreenshotTests.swift */; };
 		79566E8144D8BF5C7E57EFF1 /* HostAppResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A81B4D1FFE7580BEB55BAB2 /* HostAppResolver.swift */; };
 		7B88E20187AD4E69820A7453 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = B193EB1DC18C2AE84F52FE34 /* AppIcon.icon */; };
 		7B8FF838D060F64F1E8E087D /* IOSPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C80E8BB35268B37F1513072 /* IOSPipelineTests.swift */; };
@@ -125,6 +126,7 @@
 		139AEEC09C09FB6C4B823983 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		15807760D56745C2FC091A38 /* HostPidTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostPidTable.swift; sourceTree = "<group>"; };
 		1625C2E308D068C260E36239 /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
+		1BEEB6A35DB5F5C56657A7CC /* AppStoreScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStoreScreenshotTests.swift; sourceTree = "<group>"; };
 		2104BC2CA42ED058CF9E673F /* HistoryGrouping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryGrouping.swift; sourceTree = "<group>"; };
 		24B81C1730BD4802468BA3F9 /* KeyboardEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardEditTests.swift; sourceTree = "<group>"; };
 		271CD1E4D0899351B5D210F3 /* KeyboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardViewController.swift; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 		18CFD7FAC34C194330EFC930 /* iOSUITests */ = {
 			isa = PBXGroup;
 			children = (
+				1BEEB6A35DB5F5C56657A7CC /* AppStoreScreenshotTests.swift */,
 				96CE886F2350302ECAE8D5BA /* KeyboardOrbUITests.swift */,
 			);
 			path = iOSUITests;
@@ -522,6 +525,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7371174DEF0E7431A4D8EF45 /* AppStoreScreenshotTests.swift in Sources */,
 				44CF1B0F78999F5E44FAA995 /* KeyboardOrbUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
