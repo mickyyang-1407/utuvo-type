@@ -18,7 +18,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "5"
+    CURRENT_PROJECT_VERSION: "6"
 
 targets:
   "UTUVOTypeiOS":
@@ -88,6 +88,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios.keyboard
+        # HostArbiterActivation.m（載入期喚醒 UIKit 鍵盤 arbiter，自動跳回用）
+        SWIFT_OBJC_BRIDGING_HEADER: Keyboard/UTUVOKeyboard-Bridging-Header.h
 
   "UTUVOTypeiOSTests":
     type: bundle.unit-test

@@ -37,11 +37,7 @@ final class KeyboardVoiceHost: ObservableObject {
     /// `utuvotype://voice?lang=…&id=…`：鍵盤叫起主 app。
     func handle(url: URL) {
         guard let parsed = VoiceBridge.parseSessionURL(url) else { return }
-        let target = parsed.returnTo ?? parsed.returnPath.flatMap(Self.bundleIdentifier(forAppPath:))
-        #if DEBUG
-        VoiceBridge.write(["returnTo": parsed.returnTo ?? "nil", "returnPath": parsed.returnPath ?? "nil", "resolved": target ?? "nil"], name: "debug-resolve.json")
-        #endif
-        Task { await begin(language: parsed.language, autostart: parsed.commandID, returnTo: target) }
+        Task { await begin(language: parsed.language, autostart: parsed.commandID, returnTo: parsed.returnTo) }
     }
 
     func begin(language: String, autostart commandID: UUID?, returnTo hostBundleID: String? = nil) async {
@@ -79,32 +75,32 @@ final class KeyboardVoiceHost: ObservableObject {
 
     /// 鍵盤叫起主 app、麥克風開好之後，自動把使用者送回剛剛打字的 app。
     /// iOS 沒有公開 API，也無法從 app 內觸發狀態列「◀ 返回」（iOS 26 由系統層處理，lldb 實測 app 內斷點不觸發）。
-    /// 做法：鍵盤用 `_hostApplicationBundleIdentifier` 取得宿主 bundle id 帶進 URL，這裡用 LSApplicationWorkspace 開回去。
+    /// 做法：鍵盤用 UIKit 鍵盤 arbiter 認出宿主（HostAppResolver，改編自 dictus-ios）帶進 URL，
+    /// 這裡用宿主的 URL scheme 叫回；沒有 scheme 才用 LSApplicationWorkspace。
     /// 失敗就留在主 app，提示條教使用者手動點左上角。
     /// 工作階段畫面的「回到剛剛的 app」按鈕。
     func returnNow() {
         guard let returnTarget else { return }
-        _ = Self.openApplication(bundleID: returnTarget)
+        _ = Self.reopen(returnTarget)
+    }
+
+    /// 叫回宿主：有已知 URL scheme 就走公開的 `UIApplication.open`；沒有（例如 Safari）才用 LSApplicationWorkspace。
+    private static func reopen(_ bundleID: String) -> String {
+        if let url = KnownAppSchemes.returnURL(forHostId: bundleID) {
+            UIApplication.shared.open(url)
+            return "scheme:\(url.absoluteString)"
+        }
+        return "workspace:" + openApplication(bundleID: bundleID)
     }
 
     private func returnToPreviousApp(_ bundleID: String) {
         Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(250))
-            let result = Self.openApplication(bundleID: bundleID)
+            let result = Self.reopen(bundleID)
             #if DEBUG
             VoiceBridge.write(["returnTo": bundleID, "result": result], name: "debug-return.json")
             #endif
         }
-    }
-
-    /// .app 路徑 → bundle id：先讀 Info.plist，讀不到（沙盒）再問 LSApplicationProxy。
-    static func bundleIdentifier(forAppPath path: String) -> String? {
-        if let id = Bundle(path: path)?.bundleIdentifier { return id }
-        guard let proxyClass = NSClassFromString("LSApplicationProxy") as? NSObject.Type else { return nil }
-        let sel = NSSelectorFromString("applicationProxyForBundleURL:")
-        guard proxyClass.responds(to: sel),
-              let proxy = proxyClass.perform(sel, with: URL(fileURLWithPath: path))?.takeUnretainedValue() as? NSObject else { return nil }
-        return proxy.value(forKey: "bundleIdentifier") as? String
     }
 
     private static func openApplication(bundleID: String) -> String {

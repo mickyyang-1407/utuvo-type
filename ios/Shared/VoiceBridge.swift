@@ -108,7 +108,7 @@ enum VoiceBridge {
 
     // MARK: - URL
 
-    static func sessionURL(language: String, commandID: UUID, returnTo hostBundleID: String? = nil, returnPath: String? = nil) -> URL {
+    static func sessionURL(language: String, commandID: UUID, returnTo hostBundleID: String? = nil) -> URL {
         var comps = URLComponents()
         comps.scheme = urlScheme
         comps.host = urlHost
@@ -118,25 +118,17 @@ enum VoiceBridge {
         ]
         if let hostBundleID, isPlausibleBundleID(hostBundleID) {
             comps.queryItems?.append(URLQueryItem(name: "return", value: hostBundleID))
-        } else if let returnPath, isPlausibleAppPath(returnPath) {
-            comps.queryItems?.append(URLQueryItem(name: "returnPath", value: returnPath))
         }
         return comps.url!
     }
 
-    static func parseSessionURL(_ url: URL) -> (language: String, commandID: UUID?, returnTo: String?, returnPath: String?)? {
+    static func parseSessionURL(_ url: URL) -> (language: String, commandID: UUID?, returnTo: String?)? {
         guard url.scheme == urlScheme, url.host == urlHost,
               let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
               let lang = items.first(where: { $0.name == "lang" })?.value, !lang.isEmpty else { return nil }
         let id = items.first(where: { $0.name == "id" })?.value.flatMap(UUID.init(uuidString:))
         let back = items.first(where: { $0.name == "return" })?.value.flatMap { isPlausibleBundleID($0) ? $0 : nil }
-        let path = items.first(where: { $0.name == "returnPath" })?.value.flatMap { isPlausibleAppPath($0) ? $0 : nil }
-        return (lang, id, back, path)
-    }
-
-    /// 只接受絕對路徑、以 .app 結尾、不含 .. 的字串。
-    static func isPlausibleAppPath(_ s: String) -> Bool {
-        s.hasPrefix("/") && s.hasSuffix(".app") && !s.contains("..") && s.count <= 1024
+        return (lang, id, back)
     }
 
     /// URL 是外部可觸發的：只接受長得像 bundle id 的字串（反向網域、英數點橫線），不接受任意字串。
