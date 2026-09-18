@@ -11,6 +11,7 @@ final class SecretLiteralScannerTests: XCTestCase {
             ("openai", "s" + "k-abcdefghijklmnopqrstuv"),
             ("slack-bot", "xoxb-" + "1234567890-abcdef"),
             ("email", "contact: someone" + "@example.com"),
+            ("email-2x-domain", "ops" + "@2x.com"),
             ("slack-webhook", "POST https://hooks.slack.com/" + "services/T0/B0/XXX"),
             ("apps-script", "https://script.google.com/" + "macros/s/AKfycbwXXX/exec"),
             ("bearer", "Authorization: Bearer " + "abcdefghijklmnopqrstuv")
@@ -34,7 +35,10 @@ final class SecretLiteralScannerTests: XCTestCase {
             "// 這是一個普通的註解",
             "let name = \"UTUVO Type\"",
             "let count = 1_200_000",
-            "let text = \"hello world\""
+            "let text = \"hello world\"",
+            // Apple 圖檔倍率命名不是 email
+            "Image.open(\"icon_512x512@2x.png\")",
+            "\"filename\": \"BrandMark@3x.png\""
         ]
         for line in cleanSamples {
             var hit = false
