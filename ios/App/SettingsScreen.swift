@@ -28,6 +28,11 @@ struct SettingsScreen: View {
                     Text("有選取文字時，鍵盤的麥克風會變成「說出要怎麼改」；長按麥克風滑到語言、放開就翻譯。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
+                    NavigationLink {
+                        TranslationLanguagesView()
+                    } label: {
+                        LabeledContent("鍵盤翻譯語言", value: QuickPickStore.targets().map(\.zh).joined(separator: "、"))
+                    }
                 }
 
                 Section("辨識與隱私") {

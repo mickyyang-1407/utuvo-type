@@ -69,6 +69,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 換 app 會讓鍵盤重新出現：先讓舊宿主的證據退役，再讀這次的。
+        rebuildArc()
         HostAppResolver.noteKeyboardAppeared()
         HostAppResolver.harvest()
         // 新的 extension process 第一次出現時 arbiter 約 200 ms 後才有資料，補讀一次。
@@ -215,31 +216,7 @@ final class KeyboardViewController: UIInputViewController {
             globeButton.isHidden = !needsInputModeSwitchKey
         }
 
-        // 長按翻譯弧：五個小圓點沿光球上方的弧排列，中間預設英文。frame 在 layoutArc() 算。
-        for (index, target) in TranslationTarget.quickPick.enumerated() {
-            let dot = UIView()
-            dot.backgroundColor = .secondarySystemFill
-            dot.layer.cornerRadius = 22
-            dot.isHidden = true
-            dot.tag = index
-            let label = UILabel()
-            label.text = target.zh
-            label.font = .systemFont(ofSize: 11, weight: .semibold)
-            label.textColor = .label
-            label.textAlignment = .center
-            label.adjustsFontSizeToFitWidth = true
-            label.minimumScaleFactor = 0.7
-            dot.addSubview(label)
-            label.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                label.centerXAnchor.constraint(equalTo: dot.centerXAnchor),
-                label.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
-                label.widthAnchor.constraint(lessThanOrEqualTo: dot.widthAnchor, constant: -6)
-            ])
-            pickerDots.append(dot)
-            pickerLabels.append(label)
-            view.addSubview(dot)
-        }
+        rebuildArc()
 
         for v in [transcriptPill, waveRing, micButton, hintLabel, languageButton, deleteButton, atButton, returnButton, globeButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
@@ -309,12 +286,57 @@ final class KeyboardViewController: UIInputViewController {
         #endif
     }
 
-    /// 五個語言點沿光球上方弧線排列：從 158° 到 22°（左上到右上），半徑 arcRadius。
+    /// 長按翻譯弧上的語言點：照使用者在主 app 選的語言（1–5 個）重建。frame 在 layoutArc() 算。
+    private var arcCodes: [String] = []
+
+    private func rebuildArc() {
+        let targets = TranslationTarget.quickPick
+        let codes = targets.map(\.code)
+        guard codes != arcCodes else { return }
+        arcCodes = codes
+        pickerDots.forEach { $0.removeFromSuperview() }
+        pickerDots.removeAll()
+        pickerLabels.removeAll()
+        for (index, target) in targets.enumerated() {
+            let dot = UIView()
+            dot.backgroundColor = .secondarySystemFill
+            dot.layer.cornerRadius = 22
+            dot.isHidden = true
+            dot.tag = index
+            let label = UILabel()
+            label.text = target.zh
+            label.font = .systemFont(ofSize: 11, weight: .semibold)
+            label.textColor = .label
+            label.textAlignment = .center
+            label.adjustsFontSizeToFitWidth = true
+            label.minimumScaleFactor = 0.6
+            dot.addSubview(label)
+            label.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                label.centerXAnchor.constraint(equalTo: dot.centerXAnchor),
+                label.centerYAnchor.constraint(equalTo: dot.centerYAnchor),
+                label.widthAnchor.constraint(lessThanOrEqualTo: dot.widthAnchor, constant: -6)
+            ])
+            pickerDots.append(dot)
+            pickerLabels.append(label)
+            view.addSubview(dot)
+        }
+        view.setNeedsLayout()
+    }
+
+    /// 語言點沿光球上方弧線排列：從 158° 到 22°（左上到右上），半徑 arcRadius。
     private func layoutArc() {
         let center = CGPoint(x: view.bounds.midX, y: Self.orbCenterY)
         let count = pickerDots.count
-        guard count > 1 else { return }
-        let start = 158.0, end = 22.0
+        guard count > 0 else { return }
+        if count == 1 {
+            pickerDots[0].bounds = CGRect(x: 0, y: 0, width: 44, height: 44)
+            pickerDots[0].center = CGPoint(x: center.x, y: center.y - Self.arcRadius)
+            return
+        }
+        // 語言少時弧收窄，點不要散到兩端。
+        let spread = min(136.0, 34.0 * Double(count - 1))
+        let start = 90 + spread / 2, end = 90 - spread / 2
         for (i, dot) in pickerDots.enumerated() {
             let deg = start + (end - start) * Double(i) / Double(count - 1)
             let rad = deg * .pi / 180
@@ -432,7 +454,7 @@ final class KeyboardViewController: UIInputViewController {
                 for target in TranslationTarget.quickPick { await FastTranslator.shared.prewarm(sourceRaw: sourceRaw, targetCode: target.code) }
             }
             setArcVisible(true)
-            highlightPick(nearest(to: point) ?? 2)
+            highlightPick(nearest(to: point) ?? pickerDots.count / 2)
             setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
         case .changed:
             highlightPick(nearest(to: point))
@@ -440,7 +462,7 @@ final class KeyboardViewController: UIInputViewController {
             setArcVisible(false)
             if let index = highlightedPick {
                 Haptics.start()
-                pendingTranslateTarget = TranslationTarget.quickPick[index]
+                pendingTranslateTarget = arcCodes.indices.contains(index) ? TranslationTarget.all.first { $0.code == arcCodes[index] } : nil
                 Task { await startRecognition() }
             } else {
                 setHint(KeyboardMode.dictate.idleHint, error: false)

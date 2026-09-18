@@ -51,11 +51,49 @@ struct TranslationTarget: Equatable, Sendable, Identifiable {
     static let all: [TranslationTarget] = TranslationService.targets.map {
         TranslationTarget(code: $0.code, zh: $0.zh, en: $0.en)
     }
-    /// 長按弧形選單預設放前五個（英、日、韓、繁中、法），中間是英文。
-    static let quickPick: [TranslationTarget] = {
-        let order = ["ja", "ko", "en", "zh-Hant", "fr"]
-        return order.compactMap { code in all.first { $0.code == code } }
-    }()
+    /// 鍵盤長按弧上的語言：使用者在主 app 選的（最多 5 個，照選的順序）；沒選過用預設。
+    static var quickPick: [TranslationTarget] { QuickPickStore.targets() }
+}
+
+/// 鍵盤長按翻譯要出現哪些語言（App Group，主 app 寫、鍵盤讀）。
+enum QuickPickStore {
+    static let key = "utuvo.type.translate.quickPick"
+    static let maxCount = 5
+    static let defaultCodes = ["ja", "ko", "en", "zh-Hant", "fr"]
+
+    static var defaults: UserDefaults { KeyboardPresence.defaults }
+
+    static func codes(in defaults: UserDefaults = QuickPickStore.defaults) -> [String] {
+        resolve(defaults.stringArray(forKey: key))
+    }
+
+    static func setCodes(_ codes: [String], in defaults: UserDefaults = QuickPickStore.defaults) {
+        defaults.set(resolve(codes), forKey: key)
+    }
+
+    static func targets(in defaults: UserDefaults = QuickPickStore.defaults) -> [TranslationTarget] {
+        codes(in: defaults).compactMap { code in TranslationTarget.all.first { $0.code == code } }
+    }
+
+    /// 清掉不認得的代碼與重複、最多 5 個；清完是空的就回預設（鍵盤長按不能沒有語言）。
+    static func resolve(_ stored: [String]?) -> [String] {
+        let known = Set(TranslationTarget.all.map(\.code))
+        var seen = Set<String>()
+        let cleaned = (stored ?? []).filter { known.contains($0) && seen.insert($0).inserted }.prefix(maxCount)
+        return cleaned.isEmpty ? defaultCodes : Array(cleaned)
+    }
+
+    /// 在已選清單裡切換一個語言：已選就移除（最後一個不能移除），未選就加到最後（滿 5 個不加）。
+    static func toggled(_ code: String, in current: [String]) -> [String] {
+        if let i = current.firstIndex(of: code) {
+            guard current.count > 1 else { return current }
+            var next = current
+            next.remove(at: i)
+            return next
+        }
+        guard current.count < maxCount else { return current }
+        return current + [code]
+    }
 }
 
 enum ReturnKeyLabel {

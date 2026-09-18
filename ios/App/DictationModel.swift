@@ -44,6 +44,8 @@ final class DictationModel: NSObject, ObservableObject {
     private var task: SFSpeechRecognitionTask?
     private var recognizer: SFSpeechRecognizer?
     private let pipeline = TextPipeline()
+    /// 這次錄音的音量紀錄（停頓斷句用）。
+    private let levels = LevelLog()
 
     override init() {
         let saved = UserDefaults.standard.string(forKey: "utuvo.type.ios.language")
@@ -149,13 +151,15 @@ final class DictationModel: NSObject, ObservableObject {
             }
             // 音訊執行緒回呼：閉包不能在 @MainActor 方法裡直接寫，否則繼承 MainActor 隔離，
             // Swift 6 執行期在音訊執行緒上 SIGTRAP（2026-09-18 真機：主 app 一點麥克風就閃退）。
-            Self.installTap(on: input, format: format, request: request)
+            levels.reset()
+            Self.installTap(on: input, format: format, request: request, levels: levels)
             audioEngine.prepare()
             try audioEngine.start()
 
-            task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText in
-                self?.ingest(text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText)
+            task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText, tokens in
+                self?.ingest(text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText, tokens: tokens)
             }
+            AIPunctuator.shared.prewarm()
             isRecording = true
         } catch {
             errorMessage = "無法啟動錄音：\(error.localizedDescription)"
@@ -179,10 +183,22 @@ final class DictationModel: NSObject, ObservableObject {
         if isRecording { stop() }
     }
 
-    private func ingest(text: String?, isFinal: Bool, errorCode: Int?, errorText: String?) {
+    private func ingest(text: String?, isFinal: Bool, errorCode: Int?, errorText: String?, tokens: [TimedToken] = []) {
         if let text {
             liveTranscript = text
-            if isFinal { commit(text) }
+            if isFinal {
+                let silences = SilenceDetector.intervals(levels.snapshot)
+                let paused = tokens.isEmpty ? text : PausePunctuator.punctuate(tokens, silences: silences)
+                let base = PunctuationGuard.preservesText(original: text, candidate: paused) ? paused : text
+                if AIPunctuator.refineEnabled, AIPunctuator.shared.isAvailable, base.count >= AIPunctuator.minimumLength {
+                    Task { @MainActor [weak self] in
+                        let better = await AIPunctuator.shared.refine(base)
+                        self?.commit(better ?? base)
+                    }
+                } else {
+                    commit(base)
+                }
+            }
         }
         if let errorCode {
             // 使用者按停止造成的「finished」不是錯誤
@@ -193,23 +209,28 @@ final class DictationModel: NSObject, ObservableObject {
         }
     }
 
-    nonisolated private static func installTap(on node: AVAudioInputNode, format: AVAudioFormat, request: SFSpeechAudioBufferRecognitionRequest) {
+    nonisolated private static func installTap(on node: AVAudioInputNode, format: AVAudioFormat,
+                                               request: SFSpeechAudioBufferRecognitionRequest, levels: LevelLog) {
         node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
             request.append(buffer)
+            levels.record(buffer)
         }
     }
 
     nonisolated private static func makeTask(
         recognizer: SFSpeechRecognizer,
         request: SFSpeechAudioBufferRecognitionRequest,
-        onResult: @escaping @MainActor @Sendable (String?, Bool, Int?, String?) -> Void
+        onResult: @escaping @MainActor @Sendable (String?, Bool, Int?, String?, [TimedToken]) -> Void
     ) -> SFSpeechRecognitionTask {
         recognizer.recognitionTask(with: request) { result, error in
             let text = result?.bestTranscription.formattedString
             let isFinal = result?.isFinal ?? false
             let code = (error as NSError?)?.code
             let message = error?.localizedDescription
-            Task { @MainActor in onResult(text, isFinal, code, message) }
+            let tokens: [TimedToken] = isFinal ? (result?.bestTranscription.segments.map {
+                TimedToken(text: $0.substring, start: $0.timestamp, duration: $0.duration)
+            } ?? []) : []
+            Task { @MainActor in onResult(text, isFinal, code, message, tokens) }
         }
     }
 

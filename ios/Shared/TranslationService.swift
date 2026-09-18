@@ -13,16 +13,28 @@ struct TranslationService {
     var isConfigured: Bool { !apiKey.isEmpty }
 
     /// 目標語言（對齊 macOS 修飾鍵 slot 的常用清單）。
+    /// Apple 翻譯（Translation framework）支援的語言；鍵盤長按要出現哪幾個由使用者在主 app 選（QuickPickStore）。
     static let targets: [(code: String, zh: String, en: String)] = [
         ("zh-Hant", "繁體中文", "Traditional Chinese"),
+        ("zh-Hans", "簡體中文", "Simplified Chinese"),
         ("en", "英文", "English"),
         ("ja", "日文", "Japanese"),
         ("ko", "韓文", "Korean"),
         ("fr", "法文", "French"),
         ("de", "德文", "German"),
         ("es", "西班牙文", "Spanish"),
+        ("it", "義大利文", "Italian"),
         ("pt", "葡萄牙文", "Portuguese"),
-        ("ru", "俄文", "Russian")
+        ("nl", "荷蘭文", "Dutch"),
+        ("ru", "俄文", "Russian"),
+        ("uk", "烏克蘭文", "Ukrainian"),
+        ("pl", "波蘭文", "Polish"),
+        ("tr", "土耳其文", "Turkish"),
+        ("ar", "阿拉伯文", "Arabic"),
+        ("hi", "印地文", "Hindi"),
+        ("id", "印尼文", "Indonesian"),
+        ("th", "泰文", "Thai"),
+        ("vi", "越南文", "Vietnamese")
     ]
 
     func translate(_ text: String, to targetName: String) async throws -> String {
