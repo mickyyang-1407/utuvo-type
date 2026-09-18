@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>UTUVO Type · Privacy</title>
+<meta name="description" content="How UTUVO Type for iPhone and Mac handles your voice, text and data.">
+<link rel="icon" href="../assets/logo.png">
+<style>
+  :root{--bg:#FBF7F2;--card:#fff;--ink:#2A1F2E;--ink-2:#6B5E6F;--line:rgba(42,31,46,.10);--orange:#F97316}
+  @media (prefers-color-scheme:dark){:root{--bg:#0E0C0B;--card:#1E1C1A;--ink:#F3EEE9;--ink-2:#B3A9A2;--line:rgba(255,255,255,.10)}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  main{max-width:760px;margin:0 auto;padding:40px 16px 80px}
+  header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+  header img{width:44px;height:44px}
+  header a{color:inherit;text-decoration:none;font-weight:650}
+  h1{font-size:2rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em}
+  h2{font-size:1.15rem;margin:34px 0 8px}
+  p,li{color:var(--ink-2)} strong{color:var(--ink)}
+  ul{padding-left:1.2em;margin:8px 0}
+  .card{background:var(--card);border-radius:20px;padding:18px 22px;margin-top:18px;border:1px solid var(--line)}
+  .lang{font-size:.85rem;color:var(--orange);font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+  .meta{font-size:.9rem}
+  a{color:var(--orange)}
+  hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+</style>
+</head>
+<body>
+<main>
+<header><img src="../assets/logo.png" alt=""><a href="../">UTUVO Type</a></header>
+
+<p class="lang">English</p>
+<h1>Privacy</h1>
+<p class="meta">Last updated 18 September 2026 · applies to UTUVO Type for iPhone (app and keyboard) and for Mac.</p>
+
+<div class="card">
+<p><strong>Short version:</strong> UTUVO Type has no accounts, no analytics, no ads, no tracking and no third-party SDKs. We run no servers, so we never receive your voice or your text. What leaves your device is listed below, and each case is something you can turn off.</p>
+</div>
+
+<h2>Your voice</h2>
+<ul>
+<li>On iPhone, speech is transcribed by Apple's Speech framework. When your device supports on-device recognition for the language you chose, audio never leaves the device. Otherwise iOS sends the audio to Apple's servers for recognition, under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>. Turn on <strong>Settings → Only use on-device recognition</strong> and UTUVO Type will refuse to record rather than use Apple's servers. The dictation screen always shows which path was used.</li>
+<li>The microphone is on only while you dictate, or while a keyboard voice session is open. A keyboard voice session closes itself after 5 minutes without use. iOS shows its microphone indicator whenever it is on.</li>
+<li>We do not keep audio recordings.</li>
+</ul>
+
+<h2>The keyboard and “Allow Full Access”</h2>
+<ul>
+<li>iOS does not let keyboards use the microphone, so the keyboard asks the UTUVO Type app to record for it. They talk through a shared folder on your device (App Group). That on-device link, and haptic feedback, are why the keyboard needs Full Access. Nothing is sent over the network by this link.</li>
+<li>The keyboard only inserts your dictation. It does not record or store what you type with other keys or keyboards.</li>
+<li>To take you back to the app you were typing in after the microphone starts, the keyboard reads that app's identifier. It is kept in memory only, never saved and never sent anywhere.</li>
+</ul>
+
+<h2>Editing and translating</h2>
+<ul>
+<li>“Say how to change it” and translation use Apple's on-device frameworks (Apple Intelligence, Translation). iOS may download translation language packs from Apple.</li>
+<li>Optional: if Apple Intelligence is unavailable <em>and</em> you enter your own cloud API key in Settings, the text you ask to edit or translate is sent to that provider (Alibaba Cloud DashScope) with your key. With no key set, nothing is sent. The key is stored in your iPhone's Keychain.</li>
+</ul>
+
+<h2>What is stored, and where</h2>
+<ul>
+<li>Your dictation history, personal dictionary and settings are stored on your device, in UTUVO Type's own storage. They may be included in your iPhone or Mac backups like any app data.</li>
+<li>Delete single entries in History (swipe left), or delete everything by deleting the app.</li>
+</ul>
+
+<h2>UTUVO Type for Mac</h2>
+<ul>
+<li>By default transcription and clean-up run locally on your Mac. The speech model is downloaded once, only when you click <strong>Install local engine</strong>.</li>
+<li>A cloud formatter is available only if you configure your own key; then the transcript you dictate is sent to that provider.</li>
+</ul>
+
+<h2>Children</h2>
+<p>UTUVO Type does not knowingly collect anything from anyone, including children.</p>
+
+<h2>Contact</h2>
+<p>Questions or concerns: open an issue at <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a>. The source code is public, so every statement on this page can be checked.</p>
+
+<hr>
+
+<p class="lang">繁體中文</p>
+<h1>隱私權政策</h1>
+<p class="meta">最後更新：2026 年 9 月 18 日．適用 UTUVO Type iPhone 版（app 與鍵盤）及 Mac 版。</p>
+
+<div class="card">
+<p><strong>簡單說：</strong>UTUVO Type 沒有帳號、沒有分析、沒有廣告、不追蹤，也不含任何第三方 SDK。我們沒有伺服器，所以永遠收不到你的聲音或文字。會離開你裝置的情況都列在下面，而且每一項都可以關掉。</p>
+</div>
+
+<h2>你的聲音</h2>
+<ul>
+<li>iPhone 上的語音由 Apple 的 Speech 框架轉成文字。你的裝置支援所選語言的「裝置端辨識」時，音訊完全不離開裝置；不支援時，iOS 會把音訊送到 Apple 伺服器辨識，適用 <a href="https://www.apple.com/tw/legal/privacy/">Apple 的隱私權政策</a>。在 <strong>設定 → 只用裝置端辨識</strong> 打開後，UTUVO Type 寧可拒絕錄音，也不會改用 Apple 伺服器。聽寫畫面會標示這次走的是哪一種。</li>
+<li>只有在你聽寫時、或鍵盤語音工作階段開著時才會開麥克風；鍵盤語音工作階段閒置 5 分鐘會自動關閉。麥克風開著時 iOS 會顯示指示燈。</li>
+<li>我們不保留錄音。</li>
+</ul>
+
+<h2>鍵盤與「允許完整存取」</h2>
+<ul>
+<li>iOS 不讓鍵盤使用麥克風，所以鍵盤請 UTUVO Type app 代為錄音，兩者透過你裝置上的共用資料夾（App Group）溝通。鍵盤需要「完整存取」就是為了這條裝置內的連線和觸覺回饋；這條連線不經過網路。</li>
+<li>鍵盤只會插入你的聽寫內容，不會記錄或保存你用其他按鍵或鍵盤打的字。</li>
+<li>為了在麥克風開好後把你帶回原本正在打字的 app，鍵盤會讀取那個 app 的識別碼。它只存在記憶體裡，不存檔、不傳送。</li>
+</ul>
+
+<h2>改寫與翻譯</h2>
+<ul>
+<li>「說出要怎麼改」與翻譯使用 Apple 的裝置端框架（Apple Intelligence、Translation）。iOS 可能會向 Apple 下載翻譯語言包。</li>
+<li>選配：只有在 Apple Intelligence 無法使用、<em>而且</em>你在設定裡填了自己的雲端 API key 時，你要改寫或翻譯的文字才會用你的 key 送到該服務（阿里雲 DashScope）。沒填 key 就什麼都不送。key 存在 iPhone 的鑰匙圈。</li>
+</ul>
+
+<h2>存了什麼、存在哪裡</h2>
+<ul>
+<li>聽寫歷史、個人字典與設定都存在你的裝置上、UTUVO Type 自己的儲存空間。跟其他 app 資料一樣，可能會被包含在 iPhone 或 Mac 的備份裡。</li>
+<li>在「歷史」往左滑可刪單筆；刪除 app 就會全部刪除。</li>
+</ul>
+
+<h2>Mac 版</h2>
+<ul>
+<li>預設轉錄與整理都在你的 Mac 本機執行。語音模型只在你按下 <strong>安裝本機引擎</strong> 時下載一次。</li>
+<li>雲端整理只有在你設定自己的 key 後才會使用；屆時你口述的逐字稿會送到該服務。</li>
+</ul>
+
+<h2>兒童</h2>
+<p>UTUVO Type 不會刻意向任何人（包括兒童）收集任何資料。</p>
+
+<h2>聯絡</h2>
+<p>有疑問請在 <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a> 開 issue。程式碼是公開的，這頁的每一句都可以查證。</p>
+</main>
+</body>
+</html>
