@@ -18,7 +18,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "9"
+    CURRENT_PROJECT_VERSION: "10"
 
 targets:
   "UTUVOTypeiOS":
@@ -57,6 +57,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios
+        # 首發只上 iPhone（iPad 版面與鍵盤沒驗過；之後要上改 "1,2" 並補 iPad 截圖）。要寫在每個 target 才生效。
+        TARGETED_DEVICE_FAMILY: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
 
@@ -90,6 +92,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios.keyboard
+        # 首發只上 iPhone（iPad 版面與鍵盤沒驗過；之後要上改 "1,2" 並補 iPad 截圖）。要寫在每個 target 才生效。
+        TARGETED_DEVICE_FAMILY: "1"
         # HostArbiterActivation.m（載入期喚醒 UIKit 鍵盤 arbiter，自動跳回用）
         SWIFT_OBJC_BRIDGING_HEADER: Keyboard/UTUVOKeyboard-Bridging-Header.h
 

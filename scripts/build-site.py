@@ -79,7 +79,7 @@ ZH = {
         'DMG 本身很小，語音模型不在裡面。開啟設定 → 一般 → <b>安裝本機引擎</b>，會把 Qwen3-ASR 0.6B（約 1.2 GB）下載到你的 Application Support 資料夾，只下載這一次，而且要你按了才會開始。',
     # footer
     'MIT License</a> · The UTUVO Type name and mark are not part of the license.': 'MIT 授權</a>・「UTUVO Type」名稱與標誌不在授權範圍內。',
-    'Made in Taipei · <a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/PRIVACY.md">Privacy</a> · <a href="https://github.com/mickyyang-1407/utuvo-type/issues">Issues</a>': '台北製造・<a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/PRIVACY.md">隱私</a>・<a href="https://github.com/mickyyang-1407/utuvo-type/issues">回報問題</a>',
+    'Made in Taipei · <a href="https://mickyyang-1407.github.io/utuvo-type/privacy/">Privacy</a> · <a href="https://github.com/mickyyang-1407/utuvo-type/issues">Issues</a>': '台北製造・<a href="https://mickyyang-1407.github.io/utuvo-type/privacy/">隱私</a>・<a href="https://github.com/mickyyang-1407/utuvo-type/issues">回報問題</a>',
 }
 NAV = {'Modes': '模式', 'Privacy': '隱私', 'Install': '安裝'}
 
