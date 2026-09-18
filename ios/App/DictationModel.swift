@@ -113,6 +113,7 @@ final class DictationModel: NSObject, ObservableObject {
         do {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try? session.setAllowHapticsAndSystemSoundsDuringRecording(true)
             try session.setActive(true, options: .notifyOthersOnDeactivation)
 
             // IOS2：裝置端優先，但「退回雲端」必須看得見，而且使用者可以直接禁止。
@@ -146,16 +147,14 @@ final class DictationModel: NSObject, ObservableObject {
                 try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
                 return
             }
-            input.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-                request.append(buffer)
-            }
+            // 音訊執行緒回呼：閉包不能在 @MainActor 方法裡直接寫，否則繼承 MainActor 隔離，
+            // Swift 6 執行期在音訊執行緒上 SIGTRAP（2026-09-18 真機：主 app 一點麥克風就閃退）。
+            Self.installTap(on: input, format: format, request: request)
             audioEngine.prepare()
             try audioEngine.start()
 
-            task = recognizer.recognitionTask(with: request) { [weak self] result, error in
-                Task { @MainActor [weak self] in
-                    self?.ingest(result: result, error: error)
-                }
+            task = Self.makeTask(recognizer: recognizer, request: request) { [weak self] text, isFinal, errorCode, errorText in
+                self?.ingest(text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText)
             }
             isRecording = true
         } catch {
@@ -180,22 +179,37 @@ final class DictationModel: NSObject, ObservableObject {
         if isRecording { stop() }
     }
 
-    private func ingest(result: SFSpeechRecognitionResult?, error: Error?) {
-        if let result {
-            let text = result.bestTranscription.formattedString
-            if result.isFinal {
-                liveTranscript = text
-                commit(text)
-            } else {
-                liveTranscript = text
-            }
+    private func ingest(text: String?, isFinal: Bool, errorCode: Int?, errorText: String?) {
+        if let text {
+            liveTranscript = text
+            if isFinal { commit(text) }
         }
-        if let error {
+        if let errorCode {
             // 使用者按停止造成的「finished」不是錯誤
-            if (error as NSError).code != 216 {
-                errorMessage = "辨識中斷：\(error.localizedDescription)"
+            if errorCode != 216 {
+                errorMessage = "辨識中斷：\(errorText ?? "錯誤 \(errorCode)")"
             }
             if isRecording { stop() }
+        }
+    }
+
+    nonisolated private static func installTap(on node: AVAudioInputNode, format: AVAudioFormat, request: SFSpeechAudioBufferRecognitionRequest) {
+        node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
+            request.append(buffer)
+        }
+    }
+
+    nonisolated private static func makeTask(
+        recognizer: SFSpeechRecognizer,
+        request: SFSpeechAudioBufferRecognitionRequest,
+        onResult: @escaping @MainActor @Sendable (String?, Bool, Int?, String?) -> Void
+    ) -> SFSpeechRecognitionTask {
+        recognizer.recognitionTask(with: request) { result, error in
+            let text = result?.bestTranscription.formattedString
+            let isFinal = result?.isFinal ?? false
+            let code = (error as NSError?)?.code
+            let message = error?.localizedDescription
+            Task { @MainActor in onResult(text, isFinal, code, message) }
         }
     }
 

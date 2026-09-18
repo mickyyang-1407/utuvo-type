@@ -148,8 +148,12 @@ enum VoiceBridge {
 
     // MARK: - IO（App Group 檔案＋Darwin notification）
 
+    /// App Group 內 `Library/VoiceBridge/`（不放容器根目錄：devicectl 只能讀 Library／Documents／tmp，放這裡真機才撈得到除錯檔）。
     static var containerURL: URL? {
-        FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)
+        guard let root = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID) else { return nil }
+        let dir = root.appendingPathComponent("Library/VoiceBridge", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
     }
 
     static func write<T: Encodable>(_ value: T, name: String, in directory: URL? = nil) {

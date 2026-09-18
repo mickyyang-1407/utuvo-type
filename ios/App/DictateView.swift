@@ -18,7 +18,6 @@ struct DictateView: View {
                 ScrollView {
                     VStack(spacing: 18) {
                         header
-                        KeyboardSessionBanner(host: voiceHost)
                         insightsStrip
                         if !keyboardSeen && !keyboardGuideDismissed {
                             keyboardGuideCard
@@ -42,6 +41,18 @@ struct DictateView: View {
                 insights = UsageInsights.compute(records: HistoryStore.shared.load())
             }
             .onDisappear { model.finalizeNow() }
+            #if DEBUG
+            // 真機重現用：`-utuvo.type.debug.micAfterSession YES` 搭配 utuvotype://voice 啟動，
+            // 等工作階段開好後，照使用者路徑「結束工作階段 → 點主 app 麥克風」。
+            .task {
+                guard UserDefaults.standard.bool(forKey: "utuvo.type.debug.micAfterSession") else { return }
+                try? await Task.sleep(for: .seconds(4))
+                print("[debug] host active=\(KeyboardVoiceHost.shared.isActive) → tap mic")
+                model.toggle()
+                try? await Task.sleep(for: .seconds(4))
+                print("[debug] after toggle recording=\(model.isRecording) error=\(model.errorMessage ?? "-")")
+            }
+            #endif
         }
     }
 
