@@ -54,9 +54,11 @@ final class KeyboardViewController: UIInputViewController {
 
     static let brandOrange = UIColor(red: 0.976, green: 0.451, blue: 0.086, alpha: 1)
     static let brandAmber = UIColor(red: 1.0, green: 0.72, blue: 0.29, alpha: 1)
-    private static let orbSize: CGFloat = 96
-    private static let orbCenterY: CGFloat = 150
-    private static let arcRadius: CGFloat = 108
+    // 2026-09-18 產品決定：鍵盤太高 → 300→236 pt，光球與右側按鈕一起收緊。
+    private static let orbSize: CGFloat = 88
+    private static let orbCenterY: CGFloat = 124
+    private static let arcRadius: CGFloat = 98
+    private static let voiceHeight: CGFloat = 236
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,7 +114,7 @@ final class KeyboardViewController: UIInputViewController {
     // MARK: - Layout
 
     private func setupUI() {
-        let height = view.heightAnchor.constraint(equalToConstant: 300)
+        let height = view.heightAnchor.constraint(equalToConstant: Self.voiceHeight)
         height.priority = UILayoutPriority(999)
         height.isActive = true
 
@@ -225,7 +227,7 @@ final class KeyboardViewController: UIInputViewController {
             micButton.heightAnchor.constraint(equalToConstant: Self.orbSize),
 
             hintLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            hintLabel.topAnchor.constraint(equalTo: micButton.bottomAnchor, constant: 14),
+            hintLabel.topAnchor.constraint(equalTo: micButton.bottomAnchor, constant: 8),
             hintLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 84),
             hintLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -84),
 
@@ -233,7 +235,7 @@ final class KeyboardViewController: UIInputViewController {
             languageButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
 
             deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -60),
+            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -54),
             deleteButton.widthAnchor.constraint(equalToConstant: 48),
             deleteButton.heightAnchor.constraint(equalToConstant: 48),
             atButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
@@ -241,7 +243,7 @@ final class KeyboardViewController: UIInputViewController {
             atButton.widthAnchor.constraint(equalToConstant: 48),
             atButton.heightAnchor.constraint(equalToConstant: 48),
             returnButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
-            returnButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: 60),
+            returnButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: 54),
             returnButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 48),
 
             globeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),

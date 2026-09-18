@@ -2,6 +2,7 @@ import XCTest
 
 /// 走產品入口看鍵盤：主 app 的 TextField → 切到 UTUVO Type 鍵盤 → 光球在、姿態對，截圖存附件。
 /// 模擬器沒麥克風，錄音姿態走 DEBUG launch arg（`-utuvo.type.keyboard.debugPose`）。
+@MainActor
 final class KeyboardOrbUITests: XCTestCase {
     func testKeyboardOrbPoses() throws {
         for pose in ProcessInfo.processInfo.environment["ORB_POSES"].map { $0.components(separatedBy: ",") } ?? ["idle", "recording", "arc"] {
@@ -22,26 +23,18 @@ final class KeyboardOrbUITests: XCTestCase {
         }
     }
 
-    /// 第三方鍵盤跑在另一個程序，XCUITest 看得到的只有它的無障礙元素（有時連這個都沒有），
-    /// 所以兩種證據擇一：光球 identifier 出現、或「換行」這顆我們鍵盤才有的鍵出現。
+    /// 長按地球從清單選 UTUVO Type，再用我們鍵盤專有的「繁中」語言徽章確認。
+    /// 不能用「換行」判斷：系統注音鍵盤的換行鍵標籤也叫「換行」（2026-09-18 假綠）。
+    /// 模擬器要先在「設定」加入鍵盤（見 AppStoreScreenshotTests.test0EnableKeyboard）。
     private func switchToUTUVOKeyboard(_ app: XCUIApplication) -> Bool {
-        let orb = app.descendants(matching: .any)["utuvoKeyboardOrb"]
-        let ours = app.buttons["換行"]
-        for i in 0..<5 {
-            if orb.waitForExistence(timeout: 2) || ours.exists { return true }
-            // 新裝置第一次切鍵盤：系統「Quickly Change Keyboards」導覽，按掉再切。
-            let intro = app.buttons["Continue"]
-            if intro.exists { intro.tap(); continue }
-            let globe = app.buttons["Next keyboard"]
-            guard globe.exists else { return false }
-            globe.tap()
-            sleep(1)
-            let shot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
-            shot.name = "after-globe-\(i)"
-            shot.lifetime = .keepAlways
-            add(shot)
-        }
-        print("KEYBOARD TREE:\n\(app.debugDescription)")
-        return orb.exists || ours.exists
+        let badge = app.buttons["繁中"]
+        if badge.waitForExistence(timeout: 2) { return true }
+        let globe = app.buttons["Next keyboard"]
+        guard globe.waitForExistence(timeout: 3) else { return false }
+        globe.press(forDuration: 1.2)
+        let pick = app.descendants(matching: .any).matching(NSPredicate(format: "label == 'UTUVO Type'")).firstMatch
+        guard pick.waitForExistence(timeout: 4) else { print("KEYBOARD MENU:\n\(app.debugDescription)"); return false }
+        pick.tap()
+        return badge.waitForExistence(timeout: 5)
     }
 }

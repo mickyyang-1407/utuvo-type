@@ -57,6 +57,15 @@ final class NormalizerTests: XCTestCase {
         XCTAssertEqual(Normalizer().normalize("我要用這個 app 記筆記").cleaned, "我要用這個 app 記筆記")
     }
 
+    /// 簡體：同一套規則（該刪的刪、實詞留著）。
+    func testSimplifiedFillers() {
+        XCTAssertEqual(Normalizer().normalize("那个我今天很累").cleaned, "我今天很累")
+        XCTAssertEqual(Normalizer().normalize("对，明天见").cleaned, "明天见")
+        XCTAssertEqual(Normalizer().normalize("这个不对").cleaned, "这个不对")
+        XCTAssertEqual(Normalizer().normalize("明天在录音室对 Atmos 母带").cleaned, "明天在录音室对 Atmos 母带")
+        XCTAssertEqual(Normalizer().normalize("我要用这个 app 记笔记").cleaned, "我要用这个 app 记笔记")
+    }
+
     func testFillerStageIsRecorded() {
         let n = Normalizer()
         let out = n.normalize("那個我今天很累")
