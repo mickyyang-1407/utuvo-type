@@ -2,7 +2,7 @@ import UIKit
 import UTUVOTypeCore
 
 /// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 產品決定：功能對齊，外表是我們自己的）。
-/// 視覺語彙沿用主 app：橘色光球 MicOrb 當主角、Aurora 漸層、玻璃圓鈕；錄音時光暈呼吸＋放射狀波形環。
+/// 視覺語彙沿用主 app：光球（OrbView，Metal）當主角、玻璃圓鈕；錄音時光球跟著主 app 傳來的音量動。
 ///   - 頂緣「即時字幕帶」：錄音時逐字稿在這裡跑（不是浮動膠囊）；閒置時顯示品牌與模式提示。
 ///   - 中央光球：點一下聽寫；有選取＝說出要怎麼改；長按出現弧形語言點，滑到放開就翻譯。
 ///   - 左側：語言小徽章（長按／點選單）、iOS<26 的地球；右側：⌫／@／送出 玻璃圓鈕直排。
@@ -40,8 +40,8 @@ final class KeyboardViewController: UIInputViewController {
     private let brandLabel = UILabel()
     private let hintLabel = UILabel()
     private let micButton = OrbButton()
-    private let waveRing = WaveRingView()
-    private let backdrop = CAGradientLayer()
+    /// 主 app 錄音時寫的即時音量（App Group 小檔案），光球每幀讀。
+    private lazy var levelChannel = VoiceLevelChannel(writable: false)
     private let languageButton = UIButton(type: .system)
     private let deleteButton = UIButton(type: .custom)
     private let atButton = UIButton(type: .custom)
@@ -80,7 +80,6 @@ final class KeyboardViewController: UIInputViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        backdrop.frame = view.bounds
         layoutArc()
     }
 
@@ -103,12 +102,11 @@ final class KeyboardViewController: UIInputViewController {
         let preview = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: nil)
         setHint(preview.idleHint, error: false)
         if case .edit = preview {
-            micButton.glyph = "text.badge.checkmark"
             micButton.setTint(edit: true)
         } else {
-            micButton.glyph = "mic.fill"
             micButton.setTint(edit: false)
         }
+        if micButton.orb.phase != .processing { micButton.orb.phase = .idle }
     }
 
     // MARK: - Layout
@@ -117,14 +115,6 @@ final class KeyboardViewController: UIInputViewController {
         let height = view.heightAnchor.constraint(equalToConstant: 300)
         height.priority = UILayoutPriority(999)
         height.isActive = true
-
-        // Aurora 底色：光球後方一團很淡的橘暈，讓玻璃有東西折射。
-        backdrop.type = .radial
-        backdrop.colors = [Self.brandOrange.withAlphaComponent(0.16).cgColor, Self.brandAmber.withAlphaComponent(0.05).cgColor, UIColor.clear.cgColor]
-        backdrop.locations = [0, 0.45, 1]
-        backdrop.startPoint = CGPoint(x: 0.5, y: 0.5)
-        backdrop.endPoint = CGPoint(x: 1.0, y: 1.0)
-        view.layer.insertSublayer(backdrop, at: 0)
 
         // 頂緣字幕帶
         brandIcon.tintColor = Self.brandOrange
@@ -171,7 +161,7 @@ final class KeyboardViewController: UIInputViewController {
         longPress.minimumPressDuration = 0.35
         longPress.cancelsTouchesInView = true
         micButton.addGestureRecognizer(longPress)
-        waveRing.isUserInteractionEnabled = false
+        micButton.orb.levelProvider = { [weak self] in self?.levelChannel?.read() }
 
         // 語言徽章（左）
         var langConfig = UIButton.Configuration.plain()
@@ -218,7 +208,7 @@ final class KeyboardViewController: UIInputViewController {
 
         rebuildArc()
 
-        for v in [transcriptPill, waveRing, micButton, hintLabel, languageButton, deleteButton, atButton, returnButton, globeButton] {
+        for v in [transcriptPill, micButton, hintLabel, languageButton, deleteButton, atButton, returnButton, globeButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview(v)
         }
@@ -233,10 +223,6 @@ final class KeyboardViewController: UIInputViewController {
             micButton.centerYAnchor.constraint(equalTo: view.topAnchor, constant: Self.orbCenterY),
             micButton.widthAnchor.constraint(equalToConstant: Self.orbSize),
             micButton.heightAnchor.constraint(equalToConstant: Self.orbSize),
-            waveRing.centerXAnchor.constraint(equalTo: micButton.centerXAnchor),
-            waveRing.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
-            waveRing.widthAnchor.constraint(equalToConstant: Self.orbSize + 64),
-            waveRing.heightAnchor.constraint(equalToConstant: Self.orbSize + 64),
 
             hintLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             hintLabel.topAnchor.constraint(equalTo: micButton.bottomAnchor, constant: 14),
@@ -272,6 +258,7 @@ final class KeyboardViewController: UIInputViewController {
                 guard let self else { return }
                 switch pose {
                 case "recording":
+                    self.micButton.orb.debugSyntheticVoice = true
                     self.setRecordingAppearance(true)
                     self.showTranscript("明天下午三點在錄音室對 Atmos 母帶，記得帶")
                     self.setHint(KeyboardMode.dictate.recordingHint, error: false)
@@ -299,8 +286,8 @@ final class KeyboardViewController: UIInputViewController {
         pickerLabels.removeAll()
         for (index, target) in targets.enumerated() {
             let dot = UIView()
-            dot.backgroundColor = .secondarySystemFill
             dot.layer.cornerRadius = 22
+            applyGlass(to: dot, radius: 22, fallback: .secondarySystemFill)
             dot.isHidden = true
             dot.tag = index
             let label = UILabel()
@@ -504,15 +491,25 @@ final class KeyboardViewController: UIInputViewController {
         highlightedPick = index
         for (i, dot) in pickerDots.enumerated() {
             let on = dot.tag == index
-            dot.backgroundColor = on ? Self.brandOrange : .secondarySystemFill
+            setDot(dot, highlighted: on)
             pickerLabels[i].textColor = on ? .white : .label
             dot.transform = on ? CGAffineTransform(scaleX: 1.18, y: 1.18) : .identity
         }
     }
 
+    /// 弧上語言點：玻璃圓點，選到的染品牌橘。
+    private func setDot(_ dot: UIView, highlighted on: Bool) {
+        if #available(iOS 26.0, *), let glassView = dot.subviews.first(where: { $0 is UIVisualEffectView }) as? UIVisualEffectView {
+            let glass = UIGlassEffect()
+            glass.tintColor = on ? Self.brandOrange : nil
+            glassView.effect = glass
+        } else {
+            dot.backgroundColor = on ? Self.brandOrange : .secondarySystemFill
+        }
+    }
+
     private func setRecordingAppearance(_ recording: Bool) {
         micButton.setRecording(recording)
-        waveRing.setActive(recording)
         // 字幕帶：錄音中品牌退場、橘點＋逐字稿進場
         brandLabel.isHidden = recording
         liveDot.isHidden = !recording
@@ -594,6 +591,7 @@ final class KeyboardViewController: UIInputViewController {
         VoiceBridge.post(.command)
         isRecording = false
         setRecordingAppearance(false)
+        micButton.orb.phase = .processing
         setHint("整理中…", error: false)
     }
 
@@ -629,10 +627,12 @@ final class KeyboardViewController: UIInputViewController {
         case .final(let text, let translated):
             clearPending()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
+            micButton.orb.phase = .idle
             finish(raw: text, appTranslation: translated)
         case .failed(let message):
             clearPending()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
+            micButton.orb.phase = .error
             mode = .dictate
             pendingTranslateTarget = nil
             setHint(message, error: true)
@@ -765,79 +765,20 @@ private extension DictationLanguage {
 
 // MARK: - 光球與波形環（純 UIKit／CoreAnimation，鍵盤 extension 記憶體友善）
 
-/// 光球：iOS 26+ 用系統 Liquid Glass（橘色染色、互動形變），跟 iOS 27 圖示同一種材質；
-/// 不再疊白色亮面反光（看起來廉價）。iOS 26 以下退回霧面漸層＋細邊光。
+/// 光球按鈕：裡面是 OrbView（Metal），取代麥克風圖示。按鈕本身只負責觸控；
+/// 光暈畫在按鈕外圍（OrbView 比按鈕大一圈、不吃觸控）。
 final class OrbButton: UIControl {
-    private let glyphView = UIImageView()
-    private let ring = CAShapeLayer()
-    private var glassView: UIVisualEffectView?
-    private let fallback = CAGradientLayer()
-    private let rim = CAShapeLayer()
-    /// iOS 27 圖示材質：上亮下深（很淡）＋邊緣錐形鏡面光（左上最亮）。
-    private let depth = CAGradientLayer()
-    private let specular = CAGradientLayer()
-    private let specularMask = CAShapeLayer()
-    private var edit = false
-
-    private static let orange = KeyboardViewController.brandOrange
-    private static let violet = UIColor(red: 0.62, green: 0.52, blue: 0.95, alpha: 1)
-
-    var glyph: String = "mic.fill" {
-        didSet { glyphView.image = UIImage(systemName: glyph, withConfiguration: UIImage.SymbolConfiguration(pointSize: 32, weight: .semibold)) }
-    }
+    let orb = OrbView()
+    /// 光暈往外留多少點。
+    private static let halo: CGFloat = 34
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        if #available(iOS 26.0, *) {
-            let glass = UIGlassEffect(style: .regular)
-            glass.tintColor = Self.orange.withAlphaComponent(0.88)
-            glass.isInteractive = true
-            let view = UIVisualEffectView(effect: glass)
-            view.isUserInteractionEnabled = false
-            view.clipsToBounds = true
-            addSubview(view)
-            glassView = view
-        } else {
-            // 霧面：上亮下深的同色漸層，沒有白色反光帶。
-            fallback.colors = [Self.orange.withAlphaComponent(0.92).cgColor, Self.orange.cgColor]
-            fallback.startPoint = CGPoint(x: 0.5, y: 0)
-            fallback.endPoint = CGPoint(x: 0.5, y: 1)
-            layer.addSublayer(fallback)
-        }
-        depth.colors = [UIColor.white.withAlphaComponent(0.10).cgColor, UIColor.clear.cgColor, UIColor.black.withAlphaComponent(0.08).cgColor]
-        depth.locations = [0, 0.45, 1]
-        depth.startPoint = CGPoint(x: 0.5, y: 0)
-        depth.endPoint = CGPoint(x: 0.5, y: 1)
-        layer.addSublayer(depth)
-        specular.type = .conic
-        specular.startPoint = CGPoint(x: 0.5, y: 0.5)
-        specular.endPoint = CGPoint(x: 0, y: 0)   // 起點方向＝左上
-        specular.colors = [0.55, 0.05, 0.18, 0.05, 0.55].map { UIColor.white.withAlphaComponent($0).cgColor }
-        specular.locations = [0, 0.25, 0.5, 0.75, 1]
-        specularMask.fillColor = UIColor.clear.cgColor
-        specularMask.strokeColor = UIColor.black.cgColor
-        specularMask.lineWidth = 1.2
-        specular.mask = specularMask
-        layer.addSublayer(specular)
-        ring.fillColor = UIColor.clear.cgColor
-        ring.strokeColor = Self.orange.withAlphaComponent(0.55).cgColor
-        ring.lineWidth = 1.5
-        ring.opacity = 0
-        layer.addSublayer(ring)
-        glyphView.tintColor = .white
-        glyphView.contentMode = .center
-        glyphView.layer.shadowColor = UIColor.black.cgColor
-        glyphView.layer.shadowOpacity = 0.12
-        glyphView.layer.shadowRadius = 3
-        glyphView.layer.shadowOffset = CGSize(width: 0, height: 1)
-        addSubview(glyphView)
-        glyph = "mic.fill"
-        layer.shadowColor = Self.orange.cgColor
-        layer.shadowOpacity = 0.22
-        layer.shadowRadius = 18
-        layer.shadowOffset = CGSize(width: 0, height: 8)
+        clipsToBounds = false
+        addSubview(orb)
         isAccessibilityElement = true
         accessibilityLabel = "聽寫"
+        accessibilityIdentifier = "utuvoKeyboardOrb"
         accessibilityTraits = .button
     }
 
@@ -845,119 +786,34 @@ final class OrbButton: UIControl {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let radius = bounds.width / 2
-        glassView?.frame = bounds
-        glassView?.layer.cornerRadius = radius
-        fallback.frame = bounds
-        fallback.cornerRadius = radius
-        rim.frame = bounds
-        rim.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 0.5, dy: 0.5)).cgPath
-        depth.frame = bounds
-        depth.cornerRadius = radius
-        specular.frame = bounds
-        specularMask.frame = bounds
-        specularMask.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 0.6, dy: 0.6)).cgPath
-        glyphView.frame = bounds
-        bringSubviewToFront(glyphView)
-        ring.frame = bounds
-        ring.path = UIBezierPath(ovalIn: bounds.insetBy(dx: 1, dy: 1)).cgPath
+        let frame = bounds.insetBy(dx: -Self.halo, dy: -Self.halo)
+        orb.frame = frame
+        orb.sphereFraction = bounds.width / max(frame.width, 1)
+    }
+
+    /// 只有圓內算按到。
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        let r = bounds.width / 2 + 6
+        return hypot(point.x - bounds.midX, point.y - bounds.midY) <= r
     }
 
     override var isHighlighted: Bool {
         didSet {
-            // 玻璃自己有互動形變；非玻璃才手動縮。
-            guard glassView == nil else { return }
-            transform = isHighlighted ? CGAffineTransform(scaleX: 0.95, y: 0.95) : .identity
-        }
-    }
-
-    /// 說出要怎麼改：玻璃轉薰衣草，一眼看出現在講的是指示。
-    func setTint(edit: Bool) {
-        self.edit = edit
-        let color = edit ? Self.violet : Self.orange
-        if #available(iOS 26.0, *), let glassView {
-            let glass = UIGlassEffect(style: .regular)
-            glass.tintColor = color.withAlphaComponent(0.88)
-            glass.isInteractive = true
-            glassView.effect = glass
-        } else {
-            fallback.colors = [color.withAlphaComponent(0.92).cgColor, color.cgColor]
-        }
-        layer.shadowColor = color.cgColor
-    }
-
-    func setRecording(_ on: Bool) {
-        glyph = on ? "stop.fill" : (edit ? "text.badge.checkmark" : "mic.fill")
-        accessibilityLabel = on ? "停止" : "聽寫"
-        layer.shadowOpacity = on ? 0.4 : 0.22
-        layer.shadowRadius = on ? 26 : 18
-        ring.removeAllAnimations()
-        if on {
-            let scale = CABasicAnimation(keyPath: "transform.scale")
-            scale.fromValue = 1.0; scale.toValue = 1.4
-            let fade = CABasicAnimation(keyPath: "opacity")
-            fade.fromValue = 0.7; fade.toValue = 0
-            let group = CAAnimationGroup()
-            group.animations = [scale, fade]
-            group.duration = 1.6
-            group.repeatCount = .infinity
-            group.timingFunction = CAMediaTimingFunction(name: .easeOut)
-            ring.add(group, forKey: "breathe")
-        } else {
-            ring.opacity = 0
-        }
-    }
-}
-
-/// 放射狀波形環：光球外圈 28 根短條，錄音時各自以不同節奏伸縮（純時間動畫，不接音量）。
-final class WaveRingView: UIView {
-    private var bars: [CALayer] = []
-    private let count = 28
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        for _ in 0..<count {
-            let bar = CALayer()
-            bar.backgroundColor = KeyboardViewController.brandOrange.withAlphaComponent(0.35).cgColor
-            bar.cornerRadius = 1.5
-            bar.opacity = 0
-            layer.addSublayer(bar)
-            bars.append(bar)
-        }
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        let c = CGPoint(x: bounds.midX, y: bounds.midY)
-        let radius = bounds.width / 2 - 14
-        for (i, bar) in bars.enumerated() {
-            let angle = CGFloat(i) / CGFloat(count) * 2 * .pi
-            bar.bounds = CGRect(x: 0, y: 0, width: 3, height: 10)
-            bar.position = CGPoint(x: c.x + cos(angle) * radius, y: c.y + sin(angle) * radius)
-            bar.setAffineTransform(CGAffineTransform(rotationAngle: angle + .pi / 2))
-        }
-    }
-
-    func setActive(_ on: Bool) {
-        for (i, bar) in bars.enumerated() {
-            bar.removeAllAnimations()
-            if on {
-                bar.opacity = 1
-                let grow = CABasicAnimation(keyPath: "bounds.size.height")
-                grow.fromValue = 6
-                grow.toValue = 12 + CGFloat((i * 7) % 11)
-                grow.duration = 0.32 + Double((i * 13) % 7) * 0.05
-                grow.autoreverses = true
-                grow.repeatCount = .infinity
-                grow.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
-                grow.beginTime = CACurrentMediaTime() + Double(i) * 0.02
-                bar.add(grow, forKey: "grow")
-            } else {
-                bar.opacity = 0
+            guard isHighlighted != oldValue else { return }
+            if isHighlighted { orb.wake() }
+            UIView.animate(withDuration: 0.35, delay: 0, usingSpringWithDamping: 0.6, initialSpringVelocity: 0,
+                           options: [.allowUserInteraction, .beginFromCurrentState]) {
+                self.orb.transform = self.isHighlighted ? CGAffineTransform(scaleX: 0.93, y: 0.93) : .identity
             }
         }
+    }
+
+    /// 說出要怎麼改：光球轉薰衣草，一眼看出現在講的是指示。
+    func setTint(edit: Bool) { orb.editPalette = edit }
+
+    func setRecording(_ on: Bool) {
+        accessibilityLabel = on ? "停止" : "聽寫"
+        if on { orb.phase = .listening } else if orb.phase == .listening { orb.phase = .idle }
     }
 }
 

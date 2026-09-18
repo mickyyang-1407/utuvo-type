@@ -18,7 +18,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "7"
+    CURRENT_PROJECT_VERSION: "9"
 
 targets:
   "UTUVOTypeiOS":
@@ -28,6 +28,8 @@ targets:
       - path: App
       - path: Shared
       - path: Assets.xcassets
+      # iOS 26+ Liquid Glass app icon：iOS／macOS 共用的單一正本（scripts/make-icon.py 產生）
+      - path: ../assets/branding/AppIcon.icon
     dependencies:
       - package: UTUVOType
         product: UTUVOTypeCore
@@ -107,6 +109,18 @@ targets:
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/UTUVOTypeiOS.app/UTUVOTypeiOS"
         BUNDLE_LOADER: "$(TEST_HOST)"
 
+  "UTUVOTypeiOSUITests":
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: iOSUITests
+    dependencies:
+      - target: "UTUVOTypeiOS"
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: UTUVOTypeiOS
+
 schemes:
   "UTUVOTypeiOS":
     build:
@@ -114,9 +128,11 @@ schemes:
         "UTUVOTypeiOS": all
         "UTUVOKeyboard": [run]
         "UTUVOTypeiOSTests": [test]
+        "UTUVOTypeiOSUITests": [test]
     run:
       config: Debug
     test:
       config: Debug
       targets:
         - "UTUVOTypeiOSTests"
+        - "UTUVOTypeiOSUITests"

@@ -19,11 +19,11 @@ struct HistoryListView: View {
         NavigationStack {
             Group {
                 if records.isEmpty {
-                    ContentUnavailableView(
-                        "還沒有紀錄",
-                        systemImage: "mic",
-                        description: Text("到「聽寫」講一句話，這裡就會出現。")
-                    )
+                    ContentUnavailableView {
+                        Label("還沒有紀錄", image: "OrbGlyph")
+                    } description: {
+                        Text("到「聽寫」點光球講一句話，這裡就會出現。")
+                    }
                 } else if visible.isEmpty {
                     // 不用 ContentUnavailableView.search：它跟系統語言走（模擬器英文），app 文案全中文。
                     ContentUnavailableView(

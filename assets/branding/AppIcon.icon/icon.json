@@ -1,0 +1,83 @@
+{
+  "fill": {
+    "linear-gradient": [
+      "extended-srgb:0.98039,0.54902,0.14902,1.000",
+      "extended-srgb:0.95686,0.39216,0.04706,1.000"
+    ]
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "cursor.svg",
+          "name": "cursor",
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:0.92549,0.35294,0.04706,1.000"
+              }
+            },
+            {
+              "appearance": "dark",
+              "value": {
+                "solid": "extended-srgb:1.00000,0.96863,0.93333,1.000"
+              }
+            }
+          ],
+          "position": {
+            "scale": 1.0,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.15
+      }
+    },
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "bubble.svg",
+          "name": "bubble",
+          "fill-specializations": [
+            {
+              "value": {
+                "solid": "extended-srgb:1.00000,1.00000,1.00000,1.000"
+              }
+            }
+          ],
+          "position": {
+            "scale": 1.0,
+            "translation-in-points": [
+              0,
+              0
+            ]
+          }
+        }
+      ],
+      "lighting": "individual",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

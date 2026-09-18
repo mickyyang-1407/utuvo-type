@@ -19,12 +19,16 @@
 
 ## UTUVO Type 的 mark
 
-Type 使用橘色語音泡泡，裡面放深紫色文字輸入游標與小句點：
+Type 使用橘底上的白色語音泡泡，裡面是品牌字型 UTUVO Display 的「I.」（橘色；深色外觀轉白）：
 
 > 說出來 → 變成文字 → 可以直接使用。
 
 它不是麥克風，也不是音訊播放器；即使不看產品名稱，也能把它理解成
 「把想法放進文字裡」的工具。
+
+正本只有一份：`assets/branding/AppIcon.icon`（Icon Composer 文件，`scripts/make-icon.py` 產生），
+iOS 與 macOS 共用；Liquid Glass（邊緣高光、透光、深色／透明／染色外觀）由系統依圖層算，
+不要把玻璃畫進點陣圖。`.icns`、1024 PNG、app 內品牌圖、官網 `docs/assets/logo.png` 都從這份渲染。
 
 ## 可延伸的系列例子
 

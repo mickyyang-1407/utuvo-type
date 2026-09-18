@@ -23,7 +23,6 @@ struct DictateView: View {
                             keyboardGuideCard
                         }
                         languagePicker
-                        WaveformBars(isRecording: model.isRecording)
                         micButton
                         routeBadge
                         transcriptSection
@@ -64,7 +63,7 @@ struct DictateView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 44, height: 44)
-                .shadow(color: Aurora.orange.opacity(0.25), radius: 6, y: 3)
+                .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text("UTUVO Type")
                     .font(.title3.weight(.semibold))
@@ -77,26 +76,29 @@ struct DictateView: View {
         .padding(.top, 6)
     }
 
+    /// 用量：一張安靜的卡片、三欄數字（內容層不用玻璃）。
     private var insightsStrip: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 0) {
             insightTile(value: "\(insights.weekWords)", label: "本週字數")
+            Divider().frame(height: 30)
             insightTile(value: "\(insights.sessions)", label: "次聽寫")
+            Divider().frame(height: 30)
             insightTile(value: minutesText(insights.minutesSaved), label: "省下打字")
         }
+        .auroraCard(padding: 14)
     }
 
     private func insightTile(value: String, label: String) -> some View {
-        VStack(spacing: 3) {
+        VStack(spacing: 2) {
             Text(value)
                 .font(.system(size: 22, weight: .semibold, design: .rounded))
                 .monospacedDigit()
+                .contentTransition(.numericText())
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .auroraGlass(cornerRadius: 16)
     }
 
     private func minutesText(_ minutes: Double) -> String {
@@ -120,7 +122,7 @@ struct DictateView: View {
             }
             guideStep(1, "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type")
             guideStep(2, "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）")
-            guideStep(3, "在任何輸入框按 🌐 切到 UTUVO Type，點麥克風開始說")
+            guideStep(3, "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說")
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -141,7 +143,7 @@ struct DictateView: View {
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white)
                 .frame(width: 20, height: 20)
-                .background(Circle().fill(Aurora.orbGradient))
+                .background(Circle().fill(Aurora.orange))
             Text(text)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -173,22 +175,40 @@ struct DictateView: View {
         }
     }
 
+    /// 光球取代麥克風：點一下開始／停止；講話時跟著音量動，改寫時轉薰衣草。
     private var micButton: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 4) {
             Button {
                 model.toggle()
                 if model.isRecording { translatedText = nil }
             } label: {
-                MicOrb(isRecording: model.isRecording)
+                LiveOrb(phase: orbPhase, editPalette: model.intent.isEdit, sphereFraction: 0.58, level: { [model] in model.liveLevel() })
+                    .frame(width: 250, height: 250)
+                    .contentShape(Circle().inset(by: 50))
             }
+            .buttonStyle(OrbPressStyle())
             .disabled(model.isRewriting)
+            .sensoryFeedback(trigger: model.isRecording) { _, recording in
+                recording ? .impact(weight: .medium) : .impact(flexibility: .rigid)
+            }
             .accessibilityLabel(model.isRecording ? "停止" : "開始聽寫")
+            .padding(.vertical, -34) // 光暈留白不佔版面
             Text(micHint)
                 .font(.footnote)
-                .foregroundStyle(model.intent.isEdit ? Aurora.orange : Color.secondary)
+                .foregroundStyle(model.intent.isEdit ? Aurora.violet : Color.secondary)
                 .animation(.default, value: micHint)
         }
-        .padding(.vertical, 6)
+    }
+
+    private var orbPhase: OrbView.Phase {
+        #if DEBUG
+        // 截圖／錄影：`-utuvo.type.ios.orbDemo YES` 擺出聆聽姿態（搭配合成音量）。
+        if UserDefaults.standard.bool(forKey: "utuvo.type.ios.orbDemo") { return .listening }
+        #endif
+        if model.isRecording { return .listening }
+        if model.isRewriting { return .processing }
+        if model.errorMessage != nil { return .error }
+        return .idle
     }
 
     /// 跟鍵盤同一套文案（KeyboardMode 的 idle／recording hint），主 app 與鍵盤講同一種話。
