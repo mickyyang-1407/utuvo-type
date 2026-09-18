@@ -12,8 +12,8 @@ enum RecognitionRoute: String, Equatable, Sendable {
 
     var badgeText: String {
         switch self {
-        case .onDevice: return "裝置端辨識・音訊不離機"
-        case .server: return "雲端辨識・音訊會送到 Apple 伺服器"
+        case .onDevice: return String(localized: "裝置端辨識・音訊不離機")
+        case .server: return String(localized: "雲端辨識・音訊會送到 Apple 伺服器")
         }
     }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// 聽寫主畫面：品牌列、用量統計（Typeless Home insights）、鍵盤啟用教學、光球＋波形、輸出卡。
+/// 聽寫主畫面（2026-09-18 重設計）：上＝品牌＋語言選單；中＝光球獨佔畫面中心（輸出卡接在下面）；
+/// 下＝安靜的用量一行。整頁撐滿螢幕高度，不再全擠在上半部。
 struct DictateView: View {
     @StateObject private var model = DictationModel()
     @ObservedObject private var voiceHost = KeyboardVoiceHost.shared
@@ -15,20 +16,27 @@ struct DictateView: View {
         NavigationStack {
             ZStack {
                 Aurora.Backdrop()
-                ScrollView {
-                    VStack(spacing: 18) {
-                        header
-                        insightsStrip
-                        if !keyboardSeen && !keyboardGuideDismissed {
-                            keyboardGuideCard
+                GeometryReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 18) {
+                            header
+                            if !keyboardSeen && !keyboardGuideDismissed {
+                                keyboardGuideCard
+                            }
+                            Spacer(minLength: 8)
+                            micButton
+                            routeBadge
+                            transcriptSection
+                            outputSection
+                            Spacer(minLength: 8)
+                            insightsStrip
                         }
-                        languagePicker
-                        micButton
-                        routeBadge
-                        transcriptSection
-                        outputSection
+                        .padding(.horizontal, 20)
+                        .padding(.top, 8)
+                        .padding(.bottom, 12)
+                        .frame(minHeight: proxy.size.height)
                     }
-                    .padding(16)
+                    .scrollBounceBehavior(.basedOnSize)
                 }
             }
             .toolbar(.hidden, for: .navigationBar)
@@ -58,40 +66,44 @@ struct DictateView: View {
     // MARK: - Header / insights
 
     private var header: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image("BrandMark")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 44, height: 44)
+                .frame(width: 64, height: 64)
+                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                .shadow(color: Aurora.orange.opacity(0.25), radius: 12, y: 6)
                 .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text("UTUVO Type")
-                    .font(.title3.weight(.semibold))
+                    .font(.title2.weight(.bold))
                 Text("你只需要說話")
-                    .font(.footnote)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
-            Spacer()
+            Spacer(minLength: 8)
+            languageMenu
         }
         .padding(.top, 6)
     }
 
-    /// 用量：一張安靜的卡片、三欄數字（內容層不用玻璃）。
+    /// 用量：頁尾一行安靜的數字（不是卡片、不搶光球）。
     private var insightsStrip: some View {
         HStack(spacing: 0) {
-            insightTile(value: "\(insights.weekWords)", label: "本週字數")
+            insightTile(value: "\(insights.weekWords)", label: String(localized: "本週字數"))
             Divider().frame(height: 30)
-            insightTile(value: "\(insights.sessions)", label: "次聽寫")
+            insightTile(value: "\(insights.sessions)", label: String(localized: "次聽寫"))
             Divider().frame(height: 30)
-            insightTile(value: minutesText(insights.minutesSaved), label: "省下打字")
+            insightTile(value: minutesText(insights.minutesSaved), label: String(localized: "省下打字"))
         }
-        .auroraCard(padding: 14)
+        .padding(.horizontal, 8)
+        .opacity(0.9)
     }
 
     private func insightTile(value: String, label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
                 .monospacedDigit()
                 .contentTransition(.numericText())
             Text(label)
@@ -102,9 +114,10 @@ struct DictateView: View {
     }
 
     private func minutesText(_ minutes: Double) -> String {
-        if minutes < 1 { return "<1 分" }
-        if minutes < 60 { return "\(Int(minutes.rounded())) 分" }
-        return String(format: "%.1f 時", minutes / 60)
+        if minutes < 1 { return String(localized: "<1 分") }
+        if minutes < 60 { return String(localized: "\(Int(minutes.rounded())) 分") }
+        let hours = String(format: "%.1f", minutes / 60)
+        return String(localized: "\(hours) 時")
     }
 
     /// 鍵盤還沒在任何 app 裡出現過＝很可能還沒啟用；教三步驟並直接開系統設定。
@@ -120,9 +133,9 @@ struct DictateView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            guideStep(1, "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type")
-            guideStep(2, "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）")
-            guideStep(3, "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說")
+            guideStep(1, String(localized: "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type"))
+            guideStep(2, String(localized: "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）"))
+            guideStep(3, String(localized: "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說"))
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -152,14 +165,29 @@ struct DictateView: View {
 
     // MARK: - Dictation
 
-    private var languagePicker: some View {
-        Picker("語言", selection: $model.language) {
-            ForEach(DictationLanguage.allCases) { lang in
-                Text(lang.localizedName(zh: true)).tag(lang)
+    /// 語言：右上一顆膠囊選單（取代整排分段控制）。
+    private var languageMenu: some View {
+        Menu {
+            Picker("語言", selection: $model.language) {
+                ForEach(DictationLanguage.allCases) { lang in
+                    Text(lang.localizedName(zh: true)).tag(lang)
+                }
             }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "globe")
+                Text(model.language.shortLabel)
+                Image(systemName: "chevron.down")
+                    .font(.caption2.weight(.bold))
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.thinMaterial, in: Capsule())
         }
-        .pickerStyle(.segmented)
         .disabled(model.isRecording)
+        .accessibilityLabel("聽寫語言：\(model.language.localizedName(zh: true))")
     }
 
     /// 這次辨識走本機還是雲端，講在畫面上，不讓使用者用猜的。
@@ -183,16 +211,16 @@ struct DictateView: View {
                 if model.isRecording { translatedText = nil }
             } label: {
                 LiveOrb(phase: orbPhase, editPalette: model.intent.isEdit, sphereFraction: 0.58, level: { [model] in model.liveLevel() })
-                    .frame(width: 250, height: 250)
-                    .contentShape(Circle().inset(by: 50))
+                    .frame(width: 320, height: 320)
+                    .contentShape(Circle().inset(by: 64))
             }
             .buttonStyle(OrbPressStyle())
             .disabled(model.isRewriting)
             .sensoryFeedback(trigger: model.isRecording) { _, recording in
                 recording ? .impact(weight: .medium) : .impact(flexibility: .rigid)
             }
-            .accessibilityLabel(model.isRecording ? "停止" : "開始聽寫")
-            .padding(.vertical, -34) // 光暈留白不佔版面
+            .accessibilityLabel(model.isRecording ? String(localized: "停止") : String(localized: "開始聽寫"))
+            .padding(.vertical, -44) // 光暈留白不佔版面
             Text(micHint)
                 .font(.footnote)
                 .foregroundStyle(model.intent.isEdit ? Aurora.violet : Color.secondary)
@@ -216,9 +244,9 @@ struct DictateView: View {
         #if DEBUG
         if UserDefaults.standard.bool(forKey: "utuvo.type.ios.orbDemo") { return KeyboardMode.dictate.recordingHint }
         #endif
-        if model.isRewriting { return "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）" }
+        if model.isRewriting { return String(localized: "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）") }
         switch (model.intent, model.isRecording) {
-        case (.edit, true): return "說出要怎麼改，說完再點一下"
+        case (.edit, true): return String(localized: "說出要怎麼改，說完再點一下")
         case (.edit, false): return KeyboardMode.edit(selection: "").idleHint
         case (.dictate, true): return KeyboardMode.dictate.recordingHint
         case (.dictate, false): return KeyboardMode.dictate.idleHint
@@ -228,13 +256,13 @@ struct DictateView: View {
     @ViewBuilder
     private var transcriptSection: some View {
         if !model.liveTranscript.isEmpty {
-            card(title: model.intent.isEdit ? "你的指示" : "逐字稿", text: model.liveTranscript, secondary: true)
+            card(title: model.intent.isEdit ? String(localized: "你的指示") : String(localized: "逐字稿"), text: model.liveTranscript, secondary: true)
         }
         if !model.finalText.isEmpty {
-            card(title: "輸出", text: model.finalText, secondary: false)
+            card(title: String(localized: "輸出"), text: model.finalText, secondary: false)
         }
         if let translated = translatedText {
-            card(title: "翻譯", text: translated, secondary: false)
+            card(title: String(localized: "翻譯"), text: translated, secondary: false)
         }
         if let error = model.errorMessage {
             Label(error, systemImage: "exclamationmark.triangle.fill")
@@ -255,7 +283,7 @@ struct DictateView: View {
                         translatedText = nil
                         model.startEdit()
                     } label: {
-                        Label(model.intent.isEdit ? "說吧，我在聽" : "說出要怎麼改", systemImage: "wand.and.stars")
+                        Label(model.intent.isEdit ? String(localized: "說吧，我在聽") : String(localized: "說出要怎麼改"), systemImage: "wand.and.stars")
                             .frame(maxWidth: .infinity)
                     }
                     .auroraProminentButton()
@@ -279,17 +307,17 @@ struct DictateView: View {
                         copied = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { copied = false }
                     } label: {
-                        Label(copied ? "已複製" : "複製", systemImage: copied ? "checkmark" : "doc.on.doc")
+                        Label(copied ? String(localized: "已複製") : String(localized: "複製"), systemImage: copied ? "checkmark" : "doc.on.doc")
                             .frame(maxWidth: .infinity)
                     }
                     .auroraGlassButton()
 
                     Menu {
                         ForEach(TranslationTarget.all) { target in
-                            Button(target.zh) { runTranslation(to: target) }
+                            Button(target.displayName) { runTranslation(to: target) }
                         }
                     } label: {
-                        Label(translating ? "翻譯中…" : "翻譯", systemImage: "character.book.closed")
+                        Label(translating ? String(localized: "翻譯中…") : String(localized: "翻譯"), systemImage: "character.book.closed")
                             .frame(maxWidth: .infinity)
                     }
                     .auroraProminentButton()
@@ -310,8 +338,8 @@ struct DictateView: View {
 
     private var engineLine: String {
         switch OnDeviceAssistant.currentEngine() {
-        case .appleIntelligence: return "翻譯與改寫走 Apple Intelligence，文字不離機"
-        case .cloud: return "翻譯與改寫走你自己的雲端 key"
+        case .appleIntelligence: return String(localized: "翻譯與改寫走 Apple Intelligence，文字不離機")
+        case .cloud: return String(localized: "翻譯與改寫走你自己的雲端 key")
         case .unavailable(let why): return why
         }
     }

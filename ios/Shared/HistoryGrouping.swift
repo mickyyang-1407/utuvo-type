@@ -26,12 +26,17 @@ enum HistoryGrouping {
         }
     }
 
+    /// 星期名跟著介面語言走：简中介面用 zh_CN（周一），其餘維持 zh_TW（週一）。
+    static var displayLocale: Locale {
+        Locale(identifier: Bundle.main.preferredLocalizations.first == "zh-Hans" ? "zh_CN" : "zh_TW")
+    }
+
     /// 依日分組，最新的一天在前；同一天內最新的在前。
     static func sections(
         _ records: [DictationRecord],
         now: Date = Date(),
         calendar: Calendar = .current,
-        locale: Locale = Locale(identifier: "zh_TW")
+        locale: Locale = HistoryGrouping.displayLocale
     ) -> [HistorySection] {
         var buckets: [Date: [DictationRecord]] = [:]
         for record in records {
@@ -52,13 +57,13 @@ enum HistoryGrouping {
         for day: Date,
         now: Date,
         calendar: Calendar,
-        locale: Locale = Locale(identifier: "zh_TW")
+        locale: Locale = HistoryGrouping.displayLocale
     ) -> String {
         let today = calendar.startOfDay(for: now)
-        if calendar.isDate(day, inSameDayAs: today) { return "今天" }
+        if calendar.isDate(day, inSameDayAs: today) { return String(localized: "今天") }
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
            calendar.isDate(day, inSameDayAs: yesterday) {
-            return "昨天"
+            return String(localized: "昨天")
         }
         // zh_TW 的 FormatStyle 會出「9/14（週一）」；歷史頁要的是「9月14日 週一」，自己組。
         var cal = calendar

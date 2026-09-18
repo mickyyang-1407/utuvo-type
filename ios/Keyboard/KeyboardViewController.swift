@@ -3,9 +3,10 @@ import UTUVOTypeCore
 
 /// UTUVO Type 鍵盤——「光球鍵盤」（2026-09-17 產品決定：功能對齊，外表是我們自己的）。
 /// 視覺語彙沿用主 app：光球（OrbView，Metal）當主角、玻璃圓鈕；錄音時光球跟著主 app 傳來的音量動。
-///   - 頂緣「即時字幕帶」：錄音時逐字稿在這裡跑（不是浮動膠囊）；閒置時顯示品牌與模式提示。
+///   - 頂緣「即時字幕帶」：閒置時是品牌（BrandMark＋字標），錄音時逐字稿在這裡跑；右上是語言徽章。
 ///   - 中央光球：點一下聽寫；有選取＝說出要怎麼改；長按出現弧形語言點，滑到放開就翻譯。
-///   - 左側：語言小徽章（長按／點選單）、iOS<26 的地球；右側：⌫／@／送出 玻璃圓鈕直排。
+///   - 光球兩側對稱的玻璃圓鈕直排（2026-09-18 重設計）：左＝切打字 EN／繁／简，右＝⌫／@／送出。
+///   - 打字模式：左上小光球回語音、右上一顆循環切 EN→繁→简。
 /// 三種模式由 KeyboardMode.decide 決定；改寫／翻譯引擎見 OnDeviceAssistant。
 final class KeyboardViewController: UIInputViewController {
     // MARK: - Speech state
@@ -36,7 +37,7 @@ final class KeyboardViewController: UIInputViewController {
     private let transcriptPill = UIView()
     private let transcriptLabel = UILabel()
     private let liveDot = UIView()
-    private let brandIcon = UIImageView(image: UIImage(systemName: "text.bubble.fill"))
+    private let brandIcon = UIImageView(image: UIImage(named: "BrandMark"))
     private let brandLabel = UILabel()
     private let hintLabel = UILabel()
     private let micButton = OrbButton()
@@ -49,11 +50,27 @@ final class KeyboardViewController: UIInputViewController {
     private let globeButton = UIButton(type: .custom)
     // 打字模式（語音不準時就地修正；對齊同類產品的「語音／EN／繁」切換）
     private let voiceContainer = UIView()
-    private let modeSwitch = ModeSwitchView()
+    /// 語音區左側：切到三種打字版面。
+    private let englishButton = UIButton(type: .custom)
+    private let hantButton = UIButton(type: .custom)
+    private let hansButton = UIButton(type: .custom)
+    /// 打字區頂列：左＝回語音（小光球）、右＝循環切版面。
+    private let voiceKey = UIButton(type: .custom)
+    private let layoutKey = UIButton(type: .custom)
     private let typingView = TypingKeyboardView()
     private let candidateBar = CandidateBarView()
     private var heightConstraint: NSLayoutConstraint?
-    private lazy var zhuyin = ZhuyinSession()
+    private lazy var zhuyin = ImeSession(kind: .zhuyin)
+    private lazy var pinyin = ImeSession(kind: .pinyin)
+    private lazy var pinyinHant = ImeSession(kind: .pinyinHant)
+    /// 目前這個模式的中文引擎（EN／語音時為 nil）。
+    private var ime: ImeSession? {
+        switch surface {
+        case .zhuyin: KeyboardPresence.hantUsesPinyin ? pinyinHant : zhuyin
+        case .pinyin: pinyin
+        default: nil
+        }
+    }
     private var pickerDots: [UIView] = []
     private var pickerLabels: [UILabel] = []
     private var highlightedPick: Int?
@@ -63,11 +80,16 @@ final class KeyboardViewController: UIInputViewController {
     static let brandAmber = UIColor(red: 1.0, green: 0.72, blue: 0.29, alpha: 1)
     // 2026-09-18 產品決定：鍵盤太高 → 300→236 pt，光球與右側按鈕一起收緊。
     private static let orbSize: CGFloat = 88
-    private static let orbCenterY: CGFloat = 124
+    private static let orbCenterY: CGFloat = 132
+    /// 光球兩側圓鈕：同尺寸、同邊距、同上下間距（左右完全對稱）。頂列品牌與語言徽章也對齊同一條邊線。
+    private static let sideKey: CGFloat = 44
+    private static let sideInset: CGFloat = 16
+    private static let sideStep: CGFloat = 50
     private static let arcRadius: CGFloat = 98
     private static let voiceHeight: CGFloat = 236
     private static let englishHeight: CGFloat = 262
     private static let zhuyinHeight: CGFloat = 296
+    private static let pinyinHeight: CGFloat = 262
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,11 +155,13 @@ final class KeyboardViewController: UIInputViewController {
         heightConstraint = height
 
         // 頂緣字幕帶
-        brandIcon.tintColor = Self.brandOrange
         brandIcon.contentMode = .scaleAspectFit
+        brandIcon.layer.cornerRadius = 7
+        brandIcon.layer.cornerCurve = .continuous
+        brandIcon.clipsToBounds = true
         brandLabel.text = "UTUVO Type"
-        brandLabel.font = .systemFont(ofSize: 13, weight: .semibold)
-        brandLabel.textColor = .secondaryLabel
+        brandLabel.font = .systemFont(ofSize: 17, weight: .bold)
+        brandLabel.textColor = .label
         liveDot.backgroundColor = Self.brandOrange
         liveDot.layer.cornerRadius = 4
         liveDot.isHidden = true
@@ -153,14 +177,13 @@ final class KeyboardViewController: UIInputViewController {
         band.translatesAutoresizingMaskIntoConstraints = false
         transcriptPill.addSubview(band)
         NSLayoutConstraint.activate([
-            brandIcon.widthAnchor.constraint(equalToConstant: 16),
-            brandIcon.heightAnchor.constraint(equalToConstant: 16),
+            brandIcon.widthAnchor.constraint(equalToConstant: 28),
+            brandIcon.heightAnchor.constraint(equalToConstant: 28),
             liveDot.widthAnchor.constraint(equalToConstant: 8),
             liveDot.heightAnchor.constraint(equalToConstant: 8),
-            band.leadingAnchor.constraint(equalTo: transcriptPill.leadingAnchor, constant: 14),
-            band.trailingAnchor.constraint(lessThanOrEqualTo: transcriptPill.trailingAnchor, constant: -14),
-            band.topAnchor.constraint(equalTo: transcriptPill.topAnchor, constant: 7),
-            band.bottomAnchor.constraint(equalTo: transcriptPill.bottomAnchor, constant: -7)
+            band.leadingAnchor.constraint(equalTo: transcriptPill.leadingAnchor),
+            band.trailingAnchor.constraint(lessThanOrEqualTo: transcriptPill.trailingAnchor, constant: -8),
+            band.centerYAnchor.constraint(equalTo: transcriptPill.centerYAnchor)
         ])
         transcriptPill.layer.cornerRadius = 15
         transcriptPill.backgroundColor = .clear
@@ -179,7 +202,7 @@ final class KeyboardViewController: UIInputViewController {
         micButton.addGestureRecognizer(longPress)
         micButton.orb.levelProvider = { [weak self] in self?.levelChannel?.read() }
 
-        // 語言徽章（左）
+        // 語言徽章（右上）
         var langConfig = UIButton.Configuration.plain()
         langConfig.cornerStyle = .capsule
         langConfig.baseForegroundColor = .label
@@ -189,6 +212,23 @@ final class KeyboardViewController: UIInputViewController {
         languageButton.showsMenuAsPrimaryAction = true
         applyGlass(to: languageButton, radius: 17)
         updateLanguageButton()
+
+        // 左側直排：切打字版面（跟右側對稱）
+        for (button, title, label, mode) in [(englishButton, "EN", String(localized: "英文鍵盤"), ModeSwitchView.Mode.english),
+                                             (hantButton, "繁", String(localized: "注音鍵盤"), .zhuyin),
+                                             (hansButton, "简", String(localized: "拼音鍵盤"), .pinyin)] {
+            configureRound(button, symbol: nil, title: title)
+            button.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+                var a = attrs
+                a.font = .systemFont(ofSize: 16, weight: .semibold)
+                return a
+            }
+            button.accessibilityLabel = label
+            button.addAction(UIAction { [weak self] _ in
+                Haptics.selection()
+                self?.setSurface(mode, animated: true)
+            }, for: .touchUpInside)
+        }
 
         // 右側直排：⌫／@／送出
         configureRound(deleteButton, symbol: "delete.left")
@@ -202,11 +242,16 @@ final class KeyboardViewController: UIInputViewController {
         var returnConfig = UIButton.Configuration.plain()
         returnConfig.cornerStyle = .capsule
         returnConfig.baseForegroundColor = Self.brandOrange
-        returnConfig.title = "換行"
-        returnConfig.contentInsets = NSDirectionalEdgeInsets(top: 10, leading: 14, bottom: 10, trailing: 14)
+        returnConfig.title = String(localized: "換行")
+        returnConfig.contentInsets = .zero
+        returnConfig.titleLineBreakMode = .byClipping
+        returnConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+            var a = attrs
+            a.font = .systemFont(ofSize: 13, weight: .semibold)
+            return a
+        }
         returnButton.configuration = returnConfig
-        returnButton.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
-        applyGlass(to: returnButton, radius: 20)
+        applyGlass(to: returnButton, radius: Self.sideKey / 2)
         returnButton.addTarget(self, action: #selector(insertNewline), for: .touchUpInside)
 
         var globeConfig = UIButton.Configuration.plain()
@@ -226,21 +271,22 @@ final class KeyboardViewController: UIInputViewController {
 
         voiceContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(voiceContainer)
-        for v in [transcriptPill, micButton, hintLabel, languageButton, deleteButton, atButton, returnButton, globeButton] {
+        for v in [transcriptPill, micButton, hintLabel, languageButton, englishButton, hantButton, hansButton,
+                  deleteButton, atButton, returnButton, globeButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
             voiceContainer.addSubview(v)
         }
         setupTypingSurface()
 
         NSLayoutConstraint.activate([
-            transcriptPill.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
-            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: modeSwitch.leadingAnchor, constant: -8),
+            transcriptPill.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
+            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: languageButton.leadingAnchor, constant: -8),
             voiceContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             voiceContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             voiceContainer.topAnchor.constraint(equalTo: view.topAnchor),
             voiceContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             transcriptPill.topAnchor.constraint(equalTo: view.topAnchor, constant: 8),
-            transcriptPill.heightAnchor.constraint(equalToConstant: 30),
+            transcriptPill.heightAnchor.constraint(equalToConstant: 36),
 
             micButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             micButton.centerYAnchor.constraint(equalTo: view.topAnchor, constant: Self.orbCenterY),
@@ -252,20 +298,26 @@ final class KeyboardViewController: UIInputViewController {
             hintLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 84),
             hintLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -84),
 
-            languageButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            languageButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
+            languageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.sideInset),
+            languageButton.centerYAnchor.constraint(equalTo: transcriptPill.centerYAnchor),
 
-            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -54),
-            deleteButton.widthAnchor.constraint(equalToConstant: 48),
-            deleteButton.heightAnchor.constraint(equalToConstant: 48),
+            hantButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
+            hantButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
+            englishButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -Self.sideStep),
+            hansButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: Self.sideStep),
+
+            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.sideInset),
+            deleteButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: -Self.sideStep),
+            deleteButton.widthAnchor.constraint(equalToConstant: Self.sideKey),
+            deleteButton.heightAnchor.constraint(equalToConstant: Self.sideKey),
             atButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
             atButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
-            atButton.widthAnchor.constraint(equalToConstant: 48),
-            atButton.heightAnchor.constraint(equalToConstant: 48),
+            atButton.widthAnchor.constraint(equalToConstant: Self.sideKey),
+            atButton.heightAnchor.constraint(equalToConstant: Self.sideKey),
             returnButton.centerXAnchor.constraint(equalTo: deleteButton.centerXAnchor),
-            returnButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: 54),
-            returnButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 48),
+            returnButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor, constant: Self.sideStep),
+            returnButton.widthAnchor.constraint(equalToConstant: Self.sideKey),
+            returnButton.heightAnchor.constraint(equalToConstant: Self.sideKey),
 
             globeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             globeButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10),
@@ -283,12 +335,19 @@ final class KeyboardViewController: UIInputViewController {
                 case "recording":
                     self.micButton.orb.debugSyntheticVoice = true
                     self.setRecordingAppearance(true)
-                    self.showTranscript("明天下午三點在錄音室對 Atmos 母帶，記得帶")
+                    self.showTranscript(Locale.preferredLanguages.first?.hasPrefix("zh-Hans") == true
+                                        ? "明天下午三点在录音室对 Atmos 母带，记得带" : "明天下午三點在錄音室對 Atmos 母帶，記得帶")
                     self.setHint(KeyboardMode.dictate.recordingHint, error: false)
+                case "flow":
+                    // 走真正的 handle()：兩段即時字幕（不該進輸入框）→ 3 秒後定稿（只進一次）。
+                    self.activeCommandID = UUID()
+                    self.handle(.partial("記得帶"), recording: true)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { self.handle(.partial("記得帶耳機和硬碟"), recording: true) }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { self.handle(.final("記得帶耳機和硬碟", translated: nil), recording: false) }
                 case "arc":
                     self.setArcVisible(true)
                     self.highlightPick(2)
-                    self.setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
+                    self.setHint(String(localized: "滑到語言，放開就翻譯；放開在別處取消"), error: false)
                 default: break
                 }
             }
@@ -314,7 +373,7 @@ final class KeyboardViewController: UIInputViewController {
             dot.isHidden = true
             dot.tag = index
             let label = UILabel()
-            label.text = target.zh
+            label.text = target.displayName
             label.font = .systemFont(ofSize: 11, weight: .semibold)
             label.textColor = .label
             label.textAlignment = .center
@@ -360,6 +419,9 @@ final class KeyboardViewController: UIInputViewController {
         var config = UIButton.Configuration.plain()
         config.cornerStyle = .capsule
         config.baseForegroundColor = .label
+        // 圓鈕很小：內距歸零、標題不換行（「EN」曾被擠成兩行）。
+        config.contentInsets = .zero
+        config.titleLineBreakMode = .byClipping
         if let symbol {
             config.image = UIImage(systemName: symbol)
             config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 18, weight: .regular)
@@ -368,7 +430,7 @@ final class KeyboardViewController: UIInputViewController {
         }
         button.configuration = config
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .medium)
-        applyGlass(to: button, radius: 24)
+        applyGlass(to: button, radius: Self.sideKey / 2)
     }
 
     /// iOS 26 Liquid Glass；以下退回系統填色。玻璃層墊在按鈕最底下，不吃觸控。
@@ -410,7 +472,56 @@ final class KeyboardViewController: UIInputViewController {
     // MARK: - 打字模式
 
     private func setupTypingSurface() {
-        modeSwitch.translatesAutoresizingMaskIntoConstraints = false
+        for b in [englishButton, hantButton, hansButton] where b !== hantButton {
+            NSLayoutConstraint.activate([
+                b.centerXAnchor.constraint(equalTo: hantButton.centerXAnchor),
+                b.widthAnchor.constraint(equalToConstant: Self.sideKey),
+                b.heightAnchor.constraint(equalToConstant: Self.sideKey),
+            ])
+        }
+        NSLayoutConstraint.activate([
+            hantButton.widthAnchor.constraint(equalToConstant: Self.sideKey),
+            hantButton.heightAnchor.constraint(equalToConstant: Self.sideKey),
+        ])
+
+        // 打字區頂列：小光球（回語音）＋候選列＋版面循環鍵
+        // 回語音：橘色麥克風＋「語音」字樣的玻璃膠囊（原本只有小光球圖示，真機回報看不出是回語音的鈕）。
+        var voiceConfig = UIButton.Configuration.plain()
+        voiceConfig.image = UIImage(systemName: "mic.fill")
+        voiceConfig.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)
+        voiceConfig.imagePadding = 4
+        voiceConfig.title = String(localized: "語音")
+        voiceConfig.baseForegroundColor = Self.brandOrange
+        voiceConfig.contentInsets = NSDirectionalEdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 12)
+        voiceConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+            var a = attrs
+            a.font = .systemFont(ofSize: 14, weight: .semibold)
+            return a
+        }
+        voiceKey.configuration = voiceConfig
+        applyGlass(to: voiceKey, radius: 17)
+        voiceKey.accessibilityLabel = String(localized: "語音")
+        voiceKey.addAction(UIAction { [weak self] _ in
+            Haptics.selection()
+            self?.setSurface(.voice, animated: true)
+        }, for: .touchUpInside)
+        configureRound(layoutKey, symbol: nil, title: "EN")
+        layoutKey.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+            var a = attrs
+            a.font = .systemFont(ofSize: 15, weight: .semibold)
+            return a
+        }
+        layoutKey.accessibilityLabel = String(localized: "切換鍵盤版面")
+        layoutKey.addAction(UIAction { [weak self] _ in
+            guard let self else { return }
+            Haptics.selection()
+            let order: [ModeSwitchView.Mode] = [.english, .zhuyin, .pinyin]
+            let next = order[((order.firstIndex(of: self.surface) ?? -1) + 1) % order.count]
+            self.setSurface(next, animated: true)
+        }, for: .touchUpInside)
+
+        voiceKey.translatesAutoresizingMaskIntoConstraints = false
+        layoutKey.translatesAutoresizingMaskIntoConstraints = false
         candidateBar.translatesAutoresizingMaskIntoConstraints = false
         typingView.translatesAutoresizingMaskIntoConstraints = false
         typingView.delegate = self
@@ -418,23 +529,27 @@ final class KeyboardViewController: UIInputViewController {
         candidateBar.isHidden = true
         view.addSubview(typingView)
         view.addSubview(candidateBar)
-        view.addSubview(modeSwitch)
+        view.addSubview(voiceKey)
+        view.addSubview(layoutKey)
+        voiceKey.isHidden = true
+        layoutKey.isHidden = true
         NSLayoutConstraint.activate([
-            modeSwitch.topAnchor.constraint(equalTo: view.topAnchor, constant: 7),
-            modeSwitch.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-            modeSwitch.widthAnchor.constraint(equalToConstant: 132),
-            modeSwitch.heightAnchor.constraint(equalToConstant: 32),
-            candidateBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 4),
-            candidateBar.trailingAnchor.constraint(equalTo: modeSwitch.leadingAnchor, constant: -6),
-            candidateBar.centerYAnchor.constraint(equalTo: modeSwitch.centerYAnchor),
+            voiceKey.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            voiceKey.topAnchor.constraint(equalTo: view.topAnchor, constant: 6),
+            voiceKey.heightAnchor.constraint(equalToConstant: 34),
+            layoutKey.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            layoutKey.centerYAnchor.constraint(equalTo: voiceKey.centerYAnchor),
+            layoutKey.widthAnchor.constraint(equalToConstant: 44),
+            layoutKey.heightAnchor.constraint(equalToConstant: 34),
+            candidateBar.leadingAnchor.constraint(equalTo: voiceKey.trailingAnchor, constant: 6),
+            candidateBar.trailingAnchor.constraint(equalTo: layoutKey.leadingAnchor, constant: -6),
+            candidateBar.centerYAnchor.constraint(equalTo: voiceKey.centerYAnchor),
             candidateBar.heightAnchor.constraint(equalToConstant: 40),
             typingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             typingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            typingView.topAnchor.constraint(equalTo: modeSwitch.bottomAnchor, constant: 6),
+            typingView.topAnchor.constraint(equalTo: voiceKey.bottomAnchor, constant: 6),
             typingView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -2),
         ])
-        modeSwitch.select(.voice, animated: false)
-        modeSwitch.onChange = { [weak self] mode in self?.setSurface(mode, animated: true) }
         candidateBar.onPick = { [weak self] index in self?.pickCandidate(index) }
         // 左右滑切換（語音 → EN → 繁 → 語音）；光球上不接，免得跟長按翻譯的拖曳打架。
         // 用 pan 自己判斷：UISwipe 從按鍵上起手時不穩（按鍵自己也在追蹤觸控）。
@@ -450,18 +565,22 @@ final class KeyboardViewController: UIInputViewController {
     private var surface: ModeSwitchView.Mode = .voice
 
     private func setSurface(_ mode: ModeSwitchView.Mode, animated: Bool) {
-        if mode != .zhuyin, !zhuyin.isEmpty { commitZhuyin() }
+        // 換模式前把還在選字的中文送出（不丟使用者打的字）。
+        if let ime, !ime.isEmpty { commitComposition() }
         surface = mode
-        modeSwitch.select(mode, animated: animated)
+        let hantPinyin = KeyboardPresence.hantUsesPinyin
         let voice = mode == .voice
         voiceContainer.isHidden = !voice
         typingView.isHidden = voice
-        candidateBar.isHidden = mode != .zhuyin
+        voiceKey.isHidden = voice
+        layoutKey.isHidden = voice
+        layoutKey.configuration?.title = mode == .zhuyin ? "繁" : (mode == .pinyin ? "简" : "EN")
+        candidateBar.isHidden = ime == nil
         if !voice {
-            typingView.layout = mode == .zhuyin ? .zhuyin : .english
+            typingView.layout = mode == .zhuyin ? (hantPinyin ? .pinyinHant : .zhuyin) : (mode == .pinyin ? .pinyin : .english)
             typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
         }
-        heightConstraint?.constant = voice ? Self.voiceHeight : (mode == .zhuyin ? Self.zhuyinHeight : Self.englishHeight)
+        heightConstraint?.constant = voice ? Self.voiceHeight : (mode == .zhuyin && !hantPinyin ? Self.zhuyinHeight : (mode == .english ? Self.englishHeight : Self.pinyinHeight))
         refreshCandidates()
     }
 
@@ -478,18 +597,21 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func refreshCandidates() {
-        candidateBar.show(preedit: zhuyin.preedit, candidates: zhuyin.candidates)
+        guard let ime else { candidateBar.show(preedit: "", candidates: []); return }
+        candidateBar.show(preedit: ime.preedit, candidates: ime.candidates)
     }
 
     private func pickCandidate(_ index: Int) {
+        guard let ime else { return }
         releaseOwnership()
-        let text = index < 0 ? zhuyin.commitAll() : zhuyin.select(at: index)
+        let text = index < 0 ? ime.commitAll() : ime.select(at: index)
         if !text.isEmpty { textDocumentProxy.insertText(text) }
         refreshCandidates()
     }
 
-    private func commitZhuyin() {
-        let text = zhuyin.commitAll()
+    private func commitComposition() {
+        guard let ime else { return }
+        let text = ime.commitAll()
         if !text.isEmpty { releaseOwnership(); textDocumentProxy.insertText(text) }
         refreshCandidates()
     }
@@ -552,7 +674,7 @@ final class KeyboardViewController: UIInputViewController {
             }
             setArcVisible(true)
             highlightPick(nearest(to: point) ?? pickerDots.count / 2)
-            setHint("滑到語言，放開就翻譯；放開在別處取消", error: false)
+            setHint(String(localized: "滑到語言，放開就翻譯；放開在別處取消"), error: false)
         case .changed:
             highlightPick(nearest(to: point))
         case .ended:
@@ -653,7 +775,7 @@ final class KeyboardViewController: UIInputViewController {
     private func startRecognition() async {
         guard !isRecording else { return }
         guard hasAccess else {
-            setHint("請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整存取」", error: true)
+            setHint(String(localized: "請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整存取」"), error: true)
             return
         }
         mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: pendingTranslateTarget)
@@ -687,10 +809,10 @@ final class KeyboardViewController: UIInputViewController {
             // 開始震動要先播完再切 app，否則切換會把它吃掉（真機回報第一下沒震）。
             try? await Task.sleep(for: .milliseconds(90))
             if openContainingApp(url) {
-                setHint("正在開啟 UTUVO Type 啟動麥克風…回來就在錄了", error: false)
+                setHint(String(localized: "正在開啟 UTUVO Type 啟動麥克風…回來就在錄了"), error: false)
             } else {
                 activeCommandID = nil
-                setHint("請先打開 UTUVO Type app 一次，再回來點光球", error: true)
+                setHint(String(localized: "請先打開 UTUVO Type app 一次，再回來點光球"), error: true)
             }
         }
     }
@@ -702,7 +824,7 @@ final class KeyboardViewController: UIInputViewController {
         isRecording = false
         setRecordingAppearance(false)
         micButton.orb.phase = .processing
-        setHint("整理中…", error: false)
+        setHint(String(localized: "整理中…"), error: false)
     }
 
     /// 從主 app 回來：若主 app 正在替我上次發出的指令錄音，就接回錄音狀態。
@@ -722,11 +844,15 @@ final class KeyboardViewController: UIInputViewController {
     /// 主 app 更新了 state：依是否屬於我的指令，顯示逐字稿、定稿或錯誤。
     private func bridgeUpdated() {
         guard let state = VoiceBridge.readState() else { return }
-        switch VoiceBridge.delivery(for: state, expecting: activeCommandID) {
+        handle(VoiceBridge.delivery(for: state, expecting: activeCommandID), recording: state.phase == .recording)
+    }
+
+    private func handle(_ delivery: VoiceBridge.Delivery, recording: Bool) {
+        switch delivery {
         case .ignore:
             break
         case .partial(let text):
-            if !isRecording && state.phase == .recording {
+            if !isRecording && recording {
                 isRecording = true
                 setRecordingAppearance(true)
                 setHint(mode.recordingHint, error: false)
@@ -787,23 +913,23 @@ final class KeyboardViewController: UIInputViewController {
                 HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: cleaned, source: .keyboard))
             }
             insertedText = ""
-            transcriptPill.isHidden = true
+            resetBand()
             refreshContext()
 
         case .edit(let selection):
             guard !raw.isEmpty else { refreshContext(); return }
-            setHint("改寫中…（\(OnDeviceAssistant.currentEngine().badge)）", error: false)
+            setHint(String(localized: "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）"), error: false)
             Task { @MainActor in
                 do {
                     let result = try await OnDeviceAssistant.editSelection(selection, instruction: raw)
                     guard let still = textDocumentProxy.selectedText, !still.isEmpty else {
-                        setHint("選取已取消，沒有改動文字", error: true)
+                        setHint(String(localized: "選取已取消，沒有改動文字"), error: true)
                         return
                     }
                     textDocumentProxy.deleteBackward() // 有選取時刪掉的是整段選取
                     textDocumentProxy.insertText(result)
                     HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
-                    transcriptPill.isHidden = true
+                    resetBand()
                     refreshContext()
                 } catch {
                     setHint(error.localizedDescription, error: true)
@@ -817,11 +943,11 @@ final class KeyboardViewController: UIInputViewController {
                 releaseOwnership()
                 textDocumentProxy.insertText(appTranslation)
                 HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: appTranslation, source: .keyboard))
-                transcriptPill.isHidden = true
+                resetBand()
                 refreshContext()
                 return
             }
-            setHint("翻成\(target.zh)中…", error: false)
+            setHint(String(localized: "翻成\(target.displayName)中…"), error: false)
             let sourceRaw = language.rawValue
             Task { @MainActor in
                 do {
@@ -829,7 +955,7 @@ final class KeyboardViewController: UIInputViewController {
                     releaseOwnership()
                     textDocumentProxy.insertText(result)
                     HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: result, source: .keyboard))
-                    transcriptPill.isHidden = true
+                    resetBand()
                     refreshContext()
                 } catch {
                     setHint(error.localizedDescription, error: true)
@@ -849,27 +975,20 @@ final class KeyboardViewController: UIInputViewController {
 
     // MARK: - Hints
 
+    /// 字幕帶同時是品牌列：只換裡面的字，不要藏整條（藏掉＝左上 Logo 跟著不見，真機回報）。
     private func showTranscript(_ text: String) {
-        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        transcriptLabel.text = trimmed
-        transcriptPill.isHidden = trimmed.isEmpty
+        transcriptLabel.text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// 定稿後字幕帶回到品牌列。
+    private func resetBand() {
+        transcriptLabel.text = ""
+        if !isRecording { setRecordingAppearance(false) }
     }
 
     private func setHint(_ text: String, error: Bool) {
         hintLabel.text = text
         hintLabel.textColor = error ? .systemRed : .secondaryLabel
-    }
-}
-
-private extension DictationLanguage {
-    var shortLabel: String {
-        switch self {
-        case .traditionalChinese: return "繁中"
-        case .simplifiedChinese: return "简中"
-        case .englishUS: return "EN"
-        case .japanese: return "日本語"
-        case .korean: return "한국어"
-        }
     }
 }
 
@@ -887,7 +1006,7 @@ final class OrbButton: UIControl {
         clipsToBounds = false
         addSubview(orb)
         isAccessibilityElement = true
-        accessibilityLabel = "聽寫"
+        accessibilityLabel = String(localized: "聽寫")
         accessibilityIdentifier = "utuvoKeyboardOrb"
         accessibilityTraits = .button
     }
@@ -922,43 +1041,49 @@ final class OrbButton: UIControl {
     func setTint(edit: Bool) { orb.editPalette = edit }
 
     func setRecording(_ on: Bool) {
-        accessibilityLabel = on ? "停止" : "聽寫"
+        accessibilityLabel = on ? String(localized: "停止") : String(localized: "聽寫")
         if on { orb.phase = .listening } else if orb.phase == .listening { orb.phase = .idle }
     }
 }
 
 extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDelegate {
     func typing(insert text: String) {
-        if !zhuyin.isEmpty { commitZhuyin() }
+        if let ime, !ime.isEmpty { commitComposition() }
         releaseOwnership()
         textDocumentProxy.insertText(text)
         typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
     }
 
-    func typing(zhuyin symbol: Character) {
-        zhuyin.type(symbol)
+    func typing(compose key: Character) {
+        ime?.type(key)
         refreshCandidates()
     }
 
     func typingDelete() {
-        if zhuyin.backspace() { refreshCandidates(); return }
+        if ime?.backspace() == true { refreshCandidates(); return }
         releaseOwnership()
         textDocumentProxy.deleteBackward()
         typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
     }
 
     func typingSpace() {
-        if surface == .zhuyin, !zhuyin.isEmpty {
-            // 正在打注音：空白＝一聲；沒有在拼的音就把整串送出。
-            if zhuyin.hasComposing { zhuyin.space() } else { commitZhuyin() }
+        if let ime, !ime.isEmpty {
+            // 注音：空白＝一聲（還有打到一半的音時）；否則把整串最佳轉換送出。拼音：直接送出。
+            if ime.kind == .zhuyin, ime.hasComposing { ime.space() } else { commitComposition() }
             refreshCandidates()
             return
         }
         typing(insert: " ")
     }
 
+    func typingToggleHantInput() {
+        if let ime, !ime.isEmpty { commitComposition() }
+        KeyboardPresence.hantUsesPinyin.toggle()
+        setSurface(.zhuyin, animated: false)
+    }
+
     func typingReturn() {
-        if !zhuyin.isEmpty { commitZhuyin(); return }
+        if let ime, !ime.isEmpty { commitComposition(); return }
         releaseOwnership()
         textDocumentProxy.insertText("\n")
     }
@@ -966,7 +1091,7 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
     nonisolated func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
         MainActor.assumeIsolated {
             guard let v = touch.view else { return true }
-            return !(v is OrbButton || v.isDescendant(of: micButton) || v is ModeSwitchView || v.isDescendant(of: candidateBar))
+            return !(v is OrbButton || v.isDescendant(of: micButton) || v.isDescendant(of: candidateBar))
         }
     }
 }

@@ -87,10 +87,10 @@ struct TranslationService {
 
         var errorDescription: String? {
             switch self {
-            case .notConfigured: return "尚未設定雲端 API key（設定 → 雲端翻譯）"
-            case .badURL: return "端點網址錯誤"
-            case .http(let code): return "雲端回傳 HTTP \(code)"
-            case .malformed: return "雲端回應格式無法解析"
+            case .notConfigured: return String(localized: "尚未設定雲端 API key（設定 → 雲端翻譯）")
+            case .badURL: return String(localized: "端點網址錯誤")
+            case .http(let code): return String(localized: "雲端回傳 HTTP \(code)")
+            case .malformed: return String(localized: "雲端回應格式無法解析")
             }
         }
     }

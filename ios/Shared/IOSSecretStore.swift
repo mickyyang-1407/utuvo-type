@@ -41,8 +41,8 @@ enum IOSSecretStore {
     @discardableResult
     static func save(_ rawValue: String) -> String? {
         let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !value.isEmpty else { return "key 是空的，沒有寫入。" }
-        guard let data = value.data(using: .utf8) else { return "key 編碼失敗（需為 UTF-8）。" }
+        guard !value.isEmpty else { return String(localized: "key 是空的，沒有寫入。") }
+        guard let data = value.data(using: .utf8) else { return String(localized: "key 編碼失敗（需為 UTF-8）。") }
 
         let base: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -56,9 +56,9 @@ enum IOSSecretStore {
             addQuery[kSecValueData as String] = data
             addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            return addStatus == errSecSuccess ? nil : "Keychain 寫入失敗（OSStatus \(addStatus)）。"
+            return addStatus == errSecSuccess ? nil : String(localized: "Keychain 寫入失敗（OSStatus \(addStatus)）。")
         }
-        return "Keychain 更新失敗（OSStatus \(updateStatus)）。"
+        return String(localized: "Keychain 更新失敗（OSStatus \(updateStatus)）。")
     }
 
     /// 刪除。找不到也算成功（結果一致：沒有 key）。
@@ -71,7 +71,7 @@ enum IOSSecretStore {
         ]
         let status = SecItemDelete(query as CFDictionary)
         if status == errSecSuccess || status == errSecItemNotFound { return nil }
-        return "Keychain 刪除失敗（OSStatus \(status)）。"
+        return String(localized: "Keychain 刪除失敗（OSStatus \(status)）。")
     }
 
     /// 把 v1 明文 key 搬進 Keychain 並清掉明文。搬完就不會再觸發。

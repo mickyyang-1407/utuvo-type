@@ -97,19 +97,19 @@ final class DictationModel: NSObject, ObservableObject {
         // 麥克風授權（iOS 17 起用 AVAudioApplication；AVAudioSession 版已 deprecated）
         let micOK = await AVAudioApplication.requestRecordPermission()
         guard micOK else {
-            errorMessage = "需要麥克風權限才能聽寫；請到系統設定開啟。"
+            errorMessage = String(localized: "需要麥克風權限才能聽寫；請到系統設定開啟。")
             return
         }
         // 語音辨識授權（必須走 nonisolated 包裝，見下方 requestSpeechAuthorization 註解）
         let speechStatus = await Self.requestSpeechAuthorization()
         guard speechStatus == .authorized else {
-            errorMessage = "需要語音辨識權限；請到系統設定開啟。"
+            errorMessage = String(localized: "需要語音辨識權限；請到系統設定開啟。")
             return
         }
 
         guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language.rawValue)),
               recognizer.isAvailable else {
-            errorMessage = "這個語言的辨識器目前不可用。"
+            errorMessage = String(localized: "這個語言的辨識器目前不可用。")
             return
         }
         self.recognizer = recognizer
@@ -124,8 +124,7 @@ final class DictationModel: NSObject, ObservableObject {
                 onDeviceOnly: onDeviceOnly
             )
             guard case .allow(let chosenRoute) = decision else {
-                errorMessage = "你開了「只用裝置端辨識」，但這台裝置在\(language.localizedName(zh: true))"
-                    + "沒有裝置端辨識可用。關掉這個開關才會改用雲端辨識（音訊會送到 Apple 伺服器）。"
+                errorMessage = String(localized: "你開了「只用裝置端辨識」，但這台裝置在\(language.localizedName(zh: true))沒有裝置端辨識可用。關掉這個開關才會改用雲端辨識（音訊會送到 Apple 伺服器）。")
                 try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
                 return
             }
@@ -143,7 +142,7 @@ final class DictationModel: NSObject, ObservableObject {
             // 沒有可用輸入裝置時 sampleRate 會是 0，直接 installTap 會在 AVAudioEngine
             // 內部 assert（整個 app 掛掉）。先擋下來，給人看得懂的訊息。
             guard format.sampleRate > 0, format.channelCount > 0 else {
-                errorMessage = "找不到可用的麥克風輸入（模擬器通常沒有）。請改用實機，或接上輸入裝置再試。"
+                errorMessage = String(localized: "找不到可用的麥克風輸入（模擬器通常沒有）。請改用實機，或接上輸入裝置再試。")
                 self.request = nil
                 route = nil
                 try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
@@ -162,7 +161,7 @@ final class DictationModel: NSObject, ObservableObject {
             AIPunctuator.shared.prewarm()
             isRecording = true
         } catch {
-            errorMessage = "無法啟動錄音：\(error.localizedDescription)"
+            errorMessage = String(localized: "無法啟動錄音：\(error.localizedDescription)")
             cleanupAfterStop()
         }
     }
@@ -203,7 +202,7 @@ final class DictationModel: NSObject, ObservableObject {
         if let errorCode {
             // 使用者按停止造成的「finished」不是錯誤
             if errorCode != 216 {
-                errorMessage = "辨識中斷：\(errorText ?? "錯誤 \(errorCode)")"
+                errorMessage = String(localized: "辨識中斷：\(errorText ?? String(localized: "錯誤 \(errorCode)"))")
             }
             if isRecording { stop() }
         }
@@ -262,7 +261,7 @@ final class DictationModel: NSObject, ObservableObject {
             do {
                 let result = try await OnDeviceAssistant.editSelection(original, instruction: instruction)
                 guard !result.isEmpty else {
-                    self.errorMessage = "改寫引擎回了空白，輸出沒有動。"
+                    self.errorMessage = String(localized: "改寫引擎回了空白，輸出沒有動。")
                     return
                 }
                 self.previousText = original

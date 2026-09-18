@@ -24,10 +24,22 @@ struct RootView: View {
         } else {
             KeyboardPresence.defaults.removeObject(forKey: key)
         }
+        // App Store 截圖：`-utuvo.type.keyboard.language zh-CN` 指定鍵盤聽寫語言（徽章顯示「简中」）。
+        if let lang = UserDefaults.standard.string(forKey: "utuvo.type.keyboard.language") {
+            KeyboardPresence.defaults.set(lang, forKey: "utuvo.type.keyboard.language")
+        }
         // App Store 截圖：`-utuvo.type.ios.seedHistory YES` 在歷史是空的時候種幾筆範例（模擬器沒麥克風）。
         if UserDefaults.standard.bool(forKey: "utuvo.type.ios.seedHistory"), HistoryStore.shared.load().isEmpty {
             let now = Date()
-            let samples: [(String, DictationRecord.Source, Double, Bool)] = [
+            let hans = Locale.preferredLanguages.first?.hasPrefix("zh-Hans") == true
+            let samples: [(String, DictationRecord.Source, Double, Bool)] = hans ? [
+                ("明天下午三点在录音室对 Atmos 母带，记得带硬盘和耳机。", .keyboard, -600, true),
+                ("好，那我们周五前把混音版本发给客户，周一再确认一次。", .keyboard, -3_600, false),
+                ("Can we move the session to Thursday? The drummer is only free after four.", .app, -7_200, false),
+                ("今天的课讲到空间音频的交付规范，下周请大家带自己的作品来听。", .app, -86_400, true),
+                ("晚饭想吃什么？我这边大概七点半结束。", .keyboard, -90_000, false),
+                ("母带的整体响度控制在 −18 LUFS 左右，真峰值不要超过 −1 dBTP。", .app, -180_000, false),
+            ] : [
                 ("明天下午三點在錄音室對 Atmos 母帶，記得帶硬碟和耳機。", .keyboard, -600, true),
                 ("好，那我們週五前把混音版本寄給客戶，週一再確認一次。", .keyboard, -3_600, false),
                 ("Can we move the session to Thursday? The drummer is only free after four.", .app, -7_200, false),

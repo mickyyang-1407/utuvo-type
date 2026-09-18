@@ -27,9 +27,9 @@ struct HistoryListView: View {
                 } else if visible.isEmpty {
                     // 不用 ContentUnavailableView.search：它跟系統語言走（模擬器英文），app 文案全中文。
                     ContentUnavailableView(
-                        starredOnly && query.isEmpty ? "還沒有星標" : "找不到「\(query)」",
+                        starredOnly && query.isEmpty ? String(localized: "還沒有星標") : String(localized: "找不到「\(query)」"),
                         systemImage: starredOnly && query.isEmpty ? "star" : "magnifyingglass",
-                        description: Text(starredOnly ? "點右上角的星星可以回到全部。" : "換個字試試；raw 逐字稿也會被搜到。")
+                        description: Text(starredOnly ? String(localized: "點右上角的星星可以回到全部。") : String(localized: "換個字試試；raw 逐字稿也會被搜到。"))
                     )
                 } else {
                     list
@@ -47,7 +47,7 @@ struct HistoryListView: View {
                         Image(systemName: starredOnly ? "star.fill" : "star")
                     }
                     .tint(Aurora.orange)
-                    .accessibilityLabel(starredOnly ? "顯示全部" : "只看星標")
+                    .accessibilityLabel(starredOnly ? String(localized: "顯示全部") : String(localized: "只看星標"))
                     .accessibilityIdentifier("starredOnly")
                 }
             }
@@ -109,12 +109,15 @@ struct HistoryListView: View {
                 }
                 .buttonStyle(.borderless)
             }
+            // 使用者的內容（不是介面文案）：在地化 UI 測試靠這個 identifier 把它排除在檢查外。
             Text(record.cleaned)
                 .textSelection(.enabled)
+                .accessibilityIdentifier("historyRecordText")
             if record.isEdit {
                 Text(record.raw)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("historyRecordText")
             }
         }
         .swipeActions(edge: .trailing) {

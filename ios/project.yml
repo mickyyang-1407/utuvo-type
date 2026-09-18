@@ -7,6 +7,8 @@ options:
   deploymentTarget:
     iOS: "17.0"
   createIntermediateGroups: true
+  # 介面原文是繁中（台灣用語）；简中（zh-Hans）翻譯在 String Catalog，其他語言一律退回繁中。
+  developmentLanguage: zh-Hant
 
 packages:
   UTUVOType:
@@ -18,7 +20,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "12"
+    CURRENT_PROJECT_VERSION: "14"
 
 targets:
   "UTUVOTypeiOS":
@@ -42,6 +44,7 @@ targets:
       path: App/Info.plist
       properties:
         CFBundleDisplayName: "UTUVO Type"
+        CFBundleDevelopmentRegion: zh-Hant
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
         NSMicrophoneUsageDescription: "UTUVO Type 在你聽寫、或從 UTUVO Type 鍵盤開啟語音時使用麥克風，把語音轉成文字。"
@@ -68,6 +71,8 @@ targets:
     sources:
       - path: Keyboard
       - path: Shared
+      # BrandMark（字幕帶品牌）、OrbGlyph（打字區回語音鍵）
+      - path: Assets.xcassets
     dependencies:
       - package: UTUVOType
         product: UTUVOTypeCore
@@ -79,6 +84,10 @@ targets:
       path: Keyboard/Info.plist
       properties:
         CFBundleDisplayName: "UTUVO Type"
+        # extension 的版號要跟主 app 一致（原本寫死 "1"，上傳 App Store 會被標 ITMS-90473）。
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
+        CFBundleDevelopmentRegion: zh-Hant
         # IOS4：鍵盤 target 自己的 usage description，文案照鍵盤實際場景寫，
         # 不再靠 host app 的字串頂著。
         NSMicrophoneUsageDescription: "UTUVO Type 鍵盤只在你按下麥克風鍵時錄音，把語音轉成文字插入游標處。"

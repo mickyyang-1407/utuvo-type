@@ -6,23 +6,25 @@ import UIKit
 protocol TypingKeyboardDelegate: AnyObject {
     /// 英文、數字、符號鍵：直接插入。
     func typing(insert text: String)
-    /// 注音符號或聲調：交給注音引擎。
-    func typing(zhuyin symbol: Character)
+    /// 注音符號／聲調，或拼音字母：交給中文輸入引擎。
+    func typing(compose key: Character)
     func typingDelete()
     func typingSpace()
+    /// 「繁」鍵盤在注音與拼音之間切換。
+    func typingToggleHantInput()
     func typingReturn()
 }
 
 @MainActor
 final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
-    enum Layout: Equatable { case english, zhuyin }
+    enum Layout: Equatable { case english, zhuyin, pinyin, pinyinHant }
     private enum Layer { case letters, numbers, symbols }
     private enum Shift { case off, once, locked }
 
     weak var delegate: TypingKeyboardDelegate?
     var layout: Layout = .english { didSet { if layout != oldValue { keyLayer = .letters; rebuild() } } }
     /// 宿主 app 的 return 鍵文案（傳送／前往／換行…）。
-    var returnTitle = "換行" { didSet { returnKey?.setTitle(returnTitle, for: .normal) } }
+    var returnTitle = String(localized: "換行") { didSet { returnKey?.setTitle(returnTitle, for: .normal) } }
 
     private var keyLayer: Layer = .letters
     private var shift: Shift = .off
@@ -92,14 +94,32 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
             for (i, row) in Self.zhuyinRows.enumerated() {
                 var keys = row.map { ch in
                     let key = KeyButton(title: String(ch), style: .character, fontSize: 19)
-                    key.onTap = { [weak self] in self?.delegate?.typing(zhuyin: ch); self?.feedback() }
+                    key.onTap = { [weak self] in self?.delegate?.typing(compose: ch); self?.feedback() }
                     return key
                 }
                 if i == 3 { keys.append(deleteKey(width: 1.0)) }
                 addRow(keys, inset: 0, totalUnits: 11)
             }
+        case (.pinyin, .letters), (.pinyinHant, .letters):
+            // 拼音（簡體、繁體同版面）：QWERTY 字母交給拼音引擎；第三排左邊是音節分隔鍵（xi'an）。
+            for (i, row) in Self.englishRows.enumerated() {
+                var keys = row.map { ch -> KeyButton in
+                    let key = KeyButton(title: String(ch), style: .character, fontSize: 22)
+                    key.onTap = { [weak self] in self?.delegate?.typing(compose: ch); self?.feedback() }
+                    return key
+                }
+                if i == 2 {
+                    let sep = KeyButton(title: "'", style: .special, fontSize: 20)
+                    sep.widthUnits = 1.5
+                    sep.accessibilityLabel = String(localized: "分隔音節")
+                    sep.onTap = { [weak self] in self?.delegate?.typing(compose: "'"); self?.feedback() }
+                    keys.insert(sep, at: 0)
+                    keys.append(deleteKey(width: 1.5))
+                }
+                addRow(keys, inset: i == 1 ? 0.5 : 0, totalUnits: 10)
+            }
         case (_, .numbers), (_, .symbols):
-            let rows = layout == .zhuyin ? Self.zhuyinNumberRows : (keyLayer == .numbers ? Self.numberRows : Self.symbolRows)
+            let rows = layout != .english ? Self.zhuyinNumberRows : (keyLayer == .numbers ? Self.numberRows : Self.symbolRows)
             for (i, row) in rows.enumerated() {
                 var keys = row.map { charKey(String($0), raw: true) }
                 if i == 2 {
@@ -120,20 +140,30 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
     }
 
     private func addBottomRow() {
-        let layerKey = specialKey(title: keyLayer == .letters ? "123" : (layout == .zhuyin ? "注音" : "ABC"), width: 1.3) { [weak self] in
+        let layerKey = specialKey(title: keyLayer == .letters ? "123" : (layout == .zhuyin ? String(localized: "注音") : (layout == .english ? "ABC" : String(localized: "拼音"))), width: 1.3) { [weak self] in
             guard let self else { return }
             self.keyLayer = self.keyLayer == .letters ? .numbers : .letters
             self.rebuild()
         }
-        let space = KeyButton(title: layout == .zhuyin ? "空白" : "space", style: .character, fontSize: 15)
+        let space = KeyButton(title: layout == .english ? "space" : (layout == .pinyin ? String(localized: "空格") : String(localized: "空白")), style: .character, fontSize: 15)
         space.onTap = { [weak self] in self?.delegate?.typingSpace(); self?.feedback() }
         let ret = KeyButton(title: returnTitle, style: .special, fontSize: 15)
         ret.onTap = { [weak self] in self?.delegate?.typingReturn(); self?.feedback() }
         returnKey = ret
-        let row = UIStackView(arrangedSubviews: [layerKey, space, ret])
+        var keys = [layerKey, space, ret]
+        // 繁：底排多一顆「拼／注」切換輸入法（選擇存 App Group，主 app 設定頁也能改）。
+        let hantToggle: KeyButton? = (layout == .zhuyin || layout == .pinyinHant) && keyLayer == .letters
+            ? specialKey(title: layout == .zhuyin ? "拼" : "注", width: 1) { [weak self] in self?.delegate?.typingToggleHantInput() }
+            : nil
+        if let hantToggle {
+            hantToggle.accessibilityLabel = layout == .zhuyin ? String(localized: "改用拼音") : String(localized: "改用注音")
+            keys.insert(hantToggle, at: 1)
+        }
+        let row = UIStackView(arrangedSubviews: keys)
         row.spacing = 6
         row.distribution = .fill
         layerKey.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.2).isActive = true
+        hantToggle?.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.11).isActive = true
         ret.widthAnchor.constraint(equalTo: row.widthAnchor, multiplier: 0.24).isActive = true
         rowsStack.addArrangedSubview(row)
     }
@@ -298,10 +328,10 @@ final class KeyButton: UIButton {
     }
 }
 
-/// 右上角模式切換：光球（語音）／EN／繁。玻璃膠囊，選到的那格實心。
+/// 右上角模式切換：光球（語音）／EN／繁（注音）／简（拼音）。玻璃膠囊，選到的那格實心。
 @MainActor
 final class ModeSwitchView: UIControl {
-    enum Mode: Int, CaseIterable { case voice, english, zhuyin }
+    enum Mode: Int, CaseIterable { case voice, english, zhuyin, pinyin }
     private(set) var mode: Mode = .voice
     var onChange: ((Mode) -> Void)?
     private var segments: [UIButton] = []
@@ -335,13 +365,17 @@ final class ModeSwitchView: UIControl {
                 dot.frame = CGRect(x: 0, y: 0, width: 14, height: 14)
                 dot.cornerRadius = 7
                 b.layer.addSublayer(dot)
-                b.accessibilityLabel = "語音"
+                b.accessibilityLabel = String(localized: "語音")
             case .english:
                 b.setTitle("EN", for: .normal)
-                b.accessibilityLabel = "英文鍵盤"
+                b.accessibilityLabel = String(localized: "英文鍵盤")
             case .zhuyin:
+                // 「繁」「简」標的是文字系統，兩種介面語言都一樣，刻意不在地化。
                 b.setTitle("繁", for: .normal)
-                b.accessibilityLabel = "注音鍵盤"
+                b.accessibilityLabel = String(localized: "注音鍵盤")
+            case .pinyin:
+                b.setTitle("简", for: .normal)
+                b.accessibilityLabel = String(localized: "拼音鍵盤")
             }
             b.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
             b.setTitleColor(.secondaryLabel, for: .normal)
@@ -358,7 +392,7 @@ final class ModeSwitchView: UIControl {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: CGSize { CGSize(width: 132, height: 32) }
+    override var intrinsicContentSize: CGSize { CGSize(width: 168, height: 32) }
 
     override func layoutSubviews() {
         super.layoutSubviews()
