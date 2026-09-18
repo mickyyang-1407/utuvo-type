@@ -213,6 +213,9 @@ struct DictateView: View {
 
     /// 跟鍵盤同一套文案（KeyboardMode 的 idle／recording hint），主 app 與鍵盤講同一種話。
     private var micHint: String {
+        #if DEBUG
+        if UserDefaults.standard.bool(forKey: "utuvo.type.ios.orbDemo") { return KeyboardMode.dictate.recordingHint }
+        #endif
         if model.isRewriting { return "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）" }
         switch (model.intent, model.isRecording) {
         case (.edit, true): return "說出要怎麼改，說完再點一下"

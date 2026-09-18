@@ -24,6 +24,22 @@ struct RootView: View {
         } else {
             KeyboardPresence.defaults.removeObject(forKey: key)
         }
+        // App Store 截圖：`-utuvo.type.ios.seedHistory YES` 在歷史是空的時候種幾筆範例（模擬器沒麥克風）。
+        if UserDefaults.standard.bool(forKey: "utuvo.type.ios.seedHistory"), HistoryStore.shared.load().isEmpty {
+            let now = Date()
+            let samples: [(String, DictationRecord.Source, Double, Bool)] = [
+                ("明天下午三點在錄音室對 Atmos 母帶，記得帶硬碟和耳機。", .keyboard, -600, true),
+                ("好，那我們週五前把混音版本寄給客戶，週一再確認一次。", .keyboard, -3_600, false),
+                ("Can we move the session to Thursday? The drummer is only free after four.", .app, -7_200, false),
+                ("今天的課講到空間音訊的交付規範，下週請大家帶自己的作品來聽。", .app, -86_400, true),
+                ("晚餐想吃什麼？我這邊大概七點半會結束。", .keyboard, -90_000, false),
+                ("母帶的整體響度控制在 −18 LUFS 左右，真峰值不要超過 −1 dBTP。", .app, -180_000, false),
+            ]
+            let records = samples.map { text, source, offset, starred in
+                DictationRecord(date: now.addingTimeInterval(offset), raw: text, cleaned: text, starred: starred, source: source)
+            }
+            HistoryStore.shared.save(records.sorted { $0.date > $1.date })
+        }
         #endif
     }
 
