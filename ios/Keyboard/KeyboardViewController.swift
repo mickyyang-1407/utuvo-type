@@ -810,7 +810,7 @@ private extension DictationLanguage {
 // MARK: - 光球與波形環（純 UIKit／CoreAnimation，鍵盤 extension 記憶體友善）
 
 /// 光球：iOS 26+ 用系統 Liquid Glass（橘色染色、互動形變），跟 iOS 27 圖示同一種材質；
-/// 不再疊白色亮面反光（Micky：廉價）。iOS 26 以下退回霧面漸層＋細邊光。
+/// 不再疊白色亮面反光（看起來廉價）。iOS 26 以下退回霧面漸層＋細邊光。
 final class OrbButton: UIControl {
     private let glyphView = UIImageView()
     private let ring = CAShapeLayer()
