@@ -2,237 +2,297 @@
 <html lang="en">
 <head>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="description" content="UTUVO Type — free, open-source, local-first voice dictation for macOS. Transcribes on your Mac, cleans up deterministically, pastes where your cursor is.">
-<meta property="og:title" content="UTUVO Type"><meta property="og:description" content="UTUVO Type — free, open-source, local-first voice dictation for macOS. Transcribes on your Mac, cleans up deterministically, pastes where your cursor is."><meta property="og:image" content="https://mickyyang-1407.github.io/utuvo-type/assets/og.png"><meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="UTUVO Type — free, open-source voice typing. A keyboard with an orb for iPhone, and a local-first menu bar app for Mac.">
+<meta property="og:title" content="UTUVO Type"><meta property="og:description" content="UTUVO Type — free, open-source voice typing. A keyboard with an orb for iPhone, and a local-first menu bar app for Mac."><meta property="og:image" content="https://mickyyang-1407.github.io/utuvo-type/assets/og.png"><meta name="twitter:card" content="summary_large_image">
 <link rel="alternate" hreflang="en" href="https://mickyyang-1407.github.io/utuvo-type/"><link rel="alternate" hreflang="zh-Hant" href="https://mickyyang-1407.github.io/utuvo-type/zh/">
 <link rel="icon" href="assets/logo.png">
 <meta charset="utf-8">
 <title>UTUVO Type</title>
 <style>
   :root{
-    --bg:#FBF7F2; --bg-2:#F3EDF7; --ink:#2A1F2E; --ink-2:#6B5E6F; --ink-3:#9C8FA0;
-    --orange:#F97316; --amber:#FFB84A; --plum:#2E1F47; --lav:#AD99F2; --mint:#4DBF80;
-    --glass:rgba(255,255,255,.55); --glass-rim:rgba(255,255,255,.75); --line:rgba(42,31,46,.08);
-    --shadow:0 18px 50px rgba(60,30,20,.10), 0 2px 6px rgba(60,30,20,.06);
+    --bg:#FBF8F4; --bg-2:#F3EEE7; --panel:#FFFFFF; --ink:#1F1A17; --ink-2:#5E5650; --ink-3:#8E857E;
+    --line:#E6DFD6; --accent:#E8620C; --accent-ink:#B84A05; --code:#221C19;
     --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Inter,Arial,sans-serif;
     --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    color-scheme:light;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;font-family:var(--font);color:var(--ink);font-size:17px;line-height:1.6;background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  h1,h2,h3{margin:0;line-height:1.08;letter-spacing:-.02em;text-wrap:balance}
-  h1{font-size:clamp(2.6rem,6.2vw,4.6rem);font-weight:700}
-  h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:700}
-  h3{font-size:1.1rem;font-weight:650}
+  body{margin:0;font-family:var(--font);color:var(--ink);font-size:17px;line-height:1.6;background:var(--bg);-webkit-font-smoothing:antialiased}
+  h1,h2,h3{margin:0;line-height:1.1;letter-spacing:-.02em;text-wrap:balance}
+  h1{font-size:clamp(2.6rem,6vw,4.4rem);font-weight:750}
+  h2{font-size:clamp(1.7rem,3.4vw,2.4rem);font-weight:720}
+  h3{font-size:1.15rem;font-weight:680}
   p{margin:0}
   a{color:inherit}
+  img{max-width:100%;height:auto;display:block}
   .wrap{max-width:1120px;margin:0 auto;padding-inline:24px}
-  section{position:relative;padding-block:96px}
-  .eyebrow{font-size:.8rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--orange)}
-  .lead{font-size:clamp(1.05rem,1.6vw,1.25rem);color:var(--ink-2);max-width:640px}
-
-  /* 桌布：跟 app 截圖用的同一套色團 */
-  .backdrop{position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#EFE8FF 0%,#FBF3EA 50%,#FFE7D2 100%)}
-  .backdrop i{position:absolute;border-radius:50%;filter:blur(120px);opacity:.75}
-  .backdrop .a{width:640px;height:640px;left:-200px;top:-220px;background:rgba(255,184,74,.55)}
-  .backdrop .b{width:560px;height:560px;right:-160px;top:120px;background:rgba(173,153,242,.5)}
-  .backdrop .c{width:520px;height:520px;right:20%;bottom:-260px;background:rgba(249,115,22,.28)}
-  .backdrop .d{width:520px;height:520px;left:-120px;bottom:-200px;background:rgba(140,204,255,.45)}
-
-  /* glass */
-  .glass{background:var(--glass);border:1px solid var(--glass-rim);border-radius:22px;box-shadow:var(--shadow);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+  section{padding-block:88px;border-top:1px solid var(--line)}
+  .eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink)}
+  .lead{font-size:clamp(1.05rem,1.5vw,1.2rem);color:var(--ink-2);max-width:620px}
+  .muted{color:var(--ink-2)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
 
   /* nav */
-  nav{position:sticky;top:0;z-index:10;padding:14px 0}
-  nav .bar{display:flex;align-items:center;gap:14px;padding:8px 10px 8px 14px;border-radius:999px}
-  nav img{width:30px;height:30px;border-radius:8px}
-  nav .name{font-weight:700;letter-spacing:-.01em}
-  nav .links{margin-left:auto;display:flex;gap:4px;align-items:center}
-  nav .links a{text-decoration:none;font-size:.92rem;font-weight:600;color:var(--ink-2);padding:7px 12px;border-radius:999px}
-  nav .links a:hover{background:rgba(255,255,255,.6);color:var(--ink)}
-  .lang{display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(42,31,46,.06);margin-left:6px}
-  .lang a{font-size:.8rem;font-weight:700;letter-spacing:.06em;padding:5px 10px;border-radius:999px;text-decoration:none;color:var(--ink-2)}
-  .lang a[aria-current]{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  nav{position:sticky;top:0;z-index:10;background:rgba(251,248,244,.96);border-bottom:1px solid var(--line)}
+  nav .bar{display:flex;align-items:center;gap:12px;height:60px}
+  nav img{width:28px;height:28px;border-radius:7px}
+  nav .name{font-weight:720;letter-spacing:-.01em;text-decoration:none}
+  nav .links{margin-left:auto;display:flex;gap:2px;align-items:center}
+  nav .links a{text-decoration:none;font-size:.92rem;font-weight:600;color:var(--ink-2);padding:6px 11px;border-radius:8px}
+  nav .links a:hover{color:var(--ink);background:var(--bg-2)}
+  .lang{display:flex;margin-left:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .lang a{font-size:.8rem !important;font-weight:700;padding:5px 10px !important;border-radius:0 !important;text-decoration:none}
+  .lang a[aria-current]{background:var(--ink);color:#fff !important}
 
   /* buttons */
-  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:650;font-size:1rem;padding:.8em 1.5em;border-radius:999px;text-decoration:none;border:1px solid transparent;transition:transform .15s,box-shadow .15s}
-  .btn:hover{transform:translateY(-2px)}
-  .btn-primary{color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316);box-shadow:0 10px 28px rgba(249,115,22,.35),inset 0 1px 0 rgba(255,255,255,.45)}
-  .btn-glass{color:var(--ink);background:rgba(255,255,255,.55);border-color:rgba(255,255,255,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 6px 18px rgba(60,30,20,.08)}
+  .btn{display:inline-flex;align-items:center;gap:.5em;font-weight:650;font-size:1rem;padding:.75em 1.3em;border-radius:10px;text-decoration:none;border:1px solid var(--line)}
+  .btn-primary{color:#fff;background:var(--accent);border-color:var(--accent)}
+  .btn-primary:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+  .btn-plain{background:var(--panel);color:var(--ink)}
+  .btn-plain:hover{border-color:var(--ink-3)}
   .btn svg{width:1.1em;height:1.1em}
+  .status{display:inline-flex;align-items:center;gap:.5em;font-size:.95rem;font-weight:600;color:var(--ink-2)}
+  .status i{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+
+  /* phone screenshots: real pixels, thin frame, no glow */
+  .phone{border-radius:34px;border:1px solid var(--line);background:var(--panel);overflow:hidden}
+  .crop{border-radius:18px;border:1px solid var(--line);overflow:hidden;background:var(--panel)}
 
   /* hero */
-  .hero{padding-block:48px 32px}
-  .hero .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
-  .hero .art{position:relative}
-  .hero .art img{width:min(100%,420px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 34px rgba(120,60,20,.18))}
-  .cta{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
-  .free{margin-top:18px;font-size:.9rem;color:var(--ink-3);font-weight:600}
-  .free b{color:var(--mint)}
+  .hero{padding-block:56px 72px;border-top:0}
+  .hero .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+  .hero .phone{width:min(100%,340px);margin-inline:auto}
+  .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+  .platforms{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin-top:26px;font-size:.95rem;color:var(--ink-2)}
+  .platforms b{color:var(--ink)}
 
-  /* popover showcase */
-  .showcase{padding-block:24px 80px}
-  .showcase .row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
-  .showcase img.pop{width:min(100%,330px);height:auto;display:block;margin:0 auto;filter:drop-shadow(0 24px 40px rgba(60,30,20,.16))}
-  .steps{display:grid;gap:14px}
-  .step{display:flex;gap:16px;padding:18px 20px;border-radius:18px}
-  .step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(180deg,#FFB84A,#F97316)}
-  .step small{display:block;color:var(--ink-2);font-size:.92rem;margin-top:2px}
+  /* feature rows */
+  .rows{display:grid;gap:72px;margin-top:56px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .row.rev .media{order:2}
+  .row .media{display:grid;gap:14px;justify-items:center}
+  .row .media .crop{width:min(100%,520px)}
+  .row .media .phone{width:min(100%,300px)}
+  .row .media .pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:min(100%,560px)}
+  .row .media .stack{display:grid;gap:14px;width:min(100%,520px)}
+  .row h3{font-size:1.45rem;letter-spacing:-.015em}
+  .row p{margin-top:10px;color:var(--ink-2);max-width:460px}
+  .row .note{margin-top:12px;font-size:.92rem;color:var(--ink-3)}
 
-  /* modes */
-  .modes{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:36px}
-  .mode{padding:22px 20px;border-radius:20px}
-  .mode .ic{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;background:rgba(249,115,22,.14);color:var(--orange);margin-bottom:14px}
-  .mode .ic svg{width:20px;height:20px}
+  /* Mac */
+  .mac-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:start;margin-top:48px}
+  .mac-grid .pop{width:min(100%,320px);margin-inline:auto}
+  .steps{list-style:none;margin:0;padding:0;display:grid;gap:18px;counter-reset:s}
+  .steps li{display:grid;grid-template-columns:32px 1fr;gap:14px}
+  .steps li::before{counter-increment:s;content:counter(s);width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-weight:700;background:var(--bg-2);color:var(--accent-ink)}
+  .steps small{display:block;color:var(--ink-2);font-size:.95rem;margin-top:2px}
+  .modes{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:14px;background:var(--panel);margin-top:40px}
+  .mode{padding:20px}
+  .mode + .mode{border-left:1px solid var(--line)}
   .mode p{color:var(--ink-2);font-size:.95rem;margin-top:6px}
+  .mac-shot{margin-top:40px;border-radius:14px;border:1px solid var(--line);overflow:hidden;background:var(--panel)}
 
-  /* two-column feature blocks */
-  .feature{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:48px}
-  .feature.rev .copy{order:2}
-  .feature img{width:min(100%,560px);height:auto;display:block;margin:0 auto;border-radius:16px;filter:drop-shadow(0 20px 34px rgba(60,30,20,.14))}
-  .feature ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:10px}
-  .feature li{display:flex;gap:10px;color:var(--ink-2)}
-  .feature li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--orange);margin-top:.55em}
+  /* privacy */
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:40px}
+  .two ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+  .two li{display:grid;grid-template-columns:14px 1fr;gap:10px;color:var(--ink-2)}
+  .two li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:.65em}
 
-  /* overlay demo */
-  .capsules{display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:20px}
-  .capsules img{height:32px;width:auto}
-
-  /* install */
-  .install .box{padding:32px;border-radius:24px}
-  .install pre{margin:18px 0 0;padding:18px 20px;border-radius:14px;background:rgba(46,31,71,.92);color:#F6EFFF;font-family:var(--mono);font-size:.9rem;line-height:1.7;overflow:auto}
-  .install pre b{color:#FFB84A;font-weight:600}
-  .req{display:flex;gap:26px;flex-wrap:wrap;margin-top:18px;color:var(--ink-2);font-size:.95rem}
+  /* get */
+  .get{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px}
+  .card{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:28px}
+  .card p{margin-top:10px;color:var(--ink-2)}
+  .card .cta{margin-top:20px}
+  .req{display:flex;gap:8px 20px;flex-wrap:wrap;margin-top:16px;color:var(--ink-2);font-size:.92rem}
   .req b{color:var(--ink)}
+  details{margin-top:18px;border-top:1px solid var(--line);padding-top:14px}
+  summary{cursor:pointer;font-weight:650}
+  pre{margin:12px 0 0;padding:16px 18px;border-radius:10px;background:var(--code);color:#F4EEE8;font-family:var(--mono);font-size:.86rem;line-height:1.7;overflow:auto}
+  pre b{color:#FFB070;font-weight:600}
 
-  footer{padding:60px 0 40px;color:var(--ink-3);font-size:.9rem;text-align:center}
+  footer{padding:36px 0 44px;color:var(--ink-3);font-size:.9rem;border-top:1px solid var(--line)}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:space-between}
   footer a{color:var(--ink-2)}
 
   @media (max-width:900px){
-    .hero .grid,.showcase .row,.feature{grid-template-columns:1fr}
-    .feature.rev .copy{order:0}
-    .modes{grid-template-columns:1fr 1fr}
-    nav .links > a:not(.gh){display:none}
     section{padding-block:64px}
+    .hero .grid,.row,.mac-grid,.two,.get{grid-template-columns:1fr;gap:28px}
+    .hero .phone{width:100%;max-width:520px;border-radius:18px}
+    .row.rev .media{order:0}
+    .rows{gap:56px}
+    .modes{grid-template-columns:1fr 1fr}
+    .mode:nth-child(3){border-left:0}
+    .mode:nth-child(n+3){border-top:1px solid var(--line)}
+    nav .links > a:not(.keep){display:none}
   }
-  @media (max-width:520px){.modes{grid-template-columns:1fr}}
-  @media (prefers-reduced-motion:reduce){.btn:hover{transform:none}}
+  @media (max-width:520px){
+    .modes{grid-template-columns:1fr}
+    .mode + .mode{border-left:0;border-top:1px solid var(--line)}
+    .row .media .pair{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
-<div class="backdrop" aria-hidden="true"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
-
-<nav><div class="wrap"><div class="bar glass">
-  <img src="assets/web/logo.webp" alt=""><span class="name">UTUVO Type</span>
+<nav><div class="wrap bar">
+  <img src="assets/web/logo.webp" alt=""><a class="name" href="#top">UTUVO Type</a>
   <div class="links">
-    <a href="#modes">Modes</a><a href="#privacy">Privacy</a><a href="#install">Install</a>
-    <a class="gh" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
+    <a href="#iphone">iPhone</a><a href="#mac">Mac</a><a href="#privacy">Privacy</a>
+    <a class="keep" href="https://github.com/mickyyang-1407/utuvo-type">GitHub</a>
     <div class="lang"><a href="./" data-lang="en" aria-current="page">EN</a><a href="zh/" data-lang="zh">中文</a></div>
   </div>
-</div></div></nav>
+</div></nav>
 
-<section class="hero"><div class="wrap"><div class="grid">
+<main id="top">
+<section class="hero"><div class="wrap grid">
   <div>
-    <div class="eyebrow">Local-first dictation for macOS</div>
+    <div class="eyebrow">Voice typing for iPhone and Mac</div>
     <h1 style="margin-top:14px">Speak.<br>It types.</h1>
-    <p class="lead" style="margin-top:20px">A menu bar app that turns your voice into clean, paste-ready text. Transcription runs on your Mac. Cleanup is deterministic first, model second. Nothing leaves the machine unless you say so.</p>
+    <p class="lead" style="margin-top:20px">Tap the orb on the keyboard, say what you mean, and clean text lands at your cursor — in any app. On-device first, no account, open source.</p>
     <div class="cta">
-      <a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download for Mac</a>
-      <a class="btn btn-glass" href="https://github.com/mickyyang-1407/utuvo-type">View source</a>
+      <a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>Download for Mac</a>
+      <a class="btn btn-plain" href="https://github.com/mickyyang-1407/utuvo-type">View source</a>
     </div>
-    <p class="free"><b>Free</b> · Open source · MIT · No account, no API key required</p>
+    <div class="platforms">
+      <b>iPhone</b><span class="status"><i></i>In App Store review — coming soon</span>
+      <b>Mac</b><span>Free download, signed and notarized</span>
+    </div>
   </div>
-  <div class="art"><img src="assets/web/hero-front.webp" alt="UTUVO Type mark: a glass speech bubble with a text cursor, beside a waveform, three dots and a microphone"></div>
-</div></div></section>
+  <picture>
+    <source media="(max-width:900px)" srcset="assets/web/ios-recording.webp" width="1040" height="1031">
+    <img class="phone" src="assets/web/ios-keyboard.webp" width="760" height="1651" alt="The UTUVO Type keyboard in Messages while dictating: the live transcript runs along the top, the orb glows in the middle">
+  </picture>
+</div></section>
 
-<section class="showcase"><div class="wrap"><div class="row">
-  <img class="pop" src="assets/web/popover-light.webp" alt="The UTUVO Type menu bar popover with four modes and a Start dictation button">
-  <div class="steps">
-    <div class="step glass"><div class="n">1</div><div><h3>Press the shortcut</h3><small>⌥Space by default, or hold it for push-to-talk. Any key you like.</small></div></div>
-    <div class="step glass"><div class="n">2</div><div><h3>Say it</h3><small>A small capsule shows you're live. Esc cancels. Nothing is recorded until you start.</small></div></div>
-    <div class="step glass"><div class="n">3</div><div><h3>It lands where your cursor is</h3><small>Punctuation, fillers, numbers and your own dictionary — cleaned up and pasted into the app you're in.</small></div></div>
-  </div>
-</div></div></section>
+<section id="iphone"><div class="wrap">
+  <div class="eyebrow">iPhone</div>
+  <h2 style="margin-top:12px">A keyboard with an orb in it.</h2>
+  <p class="lead" style="margin-top:14px">Switch to UTUVO Type with the globe key, then talk. The orb moves with your voice; tap it again and the finished text is inserted once, where your cursor is.</p>
 
-<section id="modes"><div class="wrap">
-  <div class="eyebrow">Four modes</div>
-  <h2 style="margin-top:12px">Pick how much help you want.</h2>
-  <p class="lead" style="margin-top:14px">Fast never calls a large model. The others only do what you ask, and fall back to the deterministic path if a model fails.</p>
-  <div class="modes">
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></div><h3>Fast Dictate</h3><p>Transcribe and normalize on-device. Instant, predictable, no LLM.</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8zM19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9zM5 15l.7 1.8 1.8.7-1.8.7L5 20l-.7-1.8-1.8-.7 1.8-.7z"/></svg></div><h3>Smart Dictate</h3><p>A small local editor tidies sentences. Still on your Mac.</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M4 4h10M4 8h7M4 12h5M14 15l6-6-2-2-6 6v2z"/></svg></div><h3>Edit Selection</h3><p>Select text, say what to change. The rewrite replaces the selection.</p></div>
-    <div class="mode glass"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg></div><h3>Deep / Long Note</h3><p>Long-form notes with a larger model — local 27B or cloud, only when you choose it.</p></div>
+  <div class="rows">
+    <div class="row">
+      <div class="media"><img class="crop" src="assets/web/ios-translate.webp" width="1040" height="1031" alt="Holding the orb shows up to five languages in an arc above it"></div>
+      <div class="copy">
+        <h3>Hold the orb to translate</h3>
+        <p>Slide to a language and let go. Speak Chinese, get English or Japanese — pick up to five languages.</p>
+      </div>
+    </div>
+
+    <div class="row rev">
+      <div class="media"><img class="phone" src="assets/web/ios-edit.webp" width="640" height="1391" alt="The app with a finished dictation and buttons for Say how to change it, Copy and Translate"></div>
+      <div class="copy">
+        <h3>Say how to change it</h3>
+        <p>Select some text and say “make it more formal” or “add the time”. The rewrite replaces the selection — with Apple Intelligence on the device, or your own cloud key.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="media"><div class="stack">
+        <img class="crop" src="assets/web/ios-zhuyin.webp" width="1040" height="928" alt="The built-in Zhuyin keyboard with candidates along the top">
+        <img class="crop" src="assets/web/ios-pinyin.webp" width="1040" height="808" alt="The built-in Pinyin keyboard typing Traditional Chinese">
+      </div></div>
+      <div class="copy">
+        <h3>Fix a word without leaving</h3>
+        <p>EN, 繁 and 简 sit beside the orb. Correct a word with English, Zhuyin or Pinyin — Traditional or Simplified — then tap Voice to keep talking.</p>
+      </div>
+    </div>
+
+    <div class="row rev">
+      <div class="media"><img class="phone" src="assets/web/ios-history.webp" width="640" height="1391" alt="History grouped by day, with star and copy buttons on each dictation"></div>
+      <div class="copy">
+        <h3>Everything you said, on your phone</h3>
+        <p>Each dictation is kept on the device — searchable, starrable, one tap to copy. A personal dictionary teaches it the names and jargon you use.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="media"><div class="pair">
+        <img class="phone" src="assets/web/ios-home.webp" width="640" height="1391" alt="The app home screen in Traditional Chinese">
+        <img class="phone" src="assets/web/ios-hans.webp" width="640" height="1391" alt="The same screen in Simplified Chinese">
+      </div></div>
+      <div class="copy">
+        <h3>Traditional and Simplified Chinese</h3>
+        <p>The app follows your iPhone’s language: Traditional Chinese with Taiwan wording, or Simplified Chinese with mainland terms. English dictation works too.</p>
+      </div>
+    </div>
   </div>
 </div></section>
 
-<section id="chinese"><div class="wrap">
-  <div class="feature">
-    <div class="copy">
-      <div class="eyebrow">Built for Traditional Chinese</div>
-      <h2 style="margin-top:12px">Cleanup you can predict.</h2>
-      <p class="lead" style="margin-top:14px">Most of the polish is rules, not guesses. The same input gives the same output, every time.</p>
-      <ul>
-        <li>Chinese punctuation, spacing between CJK and Latin, filler words removed</li>
-        <li>Numbers, dates and amounts written the way you'd type them</li>
-        <li>Taiwan wording for software and everyday terms; mixed English stays English</li>
-        <li>A personal dictionary for names, products and jargon</li>
-        <li>Per-app presets: a terse style for chat, a fuller one for documents</li>
-      </ul>
-    </div>
-    <img src="assets/web/settings-general-light.webp" alt="UTUVO Type settings, General tab, with Liquid Glass sidebar and cards">
+<section id="mac"><div class="wrap">
+  <div class="eyebrow">Mac</div>
+  <h2 style="margin-top:12px">A menu bar app for everything you write.</h2>
+  <p class="lead" style="margin-top:14px">Transcription runs on your Mac with a local model. Cleanup is rules first, a model only when you ask.</p>
+  <div class="mac-grid">
+    <img class="pop" src="assets/web/popover-light.webp" alt="The UTUVO Type menu bar popover with four modes and a Start dictation button">
+    <ol class="steps">
+      <li><div><h3>Press the shortcut</h3><small>⌥Space by default, or hold it for push-to-talk. Any key you like.</small></div></li>
+      <li><div><h3>Say it</h3><small>A small capsule shows you're live. Esc cancels. Nothing is recorded until you start.</small></div></li>
+      <li><div><h3>It lands where your cursor is</h3><small>Punctuation, fillers, numbers and your own dictionary — cleaned up and pasted into the app you're in.</small></div></li>
+    </ol>
   </div>
+  <div class="modes">
+    <div class="mode"><h3>Fast Dictate</h3><p>Transcribe and normalize on-device. Instant, predictable, no LLM.</p></div>
+    <div class="mode"><h3>Smart Dictate</h3><p>A small local editor tidies sentences. Still on your Mac.</p></div>
+    <div class="mode"><h3>Edit Selection</h3><p>Select text, say what to change. The rewrite replaces the selection.</p></div>
+    <div class="mode"><h3>Deep / Long Note</h3><p>Long-form notes with a larger model — local 27B or cloud, only when you choose it.</p></div>
+  </div>
+  <img class="mac-shot" src="assets/web/settings-general-light.webp" alt="UTUVO Type settings on the Mac, General tab">
 </div></section>
 
 <section id="privacy"><div class="wrap">
-  <div class="feature rev">
-    <div class="copy">
-      <div class="eyebrow">Private by default</div>
-      <h2 style="margin-top:12px">Your voice stays on your Mac.</h2>
-      <p class="lead" style="margin-top:14px">The default install is fully local: Qwen3-ASR 0.6B running through MLX on Apple silicon. No account, no telemetry, no network after setup.</p>
+  <div class="eyebrow">Privacy</div>
+  <h2 style="margin-top:12px">No account. No tracking. Open source.</h2>
+  <div class="two">
+    <div>
+      <h3>iPhone</h3>
       <ul>
-        <li>Accessibility is used to read the focused field and paste back — never the whole screen</li>
-        <li>Recording is always announced by the capsule and a sound cue</li>
-        <li>Cloud formatting is a separate, opt-in adapter with your own key, stored in the Keychain</li>
-        <li>Everything is in the open: read the routing rules, run the benchmark, audit the prompts</li>
+        <li>On-device recognition first; turn on “Only on-device” and audio never leaves the phone</li>
+        <li>Rewriting and translation use Apple Intelligence on the device; a cloud key is optional and yours</li>
+        <li>The keyboard never records what you type with the other keys</li>
+        <li>Full Access is needed only so the keyboard can ask the app to record — iOS keeps the microphone away from keyboards</li>
       </ul>
     </div>
-    <img src="assets/web/settings-models-light.webp" alt="UTUVO Type settings, Models tab, showing the local model and optional cloud models">
-  </div>
-</div></section>
-
-<section id="native"><div class="wrap">
-  <div class="feature">
-    <div class="copy">
-      <div class="eyebrow">Native, top to bottom</div>
-      <h2 style="margin-top:12px">Liquid Glass. Light and dark.</h2>
-      <p class="lead" style="margin-top:14px">Swift, AppKit and SwiftUI. Built against the macOS 26 design language with a Liquid Glass popover, floating sidebar and a tiny overlay capsule — and a plain material fallback on macOS 14 and 15.</p>
-      <div class="capsules">
-        <img src="assets/web/overlay-listening-light.webp" alt="Listening capsule with an orange waveform">
-        <img src="assets/web/overlay-processing-light.webp" alt="Processing capsule with three lavender dots">
-        <img src="assets/web/overlay-listening-dark.webp" alt="Listening capsule in dark mode">
-      </div>
+    <div>
+      <h3>Mac</h3>
+      <ul>
+        <li>The default engine runs locally: Qwen3-ASR 0.6B through MLX on Apple silicon</li>
+        <li>Accessibility is used to read the focused field and paste back — never the whole screen</li>
+        <li>Cloud formatting is opt-in, with your own key in the Keychain</li>
+        <li>Routing rules, prompts and benchmarks are all in the repository</li>
+      </ul>
     </div>
-    <img src="assets/web/popover-dark.webp" alt="The UTUVO Type popover in dark mode" style="width:min(100%,300px);margin:0 auto;border-radius:0">
   </div>
+  <p class="muted" style="margin-top:28px">Read the full <a href="privacy/">privacy policy</a>.</p>
 </div></section>
 
-<section id="install" class="install"><div class="wrap">
-  <div class="box glass">
-    <div class="eyebrow">Install</div>
-    <h2 style="margin-top:12px">Three commands.</h2>
-    <p class="lead" style="margin-top:12px">Or grab the signed, notarized build from Releases. Building from source takes about a minute plus a one-time 1.2 GB model download.</p>
+<section id="get"><div class="wrap">
+  <div class="eyebrow">Get it</div>
+  <h2 style="margin-top:12px">Free on both.</h2>
+  <div class="get">
+    <div class="card">
+      <h3>iPhone</h3>
+      <p>Version 0.2.0 is in App Store review. This page will link to it as soon as it’s live.</p>
+      <div class="req"><span><b>iOS 17+</b></span><span><b>iPhone</b> only for now</span><span>Keyboard needs <b>Full Access</b></span></div>
+    </div>
+    <div class="card">
+      <h3>Mac</h3>
+      <p>Signed and notarized. The speech model is a one-time 1.2 GB download from Settings, only when you click.</p>
+      <div class="cta"><a class="btn btn-primary" href="https://github.com/mickyyang-1407/utuvo-type/releases/latest">Download for Mac</a></div>
+      <div class="req"><span><b>macOS 14+</b></span><span><b>Apple silicon</b> for the local engine</span><span><b>8 GB</b> memory · <b>16 GB</b> for the local editor</span></div>
+      <details>
+        <summary>Build from source</summary>
 <pre><b>git</b> clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
 <b>./scripts/bootstrap-runtime.sh</b>   # Python venv + Qwen3-ASR model, one time
 <b>./scripts/build-app.sh</b>           # dist/UTUVO Type.app</pre>
-    <div class="req"><span><b>Apple silicon</b> for the local engine</span><span><b>macOS 14+</b> · Liquid Glass on 26+</span><span><b>8 GB</b> memory for Fast · <b>16 GB</b> for the local editor</span><span><b>~1.5 GB</b> disk for the model</span><span><b>Intel Macs</b> can use cloud or built-in speech</span></div>
-    <p class="lead" style="margin-top:16px;font-size:.95rem">The DMG is small: the speech model is not inside it. Settings → General → <b>Install Local Engine</b> downloads Qwen3-ASR 0.6B (about 1.2 GB, once) into your Application Support folder. Nothing is downloaded until you click.</p>
+      </details>
+    </div>
   </div>
 </div></section>
+</main>
 
 <footer><div class="wrap">
   <p>© 2026 UTUVO · <a href="https://github.com/mickyyang-1407/utuvo-type/blob/main/LICENSE">MIT License</a> · The UTUVO Type name and mark are not part of the license.</p>
-  <p style="margin-top:6px">Made in Taipei · <a href="https://mickyyang-1407.github.io/utuvo-type/privacy/">Privacy</a> · <a href="https://github.com/mickyyang-1407/utuvo-type/issues">Issues</a></p>
+  <p>Made in Taipei · <a href="privacy/">Privacy</a> · <a href="https://github.com/mickyyang-1407/utuvo-type/issues">Support</a></p>
 </div></footer>
 <script>
 document.querySelectorAll('.lang a').forEach(function(a){a.addEventListener('click',function(){try{localStorage.setItem('type-lang',a.dataset.lang)}catch(e){}})});
