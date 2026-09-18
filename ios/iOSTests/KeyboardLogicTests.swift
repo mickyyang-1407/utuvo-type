@@ -13,9 +13,9 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertEqual(KeyboardMode.decide(selectedText: "hello", translateTarget: ja), .translate(target: ja))
     }
 
-    func testOnlyDictateInsertsPartials() {
+    func testNoModeInsertsPartials() {
         let ja = TranslationTarget.all.first { $0.code == "ja" }!
-        XCTAssertTrue(KeyboardMode.dictate.insertsPartials)
+        XCTAssertFalse(KeyboardMode.dictate.insertsPartials)
         XCTAssertFalse(KeyboardMode.edit(selection: "x").insertsPartials)
         XCTAssertFalse(KeyboardMode.translate(target: ja).insertsPartials)
     }

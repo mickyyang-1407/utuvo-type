@@ -60,7 +60,7 @@ struct TranslationLanguagesView: View {
                 }
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(target.zh)
+                Text(target.displayName)
                 Text(statusText(target.code))
                     .font(.caption)
                     .foregroundStyle(status[target.code] == "installed" ? Aurora.mint : .secondary)
@@ -84,16 +84,16 @@ struct TranslationLanguagesView: View {
     }
 
     private func name(_ code: String) -> String {
-        TranslationTarget.all.first { $0.code == code }?.zh ?? code
+        TranslationTarget.all.first { $0.code == code }?.displayName ?? code
     }
 
     private func statusText(_ code: String) -> String {
         switch status[code] {
-        case "installed": return "裝置端翻譯包已下載"
-        case "supported": return "可下載裝置端翻譯包（沒下載時用 Apple Intelligence）"
-        case "unsupported": return "這個方向系統不支援，會用 Apple Intelligence"
-        case "same": return "與辨識語言相同"
-        default: return "檢查中…"
+        case "installed": return String(localized: "裝置端翻譯包已下載")
+        case "supported": return String(localized: "可下載裝置端翻譯包（沒下載時用 Apple Intelligence）")
+        case "unsupported": return String(localized: "這個方向系統不支援，會用 Apple Intelligence")
+        case "same": return String(localized: "與辨識語言相同")
+        default: return String(localized: "檢查中…")
         }
     }
 

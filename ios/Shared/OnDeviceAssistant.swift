@@ -15,9 +15,9 @@ enum OnDeviceAssistant {
 
         var badge: String {
             switch self {
-            case .appleIntelligence: return "Apple Intelligence・裝置端"
-            case .cloud: return "雲端（你的 key）"
-            case .unavailable: return "不可用"
+            case .appleIntelligence: return String(localized: "Apple Intelligence・裝置端")
+            case .cloud: return String(localized: "雲端（你的 key）")
+            case .unavailable: return String(localized: "不可用")
             }
         }
     }
@@ -25,7 +25,7 @@ enum OnDeviceAssistant {
     static func currentEngine() -> Engine {
         if onDeviceAvailable { return .appleIntelligence }
         if TranslationService.shared.isConfigured { return .cloud }
-        return .unavailable("需要 iOS 26 的 Apple Intelligence，或在主 app 設定雲端 key")
+        return .unavailable(String(localized: "需要 iOS 26 的 Apple Intelligence，或在主 app 設定雲端 key"))
     }
 
     static var onDeviceAvailable: Bool {
@@ -80,7 +80,7 @@ enum OnDeviceAssistant {
     enum AssistantError: LocalizedError {
         case unavailable
         var errorDescription: String? {
-            "這台裝置沒有 Apple Intelligence（iOS 26），也沒設雲端 key；到主 app 設定 → 雲端翻譯加入 key 即可"
+            String(localized: "這台裝置沒有 Apple Intelligence（iOS 26），也沒設雲端 key；到主 app 設定 → 雲端翻譯加入 key 即可")
         }
     }
 }

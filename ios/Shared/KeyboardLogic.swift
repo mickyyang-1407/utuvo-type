@@ -20,33 +20,60 @@ enum KeyboardMode: Equatable, Sendable {
     /// 錄音前的提示（Typeless：Tap to speak／Speak to edit／Release to translate）。
     var idleHint: String {
         switch self {
-        case .dictate: return "點一下開始說"
-        case .edit: return "說出要怎麼改"
-        case .translate(let target): return "說中文，貼上\(target.zh)"
+        case .dictate: return String(localized: "點一下開始說")
+        case .edit: return String(localized: "說出要怎麼改")
+        case .translate(let target): return String(localized: "說中文，貼上\(target.displayName)")
         }
     }
 
     var recordingHint: String {
         switch self {
-        case .dictate: return "再點一下完成"
-        case .edit: return "說完再點一下，改寫會取代選取"
-        case .translate(let target): return "再點一下完成，翻成\(target.zh)"
+        case .dictate: return String(localized: "再點一下完成")
+        case .edit: return String(localized: "說完再點一下，改寫會取代選取")
+        case .translate(let target): return String(localized: "再點一下完成，翻成\(target.displayName)")
         }
     }
 
-    /// 聽寫模式邊講邊把逐字稿插進文件；編輯／翻譯模式只在膠囊裡預覽，定稿才動文件。
-    var insertsPartials: Bool {
-        if case .dictate = self { return true }
-        return false
-    }
+    /// 講話中的逐字稿只在字幕帶預覽，一律等按停止、定稿才動文件（2026-09-18 真機回報：邊講邊插會讓人
+    /// 在講完、還沒按停止時就能送出，按停止後定稿又插一次＝重複送出）。三種模式都不邊講邊插。
+    var insertsPartials: Bool { false }
 }
 
 /// 翻譯目標：與主 app 的 TranslationService.targets 同一份。
 struct TranslationTarget: Equatable, Sendable, Identifiable {
     let code: String
+    /// 繁中原名：送進語言模型的提示詞用這個（提示詞不跟介面語言走）。
     let zh: String
     let en: String
     var id: String { code }
+
+    /// 介面上顯示的語言名（跟系統語言走：繁中介面＝原名，简中介面＝简体名）。
+    /// 逐一寫成 String(localized:) 字面值，編譯器才抽得到 key。
+    var displayName: String {
+        switch code {
+        case "zh-Hant": return String(localized: "繁體中文")
+        case "zh-Hans": return String(localized: "簡體中文")
+        case "en": return String(localized: "英文")
+        case "ja": return String(localized: "日文")
+        case "ko": return String(localized: "韓文")
+        case "fr": return String(localized: "法文")
+        case "de": return String(localized: "德文")
+        case "es": return String(localized: "西班牙文")
+        case "it": return String(localized: "義大利文")
+        case "pt": return String(localized: "葡萄牙文")
+        case "nl": return String(localized: "荷蘭文")
+        case "ru": return String(localized: "俄文")
+        case "uk": return String(localized: "烏克蘭文")
+        case "pl": return String(localized: "波蘭文")
+        case "tr": return String(localized: "土耳其文")
+        case "ar": return String(localized: "阿拉伯文")
+        case "hi": return String(localized: "印地文")
+        case "id": return String(localized: "印尼文")
+        case "th": return String(localized: "泰文")
+        case "vi": return String(localized: "越南文")
+        default: return zh
+        }
+    }
 
     static let all: [TranslationTarget] = TranslationService.targets.map {
         TranslationTarget(code: $0.code, zh: $0.zh, en: $0.en)
@@ -100,16 +127,16 @@ enum ReturnKeyLabel {
     /// 送出鍵跟著宿主 app 的 returnKeyType 走（Typeless 的 "send" 膠囊）。
     static func text(for type: UIReturnKeyType?) -> String {
         switch type {
-        case .send: return "送出"
-        case .search, .google, .yahoo: return "搜尋"
-        case .go: return "前往"
-        case .done: return "完成"
-        case .join: return "加入"
-        case .next: return "下一個"
-        case .continue: return "繼續"
-        case .route: return "路線"
-        case .emergencyCall: return "撥打"
-        default: return "換行"
+        case .send: return String(localized: "送出")
+        case .search, .google, .yahoo: return String(localized: "搜尋")
+        case .go: return String(localized: "前往")
+        case .done: return String(localized: "完成")
+        case .join: return String(localized: "加入")
+        case .next: return String(localized: "下一個")
+        case .continue: return String(localized: "繼續")
+        case .route: return String(localized: "路線")
+        case .emergencyCall: return String(localized: "撥打")
+        default: return String(localized: "換行")
         }
     }
 }
@@ -184,5 +211,12 @@ enum KeyboardPresence {
     static var seen: Bool {
         get { defaults.bool(forKey: key) }
         set { defaults.set(newValue, forKey: key) }
+    }
+
+    /// 「繁」鍵盤用注音還是拼音打（值 "zhuyin"／"pinyin"；沒設＝注音）。鍵盤與主 app 設定頁共用。
+    static let hantInputKey = "utuvo.type.keyboard.hantInput"
+    static var hantUsesPinyin: Bool {
+        get { defaults.string(forKey: hantInputKey) == "pinyin" }
+        set { defaults.set(newValue ? "pinyin" : "zhuyin", forKey: hantInputKey) }
     }
 }

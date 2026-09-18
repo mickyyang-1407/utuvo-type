@@ -76,14 +76,14 @@ struct KeyboardSessionScreen: View {
     private var title: String {
         if let error = host.lastError { return error }
         switch host.phase {
-        case .recording: return "鍵盤正在聽"
-        case .finishing: return "整理中…"
-        default: return "鍵盤語音已開啟"
+        case .recording: return String(localized: "鍵盤正在聽")
+        case .finishing: return String(localized: "整理中…")
+        default: return String(localized: "鍵盤語音已開啟")
         }
     }
 
     private var detail: String {
-        if host.lastError != nil { return "修好後回到鍵盤，再點一次光球。" }
-        return "麥克風由 UTUVO Type 替鍵盤開著，你不用在這裡操作。"
+        if host.lastError != nil { return String(localized: "修好後回到鍵盤，再點一次光球。") }
+        return String(localized: "麥克風由 UTUVO Type 替鍵盤開著，你不用在這裡操作。")
     }
 }

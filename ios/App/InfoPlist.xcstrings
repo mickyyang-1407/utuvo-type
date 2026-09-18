@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "zh-Hant",
+  "strings" : {
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type 在你听写、或从 UTUVO Type 键盘打开语音时使用麦克风，把语音转成文字。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type 在你聽寫、或從 UTUVO Type 鍵盤開啟語音時使用麥克風，把語音轉成文字。"
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription" : {
+      "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type 使用 iOS 语音识别把你的口述转成文字。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type 使用 iOS 語音辨識把你的口述轉成文字。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

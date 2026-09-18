@@ -44,17 +44,17 @@ final class KeyboardVoiceHost: ObservableObject {
         lastError = nil
         if !isActive {
             guard await Self.requestMicrophone() else {
-                fail("需要麥克風權限：設定 → UTUVO Type → 麥克風", commandID: commandID)
+                fail(String(localized: "需要麥克風權限：設定 → UTUVO Type → 麥克風"), commandID: commandID)
                 return
             }
             guard await Self.requestSpeechAuthorization() == .authorized else {
-                fail("需要語音辨識權限：設定 → UTUVO Type → 語音辨識", commandID: commandID)
+                fail(String(localized: "需要語音辨識權限：設定 → UTUVO Type → 語音辨識"), commandID: commandID)
                 return
             }
             do {
                 try startEngine()
             } catch {
-                fail("無法開啟麥克風：\(error.localizedDescription)", commandID: commandID)
+                fail(String(localized: "無法開啟麥克風：\(error.localizedDescription)"), commandID: commandID)
                 return
             }
             isActive = true
@@ -181,14 +181,14 @@ final class KeyboardVoiceHost: ObservableObject {
             startFakeRecognition(id: id)
             return
             #else
-            fail("這個語言的辨識器目前不可用", commandID: id)
+            fail(String(localized: "這個語言的辨識器目前不可用"), commandID: id)
             return
             #endif
         }
         let onDeviceOnly = UserDefaults.standard.bool(forKey: DictationModel.onDeviceOnlyKey)
         guard case .allow(let route) = RecognitionRoutePolicy.decide(
             supportsOnDevice: recognizer.supportsOnDeviceRecognition, onDeviceOnly: onDeviceOnly) else {
-            fail("你開了「只用裝置端辨識」，但這個語言在這台裝置沒有裝置端辨識", commandID: id)
+            fail(String(localized: "你開了「只用裝置端辨識」，但這個語言在這台裝置沒有裝置端辨識"), commandID: id)
             return
         }
         let request = SFSpeechAudioBufferRecognitionRequest()
@@ -288,7 +288,7 @@ final class KeyboardVoiceHost: ObservableObject {
             if [216, 1110, 301].contains(errorCode) || state.phase == .finishing {
                 deliverFinal(id: id, text: state.partial)
             } else {
-                fail("辨識中斷：\(errorText ?? "錯誤 \(errorCode)")", commandID: id)
+                fail(String(localized: "辨識中斷：\(errorText ?? String(localized: "錯誤 \(errorCode)"))"), commandID: id)
             }
         }
     }
@@ -365,7 +365,7 @@ final class KeyboardVoiceHost: ObservableObject {
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
-            throw NSError(domain: "UTUVOType", code: 1, userInfo: [NSLocalizedDescriptionKey: "找不到麥克風輸入"])
+            throw NSError(domain: "UTUVOType", code: 1, userInfo: [NSLocalizedDescriptionKey: String(localized: "找不到麥克風輸入")])
         }
         Self.installTap(on: input, format: format, box: box)
         engine.prepare()

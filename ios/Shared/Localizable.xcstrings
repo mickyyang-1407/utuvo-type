@@ -1,0 +1,1981 @@
+{
+  "sourceLanguage" : "zh-Hant",
+  "strings" : {
+    "%@ 時" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 小时"
+          }
+        }
+      }
+    },
+    "%lld" : {
+      "shouldTranslate" : false
+    },
+    "%lld 分" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 分钟"
+          }
+        }
+      }
+    },
+    "<1 分" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "<1 分钟"
+          }
+        }
+      }
+    },
+    "Apple Intelligence・裝置端" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence・设备端"
+          }
+        }
+      }
+    },
+    "Apple Speech（裝置端優先）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Speech（设备端优先）"
+          }
+        }
+      }
+    },
+    "DashScope API Key" : {
+      "shouldTranslate" : false
+    },
+    "Keychain 刪除失敗（OSStatus %d）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keychain 删除失败（OSStatus %d）。"
+          }
+        }
+      }
+    },
+    "Keychain 寫入失敗（OSStatus %d）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keychain 写入失败（OSStatus %d）。"
+          }
+        }
+      }
+    },
+    "Keychain 已存一把 key（不顯示內容）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keychain 中已存有一个 key（不显示内容）。"
+          }
+        }
+      }
+    },
+    "Keychain 更新失敗（OSStatus %d）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keychain 更新失败（OSStatus %d）。"
+          }
+        }
+      }
+    },
+    "UTUVO Type" : {
+      "shouldTranslate" : false
+    },
+    "iOS 26 的 Apple Intelligence 會在裝置端改寫與翻譯，文字不離機；沒有的話才用下面你自己的雲端 key。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS 26 的 Apple Intelligence 会在设备端改写与翻译，文字不离开设备；没有的话才用下面你自己的云端 key。"
+          }
+        }
+      }
+    },
+    "key 是空的，沒有寫入。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 是空的，没有写入。"
+          }
+        }
+      }
+    },
+    "key 編碼失敗（需為 UTF-8）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 编码失败（需为 UTF-8）。"
+          }
+        }
+      }
+    },
+    "「繁」鍵盤輸入法" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“繁”键盘输入法"
+          }
+        }
+      }
+    },
+    "下一個" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一项"
+          }
+        }
+      }
+    },
+    "下載" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载"
+          }
+        }
+      }
+    },
+    "不可用" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不可用"
+          }
+        }
+      }
+    },
+    "人名、專有名詞…" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "人名、专有名词…"
+          }
+        }
+      }
+    },
+    "今天" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
+      }
+    },
+    "你只需要說話" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你只需要说话"
+          }
+        }
+      }
+    },
+    "你的指示" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的指示"
+          }
+        }
+      }
+    },
+    "你開了「只用裝置端辨識」，但這個語言在這台裝置沒有裝置端辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你开启了“仅使用设备端识别”，但这台设备不支持该语言的设备端识别"
+          }
+        }
+      }
+    },
+    "你開了「只用裝置端辨識」，但這台裝置在%@沒有裝置端辨識可用。關掉這個開關才會改用雲端辨識（音訊會送到 Apple 伺服器）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你开启了“仅使用设备端识别”，但这台设备不支持%@的设备端识别。关闭此开关后才会改用云端识别（音频会发送到 Apple 服务器）。"
+          }
+        }
+      }
+    },
+    "例：「pik」→「Pik」。聽寫時自動替換；app 與鍵盤共用同一份。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "例：“pik”→“Pik”。听写时自动替换；App 与键盘共用同一份。"
+          }
+        }
+      }
+    },
+    "俄文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "俄语"
+          }
+        }
+      }
+    },
+    "修好後回到鍵盤，再點一次光球。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解决后回到键盘，再点一次光球。"
+          }
+        }
+      }
+    },
+    "個人字典" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "个人词典"
+          }
+        }
+      }
+    },
+    "停止" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止"
+          }
+        }
+      }
+    },
+    "儲存" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保存"
+          }
+        }
+      }
+    },
+    "再點一下完成" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再点一下完成"
+          }
+        }
+      }
+    },
+    "再點一下完成，翻成%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再点一下完成，翻译成%@"
+          }
+        }
+      }
+    },
+    "分隔音節" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分隔音节"
+          }
+        }
+      }
+    },
+    "切換鍵盤版面" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换键盘布局"
+          }
+        }
+      }
+    },
+    "刪除" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除"
+          }
+        }
+      }
+    },
+    "到「聽寫」點光球講一句話，這裡就會出現。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "到“听写”点光球讲一句话，这里就会出现。"
+          }
+        }
+      }
+    },
+    "前往" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前往"
+          }
+        }
+      }
+    },
+    "加入" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入"
+          }
+        }
+      }
+    },
+    "加入常講的人名、術語（例：Atmos、Tonmeister），辨識時會優先聽成這些詞。app 與鍵盤共用同一份。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入常讲的人名、术语（例：Atmos、Tonmeister），识别时会优先听成这些词。App 与键盘共用同一份。"
+          }
+        }
+      }
+    },
+    "加入常講的專有名詞、術語（例：Atmos、Tonmeister），辨識時會優先聽成這些詞。app 與鍵盤共用同一份。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入常讲的专有名词、术语（例：Atmos、Tonmeister），识别时会优先听成这些词。App 与键盘共用同一份。"
+          }
+        }
+      }
+    },
+    "印地文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "印地语"
+          }
+        }
+      }
+    },
+    "印尼文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "印尼语"
+          }
+        }
+      }
+    },
+    "只用裝置端辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "仅使用设备端识别"
+          }
+        }
+      }
+    },
+    "只看星標" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只看星标"
+          }
+        }
+      }
+    },
+    "可下載裝置端翻譯包（沒下載時用 Apple Intelligence）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可下载设备端翻译包（未下载时使用 Apple Intelligence）"
+          }
+        }
+      }
+    },
+    "同一套清理＋字典，寫回歷史" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一套清理＋词典，写回历史"
+          }
+        }
+      }
+    },
+    "回到剛剛的 app" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回到刚刚的 App"
+          }
+        }
+      }
+    },
+    "土耳其文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "土耳其语"
+          }
+        }
+      }
+    },
+    "在任何 app 裡用說的打字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在任何 App 里用语音打字"
+          }
+        }
+      }
+    },
+    "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在任何输入框按 🌐 切到 UTUVO Type，点光球开始说"
+          }
+        }
+      }
+    },
+    "字典用法" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "词典用法"
+          }
+        }
+      }
+    },
+    "完成" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成"
+          }
+        }
+      }
+    },
+    "尚未設定雲端 API key（設定 → 雲端翻譯）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未设置云端 API key（设置 → 云端翻译）"
+          }
+        }
+      }
+    },
+    "尚未設定；留空＝完全本機，不連任何雲端。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未设置；留空＝完全在本机处理，不连接任何云端。"
+          }
+        }
+      }
+    },
+    "已出現過" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已出现过"
+          }
+        }
+      }
+    },
+    "已存進 Keychain。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已存入 Keychain。"
+          }
+        }
+      }
+    },
+    "已從 Keychain 刪除。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已从 Keychain 删除。"
+          }
+        }
+      }
+    },
+    "已複製" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制"
+          }
+        }
+      }
+    },
+    "已設定" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已设置"
+          }
+        }
+      }
+    },
+    "德文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "德语"
+          }
+        }
+      }
+    },
+    "或點左上角「◀︎」回去，在鍵盤上點光球說話" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "或点左上角的“◀︎”返回，在键盘上点光球说话"
+          }
+        }
+      }
+    },
+    "打開設定" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开设置"
+          }
+        }
+      }
+    },
+    "找不到「%@」" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到“%@”"
+          }
+        }
+      }
+    },
+    "找不到可用的麥克風輸入（模擬器通常沒有）。請改用實機，或接上輸入裝置再試。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到可用的麦克风输入（模拟器通常没有）。请改用真机，或连接输入设备后再试。"
+          }
+        }
+      }
+    },
+    "找不到麥克風輸入" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到麦克风输入"
+          }
+        }
+      }
+    },
+    "拼音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拼音"
+          }
+        }
+      }
+    },
+    "拼音鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拼音键盘"
+          }
+        }
+      }
+    },
+    "換個字試試；raw 逐字稿也會被搜到。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换个词试试；原始转录文本也会被搜到。"
+          }
+        }
+      }
+    },
+    "換行" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换行"
+          }
+        }
+      }
+    },
+    "搜尋" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索"
+          }
+        }
+      }
+    },
+    "搜尋歷史" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索历史"
+          }
+        }
+      }
+    },
+    "撥打" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拨打"
+          }
+        }
+      }
+    },
+    "改寫" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改写"
+          }
+        }
+      }
+    },
+    "改寫中…（%@）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改写中…（%@）"
+          }
+        }
+      }
+    },
+    "改寫引擎回了空白，輸出沒有動。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改写引擎返回了空白内容，输出未改动。"
+          }
+        }
+      }
+    },
+    "改寫與翻譯引擎" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改写与翻译引擎"
+          }
+        }
+      }
+    },
+    "改成" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改成"
+          }
+        }
+      }
+    },
+    "改用拼音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改用拼音"
+          }
+        }
+      }
+    },
+    "改用注音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改用注音"
+          }
+        }
+      }
+    },
+    "整理中…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整理中…"
+          }
+        }
+      }
+    },
+    "文字清理" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文本清理"
+          }
+        }
+      }
+    },
+    "新增" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加"
+          }
+        }
+      }
+    },
+    "新增詞彙" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加词汇"
+          }
+        }
+      }
+    },
+    "日文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日语"
+          }
+        }
+      }
+    },
+    "昨天" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昨天"
+          }
+        }
+      }
+    },
+    "替換" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换"
+          }
+        }
+      }
+    },
+    "替換成" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "替换成"
+          }
+        }
+      }
+    },
+    "有選取文字時，鍵盤的光球會變成「說出要怎麼改」（轉成薰衣草色）；長按光球滑到語言、放開就翻譯。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选中文字时，键盘的光球会变成“说出要怎么改”（变为薰衣草色）；长按光球滑到语言、松开就翻译。"
+          }
+        }
+      }
+    },
+    "未設定" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未设置"
+          }
+        }
+      }
+    },
+    "本週字數" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本周字数"
+          }
+        }
+      }
+    },
+    "檢查中…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查中…"
+          }
+        }
+      }
+    },
+    "次聽寫" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次听写"
+          }
+        }
+      }
+    },
+    "正在開啟 UTUVO Type 啟動麥克風…回來就在錄了" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在打开 UTUVO Type 启动麦克风…回来时就已经在录了"
+          }
+        }
+      }
+    },
+    "歷史" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "历史"
+          }
+        }
+      }
+    },
+    "法文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法语"
+          }
+        }
+      }
+    },
+    "波蘭文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "波兰语"
+          }
+        }
+      }
+    },
+    "注音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注音"
+          }
+        }
+      }
+    },
+    "注音鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "注音键盘"
+          }
+        }
+      }
+    },
+    "泰文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "泰语"
+          }
+        }
+      }
+    },
+    "清除" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除"
+          }
+        }
+      }
+    },
+    "滑到語言，放開就翻譯；放開在別處取消" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滑到语言，松开就翻译；在别处松开则取消"
+          }
+        }
+      }
+    },
+    "烏克蘭文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "乌克兰语"
+          }
+        }
+      }
+    },
+    "無法啟動錄音：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法启动录音：%@"
+          }
+        }
+      }
+    },
+    "無法開啟麥克風：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法打开麦克风：%@"
+          }
+        }
+      }
+    },
+    "版本" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "版本"
+          }
+        }
+      }
+    },
+    "略過" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过"
+          }
+        }
+      }
+    },
+    "目前" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前"
+          }
+        }
+      }
+    },
+    "省下打字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "省下打字"
+          }
+        }
+      }
+    },
+    "空格" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空格"
+          }
+        }
+      }
+    },
+    "空白" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空格"
+          }
+        }
+      }
+    },
+    "端點網址錯誤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点地址错误"
+          }
+        }
+      }
+    },
+    "簡體中文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        }
+      }
+    },
+    "結束鍵盤語音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结束键盘语音"
+          }
+        }
+      }
+    },
+    "繁體中文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繁体中文"
+          }
+        }
+      }
+    },
+    "繼續" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续"
+          }
+        }
+      }
+    },
+    "義大利文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "意大利语"
+          }
+        }
+      }
+    },
+    "翻成%@中…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在翻译成%@…"
+          }
+        }
+      }
+    },
+    "翻譯" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译"
+          }
+        }
+      }
+    },
+    "翻譯中…" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译中…"
+          }
+        }
+      }
+    },
+    "翻譯與改寫走 Apple Intelligence，文字不離機" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译与改写使用 Apple Intelligence，文字不离开设备"
+          }
+        }
+      }
+    },
+    "翻譯與改寫走你自己的雲端 key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "翻译与改写使用你自己的云端 key"
+          }
+        }
+      }
+    },
+    "聽到左邊的詞一律改成右邊（例：「pik」→「Pik」）。app 與鍵盤共用同一份。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听到左边的词一律改成右边（例：“pik”→“Pik”）。App 与键盘共用同一份。"
+          }
+        }
+      }
+    },
+    "聽到的詞" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听到的词"
+          }
+        }
+      }
+    },
+    "聽寫" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听写"
+          }
+        }
+      }
+    },
+    "聽寫語言：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "听写语言：%@"
+          }
+        }
+      }
+    },
+    "與辨識語言相同" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "与识别语言相同"
+          }
+        }
+      }
+    },
+    "英文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英语"
+          }
+        }
+      }
+    },
+    "英文鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英文键盘"
+          }
+        }
+      }
+    },
+    "英文（美國）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "英语（美国）"
+          }
+        }
+      }
+    },
+    "荷蘭文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "荷兰语"
+          }
+        }
+      }
+    },
+    "葡萄牙文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "葡萄牙语"
+          }
+        }
+      }
+    },
+    "裝置端優先。不支援時會改用 Apple 伺服器辨識（音訊會離開裝置），聽寫畫面上會標示是哪一種。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备端优先。不支持时会改用 Apple 服务器识别（音频会离开设备），听写界面上会标示是哪一种。"
+          }
+        }
+      }
+    },
+    "裝置端翻譯包已下載" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备端翻译包已下载"
+          }
+        }
+      }
+    },
+    "裝置端辨識・音訊不離機" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设备端识别・音频不离开设备"
+          }
+        }
+      }
+    },
+    "複製" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制"
+          }
+        }
+      }
+    },
+    "西班牙文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西班牙语"
+          }
+        }
+      }
+    },
+    "要加入的詞" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要加入的词"
+          }
+        }
+      }
+    },
+    "要替換的詞" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要替换的词"
+          }
+        }
+      }
+    },
+    "設定" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置"
+          }
+        }
+      }
+    },
+    "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 通用 → 键盘 → 键盘 → 添加新键盘 → UTUVO Type"
+          }
+        }
+      }
+    },
+    "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type，再打開「允許完整存取」。之後在任何輸入框按 🌐 切到 UTUVO Type。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 通用 → 键盘 → 键盘 → 添加新键盘 → UTUVO Type，再打开“允许完全访问”。之后在任何输入框按 🌐 切到 UTUVO Type。"
+          }
+        }
+      }
+    },
+    "詞彙" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "词汇"
+          }
+        }
+      }
+    },
+    "語言" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语言"
+          }
+        }
+      }
+    },
+    "語音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音"
+          }
+        }
+      }
+    },
+    "語音工作階段出錯" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音会话出错"
+          }
+        }
+      }
+    },
+    "說中文，貼上%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说中文，粘贴%@"
+          }
+        }
+      }
+    },
+    "說出要怎麼改" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说出要怎么改"
+          }
+        }
+      }
+    },
+    "說出要怎麼改，說完再點一下" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说出要怎么改，说完再点一下"
+          }
+        }
+      }
+    },
+    "說吧，我在聽" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说吧，我在听"
+          }
+        }
+      }
+    },
+    "說完再點一下，改寫會取代選取" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说完再点一下，改写结果会替换所选内容"
+          }
+        }
+      }
+    },
+    "請先打開 UTUVO Type app 一次，再回來點光球" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请先打开 UTUVO Type App 一次，再回来点光球"
+          }
+        }
+      }
+    },
+    "請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整存取」" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请到 设置 → 通用 → 键盘 → UTUVO Type 打开“允许完全访问”"
+          }
+        }
+      }
+    },
+    "越南文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "越南语"
+          }
+        }
+      }
+    },
+    "路線" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路线"
+          }
+        }
+      }
+    },
+    "輸入新的 key 以取代" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入新的 key 以替换"
+          }
+        }
+      }
+    },
+    "輸出" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输出"
+          }
+        }
+      }
+    },
+    "辨識中斷：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别中断：%@"
+          }
+        }
+      }
+    },
+    "辨識引擎" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别引擎"
+          }
+        }
+      }
+    },
+    "辨識與隱私" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别与隐私"
+          }
+        }
+      }
+    },
+    "送出" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送"
+          }
+        }
+      }
+    },
+    "逐字稿" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转录文本"
+          }
+        }
+      }
+    },
+    "這個方向系統不支援，會用 Apple Intelligence" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "系统不支持这个翻译方向，将使用 Apple Intelligence"
+          }
+        }
+      }
+    },
+    "這個語言的辨識器目前不可用。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个语言的识别器目前不可用。"
+          }
+        }
+      }
+    },
+    "這台裝置沒有 Apple Intelligence（iOS 26），也沒設雲端 key；到主 app 設定 → 雲端翻譯加入 key 即可" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这台设备没有 Apple Intelligence（iOS 26），也没有设置云端 key；在主 App 的“设置 → 云端翻译”中添加 key 即可"
+          }
+        }
+      }
+    },
+    "選取已取消，沒有改動文字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选中已取消，文字未改动"
+          }
+        }
+      }
+    },
+    "還原" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还原"
+          }
+        }
+      }
+    },
+    "還沒啟用" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未启用"
+          }
+        }
+      }
+    },
+    "還沒有星標" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有星标"
+          }
+        }
+      }
+    },
+    "還沒有紀錄" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有记录"
+          }
+        }
+      }
+    },
+    "錯誤 %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "错误 %lld"
+          }
+        }
+      }
+    },
+    "鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘"
+          }
+        }
+      }
+    },
+    "鍵盤上的順序（中間那個是長按時預選的）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘上的顺序（中间那个是长按时预选的）"
+          }
+        }
+      }
+    },
+    "鍵盤正在聽" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘正在听"
+          }
+        }
+      }
+    },
+    "鍵盤狀態" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘状态"
+          }
+        }
+      }
+    },
+    "鍵盤翻譯語言" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘翻译语言"
+          }
+        }
+      }
+    },
+    "鍵盤語音已開啟" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘语音已开启"
+          }
+        }
+      }
+    },
+    "長按鍵盤的光球，這些語言會排在光球上方；滑到語言放開、講中文，就貼上翻譯。最多 %lld 個，至少 1 個。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "长按键盘的光球，这些语言会排在光球上方；滑到语言松开、讲中文，就粘贴翻译。最多 %lld 个，至少 1 个。"
+          }
+        }
+      }
+    },
+    "開始聽寫" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开始听写"
+          }
+        }
+      }
+    },
+    "閒置 %lld 分鐘後自動關麥克風" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "闲置 %lld 分钟后自动关闭麦克风"
+          }
+        }
+      }
+    },
+    "關於" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关于"
+          }
+        }
+      }
+    },
+    "阿拉伯文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阿拉伯语"
+          }
+        }
+      }
+    },
+    "雲端回傳 HTTP %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端返回 HTTP %lld"
+          }
+        }
+      }
+    },
+    "雲端回應格式無法解析" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法解析云端响应格式"
+          }
+        }
+      }
+    },
+    "雲端翻譯（選配）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端翻译（可选）"
+          }
+        }
+      }
+    },
+    "雲端辨識・音訊會送到 Apple 伺服器" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端识别・音频会发送到 Apple 服务器"
+          }
+        }
+      }
+    },
+    "雲端（你的 key）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端（你的 key）"
+          }
+        }
+      }
+    },
+    "需要 iOS 26 的 Apple Intelligence，或在主 app 設定雲端 key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 iOS 26 的 Apple Intelligence，或在主 App 设置云端 key"
+          }
+        }
+      }
+    },
+    "需要語音辨識權限：設定 → UTUVO Type → 語音辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要语音识别权限：设置 → UTUVO Type → 语音识别"
+          }
+        }
+      }
+    },
+    "需要語音辨識權限；請到系統設定開啟。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要语音识别权限；请到系统设置打开。"
+          }
+        }
+      }
+    },
+    "需要麥克風權限才能聽寫；請到系統設定開啟。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要麦克风权限才能听写；请到系统设置打开。"
+          }
+        }
+      }
+    },
+    "需要麥克風權限：設定 → UTUVO Type → 麥克風" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要麦克风权限：设置 → UTUVO Type → 麦克风"
+          }
+        }
+      }
+    },
+    "韓文" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "韩语"
+          }
+        }
+      }
+    },
+    "音訊永遠不離開這台裝置。遇到不支援裝置端辨識的語言或機型時，會直接拒絕錄音並告訴你，不會偷偷改用雲端。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音频永远不离开这台设备。遇到不支持设备端识别的语言或机型时，会直接拒绝录音并告诉你，不会偷偷改用云端。"
+          }
+        }
+      }
+    },
+    "顯示全部" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示全部"
+          }
+        }
+      }
+    },
+    "麥克風由 UTUVO Type 替鍵盤開著，你不用在這裡操作。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦克风由 UTUVO Type 替键盘开着，你不用在这里操作。"
+          }
+        }
+      }
+    },
+    "點一下開始說" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点一下开始说"
+          }
+        }
+      }
+    },
+    "點右上角的星星可以回到全部。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点右上角的星星可以回到全部。"
+          }
+        }
+      }
+    },
+    "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点进 UTUVO Type，打开“允许完全访问”（语音识别需要）"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

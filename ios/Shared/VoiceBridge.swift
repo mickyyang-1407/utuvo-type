@@ -93,7 +93,7 @@ enum VoiceBridge {
         guard let id, state.commandID == id else { return .ignore }
         // 錯誤要「黏著」：主 app 心跳會把 phase 蓋回 ready，但只要這個指令還沒有 final，錯誤就還沒交給鍵盤。
         if state.phase == .failed || (state.error != nil && state.final == nil) {
-            return .failed(state.error ?? "語音工作階段出錯")
+            return .failed(state.error ?? String(localized: "語音工作階段出錯"))
         }
         if let final = state.final { return .final(final, translated: state.translated) }
         switch state.phase {
