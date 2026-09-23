@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>UTUVO Type · Privacy</title>
-<meta name="description" content="How UTUVO Type for iPhone and Mac handles your voice, text and data.">
+<meta name="description" content="How UTUVO Type for iPhone, Android and Mac handles your voice, text and data.">
 <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png"><link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 <style>
   :root{--bg:#FBF7F2;--card:#fff;--ink:#2A1F2E;--ink-2:#6B5E6F;--line:rgba(42,31,46,.10);--orange:#F97316}
@@ -35,7 +35,7 @@
 <p class="meta">Last updated 23 September 2026 · applies to UTUVO Type for iPhone (app and keyboard), Android and Mac.</p>
 
 <div class="card">
-<p><strong>Short version:</strong> UTUVO Type has no accounts, no analytics, no ads, no tracking and no third-party SDKs. We run no servers, so we never receive your voice or your text. Audio or text may go directly to the speech or AI provider you use; the routes and controls are listed below.</p>
+<p><strong>Short version:</strong> UTUVO Type has no accounts, ads or tracking. We do not operate an analytics service or a server that receives your voice or text. On Android, Google's ML Kit sends diagnostics and usage metrics to Google when used. Audio or text may go directly to the speech or AI provider you use; the routes and controls are listed below.</p>
 </div>
 
 <h2>Your voice</h2>
@@ -56,7 +56,8 @@
 <h2>Editing and translating</h2>
 <ul>
 <li>“Say how to change it” and translation use Apple's on-device frameworks (Apple Intelligence, Translation). iOS may download translation language packs from Apple.</li>
-<li>Optional smart cleanup sends the recognized transcript to the provider you configure with your own API key. Field context is off by default; when enabled, a bounded excerpt of text before the cursor is also sent. On iOS the keyboard cannot provide the host app name. The original recording is not forwarded to the cleanup provider. Your key is stored in your iPhone's Keychain.</li>
+<li>Optional smart cleanup sends the recognized transcript and relevant personal-dictionary terms to the provider you configure with your own API key. Field context is off by default; when enabled, a bounded excerpt of text before the cursor is also sent. Android may also send the current app name and your saved tone hint when this option is enabled. On iOS the keyboard cannot provide the host app name. The original recording is not forwarded to the cleanup provider. Your key is stored securely on your device.</li>
+<li>On Android, translation uses Google's ML Kit on the device and may download language models. ML Kit processes the text and translation on the device; it sends Google device and app information, per-installation identifiers, performance and usage metrics, error codes, and the configured source and destination languages for diagnostics and usage analytics. Google says these metrics are encrypted in transit and are not shared onward with third parties. <a href="https://developers.google.com/ml-kit/android-data-disclosure">Google's ML Kit data disclosure</a> explains these categories. If you configure a separate cloud translation provider with your own API key, the text you translate is sent directly to that provider.</li>
 </ul>
 
 <h2>What is stored, and where</h2>
@@ -72,10 +73,10 @@
 </ul>
 
 <h2>Children</h2>
-<p>UTUVO Type does not knowingly collect anything from anyone, including children.</p>
+<p>UTUVO Type is intended for adults aged 18 and over and is not designed for children.</p>
 
 <h2>Contact</h2>
-<p>Questions or concerns: open an issue at <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a>. The source code is public, so every statement on this page can be checked.</p>
+<p>Questions or concerns: email <a href="mailto:support@utuvo.app">support@utuvo.app</a> or open an issue at <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a>. The source code is public, so every statement on this page can be checked.</p>
 
 <hr>
 
@@ -84,7 +85,7 @@
 <p class="meta">最後更新：2026 年 9 月 23 日．適用 UTUVO Type iPhone 版（app 與鍵盤）、Android 版及 Mac 版。</p>
 
 <div class="card">
-<p><strong>簡單說：</strong>UTUVO Type 沒有帳號、沒有分析、沒有廣告、不追蹤，也不含任何第三方 SDK。我們沒有伺服器，所以永遠收不到你的聲音或文字。音訊或文字可能會直接送到你選用的辨識或 AI 服務，路徑與控制方式列在下面。</p>
+<p><strong>簡單說：</strong>UTUVO Type 沒有帳號、廣告或追蹤。我們沒有自行營運分析服務，也沒有接收你聲音或文字的伺服器。Android 使用 Google ML Kit 時，會向 Google 傳送診斷與使用指標。音訊或文字可能直接送到你選用的語音或 AI 服務；路徑與控制方式列在下面。</p>
 </div>
 
 <h2>你的聲音</h2>
@@ -105,7 +106,8 @@
 <h2>改寫與翻譯</h2>
 <ul>
 <li>翻譯可使用 Apple 的裝置端框架（Translation）；iOS 可能會向 Apple 下載翻譯語言包。</li>
-<li>選配智慧整理會把辨識文字送到你設定的自備 API key 服務。欄位脈絡預設關閉；開啟後會附上游標前受限長度的文字。iOS 鍵盤無法提供宿主 App 名稱；原始錄音不會轉送到整理服務。key 存在 iPhone 鑰匙圈。</li>
+<li>選配智慧整理會把辨識文字和相關個人字典詞條送到你設定的自備 API key 服務。欄位脈絡預設關閉；開啟後會附上游標前受限長度的文字；Android 也可能附上目前 App 名稱和你儲存的語氣提示。iOS 鍵盤無法提供宿主 App 名稱；原始錄音不會轉送到整理服務。key 安全儲存在你的裝置上。</li>
+<li>Android 翻譯使用裝置端 Google ML Kit，可能下載語言模型。ML Kit 在裝置端處理原文與譯文；它會向 Google 傳送裝置與 app 資訊、每次安裝的識別碼、效能與使用指標、錯誤碼，以及設定的來源與目標語言，用於診斷和使用分析。Google 表示這些指標傳輸時會加密，且不再分享給第三方；詳見 <a href="https://developers.google.com/ml-kit/android-data-disclosure">ML Kit 資料揭露說明</a>。若你另外設定自備 API key 的雲端翻譯服務，翻譯文字會直接送到該服務。</li>
 </ul>
 
 <h2>存了什麼、存在哪裡</h2>
@@ -121,10 +123,10 @@
 </ul>
 
 <h2>兒童</h2>
-<p>UTUVO Type 不會刻意向任何人（包括兒童）收集任何資料。</p>
+<p>UTUVO Type 以 18 歲以上成人為對象，並非為兒童設計。</p>
 
 <h2>聯絡</h2>
-<p>有疑問請在 <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a> 開 issue。程式碼是公開的，這頁的每一句都可以查證。</p>
+<p>有疑問可寄信至 <a href="mailto:support@utuvo.app">support@utuvo.app</a>，或在 <a href="https://github.com/mickyyang-1407/utuvo-type/issues">github.com/mickyyang-1407/utuvo-type/issues</a> 開 issue。程式碼是公開的，這頁的每一句都可以查證。</p>
 </main>
 </body>
 </html>
