@@ -32,16 +32,17 @@
 
 <p class="lang">English</p>
 <h1>Privacy</h1>
-<p class="meta">Last updated 18 September 2026 · applies to UTUVO Type for iPhone (app and keyboard) and for Mac.</p>
+<p class="meta">Last updated 23 September 2026 · applies to UTUVO Type for iPhone (app and keyboard), Android and Mac.</p>
 
 <div class="card">
-<p><strong>Short version:</strong> UTUVO Type has no accounts, no analytics, no ads, no tracking and no third-party SDKs. We run no servers, so we never receive your voice or your text. What leaves your device is listed below, and each case is something you can turn off.</p>
+<p><strong>Short version:</strong> UTUVO Type has no accounts, no analytics, no ads, no tracking and no third-party SDKs. We run no servers, so we never receive your voice or your text. Audio or text may go directly to the speech or AI provider you use; the routes and controls are listed below.</p>
 </div>
 
 <h2>Your voice</h2>
 <ul>
-<li>On iPhone, speech is transcribed by Apple's Speech framework. When your device supports on-device recognition for the language you chose, audio never leaves the device. Otherwise iOS sends the audio to Apple's servers for recognition, under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>. Turn on <strong>Settings → Only use on-device recognition</strong> and UTUVO Type will refuse to record rather than use Apple's servers. The dictation screen always shows which path was used.</li>
-<li>The microphone is on only while you dictate, or while a keyboard voice session is open. A keyboard voice session closes itself after 3 minutes without use. iOS shows its microphone indicator whenever it is on.</li>
+<li>On iPhone, speech uses Apple's Speech framework. Recognition prefers on-device processing when available. You can allow Apple server recognition in <strong>Settings → Recognition &amp; Privacy</strong>; setting <strong>Only use on-device recognition</strong> prevents network recognition and refuses unsupported languages. Apple controls the actual route when server recognition is allowed, under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>. The dictation screen labels whether the request is on-device-only or allows server recognition.</li>
+<li>On Android, recognition prefers an installed on-device Chinese model. If none is available, it falls back to the standard Android speech recognition service and shows a cloud indicator. You can also prefer that service in Settings. Android documents that it is likely to stream audio to remote servers; the device and speech-service provider control the exact route.</li>
+<li>The microphone is on only while you dictate, or while a keyboard voice session is open. The session normally closes after 3 minutes without keyboard activity or dictation; you can explicitly extend this session to 10 minutes or end it at any time. iOS shows its microphone indicator whenever it is on.</li>
 <li>We do not keep audio recordings.</li>
 </ul>
 
@@ -49,13 +50,13 @@
 <ul>
 <li>iOS does not let keyboards use the microphone, so the keyboard asks the UTUVO Type app to record for it. They talk through a shared folder on your device (App Group). That on-device link, and haptic feedback, are why the keyboard needs Full Access. Nothing is sent over the network by this link.</li>
 <li>The keyboard only inserts your dictation. It does not record or store what you type with other keys or keyboards.</li>
-<li>To take you back to the app you were typing in after the microphone starts, the keyboard reads that app's identifier. It is kept in memory only, never saved and never sent anywhere.</li>
+<li>When the microphone starts, iOS shows a back button in the upper-left corner so you can return to the app you were typing in. The keyboard does not read that app's identifier.</li>
 </ul>
 
 <h2>Editing and translating</h2>
 <ul>
 <li>“Say how to change it” and translation use Apple's on-device frameworks (Apple Intelligence, Translation). iOS may download translation language packs from Apple.</li>
-<li>Optional: if Apple Intelligence is unavailable <em>and</em> you enter your own cloud API key in Settings, the text you ask to edit or translate is sent to that provider (Alibaba Cloud DashScope) with your key. With no key set, nothing is sent. The key is stored in your iPhone's Keychain.</li>
+<li>Optional smart cleanup sends the recognized transcript to the provider you configure with your own API key. Field context is off by default; when enabled, a bounded excerpt of text before the cursor is also sent. On iOS the keyboard cannot provide the host app name. The original recording is not forwarded to the cleanup provider. Your key is stored in your iPhone's Keychain.</li>
 </ul>
 
 <h2>What is stored, and where</h2>
@@ -67,7 +68,7 @@
 <h2>UTUVO Type for Mac</h2>
 <ul>
 <li>By default transcription and clean-up run locally on your Mac. The speech model is downloaded once, only when you click <strong>Install local engine</strong>.</li>
-<li>A cloud formatter is available only if you configure your own key; then the transcript you dictate is sent to that provider.</li>
+<li>If you select Bailian as the speech backend, microphone audio is streamed to the configured Bailian ASR endpoint. A cloud formatter is also available with your own key; it receives the transcript and, only when enabled, bounded app/field context.</li>
 </ul>
 
 <h2>Children</h2>
@@ -80,16 +81,17 @@
 
 <p class="lang">繁體中文</p>
 <h1>隱私權政策</h1>
-<p class="meta">最後更新：2026 年 9 月 18 日．適用 UTUVO Type iPhone 版（app 與鍵盤）及 Mac 版。</p>
+<p class="meta">最後更新：2026 年 9 月 23 日．適用 UTUVO Type iPhone 版（app 與鍵盤）、Android 版及 Mac 版。</p>
 
 <div class="card">
-<p><strong>簡單說：</strong>UTUVO Type 沒有帳號、沒有分析、沒有廣告、不追蹤，也不含任何第三方 SDK。我們沒有伺服器，所以永遠收不到你的聲音或文字。會離開你裝置的情況都列在下面，而且每一項都可以關掉。</p>
+<p><strong>簡單說：</strong>UTUVO Type 沒有帳號、沒有分析、沒有廣告、不追蹤，也不含任何第三方 SDK。我們沒有伺服器，所以永遠收不到你的聲音或文字。音訊或文字可能會直接送到你選用的辨識或 AI 服務，路徑與控制方式列在下面。</p>
 </div>
 
 <h2>你的聲音</h2>
 <ul>
-<li>iPhone 上的語音由 Apple 的 Speech 框架轉成文字。你的裝置支援所選語言的「裝置端辨識」時，音訊完全不離開裝置；不支援時，iOS 會把音訊送到 Apple 伺服器辨識，適用 <a href="https://www.apple.com/tw/legal/privacy/">Apple 的隱私權政策</a>。在 <strong>設定 → 只用裝置端辨識</strong> 打開後，UTUVO Type 寧可拒絕錄音，也不會改用 Apple 伺服器。聽寫畫面會標示這次走的是哪一種。</li>
-<li>只有在你聽寫時、或鍵盤語音工作階段開著時才會開麥克風；鍵盤語音工作階段閒置 3 分鐘會自動關閉。麥克風開著時 iOS 會顯示指示燈。</li>
+<li>iPhone 語音使用 Apple Speech，支援時優先在裝置端辨識。可在 <strong>設定 → 辨識與隱私</strong> 允許 Apple 伺服器辨識；開啟 <strong>只用裝置端辨識</strong> 會阻止網路辨識，語言不支援時直接拒絕錄音。允許伺服器辨識時，實際路徑由 Apple 決定，適用 <a href="https://www.apple.com/tw/legal/privacy/">Apple 的隱私權政策</a>。聽寫畫面會標示本次請求是否允許雲端。</li>
+<li>Android 預設優先用已安裝的裝置端中文模型。若本機模型不可用，會回退到 Android 標準語音服務並顯示雲端提示；也可在設定裡優先使用該服務。Android 文件指出該服務通常會把音訊串流到遠端，實際路徑由裝置與服務商決定。</li>
+<li>只有在你聽寫時、或鍵盤語音工作階段開著時才會開麥克風；沒有鍵盤活動或聽寫時，工作階段通常在 3 分鐘後自動關閉。你可以自行將本次延長到 10 分鐘，或隨時結束。麥克風開著時 iOS 會顯示指示燈。</li>
 <li>我們不保留錄音。</li>
 </ul>
 
@@ -97,13 +99,13 @@
 <ul>
 <li>iOS 不讓鍵盤使用麥克風，所以鍵盤請 UTUVO Type app 代為錄音，兩者透過你裝置上的共用資料夾（App Group）溝通。鍵盤需要「完整存取」就是為了這條裝置內的連線和觸覺回饋；這條連線不經過網路。</li>
 <li>鍵盤只會插入你的聽寫內容，不會記錄或保存你用其他按鍵或鍵盤打的字。</li>
-<li>為了在麥克風開好後把你帶回原本正在打字的 app，鍵盤會讀取那個 app 的識別碼。它只存在記憶體裡，不存檔、不傳送。</li>
+<li>麥克風開好後，iOS 左上角會顯示返回按鈕，讓你回到原本正在打字的 app。鍵盤不會讀取該 app 的識別碼。</li>
 </ul>
 
 <h2>改寫與翻譯</h2>
 <ul>
-<li>「說出要怎麼改」與翻譯使用 Apple 的裝置端框架（Apple Intelligence、Translation）。iOS 可能會向 Apple 下載翻譯語言包。</li>
-<li>選配：只有在 Apple Intelligence 無法使用、<em>而且</em>你在設定裡填了自己的雲端 API key 時，你要改寫或翻譯的文字才會用你的 key 送到該服務（阿里雲 DashScope）。沒填 key 就什麼都不送。key 存在 iPhone 的鑰匙圈。</li>
+<li>翻譯可使用 Apple 的裝置端框架（Translation）；iOS 可能會向 Apple 下載翻譯語言包。</li>
+<li>選配智慧整理會把辨識文字送到你設定的自備 API key 服務。欄位脈絡預設關閉；開啟後會附上游標前受限長度的文字。iOS 鍵盤無法提供宿主 App 名稱；原始錄音不會轉送到整理服務。key 存在 iPhone 鑰匙圈。</li>
 </ul>
 
 <h2>存了什麼、存在哪裡</h2>
@@ -115,7 +117,7 @@
 <h2>Mac 版</h2>
 <ul>
 <li>預設轉錄與整理都在你的 Mac 本機執行。語音模型只在你按下 <strong>安裝本機引擎</strong> 時下載一次。</li>
-<li>雲端整理只有在你設定自己的 key 後才會使用；屆時你口述的逐字稿會送到該服務。</li>
+<li>選取百鍊語音後，麥克風音訊會串流到你設定的百鍊 ASR endpoint。雲端整理使用自備 key，收到逐字稿；只有開啟周邊 context 後才收到受限 App／欄位脈絡。</li>
 </ul>
 
 <h2>兒童</h2>
