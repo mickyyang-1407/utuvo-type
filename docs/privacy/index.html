@@ -32,7 +32,7 @@
 
 <p class="lang">English</p>
 <h1>Privacy</h1>
-<p class="meta">Last updated 23 September 2026 · applies to UTUVO Type for iPhone (app and keyboard), Android and Mac.</p>
+<p class="meta">Last updated 26 September 2026 · applies to UTUVO Type for iPhone (app and keyboard), Android and Mac.</p>
 
 <div class="card">
 <p><strong>Short version:</strong> UTUVO Type has no accounts, ads or tracking. We do not operate an analytics service or a server that receives your voice or text. On Android, Google's ML Kit sends diagnostics and usage metrics to Google when used. Audio or text may go directly to the speech or AI provider you use; the routes and controls are listed below.</p>
@@ -41,6 +41,7 @@
 <h2>Your voice</h2>
 <ul>
 <li>On iPhone, speech uses Apple's Speech framework. Recognition prefers on-device processing when available. You can allow Apple server recognition in <strong>Settings → Recognition &amp; Privacy</strong>; setting <strong>Only use on-device recognition</strong> prevents network recognition and refuses unsupported languages. Apple controls the actual route when server recognition is allowed, under <a href="https://www.apple.com/legal/privacy/">Apple's privacy policy</a>. The dictation screen labels whether the request is on-device-only or allows server recognition.</li>
+<li>Optional cloud recognition on iPhone (off by default): if you turn on <strong>Cloud recognition</strong> in Settings → Smart Cleanup, the recording of each dictation is sent with your own API key to the provider you chose there (Google Gemini, Groq or Alibaba Cloud Bailian), and the text it returns replaces Apple's result. We never receive it. With the switch off or no key set, no audio is sent.</li>
 <li>On Android, recognition prefers an installed on-device Chinese model. If none is available, it falls back to the standard Android speech recognition service and shows a cloud indicator. You can also prefer that service in Settings. Android documents that it is likely to stream audio to remote servers; the device and speech-service provider control the exact route.</li>
 <li>The microphone is on only while you dictate, or while a keyboard voice session is open. The session normally closes after 3 minutes without keyboard activity or dictation; you can explicitly extend this session to 10 minutes or end it at any time. iOS shows its microphone indicator whenever it is on.</li>
 <li>We do not keep audio recordings.</li>
@@ -82,7 +83,7 @@
 
 <p class="lang">繁體中文</p>
 <h1>隱私權政策</h1>
-<p class="meta">最後更新：2026 年 9 月 23 日．適用 UTUVO Type iPhone 版（app 與鍵盤）、Android 版及 Mac 版。</p>
+<p class="meta">最後更新：2026 年 9 月 26 日．適用 UTUVO Type iPhone 版（app 與鍵盤）、Android 版及 Mac 版。</p>
 
 <div class="card">
 <p><strong>簡單說：</strong>UTUVO Type 沒有帳號、廣告或追蹤。我們沒有自行營運分析服務，也沒有接收你聲音或文字的伺服器。Android 使用 Google ML Kit 時，會向 Google 傳送診斷與使用指標。音訊或文字可能直接送到你選用的語音或 AI 服務；路徑與控制方式列在下面。</p>
@@ -91,6 +92,7 @@
 <h2>你的聲音</h2>
 <ul>
 <li>iPhone 語音使用 Apple Speech，支援時優先在裝置端辨識。可在 <strong>設定 → 辨識與隱私</strong> 允許 Apple 伺服器辨識；開啟 <strong>只用裝置端辨識</strong> 會阻止網路辨識，語言不支援時直接拒絕錄音。允許伺服器辨識時，實際路徑由 Apple 決定，適用 <a href="https://www.apple.com/tw/legal/privacy/">Apple 的隱私權政策</a>。聽寫畫面會標示本次請求是否允許雲端。</li>
+<li>iPhone 選配雲端辨識（預設關）：你在「設定 → 智慧整理」打開「雲端辨識」後，每次聽寫的錄音會用你自己的 API key 送到你在那裡選的服務（Google Gemini、Groq 或阿里雲百鍊），回傳的文字取代 Apple 的辨識結果。我們收不到這些錄音。沒打開或沒有 key 時，不會送出任何音訊。</li>
 <li>Android 預設優先用已安裝的裝置端中文模型。若本機模型不可用，會回退到 Android 標準語音服務並顯示雲端提示；也可在設定裡優先使用該服務。Android 文件指出該服務通常會把音訊串流到遠端，實際路徑由裝置與服務商決定。</li>
 <li>只有在你聽寫時、或鍵盤語音工作階段開著時才會開麥克風；沒有鍵盤活動或聽寫時，工作階段通常在 3 分鐘後自動關閉。你可以自行將本次延長到 10 分鐘，或隨時結束。麥克風開著時 iOS 會顯示指示燈。</li>
 <li>我們不保留錄音。</li>
