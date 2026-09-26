@@ -18,6 +18,24 @@ final class RecognitionRouteTests: XCTestCase {
         )
     }
 
+    func testExplicitCloudPreferenceUsesAppleServerWhenAllowed() {
+        XCTAssertEqual(
+            RecognitionRoutePolicy.decide(supportsOnDevice: true, onDeviceOnly: false, preferCloud: true),
+            .allow(.server)
+        )
+    }
+
+    func testOnDeviceOnlyOverridesCloudPreference() {
+        XCTAssertEqual(
+            RecognitionRoutePolicy.decide(supportsOnDevice: true, onDeviceOnly: true, preferCloud: true),
+            .allow(.onDevice)
+        )
+        XCTAssertEqual(
+            RecognitionRoutePolicy.decide(supportsOnDevice: false, onDeviceOnly: true, preferCloud: true),
+            .blockedOnDeviceUnavailable
+        )
+    }
+
     /// 預設行為：不支援就退回雲端——但這個決策必須是 `.server`，UI 據此顯示警示。
     func testFallsBackToServerWhenNotSupported() {
         let decision = RecognitionRoutePolicy.decide(supportsOnDevice: false, onDeviceOnly: false)

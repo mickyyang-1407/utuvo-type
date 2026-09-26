@@ -11,6 +11,7 @@ struct DictateView: View {
     @State private var insights = UsageInsights.compute(records: HistoryStore.shared.load())
     @State private var keyboardSeen = KeyboardPresence.seen
     @AppStorage("utuvo.type.ios.keyboardGuideDismissed") private var keyboardGuideDismissed = false
+    @State private var showingGuide = false
 
     var body: some View {
         NavigationStack {
@@ -136,6 +137,12 @@ struct DictateView: View {
             guideStep(1, String(localized: "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type"))
             guideStep(2, String(localized: "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）"))
             guideStep(3, String(localized: "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說"))
+            Button("第一次會跳到 UTUVO Type 開麥克風？看完整教學") { showingGuide = true }
+                .font(.footnote.weight(.medium))
+                .tint(Aurora.orange)
+                .sheet(isPresented: $showingGuide) {
+                    NavigationStack { UsageGuideScreen() }
+                }
             Button {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
@@ -234,7 +241,7 @@ struct DictateView: View {
         if UserDefaults.standard.bool(forKey: "utuvo.type.ios.orbDemo") { return .listening }
         #endif
         if model.isRecording { return .listening }
-        if model.isRewriting { return .processing }
+        if model.isRewriting || model.isCorrecting { return .processing }
         if model.errorMessage != nil { return .error }
         return .idle
     }
@@ -245,6 +252,7 @@ struct DictateView: View {
         if UserDefaults.standard.bool(forKey: "utuvo.type.ios.orbDemo") { return KeyboardMode.dictate.recordingHint }
         #endif
         if model.isRewriting { return String(localized: "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）") }
+        if model.isCorrecting { return String(localized: "整理中…") }
         switch (model.intent, model.isRecording) {
         case (.edit, true): return String(localized: "說出要怎麼改，說完再點一下")
         case (.edit, false): return KeyboardMode.edit(selection: "").idleHint

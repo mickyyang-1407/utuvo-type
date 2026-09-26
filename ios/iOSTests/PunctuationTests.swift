@@ -5,12 +5,104 @@ import XCTest
 final class PunctuationTests: XCTestCase {
     private func tok(_ t: String, _ s: Double, _ d: Double = 0.2) -> TimedToken { TimedToken(text: t, start: s, duration: d) }
 
-    func testCommaOnShortPausePeriodOnLongPause() {
+    /// 2026-09-24 改：停頓只補逗號，長停頓也不補句號（實測回報「一休息就出現句點」）。
+    func testPausesOnlyEverProduceCommas() {
         let tokens = [tok("明天", 0.0), tok("下午", 0.25), tok("三點", 0.5),      // 連續
                       tok("記得", 1.05),                                        // 停 0.35 → 逗號
                       tok("帶", 1.3), tok("檔案", 1.55),
-                      tok("然後", 2.75)]                                        // 停 1.0 → 句號
-        XCTAssertEqual(PausePunctuator.punctuate(tokens), "明天下午三點，記得帶檔案。然後")
+                      tok("然後", 2.75)]                                        // 停 1.0 → 也只是逗號
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "明天下午三點，記得帶檔案，然後")
+    }
+
+    /// 2026-09-19 實機「我現在在慢慢走過去學校，了」：句尾「了」前面有停頓，不能被切開。
+    func testNoPunctuationBeforeSentenceParticle() {
+        let tokens = [tok("走過去", 0.0), tok("學校", 0.25),
+                      tok("了", 0.85),                                          // 停 0.4 但是語助詞 → 不補
+                      tok("你", 1.9), tok("到", 2.15), tok("了", 2.4), tok("嗎", 3.0)]   // 停 0.85 → 逗號；「嗎」前停 0.4 也不補
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "走過去學校了，你到了嗎？")
+    }
+
+    /// 新引擎實測：短停頓後的問句子句補問號；中文句子裡英文結尾的逗號用全形。
+    func testQuestionAtShortPauseAndFullWidthAfterLatin() {
+        let tokens = [tok("會不會", 0.0), tok("扣分", 0.25),
+                      tok("我們", 0.85), tok("交", 1.1), tok("ADM", 1.35),        // 停 0.4 → 問號
+                      tok("還是", 2.05), tok("WAV", 2.3)]                          // 停 0.5，但「我們交ADM」只有 4 個字＝遲疑
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "會不會扣分？我們交ADM還是WAV")
+        let longer = [tok("我們", 0.0), tok("這次", 0.25), tok("要", 0.5), tok("交", 0.7), tok("ADM", 0.9),
+                      tok("還是", 1.6), tok("WAV", 1.85)]                           // 一小句夠長 → 全形逗號
+        XCTAssertEqual(PausePunctuator.punctuate(longer), "我們這次要交ADM，還是WAV")
+    }
+
+    /// 新引擎實測的兩種誤判：轉述的正反問、「了＋幾次」。
+    func testReportedAndFewTimesAreNotQuestions() {
+        XCTAssertFalse(ClauseRules.isQuestion("另外他們也問到之後有沒有可能做現場的版本"))
+        XCTAssertFalse(ClauseRules.isQuestion("然後翻譯的功能我試了幾次"))
+        XCTAssertTrue(ClauseRules.isQuestion("你試了幾次"), "問對方＝問句")
+        XCTAssertTrue(ClauseRules.isQuestion("他們有沒有回信"), "沒有轉述詞＝問句")
+    }
+
+    /// 2026-09-19 實機「然，後我剛剛，靠卡好像又是只剩 300 多」：新引擎一字一段，停頓落在詞中間、句中遲疑都不能斷。
+    func testNoBreakInsideWordOrOnHesitation() {
+        let chars = ["然", "後", "我", "剛", "剛", "靠", "卡", "好", "像", "又", "是", "只", "剩"]
+        var t = 0.0
+        var tokens: [TimedToken] = []
+        for (i, c) in chars.enumerated() {
+            if i == 1 { t += 0.3 }          // 「然…後」遲疑
+            if i == 5 { t += 0.3 }          // 「剛剛…靠卡」遲疑
+            tokens.append(tok(c, t, 0.15)); t += 0.15
+        }
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "然後我剛剛靠卡好像又是只剩")
+    }
+
+    /// 實機「就除值了今天，又說」：停頓在「了」前面，斷點要挪到「了」後面。
+    func testBreakDeferredPastParticle() {
+        let tokens = [tok("我", 0.0), tok("上次", 0.2), tok("坐車", 0.45), tok("之前", 0.7), tok("就", 0.95), tok("儲值", 1.15),
+                      tok("了", 1.9),                                         // 停 0.55 在「了」前
+                      tok("今天", 2.1), tok("又", 2.35), tok("說", 2.55), tok("沒有", 2.75), tok("錢", 3.0), tok("了", 3.2)]
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "我上次坐車之前就儲值了，今天又說沒有錢了")
+    }
+
+    /// 2026-09-19 實機：「搭到。中正紀念堂」「7:4。12」「原。山站」
+    func testNoBreakAfterDanglingWordInsideNumberOrMidWordEnginePunct() {
+        let t1 = [tok("然後", 0.0), tok("再", 0.25), tok("搭到", 0.5), tok("中正紀念堂", 1.4)]      // 停 0.7 但停在「搭到」
+        XCTAssertEqual(PausePunctuator.punctuate(t1), "然後再搭到中正紀念堂")
+        let t2 = [tok("大概", 0.0), tok("7:4", 0.3), tok("2", 1.1)]                              // 數字中間停 0.6
+        XCTAssertEqual(PausePunctuator.punctuate(t2), "大概7:42")
+        let t3 = [tok("搭到", 0.0), tok("原。", 0.25), tok("山", 0.5), tok("站", 0.7)]              // 引擎插在詞中間的句號
+        XCTAssertEqual(PausePunctuator.punctuate(t3), "搭到原山站")
+    }
+
+    func testParticleEndedShortClauseStillBreaks() {
+        let tokens = [tok("好", 0.0), tok("啊", 0.2), tok("我", 1.2), tok("等", 1.4), tok("你", 1.6)]   // 停 0.8，「好啊」語助詞收尾 → 逗號
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "好啊，我等你")
+    }
+
+    /// 2026-09-24 Mac 真 SpeechTranscriber（美佳合成，句中停 0.9–1.2 s）：舊規則「我覺得這個方案。可能還要再。想一下」。
+    func testThinkingPausesNeverBecomePeriods() {
+        let chars = Array("我覺得這個方案可能還要再想一下因為預算的部分還沒有確定")
+        var t = 0.0
+        var tokens: [TimedToken] = []
+        for (i, c) in chars.enumerated() {
+            if i == 7 || i == 12 || i == 22 { t += 1.1 }    // 方案…可能、還要再…想一下、預算的部分…還沒有
+            tokens.append(tok(String(c), t, 0.15)); t += 0.15
+        }
+        let out = PausePunctuator.punctuate(tokens)
+        XCTAssertFalse(out.contains("。"), out)
+        XCTAssertFalse(out.contains("再，"), "停在「再」＝還在想下一個詞：\(out)")
+        XCTAssertEqual(out, "我覺得這個方案，可能還要再想一下，因為預算的部分，還沒有確定")
+    }
+
+    /// 開頭的「那個…」「然後…」這種短遲疑，停再久都不斷。
+    func testShortLeadInHesitationNeverBreaks() {
+        let tokens = [tok("那個", 0.0), tok("我", 1.6), tok("剛剛", 1.8), tok("有", 2.05), tok("跟他說", 2.25)]
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "那個我剛剛有跟他說")
+    }
+
+    /// 引擎自己在遲疑處插的句號（真 SpeechTranscriber：「你明天。有空嗎」）拿掉；完整句子的句號與句尾句號保留。
+    func testEngineHesitationPeriodDropped() {
+        XCTAssertEqual(PausePunctuator.dropHesitationPeriods("所以下午要再開一次會，你明天。有空嗎？"), "所以下午要再開一次會，你明天有空嗎？")
+        XCTAssertEqual(PausePunctuator.dropHesitationPeriods("就是檔案要先傳給我。我再幫他看一下。"), "就是檔案要先傳給我。我再幫他看一下。")
+        XCTAssertEqual(PausePunctuator.dropHesitationPeriods("好了。走吧。"), "好了。走吧。", "語助詞收尾的短句是完整的")
     }
 
     func testNoDoublePunctuationWhenRecognizerAlreadyAddedOne() {
@@ -25,7 +117,7 @@ final class PunctuationTests: XCTestCase {
 
     func testLatinSpacingAndPunctuation() {
         let tokens = [tok("send", 0), tok("the", 0.25), tok("stems", 0.5), tok("by", 1.1), tok("Friday", 1.35), tok("thanks", 2.6)]
-        XCTAssertEqual(PausePunctuator.punctuate(tokens), "send the stems, by Friday. thanks")
+        XCTAssertEqual(PausePunctuator.punctuate(tokens), "send the stems by Friday, thanks", "短子句的停頓＝遲疑；英文長停頓也不補句號")
     }
 
     func testMixedCJKLatinHasNoSpaceInserted() {

@@ -39,4 +39,12 @@ final class OutputShapeTests: XCTestCase {
     func testEmptyStringSurvives() {
         XCTAssertEqual(OutputShape.stripLoneBullet(""), "")
     }
+
+    func testSingleLineJoinsParagraphs() {
+        XCTAssertEqual(OutputShape.singleLine("第一段。\n\n另外第二段。"), "第一段。另外第二段。")
+        XCTAssertEqual(OutputShape.singleLine("今天有三件事\n第一買牛奶\n第二回email。"), "今天有三件事第一買牛奶第二回email。")
+        XCTAssertEqual(OutputShape.singleLine("Done.\n\nNext we ship."), "Done. Next we ship.")
+        XCTAssertEqual(OutputShape.singleLine("Hi,\n\n謝謝"), "Hi,謝謝")
+        XCTAssertEqual(OutputShape.singleLine("沒有換行"), "沒有換行")
+    }
 }

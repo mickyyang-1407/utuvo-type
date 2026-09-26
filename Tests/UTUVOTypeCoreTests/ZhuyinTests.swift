@@ -177,6 +177,15 @@ final class ZhuyinTests: XCTestCase {
         XCTAssertTrue(c.contains(ZhuyinCandidate(text: "台", readingCount: 1)))
     }
 
+    func testCandidatesCanUseASmallerDisplayLimit() throws {
+        let e = try makeEngine()
+        typeAll(e, "ㄕˋ")
+        XCTAssertEqual(e.candidates(limit: 0), [])
+        let limited = e.candidates(limit: 3)
+        XCTAssertLessThanOrEqual(limited.count, 3)
+        XCTAssertEqual(limited.first?.text, e.candidates.first?.text)
+    }
+
     func testSelectRemovesReadingsAndReturnsText() throws {
         let e = try makeEngine()
         typeAll(e, "ㄊㄞˊㄅㄟˇㄕˋ")

@@ -21,4 +21,29 @@ public enum OutputShape: Sendable {
         }
         return text
     }
+
+    /// 單行輸入框（Return＝送出／搜尋、或沒標成多行）：把分段／條列的換行接回一行（2026-09-19）。
+    /// 換行在單行框裡可能直接觸發送出；前面是英文字元（含 . , !）、後面是英數字時補一個空白，其餘（中文、標點）直接接上。
+    public static func singleLine(_ text: String) -> String {
+        guard text.contains("\n") else { return text }
+        let chars = Array(text)
+        var out = ""
+        var i = 0
+        while i < chars.count {
+            if chars[i] == "\n" {
+                var j = i
+                while j < chars.count, chars[j] == "\n" { j += 1 }
+                let before = out.last
+                let after = j < chars.count ? chars[j] : nil
+                if let b = before, let a = after, b.isASCII, !b.isWhitespace, a.isASCII, a.isLetter || a.isNumber {
+                    out.append(" ")
+                }
+                i = j
+                continue
+            }
+            out.append(chars[i])
+            i += 1
+        }
+        return out
+    }
 }

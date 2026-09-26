@@ -61,6 +61,7 @@ struct SettingsView: View {
     @State private var isCapturingShortcut = false
     @State private var dictionaryWord = ""
     @State private var dictionaryOutput = ""
+    @State private var dictionaryIOMessage: String?
     @State private var isCapturingPostProcessingShortcut = false
     @State private var presetBundleIdentifier = ""
     @State private var presetDisplayName = ""
@@ -80,6 +81,17 @@ struct SettingsView: View {
     @State private var cloudProbeResult: String?
     @State private var cloudProbeIsError = false
     @State private var isProbingCloud = false
+    // 智慧整理（SmartCleanup）key 與測試結果（2026-09-22）：獨立於 ASR backend。
+    @State private var cleanupKeyDraft: [SmartCleanupProvider: String] = [:]
+    @State private var cleanupKeyMessage: String?
+    @State private var cleanupKeyMessageIsError = false
+    @State private var cleanupKeyStateToken = UUID()
+    @State private var vocabularyMetadata: [VocabularyCatalog.Pack] = []
+    @State private var cleanupProbeResult: String?
+    @State private var cleanupProbeIsError = false
+    @State private var isProbingCleanup = false
+    @State private var customCleanupEndpointDraft: String = ""
+    @State private var customCleanupModelDraft: String = ""
 
     init(model: AppModel, initialSection: SettingsSection = .general) {
         self.model = model
@@ -89,7 +101,7 @@ struct SettingsView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            sidebar
+            sidebar.disabled(preferences.isolation != nil)
             VStack(spacing: 0) {
                 header
                 Divider()
@@ -242,14 +254,19 @@ struct SettingsView: View {
 
     /// 開源防呆：本機引擎（venv＋ASR 模型）缺件時的安裝卡；跑 scripts/bootstrap-runtime.sh 並串流進度。
     /// 不會在使用者不知情時下載任何東西——下載只發生在按下按鈕之後。
-    private func engineInstallCard(root: String) -> some View {
+    private func engineInstallCard(root: String, upgrade: Bool = false) -> some View {
         settingsCard(
-            title: preferences.tr("本機引擎尚未安裝", "Local engine not installed yet"),
-            subtitle: preferences.tr(
-                "安裝 Python venv 並下載 Qwen3-ASR 模型（約 1.2 GB，一次性，需要網路）；安裝前仍可用雲端模式。",
-                "Installs a Python venv and downloads the Qwen3-ASR model (~1.2 GB, one time, network required); cloud mode still works before install."
-            ),
-            icon: "arrow.down.circle"
+            title: upgrade
+                ? preferences.tr("升級語音辨識模型（更準確）", "Upgrade the speech model (more accurate)")
+                : preferences.tr("本機引擎尚未安裝", "Local engine not installed yet"),
+            subtitle: upgrade
+                ? preferences.tr("這台 Mac 記憶體足夠使用 Qwen3-ASR 1.7B：專有名詞與整體錯字明顯減少（實測字錯率約少三成）。下載約 2.5 GB，一次性；升級前照常使用目前的模型。",
+                                 "This Mac has enough memory for Qwen3-ASR 1.7B: fewer misheard terms and errors (about 30% fewer in testing). One-time ~2.5 GB download; the current model keeps working meanwhile.")
+                : preferences.tr(
+                    "安裝 Python 並下載 Qwen3-ASR 模型（一次性，需要網路；16 GB 以上的 Mac 用更準的 1.7B）；安裝前仍可用雲端模式。",
+                    "Installs Python and downloads the Qwen3-ASR model (one time, network required; Macs with 16 GB or more get the more accurate 1.7B); cloud mode still works before install."
+                ),
+            icon: upgrade ? "sparkles" : "arrow.down.circle"
         ) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
@@ -259,6 +276,7 @@ struct SettingsView: View {
                         Label(
                             installer.isInstalling
                                 ? preferences.tr("安裝中…", "Installing…")
+                                : upgrade ? preferences.tr("下載並升級", "Download and upgrade")
                                 : preferences.tr("安裝本機引擎", "Install Local Engine"),
                             systemImage: installer.isInstalling ? "gearshape.2" : "arrow.down.circle.fill"
                         )
@@ -378,10 +396,14 @@ struct SettingsView: View {
                 // 開源防呆：偵測到本機引擎缺件才顯示安裝卡（docs/OPEN-SOURCE-READINESS.md §二）。
                 if let engineRoot = engineRepoRoot, !installer.installed {
                     engineInstallCard(root: engineRoot)
+                } else if let engineRoot = engineRepoRoot,
+                          installer.isInstalling || RuntimeBootstrap.recommendedModelMissing(root: engineRoot) {
+                    // 2026-09-24：0.1.5 裝了 0.6B 的 16 GB 以上 Mac 不會自動換模型（不在使用者不知情時下載）；按這裡才下載 1.7B。
+                    engineInstallCard(root: engineRoot, upgrade: true)
                 }
 
                 settingsCard(
-                    title: preferences.tr("Qwen3-ASR 0.6B 設定", "Qwen3-ASR 0.6B Settings"),
+                    title: preferences.tr("Qwen3-ASR 設定", "Qwen3-ASR Settings"),
                     subtitle: preferences.tr(
                         "預設使用繁體中文，也保留中英夾雜的即時辨識路徑。",
                         "Defaults to Traditional Chinese, with a mixed Chinese-English realtime path."
@@ -762,7 +784,7 @@ struct SettingsView: View {
                     icon: "cpu"
                 ) {
                     modelStatusRow(
-                        name: "Qwen3-ASR 0.6B",
+                        name: RuntimeBootstrap.activeASRModelLabel(),
                         detail: preferences.localASRCommand.isEmpty
                             ? preferences.tr(
                                 "macOS 裝置端語音 fallback（尚未設定獨立 executable）",
@@ -805,7 +827,7 @@ struct SettingsView: View {
                         status: "PRIMARY",
                         color: .orange
                     )
-                    Text(SecretStore.bailianAPIKey() == nil
+                    Text((preferences.isolation == nil ? SecretStore.bailianAPIKey() : nil) == nil
                          ? preferences.tr(
                             "未偵測到 Keychain／環境變數 API key；本機模式仍可使用。",
                             "No Keychain or environment API key detected; local mode still works."
@@ -967,11 +989,15 @@ struct SettingsView: View {
                     ),
                     icon: "waveform"
                 ) {
-                    settingsRow(preferences.tr("語音活動偵測（VAD）", "Voice Activity Detection")) {
+                    settingsRow(preferences.tr("安靜 3 秒自動結束聆聽", "Stop listening after 3 s of silence")) {
                         Toggle("", isOn: $preferences.voiceActivityDetection)
                             .labelsHidden()
                             .toggleStyle(.switch)
                     }
+                    Text(preferences.tr("關閉（預設）＝停下來想多久都不會中斷，再按一次快捷鍵才結束。",
+                                        "Off (default): pauses never end dictation; press the shortcut again to finish."))
+                        .font(AppBrand.ui(10))
+                        .foregroundStyle(AppBrand.retroMuted)
                     settingsRow(preferences.tr("附帶有限的周邊 context", "Include limited surrounding context")) {
                         Toggle("", isOn: $preferences.includeSurroundingContext)
                             .labelsHidden()
@@ -1295,12 +1321,12 @@ struct SettingsView: View {
                             .foregroundStyle(preferences.backend == .local ? Color.green : Color.orange)
                         Text(preferences.backend == .local
                              ? preferences.tr(
-                                "目前為本機快速路徑：Qwen3-ASR 0.6B → deterministic normalizer。",
-                                "Currently on the local fast path: Qwen3-ASR 0.6B → deterministic normalizer."
+                                "目前為本機快速路徑：\(RuntimeBootstrap.activeASRModelLabel()) → deterministic normalizer。",
+                                "Currently on the local fast path: \(RuntimeBootstrap.activeASRModelLabel()) → deterministic normalizer."
                              )
                              : preferences.tr(
-                                "百鍊是選配後端；若雲端失敗，仍會保留 transcript 並回退本機整理。",
-                                "Bailian is an optional backend; if the cloud fails, the transcript is kept and formatting falls back to local."
+                                "選取百鍊後，麥克風音訊會即時串流到你設定的百鍊 ASR endpoint；若雲端整理失敗，仍保留 transcript 並回退本機整理。",
+                                "Selecting Bailian streams microphone audio to your configured Bailian ASR endpoint; if cloud formatting fails, the transcript is kept and formatting falls back to local."
                              ))
                             .font(.callout)
                             .foregroundStyle(.secondary)
@@ -1343,8 +1369,8 @@ struct SettingsView: View {
                 settingsCard(
                     title: preferences.tr("本機語音辨識", "Local Speech Recognition"),
                     subtitle: preferences.tr(
-                        "使用獨立 Qwen3-ASR 0.6B runtime；留空才會嘗試 macOS speech fallback。",
-                        "Uses a standalone Qwen3-ASR 0.6B runtime; the macOS speech fallback is tried only when left empty."
+                        "使用獨立 Qwen3-ASR runtime（16 GB 以上用 1.7B）；留空才會嘗試 macOS speech fallback。",
+                        "Uses a standalone Qwen3-ASR runtime (1.7B on 16 GB+ Macs); the macOS speech fallback is tried only when left empty."
                     ),
                     icon: "waveform"
                 ) {
@@ -1401,6 +1427,8 @@ struct SettingsView: View {
     private var dictionaryTab: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                vocabularyPacksCard
+
                 settingsCard(
                     title: preferences.tr("個人字典", "Personal Dictionary"),
                     subtitle: preferences.tr(
@@ -1450,9 +1478,25 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Button(preferences.tr("清空全部", "Clear All")) { preferences.resetDictionaryToEmpty() }
+                        Button(preferences.tr("清空全部", "Clear All")) { preferences.resetDictionaryToEmpty() }.disabled(preferences.isolation != nil)
                             .buttonStyle(.borderless)
                     }
+
+                    // 跟 iPhone（iCloud 自動）、Android（匯出／匯入字典檔）互通；兩邊都改過的詞留最後改的那個。
+                    HStack {
+                        Button(preferences.tr("匯出字典檔…", "Export Dictionary…")) { exportDictionary() }.disabled(preferences.isolation != nil)
+                        Button(preferences.tr("匯入字典檔…", "Import Dictionary…")) { importDictionary() }.disabled(preferences.isolation != nil)
+                        Spacer()
+                    }
+                    if let dictionaryIOMessage {
+                        Text(dictionaryIOMessage).font(.caption).foregroundStyle(.secondary)
+                    }
+                    Text(preferences.tr(
+                        "登入同一個 iCloud 的 iPhone 會自動同步；Android 用匯出／匯入字典檔。兩邊都改過的詞留最後改的那個。",
+                        "iPhones signed in to the same iCloud sync automatically; use export/import for Android. When both sides changed a term, the latest edit wins."
+                    ))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 settingsCard(
@@ -1573,13 +1617,13 @@ struct SettingsView: View {
         settingsCard(
             title: preferences.tr("百鍊 API key", "Bailian API key"),
             subtitle: preferences.tr(
-                "存進本機 Keychain（service com.utuvo.type.bailian）。留空＝完全不連雲端。",
-                "Stored in the local Keychain (service com.utuvo.type.bailian). Leave empty for fully local use."
+                "存進本機 Keychain（service com.utuvo.type.bailian）。未設定時不使用百鍊。",
+                "Stored in the local Keychain (service com.utuvo.type.bailian). Without a key, Bailian is not used."
             ),
             icon: "key.fill"
         ) {
-            let fromEnvironment = SecretStore.keyComesFromEnvironment()
-            let hasKeychainKey = { _ = apiKeyStateToken; return SecretStore.hasKeychainKey() }()
+            let fromEnvironment = (preferences.isolation == nil && SecretStore.keyComesFromEnvironment())
+            let hasKeychainKey = { _ = apiKeyStateToken; return preferences.isolation == nil && SecretStore.hasKeychainKey() }()
 
             HStack(spacing: 8) {
                 SecureField(
@@ -1590,6 +1634,7 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity)
 
                 Button(preferences.tr("儲存", "Save")) {
+                    guard preferences.isolation == nil else { return }
                     let error = SecretStore.saveBailianAPIKey(apiKeyDraft)
                     apiKeyMessageIsError = error != nil
                     apiKeyMessage = error ?? preferences.tr("已寫入 Keychain。", "Saved to the Keychain.")
@@ -1599,6 +1644,7 @@ struct SettingsView: View {
                 .disabled(apiKeyDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
                 Button(preferences.tr("清除", "Remove")) {
+                    guard preferences.isolation == nil else { return }
                     let error = SecretStore.deleteBailianAPIKey()
                     apiKeyMessageIsError = error != nil
                     apiKeyMessage = error ?? preferences.tr("已從 Keychain 刪除。", "Removed from the Keychain.")
@@ -1642,7 +1688,7 @@ struct SettingsView: View {
                 Button(preferences.tr("測試雲端連線", "Test cloud connection")) {
                     probeCloud()
                 }
-                .disabled(isProbingCloud)
+                .disabled(preferences.isolation != nil || isProbingCloud)
                 if isProbingCloud {
                     ProgressView().controlSize(.small)
                 }
@@ -1665,16 +1711,206 @@ struct SettingsView: View {
         }
     }
 
+    /// 智慧整理卡（2026-09-22）：獨立於 ASR backend 的清理服務選擇。
+    /// 預設關閉；使用者必須明確開啟才會在背景 try。
+    private var smartCleanupCard: some View {
+        settingsCard(
+            title: preferences.tr("智慧整理（背景，選配）", "Smart cleanup (background, optional)"),
+            subtitle: preferences.tr(
+                "支援的欄位先貼出本機結果，再嘗試修正改口、錯字與贅詞。目的地不支援或已變更時，保留可複製的結果。",
+                "Supported fields receive local text first, then optional fixes for slips, typos and fillers. Unsupported or changed destinations leave a copyable result."
+            ),
+            icon: "wand.and.stars"
+        ) {
+            VStack(alignment: .leading, spacing: 12) {
+                Toggle(isOn: $preferences.cleanupEnabled) {
+                    Text(preferences.tr("啟用背景智慧整理（Smart、中／英、未翻譯、自動送出關閉）", "Enable background cleanup (Smart, Chinese/English, no translation, auto-submit off)"))
+                }
+                .toggleStyle(.switch)
+
+                Picker(preferences.tr("服務", "Provider"), selection: $preferences.cleanupProvider) {
+                    ForEach(SmartCleanupProvider.allCases) { provider in
+                        Text(provider.displayName).tag(provider)
+                    }
+                }
+                .pickerStyle(.menu)
+                .disabled(!preferences.cleanupEnabled)
+
+                switch preferences.cleanupProvider {
+                case .gemini, .groq:
+                    cleanupKeyCard(for: preferences.cleanupProvider).disabled(preferences.isolation != nil)
+                    if let url = preferences.cleanupProvider.signupURL {
+                        Link(destination: url) {
+                            Text(preferences.tr("取得 key", "Get a key"))
+                        }
+                        .font(.caption)
+                    }
+                case .dashscope:
+                    HStack(spacing: 6) {
+                        Image(systemName: (preferences.isolation == nil ? SecretStore.bailianAPIKey() : nil) == nil ? "circle.dashed" : "checkmark.seal.fill")
+                            .foregroundStyle((preferences.isolation == nil ? SecretStore.bailianAPIKey() : nil) == nil ? Color.secondary : AppBrand.retroGreen)
+                        Text((preferences.isolation == nil ? SecretStore.bailianAPIKey() : nil) == nil
+                             ? preferences.tr("沿用上方百鍊 key（沒設就跳過 cleanup）", "Reuses the Bailian key above (skipped if not set)")
+                             : preferences.tr("Keychain 已有一把 key（不顯示內容）", "Keychain holds a key (never displayed)"))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                case .custom:
+                    customCleanupFields
+                    cleanupKeyCard(for: .custom).disabled(preferences.isolation != nil)
+                }
+
+                HStack {
+                    Button(preferences.tr("測試 cleanup 連線", "Test cleanup connection")) {
+                        probeCleanup()
+                    }
+                    .disabled(preferences.isolation != nil || !preferences.cleanupEnabled || isProbingCleanup)
+                    if isProbingCleanup {
+                        ProgressView().controlSize(.small)
+                    }
+                }
+                Text(preferences.tr(
+                    "用目前的設定與 key 送一句清理請求；測試成功也不會改動任何文件。",
+                    "Sends one cleanup request with the current settings and key; success does not modify any document."
+                ))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+                if let result = cleanupProbeResult {
+                    Text(result)
+                        .font(.caption)
+                        .foregroundStyle(cleanupProbeIsError ? Color.red : AppBrand.retroGreen)
+                        .textSelection(.enabled)
+                }
+
+                Divider().padding(.vertical, 2)
+
+                Text(preferences.tr(
+                    "辨識語言須明確選中文或英文；自動偵測及其他語言沿用原本的一次整理流程。已貼出的結果只在游標與內容未變更時修正；繼續打字、服務失敗或逾時都保留原文。",
+                    "Select Chinese or English explicitly. Auto detect and other languages keep the existing one-shot formatting flow. Inserted text is corrected only while the caret and content stay unchanged; typing, service failure or timeout preserves it."
+                ))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// 給單一 provider 的 key 輸入卡（Keychain only；永不回顯已存的值）。
+    private func cleanupKeyCard(for provider: SmartCleanupProvider) -> some View {
+        _ = cleanupKeyStateToken
+        let mapped = SmartCleanup.Provider(rawValue: provider.rawValue) ?? .gemini
+        let hasKey = preferences.isolation == nil && !SmartCleanup.key(for: mapped).isEmpty
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 8) {
+                SecureField(
+                    preferences.tr("貼上新的 API key", "Paste a new API key"),
+                    text: Binding(
+                        get: { cleanupKeyDraft[provider] ?? "" },
+                        set: { cleanupKeyDraft[provider] = $0 }
+                    )
+                )
+                .textFieldStyle(.roundedBorder)
+                .frame(maxWidth: .infinity)
+
+                Button(preferences.tr("儲存", "Save")) {
+                    guard preferences.isolation == nil else { return }
+                    let raw = cleanupKeyDraft[provider] ?? ""
+                    if SmartCleanup.saveKey(raw, for: mapped) {
+                        cleanupKeyMessageIsError = false
+                        cleanupKeyMessage = preferences.tr("已寫入 Keychain。", "Saved to the Keychain.")
+                        cleanupKeyDraft[provider] = ""
+                    } else {
+                        cleanupKeyMessageIsError = true
+                        cleanupKeyMessage = preferences.tr("key 是空的，沒有寫入。", "Key is empty; nothing was written.")
+                    }
+                    cleanupKeyStateToken = UUID()
+                }
+                .disabled((cleanupKeyDraft[provider] ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+
+                Button(preferences.tr("清除", "Remove")) {
+                    guard preferences.isolation == nil else { return }
+                    SmartCleanup.deleteKey(for: mapped)
+                    cleanupKeyMessageIsError = false
+                    cleanupKeyMessage = preferences.tr("已從 Keychain 刪除。", "Removed from the Keychain.")
+                    cleanupKeyDraft[provider] = ""
+                    cleanupKeyStateToken = UUID()
+                }
+                .disabled(!hasKey)
+            }
+            HStack(spacing: 6) {
+                Image(systemName: hasKey ? "checkmark.seal.fill" : "circle.dashed")
+                    .foregroundStyle(hasKey ? AppBrand.retroGreen : Color.secondary)
+                Text(hasKey
+                     ? preferences.tr("Keychain 已有一把 key（不顯示內容）", "Keychain holds a key (never displayed)")
+                     : preferences.tr("Keychain 目前沒有 key", "No key in the Keychain"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            if let message = cleanupKeyMessage {
+                Text(message)
+                    .font(.caption)
+                    .foregroundStyle(cleanupKeyMessageIsError ? Color.red : .secondary)
+            }
+        }
+    }
+
+    private var customCleanupFields: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            labeledField(
+                preferences.tr("Custom 端點（https；loopback 可用 http）", "Custom endpoint (https; loopback may use http)"),
+                text: Binding(
+                    get: { preferences.customCleanupEndpoint },
+                    set: { preferences.customCleanupEndpoint = $0 }
+                )
+            )
+            labeledField(
+                preferences.tr("Custom 模型名稱", "Custom model name"),
+                text: Binding(
+                    get: { preferences.customCleanupModel },
+                    set: { preferences.customCleanupModel = $0 }
+                )
+            )
+            Text(preferences.tr(
+                "Custom URL 不可帶 credentials；不能用 IP 之外的 http；非 loopback 必須 https。",
+                "Custom URLs must not include credentials; only loopback may use http; everything else must be https."
+            ))
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    /// 智慧整理連線測試——只送一句清理請求，不改任何設定。
+    private func probeCleanup() {
+        guard preferences.isolation == nil else {
+            cleanupProbeResult = "隔離預覽：不連線、不讀取金鑰。"; return
+        }
+        isProbingCleanup = true
+        let config = CleanupConfig(enabled: true, provider: preferences.cleanupProvider,
+            customEndpoint: preferences.customCleanupEndpoint, customModel: preferences.customCleanupModel,
+            language: "zh-TW", personal: [:], enabledPacks: preferences.enabledVocabularyPackIDs,
+            bailianEndpoint: preferences.bailianFormatterEndpoint)
+        Task { @MainActor in
+            defer { isProbingCleanup = false }
+            let start = Date()
+            let cleaned = await SmartCleanup.clean("我今天約禮拜三不是禮拜五去開會", config: config)
+            cleanupProbeIsError = cleaned == nil
+            cleanupProbeResult = cleaned.map { "連線完成（\(Int(Date().timeIntervalSince(start) * 1000)) ms）\n\($0)" }
+                ?? "未取得可用結果；請檢查金鑰、端點或網路。"
+        }
+    }
+
     /// 照 `BailianModel.standardFallbackChain` 逐個試，回報第一個成功的模型與耗時。
     /// 失敗訊息只帶 HTTP 狀態，不帶 response body（body 可能含請求 metadata）。
     private func probeCloud() {
+        guard preferences.isolation == nil else { return }
         isProbingCloud = true
         cloudProbeResult = nil
         let endpoint = preferences.bailianFormatterEndpoint
         let zh = preferences.isChineseUI
         Task { @MainActor in
             defer { isProbingCloud = false }
-            guard SecretStore.bailianAPIKey() != nil else {
+            guard (preferences.isolation == nil ? SecretStore.bailianAPIKey() : nil) != nil else {
                 cloudProbeIsError = true
                 cloudProbeResult = zh
                     ? "找不到 key：Keychain 與環境變數都沒有。"
@@ -1720,8 +1956,8 @@ struct SettingsView: View {
                 settingsCard(
                     title: preferences.tr("百鍊 adapter（選配）", "Bailian adapter (optional)"),
                     subtitle: preferences.tr(
-                        "目前不需要登入或 API key 也能使用本機 Fast；雲端只在你手動切換後端時使用。",
-                        "No login or API key is needed for local Fast; the cloud is used only when you switch backends manually."
+                        "目前不需要登入或 API key 也能使用本機 Fast；雲端辨識與背景智慧整理各自選配，只有手動開啟才使用。",
+                        "No login or API key is needed for local Fast; cloud recognition and background cleanup are separate opt-in settings."
                     ),
                     icon: "cloud"
                 ) {
@@ -1754,7 +1990,9 @@ struct SettingsView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                apiKeyCard
+                apiKeyCard.disabled(preferences.isolation != nil)
+
+                smartCleanupCard
 
                 settingsCard(
                     title: preferences.tr("安全與 fallback", "Security & fallback"),
@@ -1819,6 +2057,97 @@ struct SettingsView: View {
             .sorted { $0.source.localizedCaseInsensitiveCompare($1.source) == .orderedAscending }
     }
 
+    /// 詞庫包卡：六包（資訊／醫療／財經／法律／工程／音樂音訊），預設全關，
+    /// 開啟後 term 在背景 cleanup／個人字典補字中擴充（cleanup 提示詞上限 200）。
+    private var vocabularyPacksCard: some View {
+        let zh = preferences.isChineseUI
+        return settingsCard(
+            title: preferences.tr("專業詞庫（選配）", "Professional vocabularies (optional)"),
+            subtitle: preferences.tr(
+                "六個獨立詞庫（國家教育研究院 樂詞網資料），預設全關；開啟後可與個人字典一起幫忙辨識／修正。",
+                "Six optional catalogs (NAER academic terms); off by default. Once enabled they join the personal dictionary in recognition and cleanup."
+            ),
+            icon: "books.vertical"
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                let packs = vocabularyMetadata
+                if packs.isEmpty {
+                    Text(preferences.tr("詞庫目錄尚未載入。", "Vocabulary catalog not loaded yet."))
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(packs) { pack in
+                        vocabularyPackRow(pack: pack, zh: zh)
+                    }
+                }
+                Text(preferences.tr(
+                    "開啟詞庫不會寫入個人字典；cleanup 提示詞最多 200 個詞。",
+                    "Enabling a pack does not write to your personal dictionary; cleanup hints cap at 200 terms."
+                ))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+        .task {
+            vocabularyMetadata = await Task.detached(priority: .utility) { VocabularyPacks.loadCatalog().packs }.value
+        }
+    }
+
+    private func vocabularyPackRow(pack: VocabularyCatalog.Pack, zh: Bool) -> some View {
+        let binding = vocabularyBinding(for: pack.id)
+        let detail = preferences.tr("\(pack.termCount) 詞", "\(pack.termCount) terms")
+        return VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                Toggle(isOn: binding) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(packName(for: pack)).font(.body.weight(.medium))
+                        Text(detail).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.switch)
+            }
+            VocabularyPackPreview(pack: pack, chinese: zh)
+            // 來源授權（保留原文——CONTRACT-V2 §source attribution original）
+            VStack(alignment: .leading, spacing: 2) {
+                Text("\(pack.sourceName) · \(pack.licenseName)")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                if !pack.attribution.isEmpty {
+                    Text(pack.attribution)
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func packName(for pack: VocabularyCatalog.Pack) -> String {
+        // 與 iOS 對齊：在地化 displayName；未知 id 退回 JSON 原文。
+        switch pack.id {
+        case "computing": return preferences.tr("資訊與電腦", "Computing")
+        case "medicine": return preferences.tr("醫學", "Medicine")
+        case "finance": return preferences.tr("財經", "Finance")
+        case "law": return preferences.tr("法律", "Law")
+        case "engineering": return preferences.tr("工程", "Engineering")
+        case "music": return preferences.tr("音樂與音響", "Music & Audio")
+        default: return pack.name
+        }
+    }
+
+    private func vocabularyBinding(for id: String) -> Binding<Bool> {
+        Binding(
+            get: { preferences.enabledVocabularyPackIDs.contains(id) },
+            set: { newValue in
+                if newValue {
+                    preferences.enabledVocabularyPackIDs.insert(id)
+                } else {
+                    preferences.enabledVocabularyPackIDs.remove(id)
+                }
+            }
+        )
+    }
+
     /// 所有「標籤＋控制項」列共用的控制欄寬度：右緣切齊同一條線。
     private let controlColumnWidth: CGFloat = 240
 
@@ -1871,6 +2200,7 @@ struct SettingsView: View {
 
     private func addDictionaryTerm() {
         preferences.addDictionaryTerm(source: dictionaryWord, output: dictionaryOutput)
+        DictionaryCloud.sync(preferences)
         dictionaryWord = ""
         dictionaryOutput = ""
     }
@@ -1886,6 +2216,35 @@ struct SettingsView: View {
         presetBundleIdentifier = ""
         presetDisplayName = ""
         presetPromptHint = ""
+    }
+
+    private func exportDictionary() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "UTUVO Type 字典.json"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            try preferences.exportDictionaryData().write(to: url, options: .atomic)
+            dictionaryIOMessage = preferences.tr("已匯出 \(preferences.dictionary.count) 個詞。", "Exported \(preferences.dictionary.count) terms.")
+        } catch {
+            dictionaryIOMessage = error.localizedDescription
+        }
+    }
+
+    private func importDictionary() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json, .plainText]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let changed = preferences.mergeDictionary(try DictionarySync.decode(Data(contentsOf: url)))
+            DictionaryCloud.sync(preferences)
+            dictionaryIOMessage = preferences.tr("已合併，\(changed) 個詞有變動。", "Merged; \(changed) terms changed.")
+        } catch DictionarySync.DecodeError.newerVersion {
+            dictionaryIOMessage = preferences.tr("這個字典檔來自較新版本的 UTUVO Type，請先更新。", "This file is from a newer UTUVO Type; please update first.")
+        } catch {
+            dictionaryIOMessage = preferences.tr("這不是 UTUVO Type 的字典檔。", "This is not a UTUVO Type dictionary file.")
+        }
     }
 
     private func choosePromptFile() {
@@ -1913,6 +2272,7 @@ struct SettingsView: View {
             Spacer(minLength: 4)
             Button {
                 preferences.removeDictionaryTerm(source: entry.source)
+                DictionaryCloud.sync(preferences)
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.secondary)
@@ -2072,6 +2432,38 @@ struct FixedWidthPopUp<Option: Hashable>: NSViewRepresentable {
             let index = item.tag
             guard parent.options.indices.contains(index) else { return }
             parent.selection = parent.options[index]
+        }
+    }
+}
+
+
+private struct VocabularyPackPreview: View {
+    let pack: VocabularyCatalog.Pack
+    let chinese: Bool
+    @State private var expanded = false
+    @State private var query = ""
+    @State private var results: [String] = []
+    var body: some View {
+        DisclosureGroup(chinese ? "預覽與搜尋詞彙" : "Preview and search terms", isExpanded: $expanded) {
+            if expanded {
+                TextField(chinese ? "搜尋這個詞庫" : "Search this vocabulary", text: $query)
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        ForEach(results, id: \.self) { Text($0).font(.caption) }
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                }.frame(height: 100)
+            }
+        }
+        .task(id: "\(expanded):\(query)") {
+            guard expanded else { return }
+            let id = pack.id, search = query
+            let values = await Task.detached(priority: .utility) {
+                guard let loaded = VocabularyPacks.catalogPackWithTermsLoaded(id: id) else { return [String]() }
+                return search.isEmpty ? Array((loaded.terms ?? loaded.seedTerms).prefix(30))
+                    : VocabularyPacks.search(search, in: loaded, limit: 50)
+            }.value
+            guard !Task.isCancelled else { return }
+            results = values
         }
     }
 }

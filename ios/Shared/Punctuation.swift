@@ -1,4 +1,6 @@
 import Foundation
+import UTUVOTypeCore
+import NaturalLanguage
 @preconcurrency import AVFAudio
 #if canImport(FoundationModels)
 import FoundationModels
@@ -52,21 +54,42 @@ enum SilenceDetector {
 /// 依講話停頓補標點（決定論、零延遲）。
 /// Apple 辨識器的 addsPunctuation 很保守，常常一整段只有一個逗號（實機回報「黏成一句」）；
 /// 但每個片段都有時間戳，停頓就是人講話時的斷句。
+///
+/// 2026-09-24 實測回報「一休息就出現句點」：停頓是在想下一個詞，不是句子講完（Typeless 不看停頓斷句）。
+/// Mac 上真 SpeechTranscriber 跑「我覺得這個方案…可能還要再…想一下」：引擎原文沒有句點，
+/// 舊規則（停 ≥0.65 s 補句號）產出「這個方案。可能還要再。想一下」。現在停頓最多只補逗號／問號；
+/// 句號只來自引擎的語意標點與整理。
 enum PausePunctuator {
     /// 停頓超過這個秒數補逗號。
     static let commaGap: TimeInterval = 0.18
-    /// 停頓超過這個秒數補句號。
+    /// 停頓超過這個秒數，問句子句用整句判斷（lastClause）補問號；不再產生句號。
     static let periodGap: TimeInterval = 0.65
+    /// 這一小句還不到 minClause 個字＝講話中的遲疑（「然後我剛剛…靠卡」「那個…我剛剛」），停多久都不補逗號。
+    /// 例外：問句、或以語助詞收尾（「好啊…我等你」）＝一小句已經講完。
+    static let minClause = 6
+    /// 停頓已經很長（≥ periodGap）：一小句有 4 個字就算講完一段（「記得帶檔案…然後」）；「那個…」「你明天…」仍算遲疑。
+    static let longPauseMinClause = 4
+    /// 句子停在這些字＝後面一定還有話（「搭到…中正紀念堂」「還要再…想一下」）；停多久都不補標點。
+    static let danglingEndings = ["到", "在", "去", "從", "往", "跟", "和", "與", "把", "被", "給", "對", "向", "換成", "前往", "搭", "坐", "還有", "因為", "如果", "而且", "但是", "所以", "然後", "就是",
+                                  "再", "很", "最", "比較", "一個", "這個", "那個", "可能", "應該", "已經", "正在", "先", "都", "也", "還", "的"]
     /// 靜音段與字交界的容許誤差（秒）。
     static let boundaryTolerance: TimeInterval = 0.12
 
     /// - Parameter silences: 錄音時量到的靜音段。實機辨識器的片段時間首尾相連（長度延伸到下一個字），
     ///   看不到停頓；靜音段才是真正的停頓來源（2026-09-18 實機量測）。
-    static func punctuate(_ tokens: [TimedToken], silences: [SilenceInterval] = [],
+    static func punctuate(_ rawTokens: [TimedToken], silences: [SilenceInterval] = [],
                           commaGap: TimeInterval = commaGap, periodGap: TimeInterval = periodGap) -> String {
+        let tokens = dropMidWordPunctuation(rawTokens)
         var out = ""
+        // 新引擎的片段幾乎是一個字一段：停頓落在詞中間（「然…後」）不能斷。先斷詞，只准在詞界補標點（2026-09-19 實機「然，後」）。
+        let wordStarts = wordStartOffsets(tokens.map(\.text).joined())
+        var offset = 0
+        /// 語助詞前的停頓先記著（「儲值…了今天」）：斷點挪到語助詞後面，不是丟掉（2026-09-19 實機「就除值了今天，又說」）。
+        var deferredGap: TimeInterval?
         for (i, token) in tokens.enumerated() {
             let piece = token.text
+            let tokenOffset = offset
+            offset += piece.count
             guard !piece.isEmpty else { continue }
             if i > 0, let last = out.last {
                 let prev = tokens[i - 1]
@@ -75,23 +98,120 @@ enum PausePunctuator {
                 let silence = silences.first {
                     $0.start <= boundary + boundaryTolerance && $0.end >= boundary - boundaryTolerance
                 }?.duration ?? 0
-                let gap = max(timestampGap, silence)
+                var gap = max(timestampGap, silence)
+                if let deferred = deferredGap, !isParticleOnly(piece) { gap = max(gap, deferred); deferredGap = nil }
+                if isParticleOnly(piece), gap >= commaGap { deferredGap = max(deferredGap ?? 0, gap) }
                 let boundaryHasPunct = isPunctuation(last) || piece.first.map(isPunctuation) == true
-                if !boundaryHasPunct && gap >= commaGap {
-                    let latin = isLatinish(last)
+                // 句尾語助詞（了／啦／吧…）是前一句的尾巴：前面停頓再久也不補，標點留到它後面的下一個停頓（2026-09-19 實機「學校，了」）。
+                // 英文片段本來就是整個字：英文前後一律算詞界；中文靠斷詞。
+                let latinEdge = isLatinish(last) || (piece.first.map(isLatinish) ?? false)
+                let atWordBoundary = latinEdge || wordStarts.contains(tokenOffset) || piece.first?.isWhitespace == true
+                // 遲疑：這一小句還短（停多久都一樣）。但問句子句（「會不會扣分」）、語助詞收尾（「好啊」）後面的停頓照樣斷。
+                let subclause = ClauseRules.lastSubclause(out)
+                let particleEnded = subclause.last.map { Normalizer.sentenceParticles.contains($0) } ?? false
+                let needed = gap >= periodGap ? longPauseMinClause : minClause
+                let hesitation = clauseLength(subclause) < needed && !ClauseRules.isQuestion(subclause) && !particleEnded
+                // 數字中間不斷（「7:4…2」）；停在「到／再／換成…」這種後面一定還有話的字＝在想下一個詞（「搭到…中正紀念堂」）。
+                let inNumber = (last.isNumber || last == ":" || last == ".") && (piece.first?.isNumber ?? false)
+                let dangling = danglingEndings.contains(where: { out.hasSuffix($0) })
+                if !boundaryHasPunct && gap >= commaGap && !isParticleOnly(piece) && atWordBoundary && !hesitation && !inNumber && !dangling {
+                    // 英文標點只給純英文的句子；中文句尾剛好是英文字（「交 ADM」）照樣用全形（2026-09-19 新引擎實測「DMBWF,」）。
+                    let latin = isLatinish(last) && !containsCJK(out)
                     if gap >= periodGap {
+                        // 長停頓也只補逗號；問句（整句判斷）才補問號。
                         let question = ClauseRules.isQuestion(ClauseRules.lastClause(out))
-                        out += latin ? (question ? "? " : ". ") : (question ? "？" : "。")
+                        out += latin ? (question ? "? " : ", ") : (question ? "？" : "，")
                     } else {
-                        out += latin ? ", " : "，"
+                        // 短停頓但這一小句「收在問句」（「…檔案嗎」「會不會扣分」）→ 問號。
+                        // 句中有「怎麼」但話還沒講完（「那我們要怎麼樣設計可以讓…」）不算（2026-09-20 實機「可以讓？使用者」）。
+                        let question = ClauseRules.endsAsQuestion(ClauseRules.lastSubclause(out))
+                        out += latin ? (question ? "? " : ", ") : (question ? "？" : "，")
                     }
-                } else if needsSpace(last, piece.first) {
+                } else if !inNumber, needsSpace(last, piece.first) {
                     out += " "
                 }
             }
             out += piece
         }
-        return ClauseRules.finish(out)
+        return ClauseRules.finish(dropHesitationPeriods(out))
+    }
+
+    /// 引擎自己也會在遲疑的停頓插句號（2026-09-24 Mac 真 SpeechTranscriber：「你明天。有空嗎」）。
+    /// 句中的「。」前面那一小句太短、又不是問句或語助詞收尾＝講到一半停下來想，拿掉。句尾的句號不動。
+    static func dropHesitationPeriods(_ s: String) -> String {
+        var out = ""
+        let chars = Array(s)
+        for (k, c) in chars.enumerated() {
+            if c == "。", k + 1 < chars.count, !chars[(k + 1)...].allSatisfy({ $0.isWhitespace || isPunctuation($0) }) {
+                let subclause = ClauseRules.lastSubclause(out).trimmingCharacters(in: .whitespaces)
+                let particleEnded = subclause.last.map { Normalizer.sentenceParticles.contains($0) } ?? false
+                if !subclause.isEmpty, clauseLength(subclause) < minClause, !particleEnded, !ClauseRules.isQuestion(subclause) {
+                    continue
+                }
+            }
+            out.append(c)
+        }
+        return out
+    }
+
+    /// 詞開頭的字元位移（以 Character 計）。斷詞器用系統內建（NaturalLanguage，裝置端）。
+    static func wordStartOffsets(_ text: String) -> Set<Int> {
+        let tokenizer = NLTokenizer(unit: .word)
+        tokenizer.string = text
+        tokenizer.setLanguage(.traditionalChinese)
+        var starts: Set<Int> = [0]
+        tokenizer.enumerateTokens(in: text.startIndex..<text.endIndex) { range, _ in
+            starts.insert(text.distance(from: text.startIndex, to: range.lowerBound))
+            starts.insert(text.distance(from: text.startIndex, to: range.upperBound))
+            return true
+        }
+        return starts
+    }
+
+    /// 這一小句有幾個字（中文一字一個、英數一個詞一個）。
+    static func clauseLength(_ s: String) -> Int {
+        var n = 0; var inWord = false
+        for c in s {
+            if isLatinish(c) { if !inWord { n += 1; inWord = true } }
+            else { inWord = false; if !c.isWhitespace && !isPunctuation(c) { n += 1 } }
+        }
+        return n
+    }
+
+    /// 新引擎自己會把句號／逗號插在詞中間（「原。山站」，2026-09-19）：前後都是中文、而且拿掉標點後那個位置不是詞界 → 拿掉。
+    static func dropMidWordPunctuation(_ tokens: [TimedToken]) -> [TimedToken] {
+        let marks: Set<Character> = ["，", "。", ",", "."]
+        var flat: [(ch: Character, token: Int)] = []
+        for (i, t) in tokens.enumerated() { for c in t.text { flat.append((c, i)) } }
+        guard flat.contains(where: { marks.contains($0.ch) }) else { return tokens }
+        let stripped = String(flat.filter { !marks.contains($0.ch) }.map(\.ch))
+        let starts = wordStartOffsets(stripped)
+        var keep = [Bool](repeating: true, count: flat.count)
+        var strippedOffset = 0
+        for (k, item) in flat.enumerated() {
+            if marks.contains(item.ch) {
+                let prev = k > 0 ? flat[k - 1].ch : nil, next = k + 1 < flat.count ? flat[k + 1].ch : nil
+                let splitsStation = k + 2 < flat.count && flat[k + 2].ch == "站"      // 「原。山站」：站名最後一個字被切開
+                if let prev, let next, containsCJK(String(prev)), containsCJK(String(next)),
+                   !starts.contains(strippedOffset) || splitsStation {
+                    keep[k] = false
+                }
+            } else {
+                strippedOffset += 1
+            }
+        }
+        var texts = [String](repeating: "", count: tokens.count)
+        for (k, item) in flat.enumerated() where keep[k] { texts[item.token].append(item.ch) }
+        return tokens.enumerated().map { TimedToken(text: texts[$0.offset], start: $0.element.start, duration: $0.element.duration) }
+    }
+
+    static func containsCJK(_ s: String) -> Bool {
+        s.unicodeScalars.contains { (0x4E00...0x9FFF).contains($0.value) || (0x3400...0x4DBF).contains($0.value) }
+    }
+
+    static func isParticleOnly(_ piece: String) -> Bool {
+        let t = piece.trimmingCharacters(in: .whitespaces)
+        return !t.isEmpty && t.count <= 2 && t.allSatisfy { Normalizer.sentenceParticles.contains($0) }
     }
 
     static func isPunctuation(_ c: Character) -> Bool {
@@ -111,6 +231,23 @@ enum PausePunctuator {
 
 /// 不靠停頓的斷句規則（2026-09-18 產品決定：標點再優化）。都是保守規則，寧可少補不要補錯。
 enum ClauseRules {
+    /// 這一小句「收在問句」：句尾是嗎／呢／疑問詞，或正反問就在最後幾個字。句中出現疑問詞但後面還接著話＝不算。
+    static func endsAsQuestion(_ rawClause: String) -> Bool {
+        let clause = rawClause.trimmingCharacters(in: .whitespaces)
+        guard isQuestion(clause) else { return false }
+        if clause.hasSuffix("嗎") || clause.hasSuffix("吗") || clause.hasSuffix("呢") { return true }
+        if endingQuestionWords.contains(where: { clause.hasSuffix($0) }) { return true }
+        let tail = String(clause.suffix(6))
+        return aNotA.contains(where: { tail.contains($0) }) || clause.first.map { $0.isASCII } == true
+    }
+
+    /// 最後一個標點（含逗號、頓號）之後的那一小句。
+    static func lastSubclause(_ s: String) -> String {
+        let marks: Set<Character> = ["。", "？", "！", ".", "?", "!", "，", ",", "、", "；", ";", "："]
+        guard let i = s.lastIndex(where: { marks.contains($0) }) else { return s }
+        return String(s[s.index(after: i)...])
+    }
+
     /// 最後一個句號／問號／驚嘆號之後的那一句（逗號不算斷句）。
     static func lastClause(_ s: String) -> String {
         let enders: Set<Character> = ["。", "？", "！", ".", "?", "!"]
@@ -132,6 +269,9 @@ enum ClauseRules {
     /// 這些開頭是「轉述」不是發問（「我不知道他是不是要來」）。
     static let embedMarkers = ["我不知道", "不知道", "不確定", "不曉得", "我在想", "看看", "問問", "不管",
                                 "不确定", "不晓得", "问问"]
+    /// 出現在正反問（有沒有／要不要…）前面＝轉述別人的問題，不是發問。
+    static let reportMarkers = ["問到", "問說", "問我", "問他", "問她", "問你", "問了", "想知道", "確認", "看一下", "查一下", "不知道", "不確定", "不曉得",
+                                "问到", "问说", "问我", "问他", "问了", "确认"]
     static let englishQuestionStarts = ["what", "why", "how", "when", "where", "who", "which", "can", "could", "do", "does", "did", "is", "are", "was", "were", "will", "would", "should", "shall", "may", "have", "has"]
 
     static func isQuestion(_ rawClause: String) -> Bool {
@@ -152,8 +292,19 @@ enum ClauseRules {
         if clause.hasSuffix("嗎") || clause.hasSuffix("吗") { return true }
         if (clause.hasSuffix("麼") || clause.hasSuffix("么")),
            !["這麼", "那麼", "多麼", "这么", "那么", "多么"].contains(where: { clause.hasSuffix($0) }) { return true }
-        if endingQuestionWords.contains(where: { clause.hasSuffix($0) }) { return true }
-        if aNotA.contains(where: { clause.contains($0) }) { return true }
+        if endingQuestionWords.contains(where: { clause.hasSuffix($0) }) {
+            // 「我試了幾次」「去過幾天」：了／過／好＋幾＝「好幾」，是陳述不是問（2026-09-19 新引擎實測）。
+            if let r = clause.range(of: "幾", options: .backwards), r.lowerBound > clause.startIndex,
+               ["了", "過", "好", "过"].contains(clause[clause.index(before: r.lowerBound)]),
+               !["你", "妳", "您"].contains(where: { clause.contains($0) }) { return false }   // 「你試了幾次」還是問句
+            return true
+        }
+        if let hit = aNotA.compactMap({ clause.range(of: $0) }).min(by: { $0.lowerBound < $1.lowerBound }) {
+            // 轉述：「他們問到之後有沒有可能…」「我想確認要不要…」＝不是在發問。
+            let before = clause[..<hit.lowerBound]
+            if reportMarkers.contains(where: { before.contains($0) }) { return false }
+            return true
+        }
         if clause.hasSuffix("呢") {
             // 「你呢」「那我呢」這種短句，或句中有疑問詞：問句；「還在做呢」：陳述。
             return clause.count <= 4 || questionWords.contains(where: { clause.contains($0) })

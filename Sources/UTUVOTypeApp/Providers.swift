@@ -149,18 +149,22 @@ struct LocalASRProcessClient: Sendable {
     let argumentsTemplate: String
     var outputScript: String = "traditional"
     var asrLanguage: String = "Chinese"
+    /// 個人字典＋詞庫：本機 Qwen3-ASR 用來辨識專有名詞（UTUVO_TYPE_ASR_HOTWORDS，換行分隔）。
+    var hotwords: [String] = []
 
     func transcribe(audioURL: URL) async throws -> String {
         let command = command
         let argumentsTemplate = argumentsTemplate
         let outputScript = outputScript
         let asrLanguage = asrLanguage
+        let hotwords = hotwords
         return try await Task.detached(priority: .userInitiated) {
             let process = Process()
             // 引擎家目錄（venv＋模型）跟著 app 走：DMG 版在 Application Support，repo 版在 repo root。
             var environment = RuntimeBootstrap.engineEnvironment(root: RuntimeBootstrap.locateRepoRoot())
             environment["UTUVO_TYPE_OUTPUT_SCRIPT"] = outputScript
             environment["UTUVO_TYPE_ASR_LANGUAGE"] = asrLanguage
+            if !hotwords.isEmpty { environment["UTUVO_TYPE_ASR_HOTWORDS"] = hotwords.joined(separator: "\n") }
             process.environment = environment
             let arguments = argumentsTemplate
                 .split(whereSeparator: { $0 == " " || $0 == "\t" })
@@ -202,53 +206,149 @@ struct LocalASRProcessClient: Sendable {
 struct LocalFormatterProcessClient: FormatterClient, @unchecked Sendable {
     let command: String
     var outputScript: String = "traditional"
+    /// Fixtures supply a minimal environment; nil retains the existing warm runtime discovery.
+    var environment: [String: String]?
 
     func format(prompt: String, model: String) async throws -> String {
-        let command = command
-        let outputScript = outputScript
-        return try await Task.detached(priority: .userInitiated) {
+        let run = LocalFormatterRun()
+        return try await withTaskCancellationHandler {
+            try Task.checkCancellation()
+            return try await withCheckedThrowingContinuation { continuation in
+                run.start(command: command, prompt: prompt, outputScript: outputScript,
+                          environment: environment, continuation: continuation)
+            }
+        } onCancel: { run.cancel() }
+    }
+}
+
+/// Starts the bundled editor while the user speaks. Only the known local
+/// wrapper accepts --warmup; custom formatter commands must never receive it.
+enum LocalEditorPrewarmer {
+    private static let lock = NSLock()
+    private static nonisolated(unsafe) var running = false
+
+    static func warmUp(command: String) {
+        guard let root = RuntimeBootstrap.locateRepoRoot() else { return }
+        let expected = URL(fileURLWithPath: root).appendingPathComponent("runtime/utuvo-type-editor.py").standardizedFileURL.path
+        guard URL(fileURLWithPath: command).standardizedFileURL.path == expected else { return }
+        let home = URL(fileURLWithPath: RuntimeBootstrap.engineHome(for: root))
+        let python = home.appendingPathComponent(".runtime/bin/python").path
+        let model = home.appendingPathComponent(".models/editor/Qwen3-4B-Instruct-2507-4bit").path
+        let files = FileManager.default
+        guard files.isExecutableFile(atPath: expected), files.isExecutableFile(atPath: python),
+              files.fileExists(atPath: model) else { return }
+        lock.lock()
+        guard !running else { lock.unlock(); return }
+        running = true
+        lock.unlock()
+        DispatchQueue.global(qos: .utility).async {
+            defer { lock.lock(); running = false; lock.unlock() }
             let process = Process()
-            var environment = RuntimeBootstrap.engineEnvironment(root: RuntimeBootstrap.locateRepoRoot())
-            environment["UTUVO_TYPE_OUTPUT_SCRIPT"] = outputScript
-            process.environment = environment
-            if command.hasPrefix("/") {
-                process.executableURL = URL(fileURLWithPath: command)
-                process.arguments = []
-            } else {
-                // Allow a command installed on PATH without shell evaluation.
-                process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
-                process.arguments = [command]
-            }
-
-            let stdin = Pipe()
-            let stdout = Pipe()
-            process.standardInput = stdin
-            process.standardOutput = stdout
-            process.standardError = Pipe()
-
-            do {
-                try process.run()
-            } catch {
-                throw ProviderError.unavailable(error.localizedDescription)
-            }
-
-            guard let data = prompt.data(using: .utf8) else {
-                process.terminate()
-                throw ProviderError.unavailable("formatter prompt 不是有效 UTF-8")
-            }
-            stdin.fileHandleForWriting.write(data)
-            stdin.fileHandleForWriting.closeFile()
-
+            process.executableURL = URL(fileURLWithPath: expected)
+            process.arguments = ["--warmup"]
+            process.environment = RuntimeBootstrap.engineEnvironment(root: root)
+            process.standardInput = FileHandle.nullDevice
+            process.standardOutput = FileHandle.nullDevice
+            process.standardError = FileHandle.nullDevice
+            guard (try? process.run()) != nil else { return }
             process.waitUntilExit()
-            let outputData = stdout.fileHandleForReading.readDataToEndOfFile()
-            guard process.terminationStatus == 0 else {
-                throw ProviderError.unavailable("editor process exit \(process.terminationStatus)")
+        }
+    }
+}
+
+/// Pipe IO uses dedicated blocking queues, never a Swift cooperative executor or the main thread.
+/// Cancellation returns promptly, then terminates/reaps the process while drains finish independently.
+private final class LocalFormatterRun: @unchecked Sendable {
+    private let lock = NSLock()
+    private let process = Process()
+    private var continuation: CheckedContinuation<String, Error>?
+    private var canceled = false
+    private var completed = false
+    private var output = Data()
+    private var outputError: Error?
+
+    func start(command: String, prompt: String, outputScript: String, environment: [String: String]?,
+               continuation: CheckedContinuation<String, Error>) {
+        lock.lock()
+        if canceled { lock.unlock(); continuation.resume(throwing: CancellationError()); return }
+        self.continuation = continuation
+        lock.unlock()
+        DispatchQueue.global(qos: .userInitiated).async { [self] in
+            var env = environment ?? RuntimeBootstrap.engineEnvironment(root: RuntimeBootstrap.locateRepoRoot())
+            env["UTUVO_TYPE_OUTPUT_SCRIPT"] = outputScript
+            process.environment = env
+            process.executableURL = URL(fileURLWithPath: command.hasPrefix("/") ? command : "/usr/bin/env")
+            process.arguments = command.hasPrefix("/") ? [] : [command]
+            let input = Pipe(), stdout = Pipe(), stderr = Pipe()
+            process.standardInput = input
+            process.standardOutput = stdout
+            process.standardError = stderr
+            // EPIPE becomes a throwable write failure if cancellation closes the child input.
+            _ = fcntl(input.fileHandleForWriting.fileDescriptor, F_SETNOSIGPIPE, 1)
+            lock.lock()
+            guard !canceled else { lock.unlock(); finish(.failure(CancellationError())); return }
+            do { try process.run() }
+            catch { lock.unlock(); finish(.failure(ProviderError.unavailable(error.localizedDescription))); return }
+            lock.unlock()
+            try? input.fileHandleForReading.close()
+            try? stdout.fileHandleForWriting.close()
+            try? stderr.fileHandleForWriting.close()
+
+            let io = DispatchGroup()
+            io.enter()
+            DispatchQueue.global(qos: .userInitiated).async { [self] in
+                defer { try? stdout.fileHandleForReading.close(); io.leave() }
+                do {
+                    let bytes = try stdout.fileHandleForReading.readToEnd() ?? Data()
+                    lock.lock(); output = bytes; lock.unlock()
+                } catch { lock.lock(); outputError = error; lock.unlock() }
             }
-            let raw = String(data: outputData, encoding: .utf8)?
-                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            guard !raw.isEmpty else { throw ProviderError.malformedResponse }
-            return raw
-        }.value
+            io.enter()
+            DispatchQueue.global(qos: .utility).async {
+                defer { try? stderr.fileHandleForReading.close(); io.leave() }
+                // Drain without retaining potentially large diagnostics or exposing their contents.
+                while let bytes = try? stderr.fileHandleForReading.read(upToCount: 65_536), !bytes.isEmpty { }
+            }
+            io.enter()
+            DispatchQueue.global(qos: .userInitiated).async {
+                defer { try? input.fileHandleForWriting.close(); io.leave() }
+                try? input.fileHandleForWriting.write(contentsOf: Data(prompt.utf8))
+            }
+            process.waitUntilExit()
+            io.wait()
+            lock.lock()
+            let canceled = canceled, bytes = output, readError = outputError
+            lock.unlock()
+            if canceled { finish(.failure(CancellationError())); return }
+            if let readError { finish(.failure(readError)); return }
+            guard process.terminationStatus == 0 else {
+                finish(.failure(ProviderError.unavailable("editor process exit \(process.terminationStatus)"))); return
+            }
+            let raw = String(data: bytes, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            finish(raw.isEmpty ? .failure(ProviderError.malformedResponse) : .success(raw))
+        }
+    }
+
+    func cancel() {
+        lock.lock()
+        canceled = true
+        let running = process.isRunning
+        if running { process.terminate() }
+        lock.unlock()
+        finish(.failure(CancellationError()))
+        if running {
+            DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + 0.3) { [self] in
+                lock.lock(); defer { lock.unlock() }
+                if process.isRunning { _ = kill(process.processIdentifier, SIGKILL) }
+            }
+        }
+    }
+    private func finish(_ result: Result<String, Error>) {
+        lock.lock()
+        guard !completed, let continuation else { lock.unlock(); return }
+        completed = true; self.continuation = nil
+        lock.unlock()
+        continuation.resume(with: result)
     }
 }
 

@@ -12,6 +12,10 @@ final class SecretLiteralScannerTests: XCTestCase {
             ("slack-bot", "xoxb-" + "1234567890-abcdef"),
             ("email", "contact: someone" + "@example.com"),
             ("email-2x-domain", "ops" + "@2x.com"),
+            // 只放行 support@ 這一個：同網域其他地址、看起來像的變體都要擋
+            ("email-same-domain", "micky" + "@utuvo.app"),
+            ("email-support-lookalike", "support" + "@utuvo.apps.example.com"),
+            ("email-prefixed-support", "xsupport" + "@utuvo.app"),
             ("slack-webhook", "POST https://hooks.slack.com/" + "services/T0/B0/XXX"),
             ("apps-script", "https://script.google.com/" + "macros/s/AKfycbwXXX/exec"),
             ("bearer", "Authorization: Bearer " + "abcdefghijklmnopqrstuv")
@@ -38,7 +42,9 @@ final class SecretLiteralScannerTests: XCTestCase {
             "let text = \"hello world\"",
             // Apple 圖檔倍率命名不是 email
             "Image.open(\"icon_512x512@2x.png\")",
-            "\"filename\": \"BrandMark@3x.png\""
+            "\"filename\": \"BrandMark@3x.png\"",
+            // 刻意公開的客服信箱
+            "<a href=\"mailto:support" + "@utuvo.app\">support" + "@utuvo.app</a>"
         ]
         for line in cleanSamples {
             var hit = false

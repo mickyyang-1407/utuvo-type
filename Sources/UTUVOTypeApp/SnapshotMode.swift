@@ -61,7 +61,7 @@ enum SnapshotRunner {
             }
 
             // 設定頁：三個代表性分頁。
-            for section in [SettingsSection.general, .models, .cloud] {
+            for section in [SettingsSection.general, .models, .cloud, .dictionary] {
                 guard let window = makeSettingsWindow(section) else { continue }
                 window.level = .modalPanel // 要在 backdrop（.floating）之上
                 let t0 = CFAbsoluteTimeGetCurrent()

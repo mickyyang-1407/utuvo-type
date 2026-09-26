@@ -41,12 +41,33 @@ public enum TaiwanPhrases {
     /// 長詞優先，避免「數據庫」被「數據」先吃掉。
     private static let ordered: [(String, String)] = table.sorted { $0.key.count > $1.key.count }
 
+    /// 辨識器簡轉繁把「只」轉成量詞「隻」（「隻要」「隻是」，2026-09-19 新引擎實測）。
+    /// 前面是數字／指示詞（一隻、這隻、每隻）＝真的量詞，不動（「這隻要多少錢」）。
+    static let onlyPattern = try? NSRegularExpression(pattern: "(?<![一二兩三四五六七八九十幾這那每哪半整])隻(?=要|是|有|能|好|會|剩|想|不過|限)")
+    static func fixOnlyAsMeasureWord(_ text: String) -> String {
+        guard text.contains("隻"), let re = onlyPattern else { return text }
+        var out = re.stringByReplacingMatches(in: text, range: NSRange(text.startIndex..., in: text), withTemplate: "只")
+        out = out.replacingOccurrences(of: "不隻", with: "不只")
+        return out
+    }
+
+    /// 語音辨識常見、而且不會是正確用法的同音錯字（2026-09-19 實機）。「原因該怎麼」「病因該」前面是「因」字詞的不動；
+    /// 「以經」不收（「以經驗來說」是對的），交給 HomophoneCorrector。
+    static let misspellingPattern = try? NSRegularExpression(pattern: "(?<![原起主病肇死])因該")
+    static func fixCommonMisspellings(_ text: String) -> String {
+        var out = text
+        if out.contains("因該"), let re = misspellingPattern {
+            out = re.stringByReplacingMatches(in: out, range: NSRange(out.startIndex..., in: out), withTemplate: "應該")
+        }
+        return out.replacingOccurrences(of: "除值", with: "儲值")
+    }
+
     public static func apply(_ text: String) -> String {
         guard !text.isEmpty else { return text }
         var output = text
         for (mainland, taiwan) in ordered where output.contains(mainland) {
             output = output.replacingOccurrences(of: mainland, with: taiwan)
         }
-        return output
+        return fixCommonMisspellings(fixOnlyAsMeasureWord(output))
     }
 }

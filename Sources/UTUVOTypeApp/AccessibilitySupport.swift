@@ -31,6 +31,10 @@ enum AccessibilitySupport {
         }
         let focused = focusedValue as! AXUIElement
         context.focusedFieldRole = copyAttribute(focused, kAXRoleAttribute) as? String
+        if (copyAttribute(focused, kAXSubroleAttribute) as? String) == "AXSecureTextField" {
+            // Don't include app identity, selected text or field contents from password managers / secure inputs.
+            return LimitedAppContext(focusedFieldRole: "AXSecureTextField")
+        }
         if let selected = copyAttribute(focused, kAXSelectedTextAttribute) as? String {
             context.selectedText = ContextBounds.boundedSelectedText(selected)
         }

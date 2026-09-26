@@ -10,6 +10,7 @@ process list or command history.
 from __future__ import annotations
 
 import json
+import fcntl
 import os
 from pathlib import Path
 import subprocess
@@ -26,6 +27,7 @@ MODEL = ROOT / ".models" / "editor" / "Qwen3-4B-Instruct-2507-4bit"
 STATE_DIR = ROOT / ".models" / "editor-server"
 LOG_PATH = STATE_DIR / "server.log"
 PID_PATH = STATE_DIR / "server.pid"
+LOCK_PATH = STATE_DIR / "server.lock"
 HOST = "127.0.0.1"
 PORT = 18766
 BASE_URL = f"http://{HOST}:{PORT}"
@@ -89,76 +91,59 @@ def pid_is_alive() -> bool:
 
 
 def start_server() -> None:
-    if PID_PATH.exists() and pid_is_alive():
-        # A live PID from our own server is enough for the warm path. The
-        # request below has its own timeout and uses the loopback endpoint.
-        return
     if server_is_healthy():
         return
-    if not PYTHON.is_file():
-        raise RuntimeError(f"找不到本機 Python runtime：{PYTHON}")
-    if not MODEL.is_dir():
-        raise RuntimeError(f"找不到本機 editor 模型：{MODEL}")
-
     STATE_DIR.mkdir(parents=True, exist_ok=True)
-    if PID_PATH.exists() and not pid_is_alive():
-        try:
-            PID_PATH.unlink()
-        except OSError:
-            pass
-
-    log = LOG_PATH.open("ab")
-    environment = os.environ.copy()
-    environment["HF_HOME"] = str(ROOT / ".models" / "hf-cache")
-    environment["PYTHONUNBUFFERED"] = "1"
-    command = [
-        str(PYTHON),
-        "-m",
-        "mlx_lm.server",
-        "--model",
-        str(MODEL),
-        "--host",
-        HOST,
-        "--port",
-        str(PORT),
-        "--temp",
-        "0",
-        "--max-tokens",
-        str(MAX_TOKENS),
-        "--chat-template-args",
-        '{"enable_thinking":false}',
-    ]
-    process = subprocess.Popen(
-        command,
-        cwd=ROOT,
-        env=environment,
-        stdin=subprocess.DEVNULL,
-        stdout=log,
-        stderr=log,
-        start_new_session=True,
-    )
-    PID_PATH.write_text(str(process.pid), encoding="utf-8")
-    log.close()
+    process = None
+    # Serialize the PID check and spawn. A prewarm and a formatter request can
+    # otherwise launch two model servers on the same loopback port.
+    with LOCK_PATH.open("a+b") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if server_is_healthy():
+            return
+        if not (PID_PATH.exists() and pid_is_alive()):
+            if not PYTHON.is_file():
+                raise RuntimeError(f"找不到本機 Python runtime：{PYTHON}")
+            if not MODEL.is_dir():
+                raise RuntimeError(f"找不到本機 editor 模型：{MODEL}")
+            try:
+                PID_PATH.unlink(missing_ok=True)
+            except OSError:
+                pass
+            environment = os.environ.copy()
+            environment["HF_HOME"] = str(ROOT / ".models" / "hf-cache")
+            environment["PYTHONUNBUFFERED"] = "1"
+            command = [
+                str(PYTHON), "-m", "mlx_lm.server", "--model", str(MODEL),
+                "--host", HOST, "--port", str(PORT), "--temp", "0",
+                "--max-tokens", str(MAX_TOKENS),
+                "--chat-template-args", '{"enable_thinking":false}',
+            ]
+            with LOG_PATH.open("ab") as log:
+                process = subprocess.Popen(
+                    command, cwd=ROOT, env=environment, stdin=subprocess.DEVNULL,
+                    stdout=log, stderr=log, start_new_session=True,
+                )
+            PID_PATH.write_text(str(process.pid), encoding="utf-8")
 
     deadline = time.monotonic() + HEALTH_TIMEOUT
     while time.monotonic() < deadline:
         if server_is_healthy():
             return
-        if process.poll() is not None:
+        if process is not None and process.poll() is not None:
             # Another UTUVO Type request may have won the startup race.
             if server_is_healthy():
-                try:
-                    PID_PATH.unlink()
-                except OSError:
-                    pass
                 return
             try:
-                PID_PATH.unlink()
+                if PID_PATH.read_text(encoding="utf-8").strip() == str(process.pid):
+                    PID_PATH.unlink()
             except OSError:
                 pass
             raise RuntimeError(
                 f"本機 editor server 無法啟動（exit {process.returncode}）；請查看 {LOG_PATH}"
             )
+        if process is None and not pid_is_alive():
+            raise RuntimeError(f"本機 editor server 在就緒前已結束；請查看 {LOG_PATH}")
         time.sleep(0.25)
 
     raise TimeoutError(f"本機 editor server 啟動逾時；請查看 {LOG_PATH}")
@@ -235,6 +220,17 @@ def convert_script(text: str) -> str:
 
 
 def main() -> int:
+    warmup = sys.argv[1:] == ["--warmup"]
+    if sys.argv[1:] and not warmup:
+        print("用法：utuvo-type-editor.py [--warmup]", file=sys.stderr)
+        return 2
+    if warmup:
+        try:
+            start_server()
+            return 0
+        except (OSError, RuntimeError, TimeoutError, ValueError, HTTPError, URLError) as error:
+            print(f"本機 editor 預載失敗：{error}", file=sys.stderr)
+            return 1
     prompt = sys.stdin.read()
     if not prompt.strip():
         print("editor prompt 不可為空", file=sys.stderr)

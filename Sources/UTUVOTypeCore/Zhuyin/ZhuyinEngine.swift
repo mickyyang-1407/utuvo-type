@@ -122,26 +122,31 @@ public final class ZhuyinEngine: @unchecked Sendable {
 
     /// 緩衝區開頭的候選：先列最長的詞（覆蓋 readings[0..<k]，k 由大到小），同長度內分數高的在前；含單字。
     /// 多字詞最多 `phraseCandidateLimit` 個，總數上限 `candidateLimit`。
-    public var candidates: [ZhuyinCandidate] {
+    public var candidates: [ZhuyinCandidate] { candidates(limit: Self.candidateLimit) }
+
+    /// 只計算呼叫端實際要顯示的候選數。完整上限保留給需要完整候選清單的呼叫端，鍵盤則只需要前幾格。
+    public func candidates(limit requestedLimit: Int) -> [ZhuyinCandidate] {
         locked {
-            guard !_ids.isEmpty else { return [] }
+            let limit = min(max(requestedLimit, 0), Self.candidateLimit)
+            guard !_ids.isEmpty, limit > 0 else { return [] }
             var phrases: [ZhuyinCandidate] = []
             var singles: [ZhuyinCandidate] = []
+            let phraseLimit = min(Self.phraseCandidateLimit, limit)
             let maxLen = min(ZhuyinLexicon.maximumPhraseLength, _ids.count)
             for k in stride(from: maxLen, through: 1, by: -1) {
                 let slice = _ids[0..<k]
                 if k > 1 {
-                    guard phrases.count < Self.phraseCandidateLimit else { continue }
-                    for e in lexicon.lookup(ids: slice, limit: Self.phraseCandidateLimit - phrases.count) {
+                    guard phrases.count < phraseLimit else { continue }
+                    for e in lexicon.lookup(ids: slice, limit: phraseLimit - phrases.count) {
                         phrases.append(ZhuyinCandidate(text: e.text, readingCount: k))
                     }
                 } else {
-                    for e in lexicon.lookup(ids: slice, limit: Self.candidateLimit) {
+                    for e in lexicon.lookup(ids: slice, limit: limit) {
                         singles.append(ZhuyinCandidate(text: e.text, readingCount: 1))
                     }
                 }
             }
-            return Array((phrases + singles).prefix(Self.candidateLimit))
+            return Array((phrases + singles).prefix(limit))
         }
     }
 

@@ -126,6 +126,14 @@ final class AppPreferences: ObservableObject {
     /// 衝突卡上「重試」按鈕會回呼到 AppDelegate 重掛快捷鍵；不持久化。
     var onShortcutRetry: (() -> Void)?
 
+    /// 隔離 context（測試／preview）。nil ＝真實 production 環境。
+    /// 設進來之後：
+    /// 1) 用 `userDefaults` 而非 `.standard`；
+    /// 2) `applicationSupportDirectory` 指到暫存資料夾；
+    /// 3) `disableCloudSync = true` → DictionaryCloud 會跳過；
+    /// 4) `skipGlobalShortcut = true` → GlobalShortcut 不會被註冊。
+    var isolation: IsolatedContext?
+
     @Published var backend: AppBackend {
         didSet { defaults.set(backend.rawValue, forKey: Keys.backend) }
     }
@@ -348,6 +356,39 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(dictionaryJSON, forKey: Keys.dictionaryJSON) }
     }
 
+    /// 開啟的 catalog 詞庫包 id（iOS 同款鍵名，方便測試互通）。
+    /// 預設空集合：所有 catalog 詞庫預設全關，使用者必須明確開啟才生效。
+    @Published var enabledVocabularyPackIDs: Set<String> {
+        didSet {
+            defaults.set(Array(enabledVocabularyPackIDs), forKey: Keys.enabledVocabularyPackIDs)
+        }
+    }
+
+    /// 自訂 cleanup provider 設定（與 ASR backend 解耦；見 SmartCleanup.swift）。
+    @Published var cleanupProvider: SmartCleanupProvider {
+        didSet {
+            defaults.set(cleanupProvider.rawValue, forKey: Keys.cleanupProvider)
+        }
+    }
+
+    @Published var cleanupEnabled: Bool {
+        didSet {
+            defaults.set(cleanupEnabled, forKey: Keys.cleanupEnabled)
+        }
+    }
+
+    @Published var customCleanupEndpoint: String {
+        didSet {
+            defaults.set(customCleanupEndpoint, forKey: Keys.customCleanupEndpoint)
+        }
+    }
+
+    @Published var customCleanupModel: String {
+        didSet {
+            defaults.set(customCleanupModel, forKey: Keys.customCleanupModel)
+        }
+    }
+
     @Published var globalShortcut: String {
         didSet {
             defaults.set(globalShortcut, forKey: Keys.globalShortcut)
@@ -386,8 +427,10 @@ final class AppPreferences: ObservableObject {
 
     private let defaults: UserDefaults
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, isolation: IsolatedContext? = nil) {
+        let defaults = isolation?.userDefaults ?? defaults
         self.defaults = defaults
+        self.isolation = isolation
         self.backend = AppBackend(rawValue: defaults.string(forKey: Keys.backend) ?? "local") ?? .local
         self.mode = FormatterMode(rawValue: defaults.string(forKey: Keys.mode) ?? "fast") ?? .fast
         self.pushToTalkEnabled = defaults.object(forKey: Keys.pushToTalkEnabled) as? Bool ?? false
@@ -436,7 +479,9 @@ final class AppPreferences: ObservableObject {
             rawValue: defaults.string(forKey: Keys.autoSubmit) ?? AutoSubmit.off.rawValue
         ) ?? .off
         self.appendTrailingSpace = defaults.object(forKey: Keys.appendTrailingSpace) as? Bool ?? false
-        self.voiceActivityDetection = defaults.object(forKey: Keys.voiceActivityDetection) as? Bool ?? true
+        // 2026-09-24 實機（苑涵）：講長句時停下來想下一句，0.9 秒靜音就被切斷。預設改關（對齊 Typeless：再按一次才結束）；
+        // 沒動過設定的 0.1.5 使用者升級後也會套用新預設，自己開過的保留。
+        self.voiceActivityDetection = defaults.object(forKey: Keys.voiceActivityDetection) as? Bool ?? false
         self.includeSurroundingContext = defaults.object(forKey: Keys.includeSurroundingContext) as? Bool ?? false
         self.postProcessingEnabled = defaults.object(forKey: Keys.postProcessingEnabled) as? Bool ?? true
         self.experimentalFeatures = defaults.object(forKey: Keys.experimentalFeatures) as? Bool ?? false
@@ -471,6 +516,16 @@ final class AppPreferences: ObservableObject {
         self.localEditorModel = defaults.string(forKey: Keys.localEditorModel) ?? ""
         self.localDeepModel = defaults.string(forKey: Keys.localDeepModel) ?? ""
         self.dictionaryJSON = defaults.string(forKey: Keys.dictionaryJSON) ?? "{}"
+        // 詞庫包預設空（所有 catalog 詞庫預設全關；使用者必須明確開啟才生效）。
+        let storedPacks = defaults.stringArray(forKey: Keys.enabledVocabularyPackIDs) ?? []
+        self.enabledVocabularyPackIDs = Set(storedPacks)
+        // 智慧整理服務預設關閉，使用者須明確開啟。
+        self.cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? false
+        self.cleanupProvider = SmartCleanupProvider(
+            rawValue: defaults.string(forKey: Keys.cleanupProvider) ?? SmartCleanupProvider.gemini.rawValue
+        ) ?? .gemini
+        self.customCleanupEndpoint = defaults.string(forKey: Keys.customCleanupEndpoint) ?? ""
+        self.customCleanupModel = defaults.string(forKey: Keys.customCleanupModel) ?? ""
         // Default ⌥Space: portable across laptops and mechanical keyboards that
         // do not have F13–F19, and matches the launchpad apps users already
         // know how to free up if it gets taken. 2026-08-22.
@@ -500,16 +555,46 @@ final class AppPreferences: ObservableObject {
     func addDictionaryTerm(source: String, output: String) {
         let source = source.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !source.isEmpty else { return }
-        var entries = dictionary
-        let output = output.trimmingCharacters(in: .whitespacesAndNewlines)
-        entries[source] = output.isEmpty ? source : output
-        saveDictionary(entries)
+        updateDictionarySync { $0.set(source, output, at: Date().timeIntervalSince1970) }
     }
 
     func removeDictionaryTerm(source: String) {
-        var entries = dictionary
-        entries.removeValue(forKey: source)
-        saveDictionary(entries)
+        updateDictionarySync { $0.remove(source, at: Date().timeIntervalSince1970) }
+    }
+
+    // MARK: - 跨裝置同步（iCloud 跟 iPhone、匯出／匯入跟 Android；格式見 core DictionarySync）
+
+    /// 同步紀錄（每筆時間＋刪除墓碑）；dictionaryJSON 被直接改過（清空全部、舊版）就先對齊。
+    var dictionarySync: DictionarySync {
+        let stored = defaults.data(forKey: Keys.dictionarySync).flatMap { try? DictionarySync.decode($0) }
+        guard var state = stored else { return DictionarySync(plain: dictionary) }
+        state.reconcile(with: dictionary, at: Date().timeIntervalSince1970)
+        return state
+    }
+
+    func writeDictionarySync(_ state: DictionarySync) {
+        defaults.set(state.encoded(), forKey: Keys.dictionarySync)
+        if state.live != dictionary { saveDictionary(state.live) }
+    }
+
+    private func updateDictionarySync(_ change: (inout DictionarySync) -> Void) {
+        var state = dictionarySync
+        change(&state)
+        writeDictionarySync(state)
+    }
+
+    /// 匯出檔（含時間與刪除紀錄；另一台匯入時最後改的贏）。
+    func exportDictionaryData() -> Data {
+        dictionarySync.pruned(now: Date().timeIntervalSince1970).encoded()
+    }
+
+    /// 匯入／從 iCloud 合併；回傳有幾個詞因此新增、修改或刪除。
+    @discardableResult
+    func mergeDictionary(_ incoming: DictionarySync) -> Int {
+        let before = dictionary
+        writeDictionarySync(dictionarySync.merged(with: incoming))
+        let after = dictionary
+        return Set(before.keys).union(after.keys).filter { before[$0] != after[$0] }.count
     }
 
     private func saveDictionary(_ entries: [String: String]) {
@@ -519,6 +604,9 @@ final class AppPreferences: ObservableObject {
     }
 
     var applicationSupportDirectory: URL {
+        if let isolation {
+            return isolation.applicationSupportDirectory
+        }
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support")
         return base.appendingPathComponent(AppBrand.displayName, isDirectory: true)
@@ -529,6 +617,7 @@ final class AppPreferences: ObservableObject {
     }
 
     var logDirectory: URL {
+        if let isolation { return isolation.logDirectory }
         let base = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library")
         return base.appendingPathComponent("Logs", isDirectory: true)
@@ -571,6 +660,28 @@ final class AppPreferences: ObservableObject {
         let records = historyRecords
         historyRecords.removeAll()
         for record in records { deleteRecording(for: record) }
+        saveHistory()
+    }
+
+    /// 背景 cleanup 完成時用：只更新對應 history 的 output（不改 rawTranscript /
+    /// duration / mode / app / audio），讓 history 與「實際貼出去」的字一致。
+    /// 不存在的 id 靜默忽略（cleanup 比 cancel 慢到達時會發生）。
+    func replaceHistoryOutput(id: UUID, with output: String) {
+        guard let index = historyRecords.firstIndex(where: { $0.id == id }) else { return }
+        let updated = HistoryRecord(
+            id: historyRecords[index].id,
+            date: historyRecords[index].date,
+            rawTranscript: historyRecords[index].rawTranscript,
+            output: output,
+            duration: historyRecords[index].duration,
+            mode: historyRecords[index].mode,
+            appName: historyRecords[index].appName,
+            bundleIdentifier: historyRecords[index].bundleIdentifier,
+            audioPath: historyRecords[index].audioPath,
+            isStarred: historyRecords[index].isStarred,
+            note: historyRecords[index].note
+        )
+        historyRecords[index] = updated
         saveHistory()
     }
 
@@ -649,7 +760,9 @@ final class AppPreferences: ObservableObject {
 
     private func deleteRecording(for record: HistoryRecord) {
         guard let audioPath = record.audioPath else { return }
-        try? FileManager.default.removeItem(at: URL(fileURLWithPath: audioPath))
+        let path = URL(fileURLWithPath: audioPath).standardizedFileURL
+        if let isolation, !path.path.hasPrefix(isolation.recordingsDirectory.standardizedFileURL.path + "/") { return }
+        try? FileManager.default.removeItem(at: path)
     }
 
     private func saveHistory() {
@@ -737,6 +850,12 @@ final class AppPreferences: ObservableObject {
         static let localEditorModel = "utuvo.type.local.editorModel"
         static let localDeepModel = "utuvo.type.local.deepModel"
         static let dictionaryJSON = "utuvo.type.dictionaryJSON"
+        static let dictionarySync = "utuvo.type.dictionarySync"
+        static let enabledVocabularyPackIDs = "utuvo.type.vocabularyPacks.enabled"
+        static let cleanupEnabled = "utuvo.type.smart.enabled"
+        static let cleanupProvider = "utuvo.type.smart.provider"
+        static let customCleanupEndpoint = "utuvo.type.smart.customEndpoint"
+        static let customCleanupModel = "utuvo.type.smart.customModel"
         static let globalShortcut = "utuvo.type.globalShortcut"
         static let postProcessingShortcut = "utuvo.type.postProcessingShortcut"
         static let deepMinCharacters = "utuvo.type.deepMinCharacters"

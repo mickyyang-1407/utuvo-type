@@ -21,13 +21,33 @@ from urllib.request import Request, urlopen
 # 引擎家目錄（.runtime venv＋.models）：app 版由 UTUVO_TYPE_ENGINE_HOME 指定，repo 內直接跑就是 repo root。
 ROOT = Path(os.environ.get("UTUVO_TYPE_ENGINE_HOME") or Path(__file__).resolve().parents[1])
 PYTHON = ROOT / ".runtime" / "bin" / "python"
-MODEL = ROOT / ".models" / "asr" / "Qwen3-ASR-0.6B-6bit"
+ASR_DIR = ROOT / ".models" / "asr"
+# 由好到差；與 scripts/bootstrap-runtime.sh、RuntimeBootstrap.swift 同一份名單（測試會對）。
+MODEL_CANDIDATES = ("Qwen3-ASR-1.7B-8bit", "Qwen3-ASR-0.6B-6bit")
+LEGACY_MODEL = "Qwen3-ASR-0.6B-6bit"
+
+
+def model_ready(path: Path) -> bool:
+    """下載完成才有 .complete；舊版 0.6B 沒有標記，有 config.json 就算完整。"""
+    return (path / ".complete").is_file() or (path.name == LEGACY_MODEL and (path / "config.json").is_file())
+
+
+def choose_model() -> Path:
+    for name in MODEL_CANDIDATES:
+        if model_ready(ASR_DIR / name):
+            return ASR_DIR / name
+    return ASR_DIR / LEGACY_MODEL
+
+
+MODEL = choose_model()
 STATE_DIR = ROOT / ".models" / "asr-server"
 LOG_PATH = STATE_DIR / "server.log"
 PID_PATH = STATE_DIR / "server.pid"
 HOST = "127.0.0.1"
 PORT = 18765
 BASE_URL = f"http://{HOST}:{PORT}"
+SERVER_ID = "utuvo-asr-2"
+SERVER_SCRIPT = Path(__file__).resolve().parent / "utuvo-type-asr-server.py"
 START_TIMEOUT = 120.0
 HEALTH_TIMEOUT = 5.0
 
@@ -38,9 +58,58 @@ def server_is_healthy() -> bool:
             Request(f"{BASE_URL}/v1/models", method="GET"),
             timeout=HEALTH_TIMEOUT,
         ) as response:
-            return 200 <= response.status < 300
-    except (OSError, HTTPError, URLError):
+            if not 200 <= response.status < 300:
+                return False
+            # 只認自己這版 server（會把熱詞送進模型）；0.1.5 留下的 mlx_audio.server 也會回 200，但熱詞無效。
+            info = json.loads(response.read().decode("utf-8") or "{}")
+            # 模型升級（0.6B → 1.7B）後舊 server 還掛著舊模型：不算健康，交給 start_server 換掉。
+            ids = [item.get("id") for item in info.get("data", []) if isinstance(item, dict)]
+            return info.get("server") == SERVER_ID and str(MODEL) in ids
+    except (OSError, HTTPError, URLError, ValueError):
         return False
+
+
+def _terminate(pid: int) -> None:
+    try:
+        os.kill(pid, 15)
+    except OSError:
+        return
+    for _ in range(40):
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return
+        time.sleep(0.1)
+
+
+def port_listener_pids() -> list[int]:
+    out = subprocess.run(["/usr/sbin/lsof", "-nP", f"-iTCP:{PORT}", "-sTCP:LISTEN", "-t"],
+                         capture_output=True, text=True, check=False).stdout
+    return [int(x) for x in out.split() if x.isdigit()]
+
+
+def is_type_asr_process(pid: int) -> bool:
+    command = subprocess.run(["/bin/ps", "-p", str(pid), "-o", "command="],
+                             capture_output=True, text=True, check=False).stdout
+    return "mlx_audio.server" in command or "utuvo-type-asr-server.py" in command
+
+
+def stop_foreign_server() -> None:
+    """Port 上有舊版（不認熱詞）的 server：先用 PID 檔關；PID 檔對不上（引擎重裝／搬家）就查誰占著 port，
+    只關 UTUVO 自己的 ASR server（mlx_audio.server 或本 server 腳本），其他程式一律不碰。"""
+    try:
+        pid = int(PID_PATH.read_text(encoding="utf-8").strip())
+    except (OSError, ValueError):
+        pid = 0
+    if pid > 1 and pid_is_alive():
+        _terminate(pid)
+    try:
+        PID_PATH.unlink()
+    except OSError:
+        pass
+    for holder in port_listener_pids():
+        if holder > 1 and is_type_asr_process(holder):
+            _terminate(holder)
 
 
 def pid_is_alive() -> bool:
@@ -79,6 +148,7 @@ def start_server() -> None:
                 raise RuntimeError(f"找不到本機 ASR 模型：{MODEL}")
 
             (ROOT / ".models" / "hf-cache").mkdir(parents=True, exist_ok=True)
+            stop_foreign_server()
             if PID_PATH.exists() and not pid_is_alive():
                 try:
                     PID_PATH.unlink()
@@ -92,14 +162,13 @@ def start_server() -> None:
             process = subprocess.Popen(
                 [
                     str(PYTHON),
-                    "-m",
-                    "mlx_audio.server",
+                    str(SERVER_SCRIPT),
+                    "--model",
+                    str(MODEL),
                     "--host",
                     HOST,
                     "--port",
                     str(PORT),
-                    "--log-dir",
-                    str(STATE_DIR),
                 ],
                 cwd=ROOT,
                 env=environment,
@@ -151,6 +220,10 @@ def multipart_body(audio_path: Path) -> tuple[bytes, str]:
     language = os.environ.get("UTUVO_TYPE_ASR_LANGUAGE", "Chinese")
     if language and language.lower() != "auto":
         fields.append(("language", language))
+    # 使用者字典＋詞庫（app 以換行分隔傳入）：Qwen3-ASR 靠它認專有名詞（同一批 60 句實測錯字 −41%）。
+    hotwords = os.environ.get("UTUVO_TYPE_ASR_HOTWORDS", "").strip()
+    if hotwords:
+        fields.append(("hotwords", hotwords))
     for name, value in fields:
         chunks.extend(
             [

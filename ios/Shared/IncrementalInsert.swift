@@ -41,3 +41,32 @@ enum IncrementalInsert {
         )
     }
 }
+
+/// 背景校正回來時能不能換字：游標前面必須還是剛貼上的那段（2026-09-19）。
+/// 文件內容很長時 `documentContextBeforeInput` 只給最後一截：那一截是剛貼那段的結尾、而且夠長（≥ 8 字）也算。
+enum CorrectionSwap {
+    static func canReplace(inserted: String, contextBefore: String) -> Bool {
+        guard !inserted.isEmpty, !contextBefore.isEmpty else { return false }
+        if contextBefore.hasSuffix(inserted) { return true }
+        return contextBefore.count >= 8 && inserted.hasSuffix(contextBefore)
+    }
+}
+
+/// 連續講好幾段時的背景更正（2026-09-20）：第 k 段的更正回來時，後面幾段已經貼上了。
+/// 游標前面還是「第 k 段起到最後一段」的原文，才把這一串換成「第 k 段更正版＋後面各段」。
+enum CorrectionChain {
+    struct Entry: Equatable, Sendable {
+        var id: UUID
+        var inserted: String
+        var done = false
+    }
+
+    /// 回傳要換的 (原本那一串, 換成什麼, 第幾段)；對不上就 nil（不動）。
+    static func plan(entries: [Entry], id: UUID, corrected: String, contextBefore: String) -> (previous: String, current: String, index: Int)? {
+        guard let i = entries.firstIndex(where: { $0.id == id && !$0.done }) else { return nil }
+        let tail = entries[i...]
+        let previous = tail.map(\.inserted).joined()
+        guard CorrectionSwap.canReplace(inserted: previous, contextBefore: contextBefore) else { return nil }
+        return (previous, corrected + tail.dropFirst().map(\.inserted).joined(), i)
+    }
+}

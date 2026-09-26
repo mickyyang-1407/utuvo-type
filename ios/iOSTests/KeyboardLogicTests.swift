@@ -20,6 +20,114 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertFalse(KeyboardMode.translate(target: ja).insertsPartials)
     }
 
+    func testShouldFlushPendingBeforeStartTruthTable() {
+        // 翻譯／編輯模式不該 flush（沒有「整理中」階段）。
+        let notDictating = KeyboardMode.edit(selection: "x")
+        XCTAssertFalse(notDictating == .dictate)
+        XCTAssertFalse(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: false,
+                                                                  hasPendingCommand: true,
+                                                                  isRecording: false,
+                                                                  lastTranscript: "明天下午三點"))
+        // 沒等待中的指令：false
+        XCTAssertFalse(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: true,
+                                                                  hasPendingCommand: false,
+                                                                  isRecording: false,
+                                                                  lastTranscript: "明天下午三點"))
+        // 正在錄音：false（會走 stop 分支，不會走 flush）
+        XCTAssertFalse(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: true,
+                                                                  hasPendingCommand: true,
+                                                                  isRecording: true,
+                                                                  lastTranscript: "明天下午三點"))
+        // 全空白：false
+        XCTAssertFalse(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: true,
+                                                                  hasPendingCommand: true,
+                                                                  isRecording: false,
+                                                                  lastTranscript: "   \n\t "))
+        XCTAssertFalse(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: true,
+                                                                  hasPendingCommand: true,
+                                                                  isRecording: false,
+                                                                  lastTranscript: ""))
+        // 全成立：true
+        XCTAssertTrue(KeyboardMode.shouldFlushPendingBeforeStart(isDictating: true,
+                                                                 hasPendingCommand: true,
+                                                                 isRecording: false,
+                                                                 lastTranscript: "明天下午三點"))
+    }
+
+    func testPendingTranscriptIgnoresWhenNoOrMismatchedID() {
+        let id = UUID()
+        // pendingID 為 nil → 用 local
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "明天下午三點",
+                                                     pendingID: nil,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "partial 文字",
+                                                     sharedFinal: nil),
+                       "明天下午三點")
+        // sharedCommandID 不符 → 用 local（不要拿錯段的文字）
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "明天下午三點",
+                                                     pendingID: id,
+                                                     sharedCommandID: UUID(),
+                                                     sharedPartial: "partial 文字",
+                                                     sharedFinal: nil),
+                       "明天下午三點")
+    }
+
+    func testPendingTranscriptPrefersSharedWhenLocalEmpty() {
+        let id = UUID()
+        // local 空、shared partial 有字 → shared
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "",
+                                                     pendingID: id,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "明天下午三點",
+                                                     sharedFinal: nil),
+                       "明天下午三點")
+    }
+
+    func testPendingTranscriptPrefersFinalOverPartial() {
+        let id = UUID()
+        // sharedFinal 優先於 sharedPartial
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "短",
+                                                     pendingID: id,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "partial 文字",
+                                                     sharedFinal: "final 文字"),
+                       "final 文字")
+    }
+
+    func testPendingTranscriptPrefersFinalEvenWhenShorter() {
+        // R3-3（luna-review 2026-09-25）：sharedFinal 是主 app 走過字典的最終版，比 partial 權威；
+        // 不比長度（定稿可能比 partial 短）。
+        let id = UUID()
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "很長很長的 local 文字",
+                                                     pendingID: id,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "partial 文字",
+                                                     sharedFinal: "短"),
+                       "短")
+    }
+
+    func testPendingTranscriptFallsBackToLocalWhenSharedShorter() {
+        let id = UUID()
+        // shared 比 local 短 → 用 local（空白誤觸或被截斷時不要撐場）
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "明天下午三點在錄音室",
+                                                     pendingID: id,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "你好",
+                                                     sharedFinal: nil),
+                       "明天下午三點在錄音室")
+    }
+
+    func testPendingTranscriptFallsBackToLocalWhenSharedAllWhitespace() {
+        let id = UUID()
+        // shared 全空白（partial 與 final 都沒字） → 用 local
+        XCTAssertEqual(KeyboardMode.pendingTranscript(local: "明天下午三點",
+                                                     pendingID: id,
+                                                     sharedCommandID: id,
+                                                     sharedPartial: "   \n\t ",
+                                                     sharedFinal: nil),
+                       "明天下午三點")
+    }
+
     func testQuickPickDefaultsHaveEnglishInTheMiddle() {
         XCTAssertEqual(QuickPickStore.resolve(nil), ["ja", "ko", "en", "zh-Hant", "fr"])
         XCTAssertEqual(QuickPickStore.resolve(nil)[2], "en")
@@ -55,6 +163,11 @@ final class KeyboardLogicTests: XCTestCase {
     func testToneChatDropsSingleTrailingPeriod() {
         XCTAssertEqual(ToneHint.infer(returnKeyType: .send), .chat)
         XCTAssertEqual(ToneHint.infer(returnKeyType: .default), .document)
+        XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: .default))
+        XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: nil))
+        for single in [UIReturnKeyType.send, .search, .go, .done, .next, .join, .route, .google, .yahoo, .emergencyCall, .continue] {
+            XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: single), "\(single.rawValue)")
+        }
         XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .chat), "我十分鐘到")
         XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .document), "我十分鐘到。")
         // 多句不動、太長不動、沒句號不動
@@ -90,5 +203,66 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertEqual(insights.sessions, 2)
         // 15 字 × (1/36 − 1/150) 分鐘 ≈ 0.317
         XCTAssertEqual(insights.minutesSaved, 15.0 * (1.0 / 36.0 - 1.0 / 150.0), accuracy: 0.0001)
+    }
+
+    // MARK: - R3-4（luna-review 2026-09-25）flushText 真值表
+    // 合併 shouldFlushPendingBeforeStart 與 pendingTranscript，回要貼的文字或 nil。
+
+    func testFlushTextReturnsNilWhenNotDictating() {
+        // 翻譯／編輯模式沒有「整理中」階段
+        XCTAssertNil(KeyboardMode.flushText(isDictating: false, isRecording: false, pendingID: UUID(),
+                                            local: "明天下午三點", sharedCommandID: nil,
+                                            sharedPartial: "", sharedFinal: nil))
+    }
+
+    func testFlushTextReturnsNilWhenRecording() {
+        // 錄音中會走 stop 分支，不該 flush
+        XCTAssertNil(KeyboardMode.flushText(isDictating: true, isRecording: true, pendingID: UUID(),
+                                            local: "明天下午三點", sharedCommandID: nil,
+                                            sharedPartial: "", sharedFinal: nil))
+    }
+
+    func testFlushTextReturnsNilWhenNoPending() {
+        XCTAssertNil(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: nil,
+                                            local: "明天下午三點", sharedCommandID: nil,
+                                            sharedPartial: "shared 文字", sharedFinal: nil))
+    }
+
+    func testFlushTextUsesSharedWhenLocalEmpty() {
+        let id = UUID()
+        // local 空、shared partial 有字（同 ID）→ 用 shared
+        XCTAssertEqual(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: id,
+                                              local: "", sharedCommandID: id,
+                                              sharedPartial: "明天下午三點", sharedFinal: nil),
+                       "明天下午三點")
+    }
+
+    func testFlushTextPrefersFinalEvenWhenShorter() {
+        // R3-3：sharedFinal 即使比 local 短（同 ID）也是主 app 定稿，權威最高
+        let id = UUID()
+        XCTAssertEqual(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: id,
+                                              local: "很長很長的 local 文字", sharedCommandID: id,
+                                              sharedPartial: "partial 文字", sharedFinal: "短"),
+                       "短")
+    }
+
+    func testFlushTextFallsBackToLocalWhenIDMismatch() {
+        let id = UUID()
+        // pendingID != sharedCommandID → 用 local（local 空就 nil）
+        XCTAssertEqual(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: id,
+                                              local: "local 文字", sharedCommandID: UUID(),
+                                              sharedPartial: "shared 文字", sharedFinal: "shared final"),
+                       "local 文字")
+        XCTAssertNil(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: id,
+                                            local: "", sharedCommandID: UUID(),
+                                            sharedPartial: "shared 文字", sharedFinal: "shared final"))
+    }
+
+    func testFlushTextReturnsNilWhenAllWhitespace() {
+        let id = UUID()
+        // 鍵盤 local 與 shared 都是空白（拿不到東西）→ nil，不該貼空字串
+        XCTAssertNil(KeyboardMode.flushText(isDictating: true, isRecording: false, pendingID: id,
+                                            local: "   \n\t ", sharedCommandID: id,
+                                            sharedPartial: "   ", sharedFinal: nil))
     }
 }

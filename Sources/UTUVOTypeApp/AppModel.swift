@@ -9,6 +9,8 @@ import UTUVOTypeCore
 @MainActor
 final class AppModel: ObservableObject {
     private let logger = Logger(subsystem: "com.utuvo.type", category: "permissions")
+    /// 投遞／整理結果（`log show --predicate 'subsystem == "com.utuvo.type"'` 查得到；不含逐字稿內容）。
+    private let deliveryLog = Logger(subsystem: "com.utuvo.type", category: "delivery")
     @Published private(set) var isRecording = false
     @Published private(set) var isProcessing = false
     @Published private(set) var statusMessage = "準備就緒"
@@ -40,16 +42,40 @@ final class AppModel: ObservableObject {
     private var pttKeyWatchdog: Task<Void, Never>?
     private var historyAudioPlayer: NSSound?
     private var unloadTask: Task<Void, Never>?
+    private var inputChangedDuringRecording = false
     private var permissionOnboardingInFlight = false
+    // 背景智慧整理（SmartCleanup）：先送 deterministic 出去、捕捉 AXInsertionTicket；
+    // cleanup 完成後用 AXReplacementGate 確認「同一欄位、同一內容、同一前綴」才覆寫。
+    private var pendingCleanupTask: Task<Void, Never>?
+    private var destination: (any DictationDestination)?
+    private var capturedPID: Int32?
+    var captureDestination: (Int32?) -> (any DictationDestination)?
+    var cleanupRunner: @Sendable (String, CleanupConfig) async -> String?
+    /// Isolated tests can verify local Smart output is inserted before its slower formatter completes.
+    var localBackgroundRunner: (@Sendable (String, LimitedAppContext, [String: String]) async -> String?)?
+    // Isolated fixtures can exercise the actual one-shot branch without starting a provider.
+    var legacyFormatterRunner: ((String) async throws -> String)?
+    var onDeliveryEvent: ((String) -> Void)?
     private let legacyFirstUsePermissionKey = "utuvo.type.firstUsePermissionPrompted"
     private let permissionOnboardingAttemptedKey = "utuvo.type.permissionOnboardingAttempted"
     private let permissionOnboardingCompletedKey = "utuvo.type.permissionOnboardingCompleted"
 
     init(preferences: AppPreferences = AppPreferences()) {
         self.preferences = preferences
+        if preferences.isolation != nil {
+            captureDestination = { _ in nil }
+            cleanupRunner = { _, _ in nil }
+            legacyFormatterRunner = { _ in throw URLError(.notConnectedToInternet) }
+        } else {
+            captureDestination = { AXAdapter.shared.capture(expectedPID: $0) }
+            cleanupRunner = { text, config in await SmartCleanup.clean(text, config: config) }
+        }
         statusMessage = preferences.tr("準備就緒", "Ready")
         refreshPermissionState()
     }
+
+    /// Display-only scalar; polling does not publish changes or alter recording.
+    func liveVoiceLevel() -> Float? { isRecording ? capture?.currentVoiceLevel : nil }
 
     var modeDisplayName: String {
         switch activeMode {
@@ -140,6 +166,7 @@ final class AppModel: ObservableObject {
     }
 
     func ensureFirstUsePermissions() async {
+        guard preferences.isolation == nil else { return }
         guard !permissionOnboardingInFlight else { return }
         permissionOnboardingInFlight = true
         defer { permissionOnboardingInFlight = false }
@@ -185,6 +212,7 @@ final class AppModel: ObservableObject {
     }
 
     func openMissingPermissionSettings() {
+        guard preferences.isolation == nil else { return }
         if AVCaptureDevice.authorizationStatus(for: .audio) != .authorized {
             AccessibilitySupport.openPrivacySettings(section: "Microphone")
             return
@@ -200,6 +228,7 @@ final class AppModel: ObservableObject {
     }
 
     func refreshPermissionState() {
+        guard preferences.isolation == nil else { return }
         microphonePermissionReady = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
         accessibilityPermissionReady = AccessibilitySupport.isTrusted()
         needsPermissionSetup = !microphonePermissionReady || !accessibilityPermissionReady
@@ -249,16 +278,36 @@ final class AppModel: ObservableObject {
 
     func startRecording(mode: FormatterMode) {
         guard !isProcessing else { return }
+        prepareDictation(mode: mode)
+        guard preferences.isolation == nil else { return }
+        // 2026-09-24 實機（苑涵 0.1.5）：安裝中按聽寫＝錄完才靜靜失敗，使用者以為壞了。開始前就講清楚。
+        if preferences.backend == .local, EngineInstaller.shared.isInstalling {
+            let step = EngineInstaller.shared.lastLine
+            fail(preferences.tr("本機引擎還在安裝，完成前無法轉文字。\(step)",
+                                "The local engine is still installing; dictation works once it finishes. \(step)"))
+            return
+        }
+        let generation = operationToken
         unloadTask?.cancel()
         unloadTask = nil
         activeMode = mode
         preferences.mode = mode
+        if mode == .smart, preferences.postProcessingEnabled, preferences.cleanupEnabled {
+            let provider = SmartCleanup.Provider(rawValue: preferences.cleanupProvider.rawValue) ?? .gemini
+            SmartCleanup.warmUp(provider: provider,
+                                customEndpoint: preferences.customCleanupEndpoint,
+                                bailianEndpoint: preferences.bailianFormatterEndpoint)
+        } else if mode == .smart, preferences.postProcessingEnabled, preferences.backend == .local {
+            LocalEditorPrewarmer.warmUp(command: preferences.localEditorCommand.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
         Task { [weak self] in
-            await self?.beginRecording()
+            guard let self, self.operationToken == generation else { return }
+            await self.beginRecording()
         }
     }
 
     func cancelProcessing() {
+        invalidateBackground()
         activeTranslationTarget = .off
         guard isProcessing else { return }
         operationToken = UUID()
@@ -268,6 +317,9 @@ final class AppModel: ObservableObject {
         pushToTalkActive = false
         isRecording = false
         isProcessing = false
+        // 背景 cleanup 不准在取消後還把 lastOutput / history 蓋掉。
+        pendingCleanupTask?.cancel()
+        pendingCleanupTask = nil
         statusMessage = preferences.tr("已取消；沒有貼上新文字", "Cancelled; no new text was pasted")
         notify()
     }
@@ -276,6 +328,7 @@ final class AppModel: ObservableObject {
     /// if formatting is already running, cancel it without discarding the
     /// latest raw transcript.
     func cancelRecording() {
+        invalidateBackground()
         activeTranslationTarget = .off
         if isRecording {
             operationToken = UUID()
@@ -485,7 +538,7 @@ final class AppModel: ObservableObject {
         lastErrorMessage = nil
         partialTranscript = ""
         selectedContext = nil
-        operationToken = UUID()
+        let generation = operationToken
 
         guard await PermissionGate.requestMicrophone() else {
             fail(preferences.tr(
@@ -495,6 +548,7 @@ final class AppModel: ObservableObject {
             return
         }
 
+        guard generation == operationToken else { return }
         if activeMode == .editSelection {
             guard AccessibilitySupport.isTrusted() else {
                 fail(preferences.tr(
@@ -572,8 +626,29 @@ final class AppModel: ObservableObject {
         capture = session
         isRecording = true
         playAudioFeedbackIfEnabled()
-        statusMessage = preferences.tr("聆聽中…點選停止以整理並貼上", "Listening… click stop to format and paste")
+        let micName = session.inputDeviceName
+        statusMessage = micName.isEmpty
+            ? preferences.tr("聆聽中…點選停止以整理並貼上", "Listening… click stop to format and paste")
+            : preferences.tr("聆聽中（麥克風：\(micName)）…點選停止以整理並貼上", "Listening (mic: \(micName))… click stop to format and paste")
         notify()
+        // 2026-09-24 實機（苑涵 0.1.5）：AirPods 搶走系統輸入，對著電腦講、錄到的全是靜音，使用者不知道。
+        // 錄音中輸入裝置被換掉＝停下來講清楚；講了 3 秒還幾乎沒聲音＝當場提示用的是哪支麥克風。
+        session.onInputDeviceChanged = { [weak self] in
+            Task { @MainActor in
+                guard let self, self.isRecording, self.capture === session else { return }
+                self.inputChangedDuringRecording = true
+                self.stopRecording()
+            }
+        }
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(3))
+            guard let self, self.isRecording, self.capture === session,
+                  session.peakDBFSSoFar < AudioCaptureResult.silentPeakDBFS else { return }
+            self.statusMessage = self.preferences.tr(
+                "好像沒收到聲音——目前使用的麥克風是「\(micName)」，可到設定換輸入裝置",
+                "No sound detected yet — the current microphone is \"\(micName)\"; change the input in Settings")
+            self.notify()
+        }
 
         if preferences.pushToTalkEnabled && !pushToTalkActive {
             stopRecording()
@@ -592,7 +667,8 @@ final class AppModel: ObservableObject {
                 let asrContext = ASRContext(
                     languageIdentifier: preferences.transcriptionLanguage.speechLocaleIdentifier,
                     allowMixedChineseEnglish: true,
-                    hotwords: Array(preferences.dictionary.keys.prefix(50)),
+                    hotwords: VocabularyPacks.contextualHints(personal: preferences.dictionary,
+                        enabled: preferences.enabledVocabularyPackIDs, limit: 50),
                     limitedContext: String((appContext.appName ?? "").prefix(120))
                 )
                 cloudASRTask = Task { [weak self] in
@@ -657,13 +733,27 @@ final class AppModel: ObservableObject {
     ) async {
         guard token == operationToken else { return }
         defer {
-            cloudASRTask = nil
-            isProcessing = false
-            scheduleRuntimeUnload()
-            notify()
+            if token == operationToken {
+                cloudASRTask = nil
+                isProcessing = false
+                scheduleRuntimeUnload()
+                notify()
+            }
         }
         guard let result else {
             fail(preferences.tr("沒有取得錄音結果；未貼上文字", "No recording result was received; no text was pasted"))
+            return
+        }
+        let inputChanged = inputChangedDuringRecording
+        inputChangedDuringRecording = false
+        let micName = result.inputDeviceName
+        if result.framesWritten == 0 {
+            capture.deleteTemporaryAudio(at: result.audioURL)
+            fail(inputChanged
+                 ? preferences.tr("錄音中麥克風被切換（原本：\(micName)），這次沒有錄到聲音；請再講一次",
+                                  "The microphone changed during recording (was: \(micName)); nothing was captured. Please try again")
+                 : preferences.tr("沒有錄到任何聲音（麥克風：\(micName)）；請確認輸入裝置後再試",
+                                  "Nothing was captured (mic: \(micName)); check the input device and try again"))
             return
         }
 
@@ -687,7 +777,9 @@ final class AppModel: ObservableObject {
                     command: preferences.localASRCommand,
                     argumentsTemplate: preferences.localASRArguments,
                     outputScript: preferences.outputScript.rawValue,
-                    asrLanguage: preferences.transcriptionLanguage.asrLanguageName
+                    asrLanguage: preferences.transcriptionLanguage.asrLanguageName,
+                    hotwords: VocabularyPacks.contextualHints(personal: preferences.dictionary,
+                                                              enabled: preferences.enabledVocabularyPackIDs, limit: 80)
                 ).transcribe(audioURL: result.audioURL)
             } catch {
                 asrError = asrError ?? error
@@ -702,6 +794,11 @@ final class AppModel: ObservableObject {
         capture.deleteTemporaryAudio(at: result.audioURL)
 
         guard !transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            if result.soundsSilent {
+                fail(preferences.tr("好像沒收到聲音（峰值 \(Int(result.peakDBFS)) dB）——目前使用的麥克風是「\(micName)」，可到設定換輸入裝置",
+                                    "No sound was picked up (peak \(Int(result.peakDBFS)) dB) — the microphone was \"\(micName)\"; change the input in Settings"))
+                return
+            }
             fail(asrError?.localizedDescription ?? preferences.tr(
                 "沒有收到轉錄文字；請設定本機 Qwen3-ASR command 或選擇百鍊 ASR",
                 "No transcript was received; configure a local Qwen3-ASR command or choose Bailian ASR"
@@ -739,11 +836,16 @@ final class AppModel: ObservableObject {
     ) async {
         guard token == operationToken else { return }
         lastRawTranscript = transcript
-        let context = selectedContext ?? AccessibilitySupport.readCurrentContext(
+        let context = preferences.isolation != nil ? LimitedAppContext() : (selectedContext ?? AccessibilitySupport.readCurrentContext(
             includeSurrounding: preferences.includeSurroundingContext
-        )
+        ))
         let dictionary = preferences.dictionary
-        let normalized = Normalizer(options: NormalizerOptions(dictionary: dictionary)).normalize(transcript)
+        // 詞庫包：個人字典的寫法 + 已開啟 catalog 包的拉丁字母 seeds（給 LatinNameFixer 比對用）。
+        let latinTerms = VocabularyPacks.latinTermsForFixer(
+            personalValues: Array(dictionary.values),
+            enabled: preferences.enabledVocabularyPackIDs
+        )
+        let normalized = Normalizer(options: NormalizerOptions(dictionary: dictionary, latinTerms: latinTerms)).normalize(transcript)
         let combinedForFeatures = [transcript, context.selectedText ?? ""].joined(separator: "\n")
         let longTextThresholdReached = transcript.count >= max(1, preferences.deepMinCharacters)
             || audioDuration >= TimeInterval(max(1, preferences.deepMinAudioSeconds))
@@ -766,6 +868,23 @@ final class AppModel: ObservableObject {
             hasSelfCorrection: InputFeatures.hasSelfCorrection(transcript),
             hasMarkdown: InputFeatures.hasMarkdown(transcript)
         )
+        let cloudBackgroundCleanup = preferences.cleanupEnabled && preferences.postProcessingEnabled
+        let localBackgroundCleanup = !cloudBackgroundCleanup
+            && preferences.postProcessingEnabled
+            && preferences.backend == .local
+            && activeMode == .smart
+            && !decision.skipLLM
+            && !Router.isShortSentence(editorInput)
+            && (!preferences.localEditorCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || !preferences.localEditorModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        if Self.backgroundEligible(mode: activeMode, translation: translation, autoSubmit: preferences.autoSubmit,
+                                   enabled: cloudBackgroundCleanup || localBackgroundCleanup,
+                                   language: preferences.transcriptionLanguage.rawValue) {
+            await deliverImmediate(normalized.cleaned, raw: transcript, duration: audioDuration,
+                                   historyID: historyID, audioPath: audioPath, token: token, context: context,
+                                   dictionary: dictionary, useLocalFormatter: localBackgroundCleanup)
+            return
+        }
         // Edit Selection commands are often short (“改正式一點”), but the
         // selected text is the actual editing payload, so local editor use is
         // still allowed for that mode.
@@ -780,71 +899,80 @@ final class AppModel: ObservableObject {
 
         if preferences.postProcessingEnabled && !decision.skipLLM {
             do {
-                let prompt = try makePrompt(transcript: transcript, context: context, dictionary: dictionary)
-                switch preferences.backend {
-                case .bailian:
-                    let client = try BailianFormatterClient(endpointString: preferences.bailianFormatterEndpoint)
-                    let models = uniqueModels(from: decision)
-                    for model in models {
-                        do {
-                            let candidate = try await client.format(prompt: prompt, model: model.rawValue)
-                            guard let safe = FormatterOutputGuard.sanitize(
-                                candidate,
-                                source: editorInput.text,
-                                mode: activeMode
-                            ) else {
+                let prompt = try await makePrompt(transcript: transcript, context: context, dictionary: dictionary)
+                if let legacyFormatterRunner {
+                    let candidate = try await legacyFormatterRunner(prompt)
+                    guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
+                        throw ProviderError.malformedResponse
+                    }
+                    output = safe
+                    formatterSucceeded = true
+                } else {
+                    switch preferences.backend {
+                    case .bailian:
+                        let client = try BailianFormatterClient(endpointString: preferences.bailianFormatterEndpoint)
+                        let models = uniqueModels(from: decision)
+                        for model in models {
+                            do {
+                                let candidate = try await client.format(prompt: prompt, model: model.rawValue)
+                                guard let safe = FormatterOutputGuard.sanitize(
+                                    candidate,
+                                    source: editorInput.text,
+                                    mode: activeMode
+                                ) else {
+                                    throw ProviderError.malformedResponse
+                                }
+                                output = safe
+                                formatterSucceeded = true
+                                break
+                            } catch {
+                                notice = preferences.tr(
+                                    "百鍊 formatter fallback：\(error.localizedDescription)",
+                                    "Bailian formatter fallback: \(error.localizedDescription)"
+                                )
+                            }
+                        }
+                    case .local:
+                        if activeMode == .deep,
+                           decision.useLocalDeep,
+                           !preferences.localDeepModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            let client = try OllamaFormatterClient(model: preferences.localDeepModel)
+                            let candidate = try await client.format(prompt: prompt, model: preferences.localDeepModel)
+                            guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
                                 throw ProviderError.malformedResponse
                             }
                             output = safe
                             formatterSucceeded = true
-                            break
-                        } catch {
+                        } else if !preferences.localEditorCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                                  localEditorAllowed {
+                            let client = LocalFormatterProcessClient(
+                                command: preferences.localEditorCommand,
+                                outputScript: preferences.outputScript.rawValue
+                            )
+                            let candidate = try await client.format(
+                                prompt: prompt,
+                                model: preferences.localEditorModel.isEmpty ? "local-qwen3-editor" : preferences.localEditorModel
+                            )
+                            guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
+                                throw ProviderError.malformedResponse
+                            }
+                            output = safe
+                            formatterSucceeded = true
+                        } else if !preferences.localEditorModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                                  localEditorAllowed {
+                            let client = try OllamaFormatterClient(model: preferences.localEditorModel)
+                            let candidate = try await client.format(prompt: prompt, model: preferences.localEditorModel)
+                            guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
+                                throw ProviderError.malformedResponse
+                            }
+                            output = safe
+                            formatterSucceeded = true
+                        } else {
                             notice = preferences.tr(
-                                "百鍊 formatter fallback：\(error.localizedDescription)",
-                                "Bailian formatter fallback: \(error.localizedDescription)"
+                                "本機沒有設定小型 editor，已使用 deterministic 整理",
+                                "No local small editor is configured; deterministic formatting was used"
                             )
                         }
-                    }
-                case .local:
-                    if activeMode == .deep,
-                       decision.useLocalDeep,
-                       !preferences.localDeepModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                        let client = try OllamaFormatterClient(model: preferences.localDeepModel)
-                        let candidate = try await client.format(prompt: prompt, model: preferences.localDeepModel)
-                        guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
-                            throw ProviderError.malformedResponse
-                        }
-                        output = safe
-                        formatterSucceeded = true
-                    } else if !preferences.localEditorCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                              localEditorAllowed {
-                        let client = LocalFormatterProcessClient(
-                            command: preferences.localEditorCommand,
-                            outputScript: preferences.outputScript.rawValue
-                        )
-                        let candidate = try await client.format(
-                            prompt: prompt,
-                            model: preferences.localEditorModel.isEmpty ? "local-qwen3-editor" : preferences.localEditorModel
-                        )
-                        guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
-                            throw ProviderError.malformedResponse
-                        }
-                        output = safe
-                        formatterSucceeded = true
-                    } else if !preferences.localEditorModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                              localEditorAllowed {
-                        let client = try OllamaFormatterClient(model: preferences.localEditorModel)
-                        let candidate = try await client.format(prompt: prompt, model: preferences.localEditorModel)
-                        guard let safe = FormatterOutputGuard.sanitize(candidate, source: editorInput.text, mode: activeMode) else {
-                            throw ProviderError.malformedResponse
-                        }
-                        output = safe
-                        formatterSucceeded = true
-                    } else {
-                        notice = preferences.tr(
-                            "本機沒有設定小型 editor，已使用 deterministic 整理",
-                            "No local small editor is configured; deterministic formatting was used"
-                        )
                     }
                 }
             } catch {
@@ -896,6 +1024,11 @@ final class AppModel: ObservableObject {
         }
 
         let pasteOutput = preferences.appendTrailingSpace ? output + " " : output
+        guard preferences.isolation == nil,
+              capturedPID == nil || NSWorkspace.shared.frontmostApplication?.processIdentifier == capturedPID else {
+            statusMessage = preferences.tr("目的地已變更；可複製最後結果", "Destination changed; copy the last result")
+            return
+        }
         do {
             try ClipboardPaster.paste(
                 pasteOutput,
@@ -914,6 +1047,180 @@ final class AppModel: ObservableObject {
             )
             lastErrorMessage = error.localizedDescription
         }
+
+    }
+
+    static func backgroundEligible(mode: FormatterMode, translation: TranslationTarget, autoSubmit: AutoSubmit, enabled: Bool, language: String) -> Bool {
+        enabled && mode == .smart && translation == .off && autoSubmit == .off && SmartCleanup.supportsLanguage(language)
+    }
+
+    func prepareDictation(mode: FormatterMode, expectedPID: Int32? = nil) {
+        invalidateBackground()
+        activeMode = mode
+        capturedPID = expectedPID ?? (preferences.isolation == nil ? NSWorkspace.shared.frontmostApplication?.processIdentifier : nil)
+        destination = captureDestination(capturedPID)
+        onDeliveryEvent?(destination == nil ? "refused" : "capture")
+    }
+
+    private func invalidateBackground() {
+        operationToken = UUID()
+        pendingCleanupTask?.cancel(); pendingCleanupTask = nil
+        destination?.invalidate(); destination = nil
+    }
+
+    /// Test/QA entry: same production formatting and delivery, never records audio.
+    func completeSyntheticDictation(_ text: String) async {
+        guard preferences.isolation != nil else { return }
+        await formatAndPaste(transcript: text, audioDuration: 0, asrError: nil,
+                             token: operationToken, historyID: UUID())
+    }
+
+    func waitForBackgroundCleanup() async { await pendingCleanupTask?.value }
+
+    private func deliverImmediate(_ original: String, raw: String, duration: TimeInterval,
+                                  historyID: UUID, audioPath: String?, token: UUID, context: LimitedAppContext,
+                                  dictionary: [String: String], useLocalFormatter: Bool) async {
+        let trailing = preferences.appendTrailingSpace ? " " : ""
+        let promptContext = preferences.includeSurroundingContext
+            ? CleanupPromptContext(
+                appName: context.appName ?? "",
+                styleHint: preferences.preset(for: context.foregroundBundleIdentifier)?.promptHint ?? "",
+                surroundingText: context.surroundingText ?? ""
+            )
+            : .init()
+        let config = CleanupConfig(enabled: true, provider: preferences.cleanupProvider,
+            customEndpoint: preferences.customCleanupEndpoint, customModel: preferences.customCleanupModel,
+            language: preferences.transcriptionLanguage.rawValue, personal: dictionary,
+            enabledPacks: preferences.enabledVocabularyPackIDs, bailianEndpoint: preferences.bailianFormatterEndpoint,
+            context: promptContext, validationSource: original)
+        guard token == operationToken else { return }
+        guard let target = destination, await target.insert(original + trailing) else {
+            // 2026-09-24 實機（苑涵 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
+            // 這裡原本直接 return——不貼字、不寫歷史。改成跟 Fast 一樣走剪貼簿貼上（仍檢查前景 App 沒換）；
+            // 貼之前先在同一個時限內整理，能整理就貼整理版，否則貼本機整理版。
+            await pasteWithoutCapture(original: original, raw: raw, duration: duration, historyID: historyID,
+                                      audioPath: audioPath, token: token, context: context, dictionary: dictionary,
+                                      config: config, useLocalFormatter: useLocalFormatter)
+            return
+        }
+        guard token == operationToken else { return }
+        lastOutput = original
+        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: raw, output: original,
+            duration: duration, mode: activeMode, appName: context.appName,
+            bundleIdentifier: context.foregroundBundleIdentifier, audioPath: audioPath))
+        isProcessing = false
+        statusMessage = preferences.tr("已貼上", "Inserted")
+        onDeliveryEvent?("inserted")
+        notify()
+        guard target.supportsCorrection else { onDeliveryEvent?("refused"); target.invalidate(); return }
+        let run = cleanupRunner
+        let localRun = localBackgroundRunner
+        pendingCleanupTask = Task { [weak self] in
+            let cleaned: String?
+            if useLocalFormatter {
+                cleaned = await SmartCleanup.localCorrectionWithinDeadline { [weak self] in
+                    if let localRun { return await localRun(raw, context, dictionary) }
+                    guard let self else { return nil }
+                    return await self.localBackgroundCleanup(raw, context: context, dictionary: dictionary)
+                }
+            } else {
+                cleaned = await run(raw, config)
+            }
+            guard let self else { target.invalidate(); return }
+            // 整理模型讀的是原始逐字稿（「三點」），先貼出的版本已轉成「3點」：數字格式先對齊，否則把關會把整段擋掉。
+            guard !Task.isCancelled, token == self.operationToken, !self.isRecording,
+                  let cleaned = cleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: cleaned),
+                  target.replaceInsertedText(with: cleaned + trailing) else {
+                target.invalidate()
+                if token == self.operationToken { self.onDeliveryEvent?("refused") }
+                return
+            }
+            self.lastOutput = cleaned
+            self.preferences.replaceHistoryOutput(id: historyID, with: cleaned)
+            self.statusMessage = self.preferences.tr("背景整理已套用", "Background cleanup applied")
+            self.onDeliveryEvent?("applied")
+            self.notify()
+        }
+    }
+
+    /// Smart 模式的目的地不能安全插入／事後替換時的退路：整理（有時限）→ 寫歷史 → 剪貼簿貼一次。
+    private func pasteWithoutCapture(original: String, raw: String, duration: TimeInterval, historyID: UUID,
+                                     audioPath: String?, token: UUID, context: LimitedAppContext,
+                                     dictionary: [String: String], config: CleanupConfig, useLocalFormatter: Bool) async {
+        destination?.invalidate(); destination = nil
+        statusMessage = preferences.tr("整理中…", "Cleaning up…")
+        let started = Date()
+        let rawCleaned: String?
+        if useLocalFormatter {
+            let localRun = localBackgroundRunner
+            rawCleaned = await SmartCleanup.localCorrectionWithinDeadline { [weak self] in
+                if let localRun { return await localRun(raw, context, dictionary) }
+                guard let self else { return nil }
+                return await self.localBackgroundCleanup(raw, context: context, dictionary: dictionary)
+            }
+        } else {
+            rawCleaned = await cleanupRunner(raw, config)
+        }
+        guard token == operationToken else { return }
+        let elapsed = Int(Date().timeIntervalSince(started) * 1000)
+        var output = original
+        var note: String? = preferences.tr("此欄位不支援背景替換，已用剪貼簿貼上", "Field doesn't support background replacement; pasted via clipboard")
+        if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: cleaned) {
+            output = cleaned
+            deliveryLog.info("smart fallback paste: cleanup applied in \(elapsed, privacy: .public) ms")
+        } else {
+            note = preferences.tr("智慧整理沒有在時限內完成（或被把關擋下），已貼上本機整理結果",
+                                  "Smart cleanup didn't finish in time (or was rejected); pasted the local result")
+            deliveryLog.error("smart fallback paste: cleanup unavailable after \(elapsed, privacy: .public) ms; pasted deterministic text")
+        }
+        lastOutput = output
+        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: raw, output: output,
+            duration: duration, mode: activeMode, appName: context.appName,
+            bundleIdentifier: context.foregroundBundleIdentifier, audioPath: audioPath, note: note))
+        isProcessing = false
+        onDeliveryEvent?("fallback")
+        let pasteOutput = preferences.appendTrailingSpace ? output + " " : output
+        guard preferences.isolation == nil,
+              capturedPID == nil || NSWorkspace.shared.frontmostApplication?.processIdentifier == capturedPID else {
+            statusMessage = preferences.tr("目的地已變更；可複製最後結果", "Destination changed; copy the last result")
+            deliveryLog.error("smart fallback paste: destination app changed; result kept for copy")
+            return
+        }
+        do {
+            try ClipboardPaster.paste(pasteOutput, method: preferences.pasteMethod, handling: preferences.clipboardHandling)
+            statusMessage = output == original
+                ? preferences.tr("已貼上（智慧整理未完成）", "Pasted (Smart cleanup didn't finish)")
+                : preferences.tr("已整理並貼上", "Formatted and pasted")
+            notify()
+        } catch {
+            statusMessage = preferences.tr("貼上失敗；可從選單複製最後結果", "Paste failed; you can copy the last result from the menu")
+            lastErrorMessage = error.localizedDescription
+            deliveryLog.error("smart fallback paste failed: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    /// The caller bounds this background work without waiting for an uncooperative formatter to return.
+    private func localBackgroundCleanup(_ text: String, context: LimitedAppContext,
+                                        dictionary: [String: String]) async -> String? {
+        let command = preferences.localEditorCommand.trimmingCharacters(in: .whitespacesAndNewlines)
+        let configuredModel = preferences.localEditorModel.trimmingCharacters(in: .whitespacesAndNewlines)
+        let model = configuredModel.isEmpty ? "local-qwen3-editor" : configuredModel
+        let script = preferences.outputScript.rawValue
+        do {
+            let prompt = try await makePrompt(transcript: text, context: context, dictionary: dictionary)
+            try Task.checkCancellation()
+            let candidate: String
+            if !command.isEmpty {
+                candidate = try await LocalFormatterProcessClient(command: command, outputScript: script)
+                    .format(prompt: prompt, model: model)
+            } else {
+                candidate = try await OllamaFormatterClient(model: model).format(prompt: prompt, model: model)
+            }
+            try Task.checkCancellation()
+            return FormatterOutputGuard.sanitize(candidate, source: text, mode: .smart)
+        } catch {
+            return nil
+        }
     }
 
     private func uniqueModels(from decision: RoutingDecision) -> [BailianModel] {
@@ -928,11 +1235,19 @@ final class AppModel: ObservableObject {
         transcript: String,
         context: LimitedAppContext,
         dictionary: [String: String]
-    ) throws -> String {
+    ) async throws -> String {
         let dictionaryText = dictionary
             .sorted { $0.key < $1.key }
             .map { "\($0.key) → \($0.value)" }
             .joined(separator: "\n")
+        // 詞庫包：個人字典優先，再用 bigram／latin 相關度從已開啟 catalog 包篩入，上限 200。
+        // pack terms 讀檔 + bigram score 在背景 actor 上跑，避免 408k 詞把 MainActor 卡住。
+        let enabledPacks = preferences.enabledVocabularyPackIDs
+        let cleanupTerms = await Task.detached(priority: .utility) {
+            VocabularyPacks.termsForCleanup(text: transcript,
+                                            personal: dictionary,
+                                            enabled: enabledPacks)
+        }.value
         let date = ISO8601DateFormatter().string(from: Date())
         let preferredPath = preferences.formatterPromptPath.trimmingCharacters(in: .whitespacesAndNewlines)
         let template = try PromptStore.loadTemplate(preferredPath: preferredPath.isEmpty ? nil : preferredPath)
@@ -943,6 +1258,10 @@ final class AppModel: ObservableObject {
             "selected": context.selectedText ?? "",
             "date": date
         ])
+        if !cleanupTerms.isEmpty {
+            prompt += "\n\n使用者開啟的詞庫（接近全用 / 個人字典寫法已寫進上面 dictionary）：\n"
+            prompt += cleanupTerms.joined(separator: "、")
+        }
         if let preset = preferences.preset(for: context.foregroundBundleIdentifier),
            !preset.promptHint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             prompt += "\n\n目前 App preset（僅作語氣提示，不可新增事實）：\n"
@@ -965,20 +1284,28 @@ final class AppModel: ObservableObject {
         notify()
     }
 
-    private func scheduleRuntimeUnload() {
+    /// Tests replace the delay and the stop action; production uses the preference and real server stop.
+    var unloadDelayOverride: Duration?
+    var stopRuntime: (() -> Void)?
+
+    func scheduleRuntimeUnload() {
+        guard preferences.isolation == nil || unloadDelayOverride != nil else { return }
         unloadTask?.cancel()
         guard preferences.unloadPolicy != .never else { return }
-        let seconds: UInt64
+        let delay: Duration
         switch preferences.unloadPolicy {
         case .never: return
-        case .afterFiveMinutes: seconds = 300
-        case .afterFifteenMinutes: seconds = 900
-        case .afterOneHour: seconds = 3_600
+        case .afterFiveMinutes: delay = .seconds(300)
+        case .afterFifteenMinutes: delay = .seconds(900)
+        case .afterOneHour: delay = .seconds(3_600)
         }
+        let wait = unloadDelayOverride ?? delay
         unloadTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(Int(seconds)))
-            guard let self, !self.isRecording, !self.isProcessing else { return }
-            self.preferences.stopLocalRuntimeServers()
+            // 2026-09-24 實機（苑涵 0.1.5）：原本 `try? await Task.sleep`——被取消的舊計時器立刻醒來、
+            // 當下 isProcessing 已經是 false，就把 server 殺掉 → 每次辨識完都重載模型。取消＝結束，不准往下跑。
+            do { try await Task.sleep(for: wait) } catch { return }
+            guard !Task.isCancelled, let self, !self.isRecording, !self.isProcessing else { return }
+            if let stopRuntime = self.stopRuntime { stopRuntime() } else { self.preferences.stopLocalRuntimeServers() }
             self.statusMessage = self.preferences.tr(
                 "本機模型已依設定卸載；下次使用會重新暖機",
                 "Local models were unloaded per settings; the next use will warm up again"

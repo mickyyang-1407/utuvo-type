@@ -13,6 +13,7 @@ struct UTUVOTypeIOSApp: App {
 struct RootView: View {
     @State private var tab = 0
     @ObservedObject private var voiceHost = KeyboardVoiceHost.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         #if DEBUG
@@ -65,6 +66,10 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: voiceHost.isActive)
+        // 個人字典 iPhone↔Mac（iCloud）：每次回到前景同步一次；外部變更有通知。
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            if phase == .active { DictionaryCloud.start() }
+        }
         // 鍵盤叫起主 app：utuvotype://voice?lang=…&id=…
         .onOpenURL { url in
             tab = 0

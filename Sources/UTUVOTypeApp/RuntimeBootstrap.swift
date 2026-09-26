@@ -5,7 +5,33 @@ import Foundation
 /// 原則：不會在使用者不知情時下載任何東西——下載只發生在使用者按下按鈕之後。
 enum RuntimeBootstrap {
     /// ASR 模型落點（相對 repo root），與 bootstrap-runtime.sh 一致。
-    static let modelRelativePath = ".models/asr/Qwen3-ASR-0.6B-6bit"
+    /// ASR 模型由好到差；與 scripts/bootstrap-runtime.sh、runtime/utuvo-type-asr.py 同一份名單（RuntimeModelChoiceTests 會對）。
+    static let asrModelCandidates = ["Qwen3-ASR-1.7B-8bit", "Qwen3-ASR-0.6B-6bit"]
+    static let legacyASRModel = "Qwen3-ASR-0.6B-6bit"
+    /// 16 GB 以上的 Mac 建議 1.7B（2026-09-24 Micky 核准；60 段實測字錯率 15.5% → 11.1%）。
+    static func recommendedASRModel(memoryGB: Double = HardwareProfile.physicalMemoryGB) -> String {
+        memoryGB >= 16 ? asrModelCandidates[0] : legacyASRModel
+    }
+
+    /// 下載完成才有 .complete；舊版 0.6B 沒有標記，有 config.json 就算完整。
+    static func asrModelReady(root: String, name: String) -> Bool {
+        let dir = URL(fileURLWithPath: engineHome(for: root)).appendingPathComponent(".models/asr/\(name)")
+        let files = FileManager.default
+        return files.fileExists(atPath: dir.appendingPathComponent(".complete").path)
+            || (name == legacyASRModel && files.fileExists(atPath: dir.appendingPathComponent("config.json").path))
+    }
+
+    /// 畫面顯示用：實際在用（已完整下載的最佳）模型；還沒裝就顯示這台會裝的那個。
+    static func activeASRModelLabel(root: String? = locateRepoRoot()) -> String {
+        let name = root.flatMap { root in asrModelCandidates.first { asrModelReady(root: root, name: $0) } }
+            ?? recommendedASRModel()
+        return name.contains("1.7B") ? "Qwen3-ASR 1.7B" : "Qwen3-ASR 0.6B"
+    }
+
+    /// 已裝好、但這台建議的模型還沒下載（例如 0.1.5 裝了 0.6B 的 16 GB 以上 Mac）：設定頁顯示升級按鈕。
+    static func recommendedModelMissing(root: String, memoryGB: Double = HardwareProfile.physicalMemoryGB) -> Bool {
+        isEngineInstalled(root: root) && !asrModelReady(root: root, name: recommendedASRModel(memoryGB: memoryGB))
+    }
 
     /// 找「引擎 root」＝放 scripts/bootstrap-runtime.sh 與 runtime/ 的目錄：
     /// UTUVO_TYPE_ROOT 最優先 → dist/ 內的 app 往上兩層（開發）→ cwd → app bundle 內建的
@@ -67,9 +93,7 @@ enum RuntimeBootstrap {
         guard fm.isExecutableFile(atPath: base.appendingPathComponent(".runtime/bin/python").path) else {
             return false
         }
-        let modelDir = base.appendingPathComponent(modelRelativePath).path
-        guard let contents = try? fm.contentsOfDirectory(atPath: modelDir) else { return false }
-        return !contents.isEmpty
+        return asrModelCandidates.contains { asrModelReady(root: root, name: $0) }
     }
 
     /// 目前執行中的安裝進程（app 結束時 terminate，避免孤兒下載）。

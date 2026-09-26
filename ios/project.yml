@@ -5,7 +5,8 @@ name: "UTUVO Type"
 options:
   bundleIdPrefix: com.utuvo
   deploymentTarget:
-    iOS: "17.0"
+    # 2026-09-24：本機 Qwen3-ASR（MLX）需要 iOS 18。iOS 18 支援的機型與 iOS 17 相同（iPhone XS 起），沒有裝置被排除。
+    iOS: "18.0"
   createIntermediateGroups: true
   # 介面原文是繁中（台灣用語）；简中（zh-Hans）翻譯在 String Catalog，其他語言一律退回繁中。
   developmentLanguage: zh-Hant
@@ -13,14 +14,17 @@ options:
 packages:
   UTUVOType:
     path: ..
+  # 本機高準確度辨識（2026-09-24 Micky 核准 iPhone 方案 a）：speech-swift 的 Qwen3-ASR 子集，見 Packages/UTUVOQwenASR/NOTICE.md。
+  UTUVOQwenASR:
+    path: Packages/UTUVOQwenASR
 
 settings:
   base:
     SWIFT_VERSION: "6.0"
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "0.2.0"
-    CURRENT_PROJECT_VERSION: "14"
+    MARKETING_VERSION: "0.2.2"
+    CURRENT_PROJECT_VERSION: "21"
 
 targets:
   "UTUVOTypeiOS":
@@ -32,14 +36,23 @@ targets:
       - path: Assets.xcassets
       # iOS 26+ Liquid Glass app icon：iOS／macOS 共用的單一正本（scripts/make-icon.py 產生）
       - path: ../assets/branding/AppIcon.icon
+      # 2026-09-20 runtime 票：可選專業詞庫（catalog.json + six pack .txt；CONTRACT-V2 schema 2）。
+      # folder reference — xcodegen 會建 blue folder，runtime 端從 Bundle.main/vocabulary/ 讀。
+      - path: ../data/vocabulary
+        type: folder
     dependencies:
       - package: UTUVOType
         product: UTUVOTypeCore
+      # 只給主 app：鍵盤 extension 有記憶體上限，錄音與辨識本來就在主 app（VoiceBridge）。
+      - package: UTUVOQwenASR
+        product: Qwen3ASR
       - target: "UTUVOKeyboard"
     entitlements:
       path: App/UTUVOTypeiOS.entitlements
       properties:
         com.apple.security.application-groups: [group.com.utuvo.type]
+        # 個人字典 iPhone↔Mac 同步（2026-09-20）：iCloud 鍵值儲存，Mac 版用同一個識別碼讀寫同一份。
+        com.apple.developer.ubiquity-kvstore-identifier: $(TeamIdentifierPrefix)com.utuvo.type.ios
     info:
       path: App/Info.plist
       properties:
@@ -73,6 +86,9 @@ targets:
       - path: Shared
       # BrandMark（字幕帶品牌）、OrbGlyph（打字區回語音鍵）
       - path: Assets.xcassets
+      # 鍵盤 extension 也內附同樣 catalog（key 端 contextualStrings 會用到 seed）。
+      - path: ../data/vocabulary
+        type: folder
     dependencies:
       - package: UTUVOType
         product: UTUVOTypeCore
@@ -103,7 +119,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.utuvo.type.ios.keyboard
         # 首發只上 iPhone（iPad 版面與鍵盤沒驗過；之後要上改 "1,2" 並補 iPad 截圖）。要寫在每個 target 才生效。
         TARGETED_DEVICE_FAMILY: "1"
-        # HostArbiterActivation.m（載入期喚醒 UIKit 鍵盤 arbiter，自動跳回用）
+        # 與 legacy host-arbiter shim 保持建置相容；目前送審版本只使用公開 API。
         SWIFT_OBJC_BRIDGING_HEADER: Keyboard/UTUVOKeyboard-Bridging-Header.h
 
   "UTUVOTypeiOSTests":

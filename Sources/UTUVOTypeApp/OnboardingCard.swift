@@ -183,7 +183,8 @@ struct OnboardingCard: View {
 
     private var engineDetail: String {
         if installer.installed {
-            return preferences.tr("Qwen3-ASR 0.6B 已就緒，聽寫完全在本機。", "Qwen3-ASR 0.6B is ready; dictation stays on this Mac.")
+            let model = RuntimeBootstrap.activeASRModelLabel(root: installer.root)
+            return preferences.tr("\(model) 已就緒，聽寫完全在本機。", "\(model) is ready; dictation stays on this Mac.")
         }
         if preferences.backend == .bailian {
             return preferences.tr("你選了雲端後端，可略過本機引擎。", "Cloud backend selected; the local engine is optional.")
@@ -200,8 +201,10 @@ struct OnboardingCard: View {
             return preferences.tr("安裝沒有完成，下面有原因與修法。", "The install didn’t finish; cause and fix are below.")
         }
         let memory = Int(HardwareProfile.physicalMemoryGB.rounded())
-        let base = preferences.tr("下載 Qwen3-ASR 0.6B（約 1.2 GB，一次性）到你的 Application Support。",
-                                  "Downloads Qwen3-ASR 0.6B (about 1.2 GB, once) into your Application Support folder.")
+        let model = RuntimeBootstrap.activeASRModelLabel(root: installer.root)
+        let size = model.contains("1.7B") ? "3.1 GB" : "1.4 GB"
+        let base = preferences.tr("下載 \(model)（連同 Python 環境約 \(size)，一次性）到你的 Application Support。",
+                                  "Downloads \(model) (about \(size) with the Python runtime, once) into your Application Support folder.")
         if memory < 8 {
             return base + preferences.tr(" 記憶體 \(memory) GB：建議只用 Fast 模式。", " With \(memory) GB of memory, Fast mode is recommended.")
         }

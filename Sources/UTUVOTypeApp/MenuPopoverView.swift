@@ -7,6 +7,11 @@ struct MenuPopoverView: View {
     // mode／backend 等狀態住在 preferences（另一個 ObservableObject）；
     // 不宣告 @ObservedObject 的話點模式卡有改值但畫面不重繪，看起來像壞掉。
     @ObservedObject private var preferences: AppPreferences
+    /// 2026-09-24 實機（苑涵 0.1.5）：引擎還在安裝，狀態卡卻寫「準備就緒」，按了聽寫沒反應以為壞了。
+    @ObservedObject private var installer = EngineInstaller.shared
+    private var engineMissing: Bool {
+        preferences.backend == .local && installer.root != nil && !installer.installed
+    }
     // 首次啟動硬體判定卡：看過／套用過就不再出現，設定裡永遠可以改。
     @State private var hardwareCardDismissed = UserDefaults.standard.bool(forKey: AppPreferences.Keys.hardwareCardDismissed)
     // 首次啟動三步驟卡：三步全綠或按略過就收起；之後權限掉了由 permissionCard 接手。
@@ -87,8 +92,11 @@ struct MenuPopoverView: View {
                         color: model.preferences.backend == .local ? AppBrand.retroGreen : AppBrand.accent
                     )
                     statusBadge(
-                        model.isRecording ? preferences.tr("錄音中", "Live") : preferences.tr("就緒", "Ready"),
-                        color: model.isRecording ? AppBrand.accent : AppBrand.retroGreen
+                        model.isRecording ? preferences.tr("錄音中", "Live")
+                            : installer.isInstalling ? preferences.tr("安裝中", "Installing")
+                            : engineMissing ? preferences.tr("未安裝", "Not installed")
+                            : preferences.tr("就緒", "Ready"),
+                        color: model.isRecording ? AppBrand.accent : engineMissing ? .yellow : AppBrand.retroGreen
                     )
                 }
             }
@@ -610,6 +618,8 @@ struct MenuPopoverView: View {
     private var statusTitle: String {
         if model.isRecording { return preferences.tr("正在聆聽", "Listening") }
         if model.isProcessing { return preferences.tr("正在整理並貼上", "Cleaning up & pasting") }
+        if installer.isInstalling { return preferences.tr("本機引擎安裝中（完成前無法轉文字）", "Installing the local engine (dictation waits)") }
+        if engineMissing { return preferences.tr("尚未安裝本機引擎", "Local engine not installed") }
         return preferences.tr("準備就緒", "Ready")
     }
 
@@ -618,24 +628,27 @@ struct MenuPopoverView: View {
             return preferences.tr("說完後再次按下停止；本機 ASR 會接手轉錄", "Press again to stop; local ASR takes over transcription")
         }
         if model.isProcessing { return model.statusMessage }
+        if installer.isInstalling { return installer.lastLine }
+        if engineMissing { return preferences.tr("在上方「安裝本機引擎」完成後即可聽寫", "Finish “Install local engine” above to start dictating") }
         if model.preferences.pushToTalkEnabled {
             let shortcut = model.preferences.globalShortcut.isEmpty
                 ? preferences.tr("快捷鍵", "the shortcut")
                 : model.preferences.globalShortcut
             return preferences.tr("按住 \(shortcut) 說話，放開即停止並貼上", "Hold \(shortcut) to talk; release to stop and paste")
         }
-        return "Qwen3-ASR 0.6B  →  deterministic normalizer"
+        return "\(RuntimeBootstrap.activeASRModelLabel())  →  deterministic normalizer"
     }
 
     private var statusIcon: String {
         if model.isRecording { return "record.circle" }
         if model.isProcessing { return "hourglass" }
+        if engineMissing { return "arrow.down.circle" }
         return "checkmark.seal"
     }
 
     private var statusColor: Color {
         if model.isRecording { return AppBrand.accent }
-        if model.isProcessing { return .yellow }
+        if model.isProcessing || engineMissing { return .yellow }
         return AppBrand.retroGreen
     }
 }

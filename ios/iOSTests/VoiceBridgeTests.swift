@@ -86,6 +86,22 @@ final class VoiceBridgeTests: XCTestCase {
         XCTAssertNil(cmd.translateTo)
     }
 
+    func testConsumedCommandContextIsRemovedFromSharedFile() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let id = UUID()
+        var command = VoiceBridge.Command(action: .start, id: id, language: "zh-TW", sentAt: now)
+        command.contextText = "只存在一次的欄位內容"
+        VoiceBridge.write(command, name: VoiceBridge.commandFile, in: directory)
+
+        VoiceBridge.clearCommandContext(for: id, in: directory)
+
+        let saved = VoiceBridge.read(VoiceBridge.Command.self, name: VoiceBridge.commandFile, in: directory)
+        XCTAssertNil(saved?.contextText)
+        XCTAssertEqual(saved?.id, id)
+    }
+
     func testTranslatorLanguageMapping() {
         XCTAssertEqual(FastTranslator.languageIdentifier(forDictation: "zh-TW"), "zh-Hant")
         XCTAssertEqual(FastTranslator.languageIdentifier(forDictation: "zh-CN"), "zh-Hans")
@@ -105,6 +121,15 @@ final class VoiceBridgeTests: XCTestCase {
         XCTAssertTrue(VoiceBridge.shouldEndIdleSession(phase: .ready, lastActivity: long, now: now, timeout: 300))
         XCTAssertFalse(VoiceBridge.shouldEndIdleSession(phase: .recording, lastActivity: long, now: now, timeout: 300), "錄音中不能因為閒置被關")
         XCTAssertFalse(VoiceBridge.shouldEndIdleSession(phase: .ready, lastActivity: now.addingTimeInterval(-10), now: now, timeout: 300))
+    }
+
+    func testKeyboardActivityOnlyForLiveSessionAndAtMostEvery45Seconds() {
+        let live = state(.ready, heartbeatAgo: 1)
+        XCTAssertTrue(VoiceBridge.shouldPostKeyboardActivity(state: live, lastPosted: .distantPast, now: now))
+        XCTAssertFalse(VoiceBridge.shouldPostKeyboardActivity(state: live, lastPosted: now.addingTimeInterval(-44), now: now))
+        XCTAssertTrue(VoiceBridge.shouldPostKeyboardActivity(state: live, lastPosted: now.addingTimeInterval(-45), now: now))
+        XCTAssertFalse(VoiceBridge.shouldPostKeyboardActivity(state: state(.ready, heartbeatAgo: 10), lastPosted: .distantPast, now: now))
+        XCTAssertFalse(VoiceBridge.shouldPostKeyboardActivity(state: nil, lastPosted: .distantPast, now: now))
     }
 
     // MARK: URL／檔案

@@ -12,25 +12,16 @@ import Security
 enum IOSSecretStore {
     private static let service = "com.utuvo.type.ios.bailian"
     private static let account = "api-key"
+    /// 2026-09-20 前，智慧整理頁曾把百鍊 key 另存一份；讀取時只做一次性合併。
+    private static let legacySmartCleanupService = "com.utuvo.type.ios.smartcleanup"
+    private static let legacySmartCleanupAccount = "dashscope"
     /// v1 明文位置，只用於一次性遷移。
     private static let legacyDefaultsKey = "utuvo.type.bailian.key"
 
     static func apiKey(defaults: UserDefaults = .standard) -> String {
         migrateLegacyKeyIfNeeded(defaults: defaults)
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        var result: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data,
-              let value = String(data: data, encoding: .utf8) else {
-            return ""
-        }
-        return value.trimmingCharacters(in: .whitespacesAndNewlines)
+        migrateLegacySmartCleanupKeyIfNeeded()
+        return readKey(service: service, account: account)
     }
 
     static func hasKey(defaults: UserDefaults = .standard) -> Bool {
@@ -50,13 +41,20 @@ enum IOSSecretStore {
             kSecAttrAccount as String: account
         ]
         let updateStatus = SecItemUpdate(base as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        if updateStatus == errSecSuccess { return nil }
+        if updateStatus == errSecSuccess {
+            deleteLegacySmartCleanupKey()
+            return nil
+        }
         if updateStatus == errSecItemNotFound {
             var addQuery = base
             addQuery[kSecValueData as String] = data
             addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
             let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            return addStatus == errSecSuccess ? nil : String(localized: "Keychain 寫入失敗（OSStatus \(addStatus)）。")
+            if addStatus == errSecSuccess {
+                deleteLegacySmartCleanupKey()
+                return nil
+            }
+            return String(localized: "Keychain 寫入失敗（OSStatus \(addStatus)）。")
         }
         return String(localized: "Keychain 更新失敗（OSStatus \(updateStatus)）。")
     }
@@ -70,8 +68,16 @@ enum IOSSecretStore {
             kSecAttrAccount as String: account
         ]
         let status = SecItemDelete(query as CFDictionary)
-        if status == errSecSuccess || status == errSecItemNotFound { return nil }
-        return String(localized: "Keychain 刪除失敗（OSStatus \(status)）。")
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            return String(localized: "Keychain 刪除失敗（OSStatus \(status)）。")
+        }
+        let legacyStatus = SecItemDelete([kSecClass as String: kSecClassGenericPassword,
+                                          kSecAttrService as String: legacySmartCleanupService,
+                                          kSecAttrAccount as String: legacySmartCleanupAccount] as CFDictionary)
+        guard legacyStatus == errSecSuccess || legacyStatus == errSecItemNotFound else {
+            return String(localized: "Keychain 刪除失敗（OSStatus \(legacyStatus)）。")
+        }
+        return nil
     }
 
     /// 把 v1 明文 key 搬進 Keychain 並清掉明文。搬完就不會再觸發。
@@ -81,5 +87,43 @@ enum IOSSecretStore {
         if save(legacy) == nil {
             defaults.removeObject(forKey: legacyDefaultsKey)
         }
+    }
+
+    /// 智慧整理曾有自己的百鍊欄位；現在與翻譯共用同一個 canonical key。
+    private static func migrateLegacySmartCleanupKeyIfNeeded() {
+        let canonical = readKey(service: service, account: account)
+        guard let legacy = nonEmpty(readKey(service: legacySmartCleanupService, account: legacySmartCleanupAccount)) else { return }
+        if canonical.isEmpty {
+            _ = save(legacy)
+        } else {
+            // 共用 key 已存在時，以它為準，只清掉舊的重複副本。
+            deleteLegacySmartCleanupKey()
+        }
+    }
+
+    private static func deleteLegacySmartCleanupKey() {
+        _ = SecItemDelete([kSecClass as String: kSecClassGenericPassword,
+                           kSecAttrService as String: legacySmartCleanupService,
+                           kSecAttrAccount as String: legacySmartCleanupAccount] as CFDictionary)
+    }
+
+    private static func nonEmpty(_ value: String) -> String? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
+    private static func readKey(service: String, account: String) -> String {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data,
+              let value = String(data: data, encoding: .utf8) else { return "" }
+        return value.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
