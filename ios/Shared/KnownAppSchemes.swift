@@ -4,7 +4,7 @@
 import Foundation
 
 /// 自動跳回用：宿主 bundle id → 能把它叫回前景的 URL（公開 API `UIApplication.open`）。
-/// 表裡沒有的 app（例如 Safari）才退回 LSApplicationWorkspace。
+/// 表裡沒有的 app（例如 Safari）就留在主 app，讓使用者用系統左上角返回。
 /// 訊息用 `ichat://` 而不是 `sms://`（`sms://` 會跳到新訊息畫面，Dictus 實測）。
 enum KnownAppSchemes {
     static let schemesByBundleId: [String: String] = [

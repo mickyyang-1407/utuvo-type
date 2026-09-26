@@ -7,13 +7,13 @@ import Foundation
 enum RecognitionRoute: String, Equatable, Sendable {
     /// 音訊不離開裝置。
     case onDevice
-    /// 音訊送到 Apple 的伺服器辨識。
+    /// 允許 Apple Speech 使用伺服器辨識；最終由 Apple Speech 決定實際處理路徑。
     case server
 
     var badgeText: String {
         switch self {
         case .onDevice: return String(localized: "裝置端辨識・音訊不離機")
-        case .server: return String(localized: "雲端辨識・音訊會送到 Apple 伺服器")
+        case .server: return String(localized: "允許雲端辨識・音訊可能送到 Apple")
         }
     }
 
@@ -30,9 +30,11 @@ enum RecognitionRoutePolicy: Sendable {
     /// - Parameters:
     ///   - supportsOnDevice: `SFSpeechRecognizer.supportsOnDeviceRecognition`
     ///   - onDeviceOnly: 使用者是否開了「只用裝置端辨識」
-    static func decide(supportsOnDevice: Bool, onDeviceOnly: Bool) -> RecognitionRouteDecision {
+    ///   - preferCloud: 使用者選擇 Apple Speech 的雲端可用路徑；由 Apple Speech 決定實際處理位置
+    static func decide(supportsOnDevice: Bool, onDeviceOnly: Bool, preferCloud: Bool = false) -> RecognitionRouteDecision {
+        if onDeviceOnly { return supportsOnDevice ? .allow(.onDevice) : .blockedOnDeviceUnavailable }
+        if preferCloud { return .allow(.server) }
         if supportsOnDevice { return .allow(.onDevice) }
-        if onDeviceOnly { return .blockedOnDeviceUnavailable }
         return .allow(.server)
     }
 

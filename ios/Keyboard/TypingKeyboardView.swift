@@ -4,8 +4,17 @@ import UIKit
 /// 純 UIKit、不掛 SwiftUI，顧鍵盤 extension 記憶體。文字怎麼進文件由 delegate（KeyboardViewController）決定。
 @MainActor
 protocol TypingKeyboardDelegate: AnyObject {
-    /// 英文、數字、符號鍵：直接插入。
-    func typing(insert text: String)
+    /// 英文、數字、符號鍵：直接插入。`learn` 為 false＝先不進自動學字典（等手指放開確定沒收回才學）。
+    func typing(insert text: String, learn: Bool)
+    /// 按下就插了字，但手指滑開變成切換鍵盤的手勢＝收回剛剛那個字。
+    func typingUndoInsert(_ text: String)
+    /// 確定沒收回：把這個字交給自動學字典。
+    func typingLearn(_ text: String)
+    /// 注音／拼音：按下就收回引擎（收回用 typingUndoCompose）。
+    func typingUndoCompose()
+    /// 空白／刪除按下就做了，滑開時收回。
+    func typingUndoSpace()
+    func typingUndoDelete()
     /// 注音符號／聲調，或拼音字母：交給中文輸入引擎。
     func typing(compose key: Character)
     func typingDelete()
@@ -13,6 +22,7 @@ protocol TypingKeyboardDelegate: AnyObject {
     /// 「繁」鍵盤在注音與拼音之間切換。
     func typingToggleHantInput()
     func typingReturn()
+    func typingDidSwitchToLetters()
 }
 
 @MainActor
@@ -33,7 +43,6 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
     private weak var returnKey: KeyButton?
     private var letterKeys: [KeyButton] = []
     private var deleteRepeat: Timer?
-    private let tap = UIImpactFeedbackGenerator(style: .light)
 
     var enableInputClicksWhenVisible: Bool { true }
 
@@ -56,6 +65,24 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
     required init?(coder: NSCoder) { fatalError() }
 
     /// 句首自動大寫：宿主游標前是空的或剛打完句號。
+    /// 剛插進去的字就足以決定下一個字要不要大寫（句號、問號、驚嘆號、換行之後大寫），
+    /// 不必再去問宿主 app 游標前的文字（跨行程、會頓）。
+    func updateAutoCapitalization(afterInserting text: String) {
+        guard layout == .english, keyLayer == .letters, shift != .locked else { return }
+        guard let last = text.last else { return }
+        if last == "\n" { setShift(.once); return }
+        // 「. 」這種：句末標點後面接空白才換成大寫；其他字一律小寫狀態。
+        if last == " " {
+            let beforeSpace = text.dropLast().last
+            setShift(beforeSpace.map { ".!?".contains($0) } == true ? .once : shiftAfterSpace())
+            return
+        }
+        setShift(.off)
+    }
+
+    /// 只有一個空白鍵的情況（text == " "）：維持現在的狀態，不要把使用者按的 shift 清掉。
+    private func shiftAfterSpace() -> Shift { shift == .once ? .once : .off }
+
     func updateAutoCapitalization(contextBefore: String?) {
         guard layout == .english, keyLayer == .letters, shift != .locked else { return }
         let before = contextBefore ?? ""
@@ -94,7 +121,8 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
             for (i, row) in Self.zhuyinRows.enumerated() {
                 var keys = row.map { ch in
                     let key = KeyButton(title: String(ch), style: .character, fontSize: 19)
-                    key.onTap = { [weak self] in self?.delegate?.typing(compose: ch); self?.feedback() }
+                    key.onDown = { [weak self] in self?.delegate?.typing(compose: ch) }
+                    key.onUndo = { [weak self] in self?.delegate?.typingUndoCompose() }
                     return key
                 }
                 if i == 3 { keys.append(deleteKey(width: 1.0)) }
@@ -105,14 +133,16 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
             for (i, row) in Self.englishRows.enumerated() {
                 var keys = row.map { ch -> KeyButton in
                     let key = KeyButton(title: String(ch), style: .character, fontSize: 22)
-                    key.onTap = { [weak self] in self?.delegate?.typing(compose: ch); self?.feedback() }
+                    key.onDown = { [weak self] in self?.delegate?.typing(compose: ch) }
+                    key.onUndo = { [weak self] in self?.delegate?.typingUndoCompose() }
                     return key
                 }
                 if i == 2 {
                     let sep = KeyButton(title: "'", style: .special, fontSize: 20)
                     sep.widthUnits = 1.5
                     sep.accessibilityLabel = String(localized: "分隔音節")
-                    sep.onTap = { [weak self] in self?.delegate?.typing(compose: "'"); self?.feedback() }
+                    sep.onDown = { [weak self] in self?.delegate?.typing(compose: "'") }
+                    sep.onUndo = { [weak self] in self?.delegate?.typingUndoCompose() }
                     keys.insert(sep, at: 0)
                     keys.append(deleteKey(width: 1.5))
                 }
@@ -144,11 +174,14 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
             guard let self else { return }
             self.keyLayer = self.keyLayer == .letters ? .numbers : .letters
             self.rebuild()
+            if self.keyLayer == .letters { self.delegate?.typingDidSwitchToLetters() }
         }
         let space = KeyButton(title: layout == .english ? "space" : (layout == .pinyin ? String(localized: "空格") : String(localized: "空白")), style: .character, fontSize: 15)
-        space.onTap = { [weak self] in self?.delegate?.typingSpace(); self?.feedback() }
+        // 空白也按下就出（最常按的鍵之一）；滑開就收回。
+        space.onDown = { [weak self] in self?.delegate?.typingSpace() }
+        space.onUndo = { [weak self] in self?.delegate?.typingUndoSpace() }
         let ret = KeyButton(title: returnTitle, style: .special, fontSize: 15)
-        ret.onTap = { [weak self] in self?.delegate?.typingReturn(); self?.feedback() }
+        ret.onTap = { [weak self] in self?.delegate?.typingReturn() }
         returnKey = ret
         var keys = [layerKey, space, ret]
         // 繁：底排多一顆「拼／注」切換輸入法（選擇存 App Group，主 app 設定頁也能改）。
@@ -195,34 +228,41 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
 
     private func charKey(_ title: String, raw: Bool = false) -> KeyButton {
         let key = KeyButton(title: title, style: .character, fontSize: raw ? 20 : 22)
-        key.onTap = { [weak self] in
+        var inserted = ""
+        key.onDown = { [weak self] in
             guard let self else { return }
-            let text = self.layout == .english && self.keyLayer == .letters && self.shift != .off ? title.uppercased() : title
-            self.delegate?.typing(insert: text)
+            inserted = self.layout == .english && self.keyLayer == .letters && self.shift != .off ? title.uppercased() : title
+            self.delegate?.typing(insert: inserted, learn: false)
             if self.shift == .once { self.setShift(.off) }
-            self.feedback()
         }
+        key.onUndo = { [weak self] in self?.delegate?.typingUndoInsert(inserted) }
+        key.onCommit = { [weak self] in self?.delegate?.typingLearn(inserted) }
         return key
     }
 
     private func specialKey(title: String? = nil, symbol: String? = nil, width: CGFloat, action: @escaping () -> Void) -> KeyButton {
         let key = KeyButton(title: title, symbol: symbol, style: .special, fontSize: 15)
         key.widthUnits = width
-        key.onTap = { [weak self] in action(); self?.feedback() }
+        key.onTap = { [weak self] in action() }
         return key
     }
 
     private func deleteKey(width: CGFloat) -> KeyButton {
         let key = KeyButton(title: nil, symbol: "delete.left", style: .special, fontSize: 17)
         key.widthUnits = width
-        key.onTap = { [weak self] in self?.delegate?.typingDelete(); self?.feedback() }
+        // 刪除也是按下就刪（系統鍵盤一樣）；滑開變成切換手勢就把刪掉的字補回來。
+        key.onDown = { [weak self] in self?.delegate?.typingDelete() }
+        key.onUndo = { [weak self] in self?.delegate?.typingUndoDelete() }
         // 按住連刪。
         key.onHold = { [weak self] began in
             guard let self else { return }
             self.deleteRepeat?.invalidate()
             guard began else { return }
             self.deleteRepeat = Timer.scheduledTimer(withTimeInterval: 0.09, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.delegate?.typingDelete() }
+                MainActor.assumeIsolated {
+                    self?.repeatTick()
+                    self?.delegate?.typingDelete()
+                }
             }
         }
         return key
@@ -235,6 +275,10 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
     }
 
     private func setShift(_ s: Shift) {
+        // 同樣的 Shift 值別跑：每次都跑 26 個字母鍵 setTitle + row tree traversal + shift symbol relabel，
+        // updateAutoCapitalization 進到這個函式的頻率很高（每按一鍵算大小寫），沒變化時跑就白做工。
+        // 保留 caps/locked/off/once 的行為；rebuild() 內部仍會主動呼叫 applyShiftLabels。
+        guard shift != s else { return }
         shift = s
         applyShiftLabels()
     }
@@ -246,9 +290,9 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
         shiftKey?.setSymbol(shift == .locked ? "capslock.fill" : (shift == .once ? "shift.fill" : "shift"))
     }
 
-    private func feedback() {
-        UIDevice.current.playInputClick()
-        tap.impactOccurred(intensity: 0.5)
+    /// 舊的「放開才震」已經移到 KeyButton.touchesBegan；這裡只留給沒有 KeyButton 的路徑（連續刪除）。
+    private func repeatTick() {
+        KeyFeedback.down(.repeatTick, hasFullAccess: KeyButton.hasFullAccess)
     }
 }
 
@@ -256,6 +300,11 @@ final class TypingKeyboardView: UIView, UIInputViewAudioFeedback {
 final class KeyButton: UIButton {
     enum Style { case character, special }
     var onTap: (() -> Void)?
+    /// 按下去就先做（打字要快：系統鍵盤也是按下就出字）；手指滑開或被取消時呼叫 onUndo 收回。
+    var onDown: (() -> Void)?
+    var onUndo: (() -> Void)?
+    /// 放開時才做的收尾（自動學字典：插字當下先不學，確定沒收回才學）。
+    var onCommit: (() -> Void)?
     var onHold: ((Bool) -> Void)?
     var widthUnits: CGFloat = 1
     let baseTitle: String
@@ -263,6 +312,13 @@ final class KeyButton: UIButton {
     private let style: Style
     private var downPoint: CGPoint = .zero
     private var holdTimer: Timer?
+    /// 這一次觸控已經在按下時做過動作了（放開時就不要再做一次）。
+    private var firedOnDown = false
+    /// 觸控已被收回（滑開 > 20pt 或系統取消）；之後 touchesEnded 不再做任何動作。
+    /// 不記這個的話，使用者滑出去再滑回來按 release 會被當作正常 tap（onTap／onCommit）。
+    private var cancelled = false
+    /// 鍵盤 extension 沒開「允許完整存取」就震不了；由 KeyboardViewController 在載入時填。
+    nonisolated(unsafe) static var hasFullAccess = true
 
     init(title: String?, symbol: String? = nil, style: Style, fontSize: CGFloat) {
         self.baseTitle = title ?? ""
@@ -302,7 +358,19 @@ final class KeyButton: UIButton {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesBegan(touches, with: event)
         downPoint = touches.first?.location(in: self) ?? .zero
+        cancelled = false
+        // 手感：按下去的當下就震＋出聲（在插入文字、重算候選字之前），跟系統鍵盤一樣。
+        #if DEBUG
+        KeyPerf.measure("feedback") { KeyFeedback.down(style == .special ? .special : .character, hasFullAccess: KeyButton.hasFullAccess) }
+        KeyPerf.measure("press-visual") { applyColors(pressed: true) }
+        firedOnDown = onDown != nil
+        if let onDown { KeyPerf.measure("key-down-action") { onDown() } }
+        #else
+        KeyFeedback.down(style == .special ? .special : .character, hasFullAccess: KeyButton.hasFullAccess)
         applyColors(pressed: true)
+        firedOnDown = onDown != nil
+        onDown?()
+        #endif
         if onHold != nil {
             holdTimer = Timer.scheduledTimer(withTimeInterval: 0.45, repeats: false) { [weak self] _ in
                 MainActor.assumeIsolated { self?.onHold?(true) }
@@ -310,14 +378,50 @@ final class KeyButton: UIButton {
         }
     }
 
+    /// 手指滑開 > 20pt ＝收回：立刻停長按 timer／repeat、別讓手指離開後 repeat 還在送 delete。
+    /// 設 cancelled 是給 touchesEnded／Cancelled 看——它們不再做任何輸入／tap 動作。
+    override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
+        super.touchesMoved(touches, with: event)
+        guard let p = touches.first?.location(in: self) else { return }
+        if hypot(p.x - downPoint.x, p.y - downPoint.y) >= 20 {
+            cancelled = true
+            holdTimer?.invalidate(); holdTimer = nil
+            onHold?(false)
+            guard firedOnDown else { return }
+            firedOnDown = false
+            applyColors(pressed: false)
+            onUndo?()
+        }
+    }
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         applyColors(pressed: false)
-        let held = holdTimer.map { !$0.isValid } ?? false
         holdTimer?.invalidate(); holdTimer = nil
         onHold?(false)
-        guard !held, let p = touches.first?.location(in: self), hypot(p.x - downPoint.x, p.y - downPoint.y) < 20 else { return }
+        // 已經被 touchesMoved／Cancelled 收回：不再做任何事，避免「滑出去又滑回來 release」誤觸 onTap／onCommit。
+        if cancelled { return }
+        let endPoint = touches.first?.location(in: self)
+        let offset = endPoint.map { hypot($0.x - downPoint.x, $0.y - downPoint.y) } ?? 0
+        if firedOnDown {
+            firedOnDown = false
+            if offset < 20 {
+                // 在原位放開：長按 delete 結束或普通點擊都算「確定輸入」，送 onCommit 給自動學字典等用。
+                onCommit?()
+            } else {
+                // touchesMoved 沒拿到（系統事件掉了、或者 ended 自帶大位移）：補上 onUndo，
+                // 否則 onDown 插進去的字會留在文件裡。
+                onUndo?()
+            }
+            return
+        }
+        // 沒有 onDown 的鍵（Return 等）：只在原位 release 才算 tap。
+        guard offset < 20 else { return }
+        #if DEBUG
+        KeyPerf.measure("key-action") { onTap?() }
+        #else
         onTap?()
+        #endif
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -325,6 +429,8 @@ final class KeyButton: UIButton {
         applyColors(pressed: false)
         holdTimer?.invalidate(); holdTimer = nil
         onHold?(false)
+        cancelled = true
+        if firedOnDown { firedOnDown = false; onUndo?() }
     }
 }
 
@@ -379,6 +485,7 @@ final class ModeSwitchView: UIControl {
             }
             b.titleLabel?.font = .systemFont(ofSize: 14, weight: .semibold)
             b.setTitleColor(.secondaryLabel, for: .normal)
+            b.addAction(UIAction { _ in KeyFeedback.down(.special, hasFullAccess: KeyButton.hasFullAccess) }, for: .touchDown)
             b.addTarget(self, action: #selector(tapped(_:)), for: .touchUpInside)
             addSubview(b)
             segments.append(b)
@@ -428,8 +535,17 @@ final class ModeSwitchView: UIControl {
 @MainActor
 final class CandidateBarView: UIView {
     var onPick: ((Int) -> Void)?       // -1＝整串
+    private static let visibleCandidateLimit = 8
+    private struct Item: Equatable {
+        let text: String
+        let index: Int
+        let lead: Bool
+    }
     private let scroll = UIScrollView()
     private let stack = UIStackView()
+    private let leadFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
+    private let candidateFont = UIFont.systemFont(ofSize: 20, weight: .regular)
+    private var lastItems: [Item] = []
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -462,24 +578,55 @@ final class CandidateBarView: UIView {
     required init?(coder: NSCoder) { fatalError() }
 
     /// preedit：整串轉換（含還沒打完的注音）；candidates：句首候選。
+    /// 每按一鍵都會叫：重用既有的格子只換字，不要每次都拆掉重建（2026-09-20：打字頓頓的）。
     func show(preedit: String, candidates: [String]) {
-        stack.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        scroll.contentOffset = .zero
-        guard !preedit.isEmpty else { return }
-        stack.addArrangedSubview(cell(preedit, index: -1, lead: true))
-        for (i, c) in candidates.enumerated() where c != preedit {
-            stack.addArrangedSubview(cell(c, index: i, lead: false))
+        guard !preedit.isEmpty else {
+            guard !lastItems.isEmpty else { return }
+            lastItems.removeAll(keepingCapacity: true)
+            if scroll.contentOffset != .zero { scroll.contentOffset = .zero }
+            for view in stack.arrangedSubviews { view.isHidden = true }
+            return
+        }
+        var wanted: [Item] = [Item(text: preedit, index: -1, lead: true)]
+        wanted.reserveCapacity(Self.visibleCandidateLimit + 1)
+        for (i, c) in candidates.prefix(Self.visibleCandidateLimit).enumerated() where c != preedit {
+            wanted.append(Item(text: c, index: i, lead: false))
+        }
+        guard wanted != lastItems else { return }
+        lastItems = wanted
+        if scroll.contentOffset != .zero { scroll.contentOffset = .zero }
+        while stack.arrangedSubviews.count < wanted.count {
+            stack.addArrangedSubview(cell("", index: 0, lead: false))
+        }
+        for (position, view) in stack.arrangedSubviews.enumerated() {
+            guard let button = view as? UIButton else { continue }
+            if position < wanted.count {
+                let item = wanted[position]
+                button.isHidden = false
+                button.tag = item.index
+                if button.title(for: .normal) != item.text { button.setTitle(item.text, for: .normal) }
+                button.titleLabel?.font = item.lead ? leadFont : candidateFont
+                button.setTitleColor(item.lead ? KeyboardViewController.brandOrange : .label, for: .normal)
+            } else {
+                button.isHidden = true
+            }
         }
     }
 
+    /// 重用的格子：`tag` 會被 show(...) 改掉，所以動作要讀當下的 tag，不能抓建立時的 index。
     private func cell(_ text: String, index: Int, lead: Bool) -> UIButton {
         let b = UIButton(type: .system)
         b.setTitle(text, for: .normal)
-        b.titleLabel?.font = .systemFont(ofSize: lead ? 19 : 20, weight: lead ? .semibold : .regular)
+        b.titleLabel?.font = lead ? leadFont : candidateFont
         b.setTitleColor(lead ? KeyboardViewController.brandOrange : .label, for: .normal)
         b.contentEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         b.tag = index
-        b.addAction(UIAction { [weak self] _ in self?.onPick?(index) }, for: .touchUpInside)
+        // 選字也要有手感（按下就震，跟按鍵一致）。
+        b.addAction(UIAction { _ in KeyFeedback.down(.pick, hasFullAccess: KeyButton.hasFullAccess) }, for: .touchDown)
+        b.addAction(UIAction { [weak self, weak b] _ in
+            guard let b else { return }
+            self?.onPick?(b.tag)
+        }, for: .touchUpInside)
         return b
     }
 }

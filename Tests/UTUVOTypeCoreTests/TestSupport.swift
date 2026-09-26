@@ -53,7 +53,9 @@ struct SecretLiteralScanner {
         Rule(name: "slack-token", regex: try! NSRegularExpression(pattern: "xox[abp]-[0-9A-Za-z\\-]{10,}")),
         // 個人 email（簡單 shape）。排除 Apple 圖檔倍率命名 `icon_512x512@2x.png`／`BrandMark@3x.png`
         // （2026-09-18 誤擋 make-icon.py；誤擋跟漏擋一樣是閘門缺陷）。
-        Rule(name: "email", regex: try! NSRegularExpression(pattern: "[A-Za-z0-9._%+-]+@(?![0-9]+x\\.(?:png|jpe?g|pdf|heic|svg)\\b)[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")),
+        // 刻意公開的客服信箱 support@utuvo.app（隱私頁、商店都用它）放行；其他地址照擋。
+        // 開頭要求左邊不是 local-part 字元，免得從「upport@…」這種中段起算繞過例外（2026-09-26）。
+        Rule(name: "email", regex: try! NSRegularExpression(pattern: "(?<![A-Za-z0-9._%+-])(?!support@utuvo\\.app\\b)[A-Za-z0-9._%+-]+@(?![0-9]+x\\.(?:png|jpe?g|pdf|heic|svg)\\b)[A-Za-z0-9.-]+\\.[A-Za-z]{2,}")),
         // Slack webhook
         Rule(name: "slack-webhook", regex: try! NSRegularExpression(pattern: "hooks\\.slack\\.com/services/")),
         // Apps Script webhook

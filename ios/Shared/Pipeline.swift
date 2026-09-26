@@ -7,17 +7,20 @@ import UTUVOTypeCore
 struct TextPipeline: Sendable {
     private let normalizer: Normalizer
 
-    init(dictionary: [String: String] = DictionaryStore.shared.dictionary) {
+    init(dictionary: [String: String] = DictionaryStore.shared.dictionary,
+         latinTerms: [String] = VocabularyPacks.latinTermsForFixer()) {
         self.normalizer = Normalizer(options: NormalizerOptions(
             dictionary: dictionary,
             fillerSet: NormalizerOptions.defaultFillers,
-            localeIdentifier: "zh_TW"
+            localeIdentifier: "zh_TW",
+            latinTerms: latinTerms
         ))
     }
 
     /// 逐字稿 → 清理後輸出。回傳 (清理結果, 套用步驟)。
     func clean(_ transcript: String) -> (output: String, steps: [String]) {
-        let localized = TaiwanPhrases.apply(transcript)
+        // 站名救援（元山站→圓山站）：只動「X站」「捷運X」，所以每條路徑都套也安全。
+        let localized = TaiwanPlaces.fixStations(TaiwanPhrases.apply(transcript))
         let result = normalizer.normalize(localized)
         var steps = result.appliedSteps
         if localized != transcript { steps.insert("taiwan-phrases", at: 0) }

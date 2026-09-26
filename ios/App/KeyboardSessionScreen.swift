@@ -40,7 +40,10 @@ struct KeyboardSessionScreen: View {
                     .padding(.horizontal, 32)
                 }
 
-                Label("或點左上角「◀︎」回去，在鍵盤上點光球說話", systemImage: "arrow.up.left")
+                // iOS 26.4 起沒有公開 API 能自動跳回原 App（Apple DTS 明確回覆；Wispr Flow 也改成手動）。
+                Label(host.returnTarget == nil
+                      ? "點左上角「◀︎」或從螢幕最下方往右滑，回到剛剛的 App；再點鍵盤上的光球說話"
+                      : "也可以點左上角「◀︎」或從螢幕最下方往右滑回去，再點光球說話", systemImage: "arrow.up.left")
                     .font(.footnote)
                     .foregroundStyle(Aurora.orange)
                     .padding(.horizontal, 24)
@@ -53,6 +56,11 @@ struct KeyboardSessionScreen: View {
                         Text("閒置 \(max(1, Int(ceil(ends.timeIntervalSinceNow / 60)))) 分鐘後自動關麥克風")
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                    }
+                    if host.idleTimeout < VoiceBridge.extendedIdleTimeout && host.isActive {
+                        Button("這次延長至 10 分鐘") { host.extendIdleSession() }
+                            .font(.subheadline.weight(.medium))
+                            .auroraGlassButton()
                     }
                     Button("結束鍵盤語音") { host.endSession() }
                         .font(.subheadline.weight(.medium))

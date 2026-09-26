@@ -28,6 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+## speech-swift（Qwen3-ASR on-device runtime）
+
+The iOS on-device Qwen3-ASR runtime (`ios/Packages/UTUVOQwenASR/Sources/{Qwen3ASR,AudioCommon,MLXCommon,SpeechVAD}`) is copied unmodified from soniqo/speech-swift, https://github.com/soniqo/speech-swift (commit 231f8eb), licensed under the Apache License 2.0; the full license text is in `ios/Packages/UTUVOQwenASR/LICENSE`. Only the package manifest was reduced to these targets. The Qwen3-ASR model weights (Apache 2.0, Alibaba Qwen team) are downloaded by the app on the user's request and are not bundled.
+
 ## McBopomofo（小麥注音）
 
 The Zhuyin (Bopomofo) dictionary shipped with the iOS keyboard (`ios/Keyboard/Resources/zhuyin.dat`) is compiled by `scripts/build-zhuyin-data.py` from the data in McBopomofo's `Source/Data` directory, https://github.com/openvanilla/McBopomofo (commit f5ba010ce8795d283ee336ca7d16380f200bd2ec), using McBopomofo's own build pipeline to derive the phrase scores. The conversion algorithm in `Sources/UTUVOTypeCore/Zhuyin/ZhuyinEngine.swift` (best-path walk over a reading lattice) follows the approach of McBopomofo's Gramambular engine; the code is an independent implementation.

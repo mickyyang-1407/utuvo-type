@@ -8,7 +8,7 @@ import Foundation
 ///   2. 主 app 開麥克風、背景保持語音工作階段（UIBackgroundModes audio），照指令開始辨識。
 ///   3. 使用者點左上角回到原 app；鍵盤之後的開始／停止都走 Darwin notification，不再跳 app。
 ///   4. 逐字稿（partial／final）由主 app 寫進 App Group 的 state 檔，鍵盤收到通知去讀。
-/// 資料只走 App Group 容器（本機檔案），不經網路。
+/// 橋接本身只走 App Group 容器（本機檔案）；選配 context 後續是否送到整理服務，由使用者開關控制。
 enum VoiceBridge {
     static let groupID = "group.com.utuvo.type"
     static let urlScheme = "utuvotype"
@@ -19,6 +19,8 @@ enum VoiceBridge {
         case command = "com.utuvo.type.voice.command"
         /// 主 app → 鍵盤：state.json 有更新。
         case update = "com.utuvo.type.voice.update"
+        /// 鍵盤仍在使用：延長已開啟工作階段的閒置期限，不覆寫語音指令。
+        case keyboardActivity = "com.utuvo.type.voice.keyboardActivity"
     }
 
     struct Command: Codable, Equatable, Sendable {
@@ -29,6 +31,8 @@ enum VoiceBridge {
         var sentAt: Date
         /// 長按翻譯時的目標語言代碼（TranslationTarget.code）；主 app 一開始錄就預熱翻譯。
         var translateTo: String? = nil
+        /// Keyboard extension supplies a bounded, local-only field excerpt only when the user opted in.
+        var contextText: String? = nil
     }
 
     struct State: Codable, Equatable, Sendable {
@@ -41,6 +45,16 @@ enum VoiceBridge {
         var final: String?
         /// 主 app 已翻好的結果（有 translateTo 時）；nil＝鍵盤自己翻。
         var translated: String?
+        /// 定稿先送（不等校正），背景整理完、真的有改才放進來（依指令 id，留最近幾筆）。
+        /// 不跟著 commandID 走：使用者連講好幾段，前一段的更正回來時已經換成下一段的指令（2026-09-20 實機：前一段更正被丟掉）。
+        var corrections: [Correction]?
+        /// 正在背景整理的指令 id（鍵盤顯示「整理中…」）。
+        var refining: [UUID]?
+
+        struct Correction: Codable, Equatable, Sendable {
+            var id: UUID
+            var text: String
+        }
         var error: String?
         /// "onDevice"／"server"
         var route: String?
@@ -58,6 +72,16 @@ enum VoiceBridge {
     static let finalizeTimeout: TimeInterval = 3
     /// 預設閒置多久自動結束語音工作階段（3 分鐘）（關麥克風、橘點消失）。
     static let defaultIdleTimeout: TimeInterval = 3 * 60   // 2026-09-18 產品決定：5 分鐘太久
+    static let extendedIdleTimeout: TimeInterval = 10 * 60
+    /// 使用者自選「鍵盤語音保持開啟」分鐘數（2026-09-24：iOS 26.4 起沒有公開 API 能自動跳回原 App，
+    /// 能做的是讓跳轉少發生——工作階段開著就不用再跳）。0＝沒設定＝預設 3 分鐘。
+    static let sessionMinutesKey = "utuvo.type.ios.keyboardSessionMinutes"
+    static let sessionMinuteChoices = [3, 10, 30, 60]
+    static func userIdleTimeout(_ defaults: UserDefaults = .standard) -> TimeInterval {
+        let minutes = defaults.integer(forKey: sessionMinutesKey)
+        return sessionMinuteChoices.contains(minutes) ? TimeInterval(minutes * 60) : defaultIdleTimeout
+    }
+    static let keyboardActivityInterval: TimeInterval = 45
 
     static func isAlive(_ state: State?, now: Date = Date()) -> Bool {
         guard let state, state.phase != .ended else { return false }
@@ -74,6 +98,11 @@ enum VoiceBridge {
 
     static func startPlan(state: State?, now: Date = Date()) -> StartPlan {
         isAlive(state, now: now) ? .sendCommand : .openApp
+    }
+
+    /// 只在主 app 仍活著時通知，並節流鍵盤每鍵輸入的跨程序訊號。
+    static func shouldPostKeyboardActivity(state: State?, lastPosted: Date, now: Date = Date()) -> Bool {
+        isAlive(state, now: now) && now.timeIntervalSince(lastPosted) >= keyboardActivityInterval
     }
 
     static func isFresh(_ command: Command, now: Date = Date()) -> Bool {
@@ -166,6 +195,14 @@ enum VoiceBridge {
     static func writeState(_ state: State) { write(state, name: stateFile) }
     static func readCommand() -> Command? { read(Command.self, name: commandFile) }
     static func writeCommand(_ command: Command) { write(command, name: commandFile) }
+
+    /// Field text is a one-shot hint. Remove it from the shared command file once the host has copied it to memory.
+    static func clearCommandContext(for id: UUID, in directory: URL? = nil) {
+        guard var command = read(Command.self, name: commandFile, in: directory), command.id == id,
+              command.contextText != nil else { return }
+        command.contextText = nil
+        write(command, name: commandFile, in: directory)
+    }
 
     static func post(_ note: Note) {
         CFNotificationCenterPostNotification(

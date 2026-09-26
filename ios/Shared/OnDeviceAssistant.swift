@@ -80,7 +80,7 @@ enum OnDeviceAssistant {
     enum AssistantError: LocalizedError {
         case unavailable
         var errorDescription: String? {
-            String(localized: "這台裝置沒有 Apple Intelligence（iOS 26），也沒設雲端 key；到主 app 設定 → 雲端翻譯加入 key 即可")
+            String(localized: "這台裝置沒有 Apple Intelligence（iOS 26），也沒設阿里雲百鍊 key；到主 app 設定 → 阿里雲百鍊加入 key 即可")
         }
     }
 }

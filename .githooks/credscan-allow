@@ -1,0 +1,7 @@
+# credscan 放行（已人工確認的誤判），綁 blob 內容 sha256，內容一改自動失效（2026-09-26）
+78dd4e5575110fa0c677ba9b26838bd708f754d3cc1df796f4cf8b1bc8ee3d00  # 合成帳密 synt… 對 fixture.invalid
+16cd71e102847675d7ff7cd9432c9131ed192d5706b91aa7451f6e1989db3edf  # 數字正規化測試裡的連號假電話
+8358424c6c70b79c98845bf0056369bebca6e7626abac8c751c1f4096b46a6ef  # nextToken 變數名誤判
+354b08e3e3b5c53e81dc66c215c3f42a27147a35bee8fd28d672de8e87382ed0  # Xcode 物件 ID 被當 IBAN
+2ef14c19d024d28dbc823e7630117ac95dcefb51dc5f98f385fac6aa6a8e8897  # 刻意公開的客服信箱（掃描器放行樣本）
+088c9f125b79ba9c2b16b4950528f699df44772ddb8ae1893aab409c43f11048  # 刻意公開的客服信箱（掃描器例外規則）

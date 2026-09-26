@@ -17,6 +17,52 @@ enum KeyboardMode: Equatable, Sendable {
         return .dictate
     }
 
+    /// 鍵盤光球停止錄音後會進入「整理中…」（等主 app 重辨識回來）。這時如果再按一次光球開新一段，
+    /// 主 app 還在為前一段做雲端／Qwen 重辨識，最長等 6 秒；前一段定稿回來時 activeCommandID 已經被
+    /// 換成新的，`guard self.state.commandID == id` 不成立就整句丟掉——上一句整句不見。
+    /// 修法：開始下一段前，若條件成立，把目前拿到的辨識結果當上一段定稿貼上，再開始下一段。
+    /// 翻譯／編輯模式不適用（它們根本沒有「整理中」階段）。
+    static func shouldFlushPendingBeforeStart(isDictating: Bool, hasPendingCommand: Bool,
+                                              isRecording: Bool, lastTranscript: String) -> Bool {
+        guard isDictating else { return false }
+        guard hasPendingCommand else { return false }
+        guard !isRecording else { return false }
+        return !lastTranscript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// R2-2（CodeX 複查 2026-09-25）→ R3-3（luna-review 2026-09-25）：主 app 已經把 Apple 定稿寫進共享
+    /// state（partial／final），但鍵盤 bridgeUpdated 還沒收到通知時，使用者又按一次光球開新一段。鍵盤
+    /// 自己的 `lastRawTranscript` 這時是空的，舊結果就會被丟。改讀主 app 的 shared state 撐場：
+    /// - `pendingID` 為 nil 或跟 shared 的 commandID 不符 → 回 local（不要拿錯段的文字）。
+    /// - 同 ID 且 sharedFinal 去空白非空 → 直接回 sharedFinal（R3-3：定稿權威最高，不比長度；
+    ///   定稿可能比 partial 短，但已是主 app 走過字典的最終版）。
+    /// - 否則 sharedPartial 比 local 長 → 回 sharedPartial；shared 全空白也視為沒有。
+    static func pendingTranscript(local: String, pendingID: UUID?, sharedCommandID: UUID?,
+                                  sharedPartial: String, sharedFinal: String?) -> String {
+        guard let pendingID, pendingID == sharedCommandID else { return local }
+        if let sharedFinal, !sharedFinal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return sharedFinal
+        }
+        let candidateTrimmed = sharedPartial.trimmingCharacters(in: .whitespacesAndNewlines)
+        let localTrimmed = local.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !candidateTrimmed.isEmpty && candidateTrimmed.count >= localTrimmed.count {
+            return sharedPartial
+        }
+        return local
+    }
+
+    /// R3-4（luna-review 2026-09-25）：合併 `shouldFlushPendingBeforeStart` 與 `pendingTranscript`，
+    /// 給 `micTapped()` 當唯一入口，回要貼的文字或 nil（不 flush）。
+    /// 非聽寫／錄音中／沒 pending → nil；否則用主 app shared state 撐場算出文字，去空白後非空才回。
+    static func flushText(isDictating: Bool, isRecording: Bool, pendingID: UUID?,
+                          local: String, sharedCommandID: UUID?, sharedPartial: String, sharedFinal: String?) -> String? {
+        guard isDictating, !isRecording, pendingID != nil else { return nil }
+        let transcript = pendingTranscript(local: local, pendingID: pendingID,
+                                           sharedCommandID: sharedCommandID,
+                                           sharedPartial: sharedPartial, sharedFinal: sharedFinal)
+        return transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : transcript
+    }
+
     /// 錄音前的提示（Typeless：Tap to speak／Speak to edit／Release to translate）。
     var idleHint: String {
         switch self {
@@ -150,6 +196,13 @@ enum ToneHint: Equatable, Sendable {
 
     static func infer(returnKeyType: UIReturnKeyType?) -> ToneHint {
         returnKeyType == .send ? .chat : .document
+    }
+
+    /// Return 鍵是一般換行（或拿不到）才保留分段換行；送出／搜尋／前往／完成等＝單行框，
+    /// 插入換行可能直接觸發送出（2026-09-19 長文分段一起加）。
+    static func allowsLineBreaks(returnKeyType: UIReturnKeyType?) -> Bool {
+        guard let returnKeyType else { return true }
+        return returnKeyType == .default
     }
 
     private static let terminators: Set<Character> = ["。", "！", "？", ".", "!", "?"]

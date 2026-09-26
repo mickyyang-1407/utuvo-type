@@ -14,6 +14,7 @@ struct UTUVOTypeAppMain {
     ]
 
     static func main() {
+        if IsolatedEntry.runIfRequested() { return }
         let arguments = CommandLine.arguments.dropFirst()
         if let command = arguments.first(where: { cliCommands.contains($0) }) {
             DistributedNotificationCenter.default().postNotificationName(
@@ -58,6 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             runSnapshotMode(outputDirectory: snapshotDirectory)
             return
         }
+        DictionaryCloud.start(model.preferences)
         model.onStateChange = { [weak self] in
             self?.rebuildMenu()
             self?.updateOverlay()
@@ -227,6 +229,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // System Settings changes TCC outside this process. Re-read the state
         // whenever the user returns instead of showing a stale onboarding card.
         model.refreshPermissionState()
+        // 個人字典跟 iPhone 同步（iCloud）；截圖模式不寫 preferences，不同步。
+        if ProcessInfo.processInfo.environment["UTUVO_TYPE_SNAPSHOT_DIR"] == nil { DictionaryCloud.start(model.preferences) }
     }
 
     func applicationWillTerminate(_ notification: Notification) {

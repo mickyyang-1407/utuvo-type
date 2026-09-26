@@ -37,14 +37,6 @@ struct TranslationService {
         ("vi", "越南文", "Vietnamese")
     ]
 
-    func translate(_ text: String, to targetName: String) async throws -> String {
-        let systemPrompt = """
-        You are a translation engine. Translate the user's text into \(targetName). \
-        Output ONLY the translation, no explanations, no quotes, no reasoning.
-        """
-        return try await complete(system: systemPrompt, user: text)
-    }
-
     /// 通用 chat completion（翻譯與「說出要怎麼改」共用）：只回 content。
     func complete(system systemPrompt: String, user text: String) async throws -> String {
         guard !apiKey.isEmpty else { throw TranslationError.notConfigured }
@@ -87,7 +79,7 @@ struct TranslationService {
 
         var errorDescription: String? {
             switch self {
-            case .notConfigured: return String(localized: "尚未設定雲端 API key（設定 → 雲端翻譯）")
+            case .notConfigured: return String(localized: "尚未設定阿里雲百鍊 key（設定 → 阿里雲百鍊）")
             case .badURL: return String(localized: "端點網址錯誤")
             case .http(let code): return String(localized: "雲端回傳 HTTP \(code)")
             case .malformed: return String(localized: "雲端回應格式無法解析")

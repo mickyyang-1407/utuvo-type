@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  沒有 Developer ID 描述檔的機器用這份（少了 iCloud 字典同步，其餘一樣）。
+  描述檔不進 repo：~/Library/MobileDevice/Provisioning Profiles/UTUVO_Type_Developer_ID.provisionprofile
+-->
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+</dict>
+</plist>

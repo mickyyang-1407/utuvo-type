@@ -47,7 +47,7 @@ final class HostReturnTests: XCTestCase {
     func testKnownSchemes() {
         XCTAssertEqual(KnownAppSchemes.returnURL(forHostId: "com.apple.MobileSMS")?.absoluteString, "ichat://", "訊息用 ichat:// 不是 sms://")
         XCTAssertEqual(KnownAppSchemes.returnURL(forHostId: "jp.naver.line")?.absoluteString, "line://")
-        XCTAssertNil(KnownAppSchemes.returnURL(forHostId: "com.apple.mobilesafari"), "Safari 沒有可用 scheme，走 LSApplicationWorkspace")
+        XCTAssertNil(KnownAppSchemes.returnURL(forHostId: "com.apple.mobilesafari"), "Safari 沒有可用公開 scheme，保留在返回提示")
         XCTAssertTrue(KnownAppSchemes.knownNoSchemeHosts.contains("com.utuvo.type.ios"))
         for (id, scheme) in KnownAppSchemes.schemesByBundleId {
             XCTAssertNotNil(URL(string: scheme), "\(id) 的 scheme 不是合法 URL")

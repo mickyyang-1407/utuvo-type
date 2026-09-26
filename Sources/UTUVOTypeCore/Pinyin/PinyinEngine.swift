@@ -135,8 +135,15 @@ public final class PinyinEngine: @unchecked Sendable {
     /// 緩衝區開頭的候選：先依覆蓋的原始字元數由多到少，同覆蓋內分數高的在前；含單字。
     /// 只列「剩下的字母還能繼續切成音節」的切法（例 `nihao` 不會出現只吃掉 `n` 的候選）。
     /// 多字詞最多 `phraseCandidateLimit` 個，總數上限 `candidateLimit`。
-    public var candidates: [PinyinCandidate] {
-        locked { analysis().candidates(lexicon: lexicon) }
+    public var candidates: [PinyinCandidate] { candidates(limit: Self.candidateLimit) }
+
+    /// 只計算呼叫端實際要顯示的候選數，避免鍵盤每按一鍵都整理 60 個候選。
+    public func candidates(limit requestedLimit: Int) -> [PinyinCandidate] {
+        locked {
+            let limit = min(max(requestedLimit, 0), Self.candidateLimit)
+            guard limit > 0 else { return [] }
+            return analysis().candidates(lexicon: lexicon, limit: limit)
+        }
     }
 
     /// 選一個候選：從緩衝區開頭移除它吃掉的字元（連同緊跟著的 `'`），回傳要送出的文字。
@@ -281,9 +288,10 @@ extension PinyinEngine {
         }
 
         /// 緩衝區開頭的候選。
-        func candidates(lexicon: PinyinLexicon) -> [PinyinCandidate] {
+        func candidates(lexicon: PinyinLexicon, limit requestedLimit: Int) -> [PinyinCandidate] {
+            let limit = min(max(requestedLimit, 0), PinyinEngine.candidateLimit)
             let n = count
-            guard start < n else { return [] }
+            guard start < n, limit > 0 else { return [] }
             // 只保留「之後還能繼續切下去」的節點：先求從開頭可達的最遠位置 E，再反向求能走到 E 的位置
             var reach = [Bool](repeating: false, count: n + 1)
             reach[start] = true
@@ -311,8 +319,8 @@ extension PinyinEngine {
                     guard lexicon.hasKey(withPrefix: ranges[...]) else { continue }
                     let p = penalty - (t.partial ? PinyinEngine.partialPenalty : 0)
                     let isPhrase = ranges.count > 1
-                    let limit = isPhrase ? PinyinEngine.phraseCandidateLimit : PinyinEngine.candidateLimit
-                    for e in lexicon.lookup(ranges: ranges[...], limit: limit) {
+                    let lookupLimit = isPhrase ? min(PinyinEngine.phraseCandidateLimit, limit) : limit
+                    for e in lexicon.lookup(ranges: ranges[...], limit: lookupLimit) {
                         let key = "\(t.next)|\(e.text)"
                         let s = e.score + p
                         if let k = index[key] {
@@ -334,11 +342,12 @@ extension PinyinEngine {
                 if a.score != b.score { return a.score > b.score }
                 return a.order < b.order
             }
-            let phrases = Array(hits.filter(\.isPhrase).sorted(by: ordered).prefix(PinyinEngine.phraseCandidateLimit))
+            let phraseLimit = min(PinyinEngine.phraseCandidateLimit, limit)
+            let phrases = Array(hits.filter(\.isPhrase).sorted(by: ordered).prefix(phraseLimit))
             // 單字：每種覆蓋長度先保證一份配額，再依整體順序補滿。否則 `xian` 的 169 個單字
             // 會把 `xi`（西、希…）整層擠出上限。
             let singles = hits.filter { !$0.isPhrase }.sorted(by: ordered)
-            let room = PinyinEngine.candidateLimit - phrases.count
+            let room = limit - phrases.count
             let levels = Set(singles.map(\.consumed)).count
             var picked: [Hit] = []
             var rest: [Hit] = []
@@ -356,7 +365,7 @@ extension PinyinEngine {
             }
             let chosenSingles = (picked.sorted(by: ordered).prefix(room) + rest).prefix(room)
             return (phrases + chosenSingles).sorted(by: ordered)
-                .prefix(PinyinEngine.candidateLimit)
+                .prefix(limit)
                 .map { PinyinCandidate(text: $0.text, consumed: $0.consumed) }
         }
     }

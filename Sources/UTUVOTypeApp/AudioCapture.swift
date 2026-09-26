@@ -6,6 +6,17 @@ struct AudioCaptureResult: Sendable {
     let audioURL: URL
     let speechTranscript: String
     let duration: TimeInterval
+    /// 整段錄音的峰值（dBFS）與實際寫進檔案的格數：判斷「麥克風其實沒收到聲音」與「0 秒空檔」。
+    var peakDBFS: Float = 0
+    var framesWritten: Int64 = 1
+    /// 這次實際使用的輸入裝置名稱（給使用者看的提示）。
+    var inputDeviceName: String = ""
+}
+
+extension AudioCaptureResult {
+    /// 峰值低於這個＝幾乎沒收到聲音（2026-09-24 實機：AirPods 搶走輸入，max −39～−43 dB）。
+    static let silentPeakDBFS: Float = -35
+    var soundsSilent: Bool { peakDBFS < Self.silentPeakDBFS }
 }
 
 enum AudioCaptureError: Error, CustomStringConvertible {
@@ -69,6 +80,8 @@ final class AudioCaptureSession: @unchecked Sendable {
     }
 
     private let lock = NSLock()
+    private let voiceLevel = LiveVoiceLevel()
+    var currentVoiceLevel: Float? { voiceLevel.read() }
     private let engine = AVAudioEngine()
     private var continuation: AsyncThrowingStream<Data, Error>.Continuation?
     private var converter: AVAudioConverter?
@@ -110,15 +123,33 @@ final class AudioCaptureSession: @unchecked Sendable {
 
     var onPartial: (@Sendable (String) -> Void)?
     var onSilenceDetected: (@Sendable () -> Void)?
+    /// 錄音中輸入裝置被換掉（例如 AirPods 連上）：AVAudioEngine 會停，之後的聲音收不到。
+    var onInputDeviceChanged: (@Sendable () -> Void)?
+    private var peakLinear: Float = 0
+    private var framesWritten: Int64 = 0
+    private var configurationObserver: NSObjectProtocol?
+
+    /// 目前（最近一次 start）使用的輸入裝置名稱。
+    private(set) var inputDeviceName = ""
+
+    /// 到目前為止的峰值（dBFS）；錄音中顯示「好像沒收到聲音」用。
+    var peakDBFSSoFar: Float {
+        lock.lock(); defer { lock.unlock() }
+        return peakLinear > 0 ? 20 * log10(peakLinear) : -160
+    }
 
     func start(enableSpeechFallback: Bool) throws -> AsyncThrowingStream<Data, Error> {
         guard !isRunning else { throw AudioCaptureError.engineStartFailed("已有錄音工作") }
+        voiceLevel.clear()
         let input = engine.inputNode
         if let inputDeviceUID, !inputDeviceUID.isEmpty,
            !AudioDeviceCatalog.setCurrentInputDevice(uid: inputDeviceUID, on: input.audioUnit) {
             throw AudioCaptureError.noInputDevice
         }
         muteOutputIfRequested()
+        let effectiveUID = (inputDeviceUID?.isEmpty == false ? inputDeviceUID : nil) ?? AudioDeviceCatalog.defaultInputUID()
+        inputDeviceName = effectiveUID.flatMap { uid in AudioDeviceCatalog.inputDevices().first { $0.id == uid }?.name } ?? ""
+        lock.lock(); peakLinear = 0; framesWritten = 0; lock.unlock()
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
             throw AudioCaptureError.noInputDevice
@@ -162,12 +193,24 @@ final class AudioCaptureSession: @unchecked Sendable {
 
         input.installTap(onBus: 0, bufferSize: 2_048, format: format) { [weak self] buffer, _ in
             guard let self else { return }
+            self.voiceLevel.capture(buffer, selectedChannel: self.inputChannel.channelIndex)
             do {
                 try file.write(from: buffer)
             } catch {
                 self.finishStream(throwing: error)
                 return
             }
+            var peak: Float = 0
+            if let channels = buffer.floatChannelData {
+                for channel in 0 ..< Int(buffer.format.channelCount) {
+                    let samples = channels[channel]
+                    for i in 0 ..< Int(buffer.frameLength) { peak = max(peak, abs(samples[i])) }
+                }
+            }
+            self.lock.lock()
+            self.peakLinear = max(self.peakLinear, peak)
+            self.framesWritten += Int64(buffer.frameLength)
+            self.lock.unlock()
 
             if let data = self.convertToPCM16Mono(self.bufferForConversion(buffer)) {
                 self.lock.lock()
@@ -182,6 +225,9 @@ final class AudioCaptureSession: @unchecked Sendable {
             }
         }
 
+        configurationObserver = NotificationCenter.default.addObserver(
+            forName: .AVAudioEngineConfigurationChange, object: engine, queue: nil
+        ) { [weak self] _ in self?.onInputDeviceChanged?() }
         engine.prepare()
         do {
             try engine.start()
@@ -198,8 +244,10 @@ final class AudioCaptureSession: @unchecked Sendable {
     func stop() async -> AudioCaptureResult? {
         guard isRunning else { return nil }
         isRunning = false
+        removeConfigurationObserver()
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        voiceLevel.clear()
         restoreOutputMute()
 
         let state = takeStopState()
@@ -222,16 +270,27 @@ final class AudioCaptureSession: @unchecked Sendable {
         resetVoiceActivityState()
 
         guard let url else { return nil }
+        let (peak, frames) = lock.withLock { (peakLinear, framesWritten) }
         return AudioCaptureResult(
             audioURL: url,
             speechTranscript: finalText,
-            duration: Date().timeIntervalSince(started ?? Date())
+            duration: Date().timeIntervalSince(started ?? Date()),
+            peakDBFS: peak > 0 ? 20 * log10(peak) : -160,
+            framesWritten: frames,
+            inputDeviceName: inputDeviceName
         )
     }
 
+    private func removeConfigurationObserver() {
+        if let configurationObserver { NotificationCenter.default.removeObserver(configurationObserver) }
+        configurationObserver = nil
+    }
+
     func cancel() {
+        removeConfigurationObserver()
         engine.inputNode.removeTap(onBus: 0)
         engine.stop()
+        voiceLevel.clear()
         restoreOutputMute()
         lock.lock()
         continuation?.finish()
@@ -243,6 +302,9 @@ final class AudioCaptureSession: @unchecked Sendable {
         if let url { try? FileManager.default.removeItem(at: url) }
         isRunning = false
     }
+
+    /// 開了「安靜時自動結束」才用：要安靜這麼久才停。原本 0.9 秒，講長句時想下一句就被切斷（2026-09-24 實機）。
+    static let autoStopSilenceSeconds: TimeInterval = 3.0
 
     private func shouldFinishForSilence(buffer: AVAudioPCMBuffer) -> Bool {
         guard let channels = buffer.floatChannelData,
@@ -269,7 +331,7 @@ final class AudioCaptureSession: @unchecked Sendable {
         guard detectedVoice,
               !silenceTriggered,
               let lastVoiceAt,
-              now.timeIntervalSince(lastVoiceAt) >= 0.9 else {
+              now.timeIntervalSince(lastVoiceAt) >= Self.autoStopSilenceSeconds else {
             return false
         }
         silenceTriggered = true

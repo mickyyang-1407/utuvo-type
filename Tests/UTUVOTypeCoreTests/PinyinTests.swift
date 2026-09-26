@@ -219,6 +219,14 @@ final class PinyinTests: XCTestCase {
         XCTAssertEqual(Set(c.map { "\($0.consumed)|\($0.text)" }).count, c.count, "不重複")
     }
 
+    func testCandidatesCanUseASmallerDisplayLimit() throws {
+        let e = try engine(typing: "zhongguoren")
+        XCTAssertEqual(e.candidates(limit: 0), [])
+        let limited = e.candidates(limit: 3)
+        XCTAssertLessThanOrEqual(limited.count, 3)
+        XCTAssertEqual(limited.first?.text, e.candidates.first?.text)
+    }
+
     func testFullPinyinDoesNotOfferStrayAbbreviations() throws {
         // nihao：只吃掉 n 的候選會留下無法切分的 ihao；women：w 讀得出完整音節 wo，不當縮寫
         for keys in ["nihao", "women", "zhongguo"] {

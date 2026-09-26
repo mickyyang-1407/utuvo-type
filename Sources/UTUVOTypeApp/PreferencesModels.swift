@@ -339,6 +339,8 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
     var bundleIdentifier: String?
     var audioPath: String?
     var isStarred: Bool
+    /// 這筆沒有照正常路徑完成時的原因（例如智慧整理逾時、改用剪貼簿貼上）。舊紀錄沒有這欄＝nil。
+    var note: String?
 
     init(
         id: UUID = UUID(),
@@ -350,7 +352,8 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
         appName: String? = nil,
         bundleIdentifier: String? = nil,
         audioPath: String? = nil,
-        isStarred: Bool = false
+        isStarred: Bool = false,
+        note: String? = nil
     ) {
         self.id = id
         self.date = date
@@ -362,5 +365,6 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
         self.bundleIdentifier = bundleIdentifier
         self.audioPath = audioPath
         self.isStarred = isStarred
+        self.note = note
     }
 }

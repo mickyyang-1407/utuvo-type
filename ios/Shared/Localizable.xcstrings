@@ -1,12 +1,32 @@
 {
   "sourceLanguage" : "zh-Hant",
   "strings" : {
+    " " : {
+      "shouldTranslate" : false
+    },
     "%@ 時" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 小时"
+          }
+        }
+      }
+    },
+    "%@・%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@・%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@・%@"
           }
         }
       }
@@ -24,6 +44,34 @@
         }
       }
     },
+    "%lld 詞" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 词"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 詞"
+          }
+        }
+      }
+    },
+    "%lld. %@" : {
+      "localizations" : {
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld. %2$@"
+          }
+        }
+      },
+      "shouldTranslate" : false
+    },
     "<1 分" : {
       "localizations" : {
         "zh-Hans" : {
@@ -33,6 +81,19 @@
           }
         }
       }
+    },
+    "AI 與科技" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AI 与科技"
+          }
+        }
+      }
+    },
+    "API key" : {
+      "shouldTranslate" : false
     },
     "Apple Intelligence・裝置端" : {
       "localizations" : {
@@ -54,7 +115,17 @@
         }
       }
     },
-    "DashScope API Key" : {
+    "Google Gemini（推薦）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Google Gemini（推荐）"
+          }
+        }
+      }
+    },
+    "Groq" : {
       "shouldTranslate" : false
     },
     "Keychain 刪除失敗（OSStatus %d）。" : {
@@ -110,6 +181,26 @@
         }
       }
     },
+    "key 不對或沒有權限（%lld）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 不对或没有权限（%lld）。"
+          }
+        }
+      }
+    },
+    "key 是空的或存不進鑰匙圈。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 是空的或存不进钥匙串。"
+          }
+        }
+      }
+    },
     "key 是空的，沒有寫入。" : {
       "localizations" : {
         "zh-Hans" : {
@@ -130,12 +221,226 @@
         }
       }
     },
+    "vocab.pack.computing.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "资讯与电脑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資訊與電腦"
+          }
+        }
+      }
+    },
+    "vocab.pack.computing.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电子计算机学术名词：编程语言、算法、数据结构、系统软硬件等核心词汇。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電子計算機學術名詞：程式語言、演算法、資料結構、系統軟硬體等核心詞彙。"
+          }
+        }
+      }
+    },
+    "vocab.pack.engineering.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工程"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工程"
+          }
+        }
+      }
+    },
+    "vocab.pack.engineering.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "电机与土木工程学术名词：电路、信号、控制、材料、结构、交通运输、大地工程等。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電機與土木工程學術名詞：電路、訊號、控制、材料、結構、交通運輸、大地工程等。"
+          }
+        }
+      }
+    },
+    "vocab.pack.finance.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "财经"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "財經"
+          }
+        }
+      }
+    },
+    "vocab.pack.finance.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "经济、会计、财经法相关学术名词：总体经济、财务会计、保险金融、税务等。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "經濟、會計、財經法相關學術名詞：總體經濟、財務會計、保險金融、稅務等。"
+          }
+        }
+      }
+    },
+    "vocab.pack.law.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法律"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法律"
+          }
+        }
+      }
+    },
+    "vocab.pack.law.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法律学术名词：宪法（公法）、刑法、民法、国际法、社会法、家事法等核心法领域词汇。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "法律學術名詞：憲法（公法）、刑法、民法、國際法、社會法、家事法等核心法領域詞彙。"
+          }
+        }
+      }
+    },
+    "vocab.pack.medicine.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "医学"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "醫學"
+          }
+        }
+      }
+    },
+    "vocab.pack.medicine.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "医学、药学、人体解剖、医事检验等学术名词：常用疾病、药物、解剖构造、检验项目。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "醫學、藥學、人體解剖、醫事檢驗等學術名詞：常用疾病、藥物、解剖構造、檢驗項目。"
+          }
+        }
+      }
+    },
+    "vocab.pack.music.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音乐与音响"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音樂與音響"
+          }
+        }
+      }
+    },
+    "vocab.pack.music.summary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音乐学术名词：乐理、乐器、音乐家、流行音乐专有名词（含音响类）等。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音樂學術名詞：樂理、樂器、音樂家、流行音樂專有名詞（含音響類）等。"
+          }
+        }
+      }
+    },
     "「繁」鍵盤輸入法" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "“繁”键盘输入法"
+          }
+        }
+      }
+    },
+    "一行一個詞（例如 Perplexity）；要替換就寫「聽到→改成」（例如 cloud code→Claude Code）。可以把其他輸入法匯出的詞庫或朋友分享的清單直接貼進來。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一行一个词（例如 Perplexity）；要替换就写“听到→改成”（例如 cloud code→Claude Code）。可以把其他输入法导出的词库或朋友分享的清单直接贴进来。"
           }
         }
       }
@@ -166,6 +471,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不可用"
+          }
+        }
+      }
+    },
+    "中" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中"
           }
         }
       }
@@ -282,12 +597,52 @@
         }
       }
     },
+    "像 Typeless 一樣抹掉改口、整理成通順的句子。用你自己申請的免費 key，只送文字、不送聲音。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "像 Typeless 一样抹掉改口、整理成通顺的句子。用你自己申请的免费 key，只送文字、不送声音。"
+          }
+        }
+      }
+    },
     "儲存" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "保存"
+          }
+        }
+      }
+    },
+    "免費，每天約上千次。免費版送出的文字 Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶（不一定會被收費）就不會。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费，每天约上千次。免费版送出的文字 Google 可能用来改进模型；在 Google Cloud 绑定付款账户（不一定会被收费）就不会。"
+          }
+        }
+      }
+    },
+    "免費，每天約上千次，速度很快；預設不保留送出的資料。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费，每天约上千次，速度很快；默认不保留送出的数据。"
+          }
+        }
+      }
+    },
+    "內建詞庫" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "内置词库"
           }
         }
       }
@@ -308,6 +663,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "再点一下完成，翻译成%@"
+          }
+        }
+      }
+    },
+    "出處與授權" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出处与授权"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出處與授權"
+          }
+        }
+      }
+    },
+    "出處與整理" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出处与整理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "出處與整理"
           }
         }
       }
@@ -393,6 +782,46 @@
         }
       }
     },
+    "匯入到個人字典" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入到个人词典"
+          }
+        }
+      }
+    },
+    "匯入字典檔" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入词典文件"
+          }
+        }
+      }
+    },
+    "匯入詞彙" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入词汇"
+          }
+        }
+      }
+    },
+    "匯出字典檔" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出词典文件"
+          }
+        }
+      }
+    },
     "印地文" : {
       "localizations" : {
         "zh-Hans" : {
@@ -443,12 +872,65 @@
         }
       }
     },
+    "可以用（%lld 毫秒）：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以用（%lld 毫秒）：%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "可以用（%1$lld 毫秒）：%2$@"
+          }
+        }
+      }
+    },
+    "可選專業詞庫（離線內附，開啟使用）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可选专业词库（离线内附，开启使用）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可選專業詞庫（離線內附，開啟使用）"
+          }
+        }
+      }
+    },
+    "台灣地名與交通" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "台湾地名与交通"
+          }
+        }
+      }
+    },
     "同一套清理＋字典，寫回歷史" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "同一套清理＋词典，写回历史"
+          }
+        }
+      }
+    },
+    "同一把 key 可供雲端翻譯與智慧整理使用；未設定時兩者都不會連線。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一把 key 可供云端翻译与智能整理使用；未设置时两者都不会连接。"
           }
         }
       }
@@ -473,6 +955,16 @@
         }
       }
     },
+    "在「API-KEY」頁建立 key。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“API-KEY”页创建 key。"
+          }
+        }
+      }
+    },
     "在任何 app 裡用說的打字" : {
       "localizations" : {
         "zh-Hans" : {
@@ -489,6 +981,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在任何输入框按 🌐 切到 UTUVO Type，点光球开始说"
+          }
+        }
+      }
+    },
+    "填入任何 OpenAI 相容服務的端點網址與模型名稱（例如自己架的伺服器）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "填入任何 OpenAI 兼容服务的端点网址与模型名称（例如自己架的服务器）。"
+          }
+        }
+      }
+    },
+    "失敗：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失败：%@"
           }
         }
       }
@@ -513,12 +1025,29 @@
         }
       }
     },
-    "尚未設定雲端 API key（設定 → 雲端翻譯）" : {
+    "實際唯一詞數" : {
+      "extractionState" : "manual",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚未设置云端 API key（设置 → 云端翻译）"
+            "value" : "实际唯一词数"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "實際唯一詞數"
+          }
+        }
+      }
+    },
+    "尚未設定阿里雲百鍊 key（設定 → 阿里雲百鍊）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未设置阿里云百炼 key（设置 → 阿里云百炼）"
           }
         }
       }
@@ -543,12 +1072,62 @@
         }
       }
     },
+    "已刪除。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已删除。"
+          }
+        }
+      }
+    },
+    "已加入 %lld 筆。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加入 %lld 笔。"
+          }
+        }
+      }
+    },
+    "已匯出 %lld 個詞。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已导出 %lld 个词。"
+          }
+        }
+      }
+    },
+    "已合併，%lld 個詞有變動。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已合并，%lld 个词有变动。"
+          }
+        }
+      }
+    },
     "已存進 Keychain。" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "已存入 Keychain。"
+          }
+        }
+      }
+    },
+    "已存進這支手機的鑰匙圈。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已存进这支手机的钥匙串。"
           }
         }
       }
@@ -563,6 +1142,16 @@
         }
       }
     },
+    "已整理" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已整理"
+          }
+        }
+      }
+    },
     "已複製" : {
       "localizations" : {
         "zh-Hans" : {
@@ -573,12 +1162,42 @@
         }
       }
     },
+    "已記住：%@ → %@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已记住：%1$@ → %2$@"
+          }
+        }
+      }
+    },
     "已設定" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "已设置"
+          }
+        }
+      }
+    },
+    "已開啟" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已开启"
+          }
+        }
+      }
+    },
+    "強" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "强"
           }
         }
       }
@@ -603,12 +1222,52 @@
         }
       }
     },
+    "也可以點左上角「◀︎」回去，在鍵盤上點光球說話" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "也可以点左上角的“◀︎”返回，在键盘上点光球说话"
+          }
+        }
+      }
+    },
+    "打字手感" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打字手感"
+          }
+        }
+      }
+    },
+    "打開申請頁面" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开申请页面"
+          }
+        }
+      }
+    },
     "打開設定" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开设置"
+          }
+        }
+      }
+    },
+    "打開阿里雲百鍊主控台，開通模型服務（需要實名認證）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开阿里云百炼控制台，开通模型服务（需要实名认证）。"
           }
         }
       }
@@ -663,6 +1322,103 @@
         }
       }
     },
+    "按「Create API Key」，取個名字。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按“Create API Key”，取个名字。"
+          }
+        }
+      }
+    },
+    "按「Create API key」（建立 API 金鑰）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按“Create API key”（创建 API 密钥）。"
+          }
+        }
+      }
+    },
+    "按「測試」確認可以用。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按“测试”确认可以用。"
+          }
+        }
+      }
+    },
+    "按下去的當下就震（不是放開才震），選字、切換鍵盤也有。震動需要在系統設定打開「允許完整存取」（跟語音一樣），按鍵聲音不用；手機靜音或系統把觸覺回饋關掉時都不會有。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按下去的当下就振（不是松开才振），选字、切换键盘也有。振动需要在系统设置打开「允许完全访问」（跟语音一样），按键声音不用；手机静音或系统把触觉反馈关掉时都不会有。"
+          }
+        }
+      }
+    },
+    "按下面「打開申請頁面」，用 Email 或 Google 帳號登入 GroqCloud。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按下面“打开申请页面”，用 Email 或 Google 账号登录 GroqCloud。"
+          }
+        }
+      }
+    },
+    "按下面「打開申請頁面」，用你的 Google 帳號登入 Google AI Studio。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按下面“打开申请页面”，用你的 Google 账号登录 Google AI Studio。"
+          }
+        }
+      }
+    },
+    "按鍵聲音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按键声音"
+          }
+        }
+      }
+    },
+    "按鍵震動" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按键振动"
+          }
+        }
+      }
+    },
+    "授權" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授权"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "授權"
+          }
+        }
+      }
+    },
     "換個字試試；raw 逐字稿也會被搜到。" : {
       "localizations" : {
         "zh-Hans" : {
@@ -699,6 +1455,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜索历史"
+          }
+        }
+      }
+    },
+    "搜尋詞目" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜索词条"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋詞目"
           }
         }
       }
@@ -793,6 +1566,16 @@
         }
       }
     },
+    "文字會送到你填的端點。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字会发送到你填的端点。"
+          }
+        }
+      }
+    },
     "文字清理" : {
       "localizations" : {
         "zh-Hans" : {
@@ -824,6 +1607,16 @@
         }
       }
     },
+    "新用戶有免費額度，之後依用量計費。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新用户有免费额度，之后依用量计费。"
+          }
+        }
+      }
+    },
     "日文" : {
       "localizations" : {
         "zh-Hans" : {
@@ -840,6 +1633,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "昨天"
+          }
+        }
+      }
+    },
+    "智慧整理" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能整理"
+          }
+        }
+      }
+    },
+    "智慧整理（選配）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能整理（可选）"
           }
         }
       }
@@ -875,6 +1688,26 @@
         }
       }
     },
+    "服務" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务"
+          }
+        }
+      }
+    },
+    "服務回應錯誤（%lld）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务响应错误（%lld）。"
+          }
+        }
+      }
+    },
     "未設定" : {
       "localizations" : {
         "zh-Hans" : {
@@ -891,6 +1724,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本周字数"
+          }
+        }
+      }
+    },
+    "模型名稱" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模型名称"
           }
         }
       }
@@ -931,6 +1774,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "历史"
+          }
+        }
+      }
+    },
+    "沒有讀到檔案。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有读到文件。"
           }
         }
       }
@@ -995,12 +1848,39 @@
         }
       }
     },
+    "測試" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试"
+          }
+        }
+      }
+    },
     "滑到語言，放開就翻譯；放開在別處取消" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "滑到语言，松开就翻译；在别处松开则取消"
+          }
+        }
+      }
+    },
+    "瀏覽詞目" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浏览词条"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "瀏覽詞目"
           }
         }
       }
@@ -1045,12 +1925,32 @@
         }
       }
     },
+    "申請免費 key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "申请免费 key"
+          }
+        }
+      }
+    },
     "略過" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳过"
+          }
+        }
+      }
+    },
+    "登入同一個 iCloud 的 Mac 會自動同步；Android 用匯出／匯入字典檔。兩邊都改過的詞留最後改的那個。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录同一个 iCloud 的 Mac 会自动同步；Android 用导出／导入词典文件。两边都改过的词保留最后修改的那个。"
           }
         }
       }
@@ -1101,6 +2001,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "端点地址错误"
+          }
+        }
+      }
+    },
+    "端點網址（…/chat/completions）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "端点网址（…/chat/completions）"
           }
         }
       }
@@ -1245,6 +2155,26 @@
         }
       }
     },
+    "自動" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动"
+          }
+        }
+      }
+    },
+    "自訂（OpenAI 相容）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义（OpenAI 兼容）"
+          }
+        }
+      }
+    },
     "與辨識語言相同" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1345,6 +2275,46 @@
         }
       }
     },
+    "複製 key，回到設定裡的阿里雲百鍊頁貼上；回到這裡按「測試」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制 key，回到设置里的阿里云百炼页粘贴；回到这里按“测试”。"
+          }
+        }
+      }
+    },
+    "複製 key，回到這裡貼上、按「儲存」，再按「測試」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制 key，回到这里粘贴、按“保存”，再按“测试”。"
+          }
+        }
+      }
+    },
+    "複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制产生的 key（只会显示一次），回到这里粘贴、按“保存”。"
+          }
+        }
+      }
+    },
+    "複製產生的 key，回到這裡貼上、按「儲存」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制产生的 key，回到这里粘贴、按“保存”。"
+          }
+        }
+      }
+    },
     "西班牙文" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1402,6 +2372,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设置 → 通用 → 键盘 → 键盘 → 添加新键盘 → UTUVO Type，再打开“允许完全访问”。之后在任何输入框按 🌐 切到 UTUVO Type。"
+          }
+        }
+      }
+    },
+    "詞庫包與匯入" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "词库包与导入"
           }
         }
       }
@@ -1496,6 +2476,23 @@
         }
       }
     },
+    "說明" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说明"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "說明"
+          }
+        }
+      }
+    },
     "請先打開 UTUVO Type app 一次，再回來點光球" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1512,6 +2509,44 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请到 设置 → 通用 → 键盘 → UTUVO Type 打开“允许完全访问”"
+          }
+        }
+      }
+    },
+    "講完先貼出手機整理的結果，大模型約一秒後把改口、贅詞、錯字整理好再替換。聲音不會離開手機，只有辨識好的文字會送到你選的服務。" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讲完先贴出手机整理的结果，大模型约一秒后把改口、赘词、错字整理好再替换。声音不会离开手机，只有识别好的文字会发送到你选的服务。"
+          }
+        }
+      }
+    },
+    "貼上 key、按「儲存」，再按「測試」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴 key、按“保存”，再按“测试”。"
+          }
+        }
+      }
+    },
+    "資料來源" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "资料来源"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "資料來源"
           }
         }
       }
@@ -1536,12 +2571,39 @@
         }
       }
     },
+    "輕" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻"
+          }
+        }
+      }
+    },
     "輸入新的 key 以取代" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "输入新的 key 以替换"
+          }
+        }
+      }
+    },
+    "輸入詞目片段可即時過濾；結果上限 100 筆。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入词条片段可即时过滤；结果上限 100 笔。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入詞目片段可即時過濾；結果上限 100 筆。"
           }
         }
       }
@@ -1606,12 +2668,52 @@
         }
       }
     },
+    "這一把 key 同時供雲端翻譯與智慧整理使用。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一把 key 同时供云端翻译与智能整理使用。"
+          }
+        }
+      }
+    },
+    "這不是 UTUVO Type 的字典檔。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这不是 UTUVO Type 的词典文件。"
+          }
+        }
+      }
+    },
+    "這個字典檔來自較新版本的 UTUVO Type，請先更新。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个词典文件来自较新版本的 UTUVO Type，请先更新。"
+          }
+        }
+      }
+    },
     "這個方向系統不支援，會用 Apple Intelligence" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "系统不支持这个翻译方向，将使用 Apple Intelligence"
+          }
+        }
+      }
+    },
+    "這個語言的辨識器目前不可用" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这个语言的识别器目前不可用"
           }
         }
       }
@@ -1626,12 +2728,32 @@
         }
       }
     },
-    "這台裝置沒有 Apple Intelligence（iOS 26），也沒設雲端 key；到主 app 設定 → 雲端翻譯加入 key 即可" : {
+    "這台裝置沒有 Apple Intelligence（iOS 26），也沒設阿里雲百鍊 key；到主 app 設定 → 阿里雲百鍊加入 key 即可" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这台设备没有 Apple Intelligence（iOS 26），也没有设置云端 key；在主 App 的“设置 → 云端翻译”中添加 key 即可"
+            "value" : "这台设备没有 Apple Intelligence（iOS 26），也没有设置阿里云百炼 key；在主 App 的“设置 → 阿里云百炼”中添加 key 即可"
+          }
+        }
+      }
+    },
+    "這裡不重複輸入；請到「設定」裡的阿里雲百鍊頁管理同一把 key。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这里不重复输入；请到“设置”里的阿里云百炼页管理同一把 key。"
+          }
+        }
+      }
+    },
+    "連線逾時，請檢查網路。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连接超时，请检查网络。"
           }
         }
       }
@@ -1756,12 +2878,73 @@
         }
       }
     },
+    "點左上角「◀︎」回到剛剛的 App；之後在鍵盤上點光球說話" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点左上角的“◀︎”返回刚才的 App；之后在键盘上点光球说话"
+          }
+        }
+      }
+    },
     "長按鍵盤的光球，這些語言會排在光球上方；滑到語言放開、講中文，就貼上翻譯。最多 %lld 個，至少 1 個。" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "长按键盘的光球，这些语言会排在光球上方；滑到语言松开、讲中文，就粘贴翻译。最多 %lld 个，至少 1 个。"
+          }
+        }
+      }
+    },
+    "開啟" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟"
+          }
+        }
+      }
+    },
+    "開啟後，這個詞庫的詞會被當作辨識提示詞與智慧整理的專有名詞（依本句相關度篩入）。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启后，这个词库的词会被当作识别提示词与智能整理的专有名词（依本句相关度筛入）。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟後，這個詞庫的詞會被當作辨識提示詞與智慧整理的專有名詞（依本句相關度篩入）。"
+          }
+        }
+      }
+    },
+    "開啟詞庫" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启词库"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟詞庫"
           }
         }
       }
@@ -1776,12 +2959,42 @@
         }
       }
     },
+    "開著的詞庫會讓辨識更容易聽對這些詞；有開智慧整理時，聽錯的（例如 Jeman）也會被改成正確寫法（Gemini）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启的词库会让识别更容易听对这些词；有开智能整理时，听错的（例如 Jeman）也会被改成正确写法（Gemini）。"
+          }
+        }
+      }
+    },
     "閒置 %lld 分鐘後自動關麥克風" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "闲置 %lld 分钟后自动关闭麦克风"
+          }
+        }
+      }
+    },
+    "這次延長至 10 分鐘" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本次延长至 10 分钟"
+          }
+        }
+      }
+    },
+    "關" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关"
           }
         }
       }
@@ -1796,12 +3009,59 @@
         }
       }
     },
+    "關閉" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉"
+          }
+        }
+      }
+    },
     "阿拉伯文" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "阿拉伯语"
+          }
+        }
+      }
+    },
+    "阿里雲百鍊" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阿里云百炼"
+          }
+        }
+      }
+    },
+    "阿里雲百鍊 key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阿里云百炼 key"
+          }
+        }
+      }
+    },
+    "阿里雲百鍊（選配）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "阿里云百炼（可选）"
           }
         }
       }
@@ -1822,16 +3082,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法解析云端响应格式"
-          }
-        }
-      }
-    },
-    "雲端翻譯（選配）" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "云端翻译（可选）"
           }
         }
       }
@@ -1916,6 +3166,16 @@
         }
       }
     },
+    "音樂與音訊製作" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音乐与音频制作"
+          }
+        }
+      }
+    },
     "音訊永遠不離開這台裝置。遇到不支援裝置端辨識的語言或機型時，會直接拒絕錄音並告訴你，不會偷偷改用雲端。" : {
       "localizations" : {
         "zh-Hans" : {
@@ -1926,12 +3186,63 @@
         }
       }
     },
+    "預設" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設"
+          }
+        }
+      }
+    },
+    "預設全部關閉；開啟後清單與提示詞才會包含這些詞。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认全部关闭；开启后列表与提示词才会包含这些词。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設全部關閉；開啟後清單與提示詞才會包含這些詞。"
+          }
+        }
+      }
+    },
     "顯示全部" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "显示全部"
+          }
+        }
+      }
+    },
+    "顯示前 %lld 筆（共 %lld 筆）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示前 %lld 笔（共 %lld 笔）"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示前 %lld 筆（共 %lld 筆）"
           }
         }
       }
@@ -1972,6 +3283,696 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "点进 UTUVO Type，打开“允许完全访问”（语音识别需要）"
+          }
+        }
+      }
+    },
+    "雲端辨識（選配）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端识别（选配）"
+          }
+        }
+      }
+    },
+    "用這把 key 辨識語音" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用这把 key 识别语音"
+          }
+        }
+      }
+    },
+    "測試雲端辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试云端识别"
+          }
+        }
+      }
+    },
+    "開啟後，講完的整段錄音會用你的 key 上傳到上面選的服務重新辨識，專有名詞通常比手機內建辨識準，大約多等 1–3 秒。上傳失敗、逾時或額度用完時，自動改用手機辨識的結果。App 內聽寫若已下載「高準確度辨識」模型，會優先用手機上的模型（不上傳）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启后，说完的整段录音会用你的 key 上传到上面选的服务重新识别，专有名词通常比手机内置识别准，大约多等 1–3 秒。上传失败、超时或额度用完时，自动改用手机识别的结果。App 内听写若已下载“高准确度识别”模型，会优先用手机上的模型（不上传）。"
+          }
+        }
+      }
+    },
+    "Gemini 免費版送出的錄音，Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶就不會。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gemini 免费版发送的录音，Google 可能用来改进模型；在 Google Cloud 绑定付款账户就不会。"
+          }
+        }
+      }
+    },
+    "使用 Whisper large-v3。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Whisper large-v3。"
+          }
+        }
+      }
+    },
+    "使用 Qwen3-ASR-Flash，依用量計費。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Qwen3-ASR-Flash，按用量计费。"
+          }
+        }
+      }
+    },
+    "自訂服務目前不支援雲端辨識。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义服务目前不支持云端识别。"
+          }
+        }
+      }
+    },
+    "自訂服務不支援雲端辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义服务不支持云端识别"
+          }
+        }
+      }
+    },
+    "先在上面存好 key。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先在上面保存好 key。"
+          }
+        }
+      }
+    },
+    "TTS 沒有產生音訊，請確認裝置。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TTS 没有生成音频，请检查设备。"
+          }
+        }
+      }
+    },
+    "辨識結果：%@（%@ 秒）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别结果：%1$@（%2$@ 秒）"
+          }
+        }
+      }
+    },
+    "失敗，會改用手機辨識。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "失败，会改用手机识别。"
+          }
+        }
+      }
+    },
+    "講完先貼出辨識結果，大模型在背景整理改口、贅詞和錯字，再安全替換。沒有設定 key 時，用 Apple Intelligence 在這支手機上整理，文字不離機；設定 key 後改用下面選的雲端服務。是否使用 Apple 雲端辨識，請在「辨識與隱私」設定管理；雲端整理服務只會收到辨識文字與你選擇傳送的欄位脈絡。開了下面的「雲端辨識」時，錄音也會送到同一家服務。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说完先贴出识别结果，大模型在后台整理改口、赘词和错字，再安全替换。没有设置 key 时，用 Apple Intelligence 在这台手机上整理，文字不离开设备；设置 key 后改用下面选的云端服务。是否使用 Apple 云端识别，请在“识别与隐私”设置中管理；云端整理服务只会收到识别文字与你选择发送的输入框上下文。开启下面的“云端识别”时，录音也会发送到同一家服务。"
+          }
+        }
+      }
+    },
+    "第一次設定（只要做一次）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "首次设置（只需做一次）"
+          }
+        }
+      }
+    },
+    "加入鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加键盘"
+          }
+        }
+      }
+    },
+    "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 通用 → 键盘 → 键盘 → 添加新键盘 → UTUVO Type。"
+          }
+        }
+      }
+    },
+    "打開「允許完整存取」" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开“允许完全访问”"
+          }
+        }
+      }
+    },
+    "點進剛加入的 UTUVO Type，打開「允許完整存取」。沒有它，鍵盤沒辦法把你講的話交給 UTUVO Type 辨識。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点进刚添加的 UTUVO Type，打开“允许完全访问”。没有它，键盘无法把你说的话交给 UTUVO Type 识别。"
+          }
+        }
+      }
+    },
+    "允許麥克風與語音辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许麦克风与语音识别"
+          }
+        }
+      }
+    },
+    "打開 UTUVO Type App 一次，系統問麥克風和語音辨識時都按「允許」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 UTUVO Type App 一次，系统询问麦克风和语音识别时都点“允许”。"
+          }
+        }
+      }
+    },
+    "每次用鍵盤講話" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次用键盘说话"
+          }
+        }
+      }
+    },
+    "切到 UTUVO Type 鍵盤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换到 UTUVO Type 键盘"
+          }
+        }
+      }
+    },
+    "在任何 App 點輸入框，按鍵盤左下角的 🌐 切到 UTUVO Type。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在任意 App 点输入框，按键盘左下角的 🌐 切换到 UTUVO Type。"
+          }
+        }
+      }
+    },
+    "點光球" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点光球"
+          }
+        }
+      }
+    },
+    "第一次（或超過 3 分鐘沒用）會跳到 UTUVO Type App，替鍵盤打開麥克風。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第一次（或超过 3 分钟没用）会跳到 UTUVO Type App，为键盘打开麦克风。"
+          }
+        }
+      }
+    },
+    "回到原本的 App" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回到原来的 App"
+          }
+        }
+      }
+    },
+    "點螢幕左上角的「◀︎ 原本 App 名稱」，或從螢幕最下方往右滑。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点屏幕左上角的“◀︎ 原来的 App 名称”，或从屏幕最下方向右滑。"
+          }
+        }
+      }
+    },
+    "再點一次光球開始說" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再点一次光球开始说"
+          }
+        }
+      }
+    },
+    "講完再點一次光球（或停下來），文字就會出現在游標處。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说完再点一次光球（或停下来），文字就会出现在光标处。"
+          }
+        }
+      }
+    },
+    "之後就不用再跳" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "之后就不用再跳"
+          }
+        }
+      }
+    },
+    "在「鍵盤語音保持開啟」的時間內（預設 3 分鐘，可在設定改成 10、30 分鐘或 1 小時），點光球就直接開始聽。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在“键盘语音保持开启”的时间内（默认 3 分钟，可在设置中改为 10、30 分钟或 1 小时），点光球就直接开始听。"
+          }
+        }
+      }
+    },
+    "為什麼會跳到 App：iOS 不允許鍵盤直接使用麥克風，所有語音鍵盤（包括 Typeless、Wispr Flow）都要先打開自己的 App。從 iOS 26.4 起，Apple 也不再讓任何 App 自動跳回原 App，所以要手動回去一次；把「鍵盤語音保持開啟」調長，就能少跳很多次。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "为什么会跳到 App：iOS 不允许键盘直接使用麦克风，所有语音键盘（包括 Typeless、Wispr Flow）都要先打开自己的 App。从 iOS 26.4 起，Apple 也不再让任何 App 自动跳回原 App，所以要手动回去一次；把“键盘语音保持开启”调长，就能少跳很多次。"
+          }
+        }
+      }
+    },
+    "讓結果更準" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "让结果更准"
+          }
+        }
+      }
+    },
+    "把常講的專有名詞加進字典" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把常说的专有名词加进词典"
+          }
+        }
+      }
+    },
+    "設定 → 字典（選「新增詞彙」）。人名、品牌、術語（Atmos、Pro Tools…）加進去：英文專名貼上前會照字典改正拼法，高準確度辨識、雲端辨識和智慧整理也會參考這些詞。手機內建辨識本身不一定認得。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 词典（选“新增词汇”）。人名、品牌、术语（Atmos、Pro Tools…）加进去：英文专名贴上前会按词典改正拼写，高准确度识别、云端识别和智能整理也会参考这些词。手机内置识别本身不一定认得。"
+          }
+        }
+      }
+    },
+    "智慧整理（預設開）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能整理（默认开）"
+          }
+        }
+      }
+    },
+    "講完先貼出辨識結果，再自動刪掉贅詞、改口、補標點。有 Apple Intelligence 的 iPhone 不用設定；也可以在「智慧整理」填自己的 key 用雲端模型。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "说完先贴出识别结果，再自动删掉赘词、改口、补标点。有 Apple Intelligence 的 iPhone 不用设置；也可以在“智能整理”填自己的 key 使用云端模型。"
+          }
+        }
+      }
+    },
+    "高準確度辨識" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "高准确度识别"
+          }
+        }
+      }
+    },
+    "設定 → 高準確度辨識，下載模型後，在 UTUVO Type App 裡聽寫會更準。鍵盤聽寫時 App 在背景，iOS 不允許背景使用 GPU，所以鍵盤不會用這個模型；鍵盤想更準請用下面的「雲端辨識」。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 高准确度识别，下载模型后，在 UTUVO Type App 里听写会更准。键盘听写时 App 在后台，iOS 不允许后台使用 GPU，所以键盘不会用这个模型；键盘想更准请用下面的“云端识别”。"
+          }
+        }
+      }
+    },
+    "雲端辨識（選配，需自己的 key）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端识别（选配，需自己的 key）"
+          }
+        }
+      }
+    },
+    "設定 → 智慧整理，存好 Gemini、Groq 或阿里雲百鍊的 key 後，打開「雲端辨識」。鍵盤和 App 講完的錄音會用你的 key 上傳辨識，專有名詞更準；失敗會自動改用手機辨識。錄音會離開手機，在意的話不要開。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置 → 智能整理，保存好 Gemini、Groq 或阿里云百炼的 key 后，打开“云端识别”。键盘和 App 说完的录音会用你的 key 上传识别，专有名词更准；失败会自动改用手机识别。录音会离开手机，介意的话不要开。"
+          }
+        }
+      }
+    },
+    "遇到問題" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遇到问题"
+          }
+        }
+      }
+    },
+    "一直顯示「整理中」、沒出字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一直显示“整理中”、不出字"
+          }
+        }
+      }
+    },
+    "打開 UTUVO Type 看畫面上的訊息；按「結束鍵盤語音」，回到原 App 再點一次光球。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 UTUVO Type 查看屏幕上的信息；点“结束键盘语音”，回到原 App 再点一次光球。"
+          }
+        }
+      }
+    },
+    "光球按了沒反應" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "光球点了没反应"
+          }
+        }
+      }
+    },
+    "確認「允許完整存取」有打開，並且在 UTUVO Type 裡允許了麥克風。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认“允许完全访问”已打开，并且在 UTUVO Type 里允许了麦克风。"
+          }
+        }
+      }
+    },
+    "跳過去後回不來" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳过去后回不来"
+          }
+        }
+      }
+    },
+    "點螢幕左上角「◀︎」，或從螢幕最下方往右滑。iOS 不允許自動返回（Apple 在 iOS 26.4 關掉了這個能力）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点屏幕左上角“◀︎”，或从屏幕最下方向右滑。iOS 不允许自动返回（Apple 在 iOS 26.4 关闭了这个能力）。"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 裝置端可以用（%lld 毫秒）：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 设备端可用（%1$lld 毫秒）：%2$@"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 這次沒有產生可用結果。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 这次没有生成可用结果。"
+          }
+        }
+      }
+    },
+    "讓整理參考目前欄位文字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "让整理参考当前输入框文字"
+          }
+        }
+      }
+    },
+    "開啟後，會把目前欄位游標前最多 500 個字和辨識文字一起送到所選整理服務，只用來理解指涉與語氣。iOS 鍵盤無法讀取宿主 App 名稱，因此不會傳送 App 名稱。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启后，会把当前输入框光标前最多 500 个字和识别文字一起发送到所选整理服务，只用来理解指代与语气。iOS 键盘无法读取宿主 App 名称，因此不会发送 App 名称。"
+          }
+        }
+      }
+    },
+    "key 無效或沒有權限（401）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 无效或没有权限（401）"
+          }
+        }
+      }
+    },
+    "key 無效或沒有權限（403）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "key 无效或没有权限（403）"
+          }
+        }
+      }
+    },
+    "免費版額度很少：2026-09 實測 Gemini 3.8 Flash 每天只有 20 次，智慧整理和雲端辨識共用，用完會回 429、當天就不會再整理（可在 AI Studio 的 rate limit 頁查看；綁定付款帳戶後依用量計費）。免費版送出的文字 Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶（不一定會被收費）就不會。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费版额度很少：2026-09 实测 Gemini 3.8 Flash 每天只有 20 次，智能整理和云端识别共用，用完会返回 429、当天就不会再整理（可在 AI Studio 的 rate limit 页面查看；绑定付款账户后按用量计费）。免费版发送的文字 Google 可能用来改进模型；在 Google Cloud 绑定付款账户（不一定会被收费）就不会。"
+          }
+        }
+      }
+    },
+    "其他錯誤" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他错误"
+          }
+        }
+      }
+    },
+    "整理結果沒通過把關" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整理结果没有通过校验"
+          }
+        }
+      }
+    },
+    "最後一次失敗：%@（%@）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最后一次失败：%1$@（%2$@）"
+          }
+        }
+      }
+    },
+    "最近整理：成功 %lld 次、失敗 %lld 次" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近整理：成功 %1$lld 次、失败 %2$lld 次"
+          }
+        }
+      }
+    },
+    "有免費額度（上限依模型，可在 Groq 後台查看），速度很快；預設不保留送出的資料。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有免费额度（上限因模型而异，可在 Groq 后台查看），速度很快；默认不保留发送的数据。"
+          }
+        }
+      }
+    },
+    "服務回應格式不對" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务返回的格式不对"
+          }
+        }
+      }
+    },
+    "服務回應錯誤（%@）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务返回错误（%@）"
+          }
+        }
+      }
+    },
+    "服務忙或暫時故障（%@）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务繁忙或暂时故障（%@）"
+          }
+        }
+      }
+    },
+    "網路連線失敗" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络连接失败"
+          }
+        }
+      }
+    },
+    "自訂服務" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义服务"
+          }
+        }
+      }
+    },
+    "這把 key 的免費額度用完了。可以到服務後台查看額度、換一家服務，或按「清除」改用 Apple Intelligence（在手機上整理）。" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这把 key 的免费额度用完了。可以到服务后台查看额度、换一家服务，或点“清除”改用 Apple Intelligence（在手机上整理）。"
+          }
+        }
+      }
+    },
+    "逾時" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "超时"
+          }
+        }
+      }
+    },
+    "額度用完（429）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "额度用完（429）"
           }
         }
       }
