@@ -30,6 +30,11 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
+## iPhone（App Store）
+
+[App Store 免費下載](https://apps.apple.com/app/id6813380439)，需要 iOS 18 以上。鍵盤要開「允許完整取用」。
+目前版本 0.2.6：注音邊打邊出候選（簡拼、不打聲調）、拼音、聯想詞、整頁候選、英文建議列、選取文字後說出要怎麼改、長按光球翻譯。
+
 ## Android（APK，測試版）
 
 1. 到 [Android 0.2.0 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0) 下載 `UTUVO-Type-0.2.0-android.apk`（附 SHA-256）。目前**不在 Google Play**。

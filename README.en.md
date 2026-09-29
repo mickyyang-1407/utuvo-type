@@ -32,6 +32,11 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
    into `~/Library/Application Support/UTUVO Type/engine/`. Cloud mode works before that.
 3. Grant Microphone and Accessibility when asked, then press ⌥Space to dictate.
 
+## iPhone (App Store)
+
+[Free on the App Store](https://apps.apple.com/app/id6813380439), iOS 18 or later. The keyboard needs Full Access.
+Current version 0.2.6: Zhuyin candidates as you type (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, and long-press translate.
+
 ## Android (APK, beta)
 
 1. Download `UTUVO-Type-0.2.0-android.apk` (with SHA-256) from the [Android 0.2.0 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0). It is **not on Google Play** yet.
