@@ -298,6 +298,43 @@ enum SmartCleanup {
         }
     }
 
+    /// 「說出要怎麼改」「放開就翻譯」在 Apple Intelligence 不能用時的退路：用使用者在智慧整理設定的服務。
+    /// 目前選的服務有 key 就用它，否則依序找任何一把已存的 key（Groq → Gemini → 百鍊 → 自訂）。都沒有回 nil。
+    static func completionRoute() -> (provider: Provider, key: String)? {
+        let selected = provider
+        let order = [selected] + [Provider.groq, .gemini, .dashscope, .custom].filter { $0 != selected }
+        for p in order {
+            let k = key(for: p)
+            if !k.isEmpty, URL(string: p.endpoint) != nil, !p.defaultModel.isEmpty { return (p, k) }
+        }
+        return nil
+    }
+
+    /// 通用 chat completion（不做逐字稿把關，改寫／翻譯用）。跟整理共用端點、模型、extraBody 相容重送。
+    static func complete(system: String, user: String, provider: Provider, key: String,
+                         timeout: TimeInterval = 20,
+                         transport: @escaping Transport = { try await URLSession.shared.data(for: $0) }) async throws -> String {
+        guard !key.isEmpty, let url = URL(string: provider.endpoint), !provider.defaultModel.isEmpty else {
+            throw Failure.notConfigured
+        }
+        let budget = CleanupBudget(seconds: timeout)
+        let body: [String: Any] = ["model": provider.defaultModel, "temperature": 0, "stream": false,
+                                   "messages": [["role": "system", "content": system], ["role": "user", "content": user]]]
+        let baseData = try JSONSerialization.data(withJSONObject: body)
+        var extra = body
+        extra.merge(provider.extraBody) { $1 }
+        let preferred = provider.extraBody.isEmpty ? baseData : try JSONSerialization.data(withJSONObject: extra)
+        return try await budget.run {
+            let content: String
+            do {
+                content = try await complete(url: url, key: key, body: preferred, budget: budget, transport: transport)
+            } catch Failure.http(400) where !provider.extraBody.isEmpty {
+                content = try await complete(url: url, key: key, body: baseData, budget: budget, transport: transport)
+            }
+            return content.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
     /// Settings probe keeps its selected provider/model and shares one budget across all attempts.
     static func run(_ text: String, provider: Provider, key: String, traditional: Bool, timeout: TimeInterval,
                     attempts: Int = 1) async throws -> String {

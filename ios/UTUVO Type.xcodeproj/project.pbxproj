@@ -112,6 +112,7 @@
 		B36FBFA2213091214FD99D0A /* KnownAppSchemes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123A6A9502A15BA8521AF1CF /* KnownAppSchemes.swift */; };
 		B37A680FAD1A46CAC708ECB6 /* VoiceLevel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA2380890EF564FEA37FA3D2 /* VoiceLevel.swift */; };
 		B59FDD1CEAF397C80167B995 /* VoiceLevelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70E76A2F96BE81001B8792AF /* VoiceLevelTests.swift */; };
+		B8F1A212481E3D7392374686 /* OnDeviceAssistantTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB3DF3BDCC3A2ECA3953A1F3 /* OnDeviceAssistantTests.swift */; };
 		BAF13240F259D3064F1FA955 /* STPhrases.txt in Resources */ = {isa = PBXBuildFile; fileRef = B104C5699E68A17923C4A607 /* STPhrases.txt */; };
 		C10EEB5E40AD726981559E34 /* StoresTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBDD5FDDA5D270DFE283D651 /* StoresTests.swift */; };
 		C573F4C768F46F95F3136E81 /* SmartCleanup.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74C6A9B46900176331941CE9 /* SmartCleanup.swift */; };
@@ -308,6 +309,7 @@
 		D408072BA3212A1784D9A225 /* DictionaryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictionaryStore.swift; sourceTree = "<group>"; };
 		D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecognitionRouteTests.swift; sourceTree = "<group>"; };
 		D957A2C59F3681DB2ECE255E /* HostArbiterActivation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HostArbiterActivation.h; sourceTree = "<group>"; };
+		DB3DF3BDCC3A2ECA3953A1F3 /* OnDeviceAssistantTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnDeviceAssistantTests.swift; sourceTree = "<group>"; };
 		E30B59DCC3A3BFFA70757B0B /* DictateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DictateView.swift; sourceTree = "<group>"; };
 		E7587A3A48848BDDB2709B57 /* Pipeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pipeline.swift; sourceTree = "<group>"; };
 		E8B72E977754F4538E14F9EB /* LocalQwenDeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalQwenDeviceTests.swift; sourceTree = "<group>"; };
@@ -509,6 +511,7 @@
 				648AAC6629259FA0AB1DEBD5 /* KeyFeedbackTests.swift */,
 				8D297C0FC0AC5C41792F46D7 /* LocalQwenASRTests.swift */,
 				E8B72E977754F4538E14F9EB /* LocalQwenDeviceTests.swift */,
+				DB3DF3BDCC3A2ECA3953A1F3 /* OnDeviceAssistantTests.swift */,
 				5645CFE664FF60E92AF1113C /* PunctuationTests.swift */,
 				D52A8817A11663573EE47575 /* RecognitionRouteTests.swift */,
 				88F22414DD01FCFBA7D7178B /* RerecognitionGateTests.swift */,
@@ -914,6 +917,7 @@
 				579AD1618C81453D7762E5EA /* KeyboardLogicTests.swift in Sources */,
 				374859B408E0067FF9011D36 /* LocalQwenASRTests.swift in Sources */,
 				EE6DC53D79D1D774E623EC3C /* LocalQwenDeviceTests.swift in Sources */,
+				B8F1A212481E3D7392374686 /* OnDeviceAssistantTests.swift in Sources */,
 				E9F4A9FCE3D2CEC2CB0976E9 /* PunctuationTests.swift in Sources */,
 				21C0721A92650E0295AE6997 /* RecognitionRouteTests.swift in Sources */,
 				31F06361B55732BE2AE77A28 /* RerecognitionGateTests.swift in Sources */,

@@ -468,6 +468,10 @@ final class KeyboardViewController: UIInputViewController {
                     self.activeCommandID = UUID()
                     self.handle(.partial("上一句要留下"), recording: true)
                     self.stopRecognition()
+                case "edit":
+                    // 走真正的「說出要怎麼改」定稿路徑（OnDeviceAssistant）：模擬器沒麥克風，指示直接給。
+                    self.mode = .edit(selection: "今天天氣很好，我們去散步")
+                    self.finish(raw: parts.count > 1 ? parts[1] : "改成正式一點")
                 case "arc":
                     self.setArcVisible(true)
                     self.highlightPick(2)

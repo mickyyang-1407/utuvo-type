@@ -610,6 +610,32 @@ final class KeyboardOrbUITests: XCTestCase {
                       "ime readings 必須還原（候選列還看得到「你」）")
     }
 
+    /// 09-29 Micky：紫色光球（說出要怎麼改）每次都「失敗」。iOS 27.0 的 Apple Intelligence 生成全被系統安全模型擋掉；
+    /// 模擬器同樣會擋、又沒有雲端 key → 鍵盤要講出原因與補救方法，不能是「無法完成作業」。
+    func testEditModeExplainsFailureInsteadOfGenericError() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-utuvo.type.keyboard.debugPose", "edit:改成正式一點"]
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        app.terminate()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        let explained = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '智慧整理'")).firstMatch
+        let ok = explained.waitForExistence(timeout: 30)
+        shot("edit-mode-message")
+        XCTAssertTrue(ok, "改寫失敗時要告訴使用者去智慧整理加 key：\(app.staticTexts.allElementsBoundByIndex.map(\.label))")
+        XCTAssertFalse(app.staticTexts.containing(NSPredicate(format: "label CONTAINS '無法完成作業'")).firstMatch.exists,
+                       "不能再顯示空泛的系統錯誤")
+        XCTAssertTrue(explained.label.contains("Groq key"), "補救方法要完整顯示（不能被截掉）：\(explained.label)")
+    }
+
     /// 09-29 Micky：拼音「除了列出來的候選字，無法往下繼續選字」。候選列要能左右捲，
     /// 右端「⌄」要能展開整頁候選（最多 60 個），點了就選、面板收起。用他截圖的情境：繁體拼音打 suoyi。
     func testCandidateBarScrollsAndExpands() throws {

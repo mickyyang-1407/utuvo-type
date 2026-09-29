@@ -14,6 +14,17 @@
         }
       }
     },
+    "%@。到主 app 設定 → 智慧整理加入 Groq（免費）等任一把 key，就會改用雲端" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@。到主 App 设置 → 智能整理加入 Groq（免费）等任意一个 key，就会改用云端"
+          }
+        }
+      }
+    },
     "%@・%@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -27,6 +38,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@・%@"
+          }
+        }
+      }
+    },
+    "%@：到設定→智慧整理加 Groq key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@：到设置→智能整理加 Groq key"
           }
         }
       }
@@ -121,6 +142,58 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "App Store 没办法确认这笔交易，没有扣款的话可以再试一次。"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 和雲端都失敗：%@" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 和云端都失败：%@"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 失敗（%@）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 失败（%@）"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 失敗，改用雲端也失敗：%@" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 失败，改用云端也失败：%@"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 暫時不能用" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 暂时不能用"
+          }
+        }
+      }
+    },
+    "Apple Intelligence 的內容安全檢查模型目前載不起來（iOS 系統問題）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence 的内容安全检查模型目前无法加载（iOS 系统问题）"
           }
         }
       }
@@ -1990,6 +2063,16 @@
         }
       }
     },
+    "收起候選字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起候选字"
+          }
+        }
+      }
+    },
     "改寫" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2066,6 +2149,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "整理中…"
+          }
+        }
+      }
+    },
+    "整理時參考前文（最多 500 字）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整理时参考前文（最多 500 字）"
           }
         }
       }
@@ -2197,6 +2290,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "智能整理（默认开）"
+          }
+        }
+      }
+    },
+    "更多候選字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多候选字"
           }
         }
       }
@@ -2342,6 +2445,16 @@
         }
       }
     },
+    "模型沒有回傳內容" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模型没有返回内容"
+          }
+        }
+      }
+    },
     "檢查中…" : {
       "localizations" : {
         "zh-Hans" : {
@@ -2392,12 +2505,33 @@
         }
       }
     },
+    "沒有 Apple Intelligence：到設定→智慧整理加 Groq key" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有 Apple Intelligence：到设置→智能整理加 Groq key"
+          }
+        }
+      }
+    },
     "沒有完成：%@" : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "没有完成：%@"
+          }
+        }
+      }
+    },
+    "沒有網路（鍵盤要開「允許完整取用」才能連網）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有网络（键盘要开“允许完全访问”才能连网）"
           }
         }
       }
@@ -3445,36 +3579,6 @@
         }
       }
     },
-    "更多候選字" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "更多候选字"
-          }
-        }
-      }
-    },
-    "收起候選字" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "收起候选字"
-          }
-        }
-      }
-    },
-    "整理時參考前文（最多 500 字）" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "整理时参考前文（最多 500 字）"
-          }
-        }
-      }
-    },
     "讓結果更準" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3710,11 +3814,23 @@
       }
     },
     "這台裝置沒有 Apple Intelligence（iOS 26），也沒設阿里雲百鍊 key；到主 app 設定 → 阿里雲百鍊加入 key 即可" : {
+      "extractionState" : "stale",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "这台设备没有 Apple Intelligence（iOS 26），也没有设置阿里云百炼 key；在主 App 的“设置 → 阿里云百炼”中添加 key 即可"
+          }
+        }
+      }
+    },
+    "這台裝置沒有 Apple Intelligence，也沒有雲端 key：到主 app 設定 → 智慧整理加入 Groq（免費）等任一把 key 即可" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这台设备没有 Apple Intelligence，也没有云端 key：到主 App 设置 → 智能整理加入 Groq（免费）等任意一个 key 即可"
           }
         }
       }
@@ -3745,6 +3861,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这里不重复输入；请到“设置”里的阿里云百炼页管理同一把 key。"
+          }
+        }
+      }
+    },
+    "連不上網：鍵盤要開「允許完整取用」" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "连不上网：键盘要开“允许完全访问”"
           }
         }
       }
@@ -4127,6 +4253,37 @@
         }
       }
     },
+    "雲端 key 被拒（401／403），請到設定 → 智慧整理重新貼上" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端 key 被拒（401／403），请到设置 → 智能整理重新粘贴"
+          }
+        }
+      }
+    },
+    "雲端 key 被拒：到設定→智慧整理重貼" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端 key 被拒：到设置→智能整理重贴"
+          }
+        }
+      }
+    },
+    "雲端免費額度用完了（429）" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端免费额度用完了（429）"
+          }
+        }
+      }
+    },
     "雲端回傳 HTTP %lld" : {
       "localizations" : {
         "zh-Hans" : {
@@ -4143,6 +4300,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法解析云端响应格式"
+          }
+        }
+      }
+    },
+    "雲端回應看不懂" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端返回的内容无法解析"
+          }
+        }
+      }
+    },
+    "雲端回應錯誤 %lld" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端返回错误 %lld"
+          }
+        }
+      }
+    },
+    "雲端服務今天的免費額度用完了（429）" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端服务今天的免费额度用完了（429）"
+          }
+        }
+      }
+    },
+    "雲端服務回應看不懂" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端服务返回的内容无法解析"
+          }
+        }
+      }
+    },
+    "雲端服務回應錯誤 %lld" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端服务返回错误 %lld"
+          }
+        }
+      }
+    },
+    "雲端服務逾時" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端服务超时"
           }
         }
       }
@@ -4174,6 +4395,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "云端识别（选配，需自己的 key）"
+          }
+        }
+      }
+    },
+    "雲端逾時" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端超时"
           }
         }
       }
