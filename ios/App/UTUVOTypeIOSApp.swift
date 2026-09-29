@@ -3,6 +3,10 @@ import UTUVOTypeCore
 
 @main
 struct UTUVOTypeIOSApp: App {
+    init() {
+        TipJar.startListening()
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()

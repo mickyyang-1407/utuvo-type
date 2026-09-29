@@ -212,9 +212,12 @@ final class ZhuyinTests: XCTestCase {
         XCTAssertEqual(e.commitAll(), "今天")
         XCTAssertTrue(e.isEmpty)
 
-        // 一聲不合法（ㄅ 單獨）→ 原樣附上注音，不吞使用者的字
+        // 0.2.5 起：尾端沒收尾的音節（ㄅ 單獨）也當預測一起轉換，送出的就是候選列第一格顯示的（conversion）。
+        // 組不出任何音節的符號仍原樣送出、不吞字（見 ZhuyinPredictionTests.testUnknownComposerFallsBackToSymbols）。
         typeAll(e, "ㄋㄧˇㄅ")
-        XCTAssertEqual(e.commitAll(), "你ㄅ")
+        let shown = e.conversion
+        XCTAssertFalse(shown.contains("ㄅ"), "得到 \(shown)")
+        XCTAssertEqual(e.commitAll(), shown)
         XCTAssertTrue(e.isEmpty)
     }
 

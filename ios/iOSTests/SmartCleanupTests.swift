@@ -27,6 +27,32 @@ final class SmartCleanupTests: XCTestCase {
                                             cleaned: "The meeting is scheduled for three o'clock this afternoon in the main conference room."))
     }
 
+    /// 2026-09-26 改推薦 Groq：新使用者預設 Groq；0.2.2 以前沒存過 provider 但有 Gemini key 的人維持 Gemini。
+    func testDefaultProviderRecommendsGroqButKeepsExistingGeminiUsers() {
+        XCTAssertEqual(SmartCleanup.recommendedProvider, .groq)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: nil, hasGeminiKey: false), .groq)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: nil, hasGeminiKey: true), .gemini)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: "", hasGeminiKey: true), .gemini)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: "bogus", hasGeminiKey: false), .groq)
+        // 刪 App 重裝：偏好沒了、鑰匙圈還在；有 Groq key 就用 Groq，不猜回 Gemini。
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: nil, hasGeminiKey: true, hasGroqKey: true), .groq)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: nil, hasGeminiKey: false, hasGroqKey: true), .groq)
+        // 明確選過的服務永遠優先，不管有沒有 Gemini key。
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: "gemini", hasGeminiKey: false), .gemini)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: "dashscope", hasGeminiKey: true), .dashscope)
+        XCTAssertEqual(SmartCleanup.resolvedDefaultProvider(stored: "groq", hasGeminiKey: true), .groq)
+    }
+
+    /// 第一次讀 provider 就要寫回偏好：之後清除／新增 key 不能讓服務在背後換家（review R2）。
+    func testFirstProviderReadIsPinned() {
+        let defaults = UserDefaults.standard
+        let saved = defaults.string(forKey: SmartCleanup.providerKey)
+        defer { if let saved { defaults.set(saved, forKey: SmartCleanup.providerKey) } else { defaults.removeObject(forKey: SmartCleanup.providerKey) } }
+        defaults.removeObject(forKey: SmartCleanup.providerKey)
+        let first = SmartCleanup.provider
+        XCTAssertEqual(defaults.string(forKey: SmartCleanup.providerKey), first.rawValue)
+    }
+
     func testRetryOnlyForBusyOrTimeout() {
         XCTAssertTrue(SmartCleanup.isRetryable(SmartCleanup.Failure.timeout))
         XCTAssertTrue(SmartCleanup.isRetryable(SmartCleanup.Failure.http(503)))

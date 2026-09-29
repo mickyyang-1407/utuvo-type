@@ -6,8 +6,8 @@ struct UsageGuideScreen: View {
     var body: some View {
         List {
             Section {
-                step(1, "加入鍵盤", "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type。")
-                step(2, "打開「允許完整存取」", "點進剛加入的 UTUVO Type，打開「允許完整存取」。沒有它，鍵盤沒辦法把你講的話交給 UTUVO Type 辨識。")
+                step(1, "加入鍵盤", "設定 → 一般 → 鍵盤 → 鍵盤 → 新增鍵盤 → UTUVO Type。")
+                step(2, "打開「允許完整取用」", "點進剛加入的 UTUVO Type，打開「允許完整取用」。沒有它，鍵盤沒辦法把你講的話交給 UTUVO Type 辨識。")
                 step(3, "允許麥克風與語音辨識", "打開 UTUVO Type App 一次，系統問麥克風和語音辨識時都按「允許」。")
                 Button {
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
@@ -34,14 +34,14 @@ struct UsageGuideScreen: View {
                 tip("把常講的專有名詞加進字典", "設定 → 字典（選「新增詞彙」）。人名、品牌、術語（Atmos、Pro Tools…）加進去：英文專名貼上前會照字典改正拼法，高準確度辨識、雲端辨識和智慧整理也會參考這些詞。手機內建辨識本身不一定認得。")
                 tip("智慧整理（預設開）", "講完先貼出辨識結果，再自動刪掉贅詞、改口、補標點。有 Apple Intelligence 的 iPhone 不用設定；也可以在「智慧整理」填自己的 key 用雲端模型。")
                 tip("高準確度辨識", "設定 → 高準確度辨識，下載模型後，在 UTUVO Type App 裡聽寫會更準。鍵盤聽寫時 App 在背景，iOS 不允許背景使用 GPU，所以鍵盤不會用這個模型；鍵盤想更準請用下面的「雲端辨識」。")
-                tip("雲端辨識（選配，需自己的 key）", "設定 → 智慧整理，存好 Gemini、Groq 或阿里雲百鍊的 key 後，打開「雲端辨識」。鍵盤和 App 講完的錄音會用你的 key 上傳辨識，專有名詞更準；失敗會自動改用手機辨識。錄音會離開手機，在意的話不要開。")
+                tip("雲端辨識（選配，需自己的 key）", "設定 → 智慧整理，存好 Groq（推薦）、Gemini 或阿里雲百鍊的 key 後，打開「雲端辨識」。鍵盤和 App 講完的錄音會用你的 key 上傳辨識，專有名詞更準；失敗會自動改用手機辨識。錄音會離開手機，在意的話不要開。")
             } header: {
                 Text("讓結果更準")
             }
 
             Section {
                 tip("一直顯示「整理中」、沒出字", "打開 UTUVO Type 看畫面上的訊息；按「結束鍵盤語音」，回到原 App 再點一次光球。")
-                tip("光球按了沒反應", "確認「允許完整存取」有打開，並且在 UTUVO Type 裡允許了麥克風。")
+                tip("光球按了沒反應", "確認「允許完整取用」有打開，並且在 UTUVO Type 裡允許了麥克風。")
                 tip("跳過去後回不來", "點螢幕左上角「◀︎」，或從螢幕最下方往右滑。iOS 不允許自動返回（Apple 在 iOS 26.4 關掉了這個能力）。")
             } header: {
                 Text("遇到問題")

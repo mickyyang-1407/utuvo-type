@@ -16,3 +16,10 @@ benchmarks/*.tmp
 __pycache__/
 release/
 .derivedData-*/
+
+# 開源前安全檢查（09-29）：憑證與建置產物一律不進 repo
+.dev.vars
+credentials.json
+*.p8
+build/
+DerivedData/

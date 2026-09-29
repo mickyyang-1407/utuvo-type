@@ -531,11 +531,13 @@ final class ModeSwitchView: UIControl {
     }
 }
 
-/// 注音選字列：第一格是整串的最佳轉換（點了全部送出），後面是從句首開始的候選。
+/// 選字列：組字時第一格是整串的最佳轉換（點了全部送出），後面是從句首開始的候選。
+/// 沒在組字時也拿來放建議（`show(suggestions:)`）：中文選字後的聯想詞、英文的補完／拼字建議。
 @MainActor
 final class CandidateBarView: UIView {
     var onPick: ((Int) -> Void)?       // -1＝整串
-    private static let visibleCandidateLimit = 8
+    /// 跟 ImeSession.keyboardCandidateLimit 對齊：列可以左右捲，看不到的格子不佔版面。
+    private static let visibleCandidateLimit = 20
     private struct Item: Equatable {
         let text: String
         let index: Int
@@ -592,6 +594,15 @@ final class CandidateBarView: UIView {
         for (i, c) in candidates.prefix(Self.visibleCandidateLimit).enumerated() where c != preedit {
             wanted.append(Item(text: c, index: i, lead: false))
         }
+        apply(wanted)
+    }
+
+    /// 沒有組字時的建議（聯想詞、英文補完）：沒有「整串」那一格，點第 i 格回 `onPick(i)`。空陣列＝收起來。
+    func show(suggestions: [String]) {
+        apply(suggestions.prefix(Self.visibleCandidateLimit).enumerated().map { Item(text: $1, index: $0, lead: false) })
+    }
+
+    private func apply(_ wanted: [Item]) {
         guard wanted != lastItems else { return }
         lastItems = wanted
         if scroll.contentOffset != .zero { scroll.contentOffset = .zero }

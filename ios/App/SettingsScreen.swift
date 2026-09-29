@@ -33,7 +33,7 @@ struct SettingsScreen: View {
                 }
 
                 Section("鍵盤") {
-                    Text("設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type，再打開「允許完整存取」。之後在任何輸入框按 🌐 切到 UTUVO Type。")
+                    Text("設定 → 一般 → 鍵盤 → 鍵盤 → 新增鍵盤 → UTUVO Type，再打開「允許完整取用」。之後在任何輸入框按 🌐 切到 UTUVO Type。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                     Button {
@@ -233,6 +233,17 @@ struct SettingsScreen: View {
                         .foregroundStyle(.secondary)
                 }
 
+                Section {
+                    NavigationLink {
+                        TipJarScreen()
+                    } label: {
+                        Label("幫我加油", systemImage: "cup.and.saucer")
+                    }
+                    .accessibilityIdentifier("tipJarRow")
+                } footer: {
+                    Text("UTUVO Type 免費，喜歡的話可以請我喝杯咖啡。")
+                }
+
                 Section("關於") {
                     LabeledContent("版本", value: "\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—") (iOS)")
                     LabeledContent("辨識引擎", value: String(localized: "Apple Speech（裝置端優先）"))
@@ -359,7 +370,7 @@ struct KeyFeedbackScreen: View {
                 Toggle("按鍵聲音", isOn: $sound)
                     .accessibilityIdentifier("keySound")
             } footer: {
-                Text("按下去的當下就震（不是放開才震），選字、切換鍵盤也有。震動需要在系統設定打開「允許完整存取」（跟語音一樣），按鍵聲音不用；手機靜音或系統把觸覺回饋關掉時都不會有。")
+                Text("按下去的當下就震（不是放開才震），選字、切換鍵盤也有。震動需要在系統設定打開「允許完整取用」（跟語音一樣），按鍵聲音不用；手機靜音或系統把觸覺回饋關掉時都不會有。")
             }
         }
         .navigationTitle("打字手感")

@@ -206,6 +206,12 @@ enum VocabularyPacks {
         }
     }
 
+    /// 個人字典裡使用者要的寫法：有輸出寫法用輸出寫法；「詞彙」模式（輸出是空字串）用詞本身——與 contextualHints 同一條規則。
+    /// 2026-09-25 量測：只取 values 時，設定頁「新增詞彙」加的 LemonSqueezy、Atmos 全被當成空字串濾掉，從沒進過這張表。
+    static func personalTerms(dictionary: [String: String] = DictionaryStore.shared.dictionary) -> [String] {
+        dictionary.map { $0.value.isEmpty ? $0.key : $0.value }
+    }
+
     /// 給英文專名修正（LatinNameFixer）的比對目標：
     /// 個人字典的寫法、鍵盤讀到的聯絡人／文字替換、內建三包、catalog 各包 seedTerms。
     /// **不**載入 catalog 包的 terms（避免幾萬詞灌進 fuzzy 比對，CONTRACT-V2 §RUNTIME）。
@@ -213,10 +219,7 @@ enum VocabularyPacks {
         var seen = Set<String>()
         let lexicon = LearnedVocabulary.defaults.stringArray(forKey: LearnedVocabulary.lexiconKey) ?? []
         let catalogSeeds = VocabularySelector.latinSeedTerms(enabled: enabledCatalogPacks())
-        // 個人字典：有輸出寫法用輸出寫法；「詞彙」模式（輸出是空字串）用詞本身——與 contextualHints 同一條規則。
-        // 2026-09-25 量測：只取 values 時，設定頁「新增詞彙」加的 LemonSqueezy、Atmos 全被當成空字串濾掉，從沒進過這張表。
-        let personal = dictionary.map { $0.value.isEmpty ? $0.key : $0.value }
-        return (personal + enabledTerms + lexicon + catalogSeeds)
+        return (personalTerms(dictionary: dictionary) + enabledTerms + lexicon + catalogSeeds)
             .filter { $0.contains(where: { $0.isASCII && $0.isLetter }) }
             .filter { seen.insert($0).inserted }
     }

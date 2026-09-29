@@ -138,24 +138,118 @@ public final class ZhuyinLexicon: Sendable {
         data.withUnsafeBytes { raw -> [(text: String, score: Double)] in
             let i = lowerBound(raw, ids)
             guard i < keyCount, compareKey(raw, i, ids) == .equal else { return [] }
-            var p = recordPointer(raw, i)
-            let n = Int(raw[p])
-            p += 1 + 2 * n
-            let m = Int(u16(raw, p))
-            p += 2
-            var out: [(text: String, score: Double)] = []
-            out.reserveCapacity(min(m, limit))
-            for _ in 0..<min(m, limit) {
-                guard p + 3 <= raw.count else { break }
-                let q = Int16(bitPattern: u16(raw, p))
-                let len = Int(raw[p + 2])
-                p += 3
-                guard p + len <= raw.count else { break }
-                let text = String(decoding: UnsafeRawBufferPointer(rebasing: raw[p..<(p + len)]), as: UTF8.self)
-                out.append((text: text, score: Double(q) / Self.scoreScale))
-                p += len
+            return entries(raw, i, limit: limit)
+        }
+    }
+
+    /// 第 `keyIndex` 把鍵的詞條（最佳在前）。鍵索引來自 `forEachKey(matching:...)`。
+    func entries(atKeyIndex keyIndex: Int, limit: Int = .max) -> [(text: String, score: Double)] {
+        guard keyIndex >= 0, keyIndex < keyCount else { return [] }
+        return data.withUnsafeBytes { entries($0, keyIndex, limit: limit) }
+    }
+
+    /// 第 `keyIndex` 把鍵最佳詞條的分數（不解字串；排序、剪枝用）。
+    func topScore(atKeyIndex keyIndex: Int) -> Double? {
+        guard keyIndex >= 0, keyIndex < keyCount else { return nil }
+        return data.withUnsafeBytes { raw -> Double? in
+            var p = recordPointer(raw, keyIndex)
+            p += 1 + 2 * Int(raw[p])
+            guard u16(raw, p) > 0, p + 4 <= raw.count else { return nil }
+            return Double(Int16(bitPattern: u16(raw, p + 2))) / Self.scoreScale
+        }
+    }
+
+    private func entries(_ raw: UnsafeRawBufferPointer, _ i: Int, limit: Int) -> [(text: String, score: Double)] {
+        var p = recordPointer(raw, i)
+        let n = Int(raw[p])
+        p += 1 + 2 * n
+        let m = Int(u16(raw, p))
+        p += 2
+        var out: [(text: String, score: Double)] = []
+        out.reserveCapacity(min(m, limit))
+        for _ in 0..<min(m, limit) {
+            guard p + 3 <= raw.count else { break }
+            let q = Int16(bitPattern: u16(raw, p))
+            let len = Int(raw[p + 2])
+            p += 3
+            guard p + len <= raw.count else { break }
+            let text = String(decoding: UnsafeRawBufferPointer(rebasing: raw[p..<(p + len)]), as: UTF8.self)
+            out.append((text: text, score: Double(q) / Self.scoreScale))
+            p += len
+        }
+        return out
+    }
+
+    // MARK: - 每個位置一組音節的列舉（邊打邊出候選、簡拼用）
+
+    /// 列出所有「長度 1…maxLength、第 d 個音節落在 `sets[d]` 裡」的讀音鍵。`sets[d]` 必須由小到大、不重複。
+    ///
+    /// 不逐一試遍 sets 的所有組合（三個聲母縮寫就是上百萬種）：以某段讀音開頭的鍵在索引裡是連續一段，
+    /// 段內下一個音節 ID 也由小到大，所以每層在「段內實際出現的 ID」與 `sets[d]` 之間交替二分（leapfrog），
+    /// 只走詞庫裡真的存在的前綴。`visit(鍵索引, path, 最佳分數)` 的 path[d]＝第 d 個音節在 `sets[d]` 裡的位置；
+    /// 最佳分數＝那把鍵第一筆詞條的分數（在同一次映射讀取裡順便取，不另外開一次）。
+    /// 走訪超過 `nodeBudget` 步就停（回 false），確保最壞情況下每次按鍵的時間有界。
+    @discardableResult
+    func forEachKey(matching sets: [[UInt16]], maxLength: Int, nodeBudget: Int = 20_000,
+                    _ visit: (_ keyIndex: Int, _ path: [Int], _ topScore: Double) -> Void) -> Bool {
+        let depthLimit = min(maxLength, sets.count)
+        guard depthLimit > 0, keyCount > 0 else { return true }
+        return data.withUnsafeBytes { raw -> Bool in
+            var budget = nodeBudget
+            var path: [Int] = []
+            path.reserveCapacity(depthLimit)
+            func element(_ i: Int, _ d: Int) -> UInt16 { u16(raw, recordPointer(raw, i) + 1 + 2 * d) }
+            /// 段 [lo, hi) 內第一把「第 d 個音節 ≥ v」（strict：> v）的鍵；段內鍵的長度都 > d。
+            func bound(_ d: Int, _ v: UInt16, _ lo: Int, _ hi: Int, strict: Bool) -> Int {
+                var lo = lo, hi = hi
+                while lo < hi {
+                    let mid = (lo + hi) >> 1
+                    let e = element(mid, d)
+                    if e < v || (strict && e == v) { lo = mid + 1 } else { hi = mid }
+                }
+                return lo
             }
-            return out
+            func walk(_ d: Int, _ lo: Int, _ hi: Int) -> Bool {
+                var i = lo
+                // 段內第一把可能就是前綴本身（前綴排在所有更長的鍵前面）
+                if d > 0, i < hi {
+                    let p = recordPointer(raw, i)
+                    if Int(raw[p]) == d {
+                        let q = p + 1 + 2 * d
+                        if u16(raw, q) > 0 { visit(i, path, Double(Int16(bitPattern: u16(raw, q + 2))) / Self.scoreScale) }
+                        i += 1
+                    }
+                }
+                guard d < depthLimit else { return true }
+                let set = sets[d]
+                var si = 0
+                while i < hi && si < set.count {
+                    budget -= 1
+                    if budget < 0 { return false }
+                    let v = element(i, d)
+                    if set[si] < v {
+                        // set 裡第一個 ≥ v
+                        var a = si + 1, b = set.count
+                        while a < b { let m = (a + b) >> 1; if set[m] < v { a = m + 1 } else { b = m } }
+                        si = a
+                        guard si < set.count else { break }
+                    }
+                    let s = set[si]
+                    if s == v {
+                        let j = bound(d, v, i, hi, strict: true)
+                        path.append(si)
+                        let ok = walk(d + 1, i, j)
+                        path.removeLast()
+                        if !ok { return false }
+                        i = j
+                        si += 1
+                    } else {
+                        i = bound(d, s, i, hi, strict: false)
+                    }
+                }
+                return true
+            }
+            return walk(0, 0, keyCount)
         }
     }
 

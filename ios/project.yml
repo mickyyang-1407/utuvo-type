@@ -17,14 +17,19 @@ packages:
   # 本機高準確度辨識（2026-09-24 Micky 核准 iPhone 方案 a）：speech-swift 的 Qwen3-ASR 子集，見 Packages/UTUVOQwenASR/NOTICE.md。
   UTUVOQwenASR:
     path: Packages/UTUVOQwenASR
+  # 2026-09-27：swift-collections 1.3+ 在 Xcode 27 下會強連結 iOS 27 才有的 _swift_initBorrow，
+  # iOS 26 以下一開就 dyld「Symbol missing」閃退（0.2.2–0.2.4 build 21–23 全中）。MLX 間接依賴，釘在 1.2.1。
+  swift-collections:
+    url: https://github.com/apple/swift-collections.git
+    exactVersion: 1.2.1
 
 settings:
   base:
     SWIFT_VERSION: "6.0"
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "0.2.2"
-    CURRENT_PROJECT_VERSION: "21"
+    MARKETING_VERSION: "0.2.5"
+    CURRENT_PROJECT_VERSION: "25"
 
 targets:
   "UTUVOTypeiOS":
@@ -130,6 +135,8 @@ targets:
         excludes: [Resources]
       - path: iOSTests/Resources
         buildPhase: resources
+      - path: TypeTips.storekit
+        buildPhase: resources
     dependencies:
       - target: "UTUVOTypeiOS"
     settings:
@@ -143,6 +150,8 @@ targets:
     platform: iOS
     sources:
       - path: iOSUITests
+      - path: TypeTips.storekit
+        buildPhase: resources
     dependencies:
       - target: "UTUVOTypeiOS"
     settings:
@@ -160,6 +169,8 @@ schemes:
         "UTUVOTypeiOSUITests": [test]
     run:
       config: Debug
+      # 幫我加油（0.2.4）：模擬器／Xcode 執行時用本機 StoreKit 設定，不碰真的 App Store。
+      storeKitConfiguration: TypeTips.storekit
     test:
       config: Debug
       targets:

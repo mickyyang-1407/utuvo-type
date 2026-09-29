@@ -1,0 +1,87 @@
+{
+  "identifier": "7A11C0FE",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "30",
+      "familyShareable": false,
+      "internalID": "6752000001",
+      "localizations": [
+        {
+          "description": "請開發者喝杯咖啡（一次性小費，不解鎖功能）",
+          "displayName": "請喝一杯咖啡",
+          "locale": "zh_TW"
+        },
+        {
+          "description": "請開發者喝杯咖啡（一次性小費，不解鎖功能）",
+          "displayName": "請喝一杯咖啡",
+          "locale": "zh_Hant"
+        },
+        {
+          "description": "請開發者喝杯咖啡（一次性小費，不解鎖功能）",
+          "displayName": "請喝一杯咖啡",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.utuvo.type.ios.tip.coffee",
+      "referenceName": "Tip Coffee",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "90",
+      "familyShareable": false,
+      "internalID": "6752000002",
+      "localizations": [
+        {
+          "description": "請開發者吃個便當（一次性小費，不解鎖功能）",
+          "displayName": "請吃一個便當",
+          "locale": "zh_TW"
+        },
+        {
+          "description": "請開發者吃個便當（一次性小費，不解鎖功能）",
+          "displayName": "請吃一個便當",
+          "locale": "zh_Hant"
+        },
+        {
+          "description": "請開發者吃個便當（一次性小費，不解鎖功能）",
+          "displayName": "請吃一個便當",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.utuvo.type.ios.tip.lunch",
+      "referenceName": "Tip Lunch",
+      "type": "Consumable"
+    },
+    {
+      "displayPrice": "150",
+      "familyShareable": false,
+      "internalID": "6752000003",
+      "localizations": [
+        {
+          "description": "大力幫 UTUVO Type 加油（一次性小費，不解鎖功能）",
+          "displayName": "大力加油",
+          "locale": "zh_TW"
+        },
+        {
+          "description": "大力幫 UTUVO Type 加油（一次性小費，不解鎖功能）",
+          "displayName": "大力加油",
+          "locale": "zh_Hant"
+        },
+        {
+          "description": "大力幫 UTUVO Type 加油（一次性小費，不解鎖功能）",
+          "displayName": "大力加油",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.utuvo.type.ios.tip.boost",
+      "referenceName": "Tip Boost",
+      "type": "Consumable"
+    }
+  ],
+  "settings": {},
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

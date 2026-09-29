@@ -4,14 +4,17 @@ import UTUVOTypeCore
 /// 鍵盤用的中文輸入工作階段：注音（小麥注音詞庫）、簡體拼音（rime-pinyin-simp）、繁體拼音（小麥注音轉拼音）。
 /// 兩個引擎 API 形狀相同。詞庫第一次用到才打開（mmap，不整包讀進記憶體）；打不開就退回「原樣送出」，至少不會打不出字。
 ///
-/// 取消（onUndo）時的快照只讀引擎的公開狀態（zhuyin readings+composing、pinyin composing、fallback），
-/// restore 用同樣的字元序列重打回去；engine 對相同輸入是確定性的，replay 後 preedit／候選
-/// 會跟原來一致。不在 wrapper 多記 mutable key history——那樣會跟 engine 的解析後 buffer 脫節
+/// 取消（onUndo）時的快照：注音存引擎自己的 `ZhuyinEngine.State`（0.2.5 起緩衝區有「沒收尾的音節」，
+/// 重打一次按鍵不一定能還原成同一個切分），拼音／fallback 存 composing，restore 用同樣的字元序列重打回去。
+/// 不在 wrapper 多記 mutable key history——那樣會跟 engine 的解析後 buffer 脫節
 /// （zhuyin backspace 一次刪整個音節、select 只吃前綴、space 在拼音無效等都是源頭不一致的原因）。
+///
+/// 選字／送出之後的聯想詞（你好 → 嗎）：注音與繁體拼音用小麥注音的聯想詞表，簡體拼音用 rime 推導的同規則表。
 @MainActor
 final class ImeSession {
-    /// 候選列只有約 168 pt 寬，顯示八格已足夠；不要為看不見的候選做完整排序與解碼。
-    private static let keyboardCandidateLimit = 8
+    /// 候選列約 168 pt 寬、可以左右捲。0.2.5 起注音邊打邊出候選（簡拼 ㄋㄏ 一次對到幾百個詞），
+    /// 八格不夠放到常用詞（你好 在 ㄋㄏ 排第十幾）；二十格仍只解碼看得到附近的候選。
+    static let keyboardCandidateLimit = 20
 
     enum Kind { case zhuyin, pinyin, pinyinHant }
     let kind: Kind
@@ -20,6 +23,8 @@ final class ImeSession {
         ? Self.dataURL("zhuyin").flatMap(ZhuyinEngine.init(dataURL:)) : nil
     private lazy var pinyin: PinyinEngine? = kind == .zhuyin
         ? nil : Self.dataURL(kind == .pinyin ? "pinyin" : "pinyin-hant").flatMap(PinyinEngine.init(dataURL:))
+    private lazy var associations: PhraseAssociations? = Self.dataURL(kind == .pinyin ? "assoc-hans" : "assoc-hant")
+        .flatMap(PhraseAssociations.init(url:))
     private var fallback: [Character] = []
     private var shownZhuyin: [ZhuyinCandidate] = []
     private var shownPinyin: [PinyinCandidate] = []
@@ -38,6 +43,13 @@ final class ImeSession {
         return !fallback.isEmpty
     }
     var preedit: String { zhuyin?.preedit ?? pinyin?.preedit ?? String(fallback) }
+    /// 整串送出時的文字（候選列第 0 格）。注音簡拼時輸入框顯示打的符號（preedit），送出的是轉換結果。
+    var conversion: String { zhuyin?.conversion ?? pinyin?.preedit ?? String(fallback) }
+
+    /// 剛送出 `text` 之後可以接的聯想詞（只回要接著插入的部分）。
+    func associations(after text: String) -> [String] {
+        associations?.continuations(after: text, limit: Self.keyboardCandidateLimit) ?? []
+    }
 
     /// 句首候選；候選列第 0 格之後照這個順序。
     var candidates: [String] {
@@ -52,16 +64,15 @@ final class ImeSession {
         return []
     }
 
-    /// 引擎公開狀態的快照。注音同時存 readings 與 composing；拼音／fallback 只存 composing。
-    /// restore 對每個 reading 重打每一個字元，無聲調的結尾用 space() 收尾；拼音／fallback
-    /// 直接重打 composing／chars（這兩個本來就是使用者原始輸入）。
+    /// 引擎狀態的快照。注音存引擎的 State；拼音／fallback 只存 composing，restore 直接重打
+    /// composing／chars（這兩個本來就是使用者原始輸入）。
     struct Snapshot: Equatable {
-        let readings: [String]
+        let zhuyin: ZhuyinEngine.State?
         let composing: String
         let fallback: [Character]
 
-        init(readings: [String] = [], composing: String = "", fallback: [Character] = []) {
-            self.readings = readings
+        init(zhuyin: ZhuyinEngine.State? = nil, composing: String = "", fallback: [Character] = []) {
+            self.zhuyin = zhuyin
             self.composing = composing
             self.fallback = fallback
         }
@@ -69,7 +80,7 @@ final class ImeSession {
 
     func snapshot() -> Snapshot {
         if let zhuyin {
-            return Snapshot(readings: zhuyin.readings, composing: zhuyin.composing)
+            return Snapshot(zhuyin: zhuyin.state)
         }
         if pinyin != nil {
             return Snapshot(composing: pinyin?.composing ?? "")
@@ -77,7 +88,7 @@ final class ImeSession {
         return Snapshot(fallback: fallback)
     }
 
-    /// 還原到 snapshot 的狀態。先 reset 兩個引擎與 wrapper 內部累積，再 replay readings／composing。
+    /// 還原到 snapshot 的狀態。先 reset 兩個引擎與 wrapper 內部累積，注音直接放回 State，拼音 replay composing。
     /// 引擎對相同輸入具確定性，所以 preedit／候選會自然跟原來一致。
     func restore(_ s: Snapshot) {
         zhuyin?.reset()
@@ -87,17 +98,7 @@ final class ImeSession {
         shownPinyin.removeAll()
 
         if let zhuyin {
-            for reading in s.readings {
-                for ch in reading { _ = zhuyin.type(ch) }
-                // 無聲調結尾（例「ㄅ」）用 space() 收成一聲；有聲調的最後一個字元已經在
-                // 上一步 type 時觸發 completeSyllable，不需補。
-                let last = reading.last
-                let hasTone = last.map {
-                    ZhuyinComposer.toneMarks.contains($0) || $0 == ZhuyinComposer.firstToneMark
-                } ?? false
-                if !hasTone { _ = zhuyin.space() }
-            }
-            for ch in s.composing { _ = zhuyin.type(ch) }
+            if let state = s.zhuyin { zhuyin.restore(state) }
         } else if let pinyin {
             for ch in s.composing { _ = pinyin.type(ch) }
         } else {
@@ -113,7 +114,8 @@ final class ImeSession {
         return true
     }
 
-    /// 注音專屬：空白＝以一聲收尾正在組的音節。拼音走 commitAll，不走這條。
+    /// 注音專屬：空白＝以一聲收尾正在組的音節。回 false（簡拼、沒打聲調、只有聲母）時呼叫端改成整串送出。
+    /// 拼音走 commitAll，不走這條。
     @discardableResult
     func space() -> Bool { zhuyin?.space() ?? false }
 

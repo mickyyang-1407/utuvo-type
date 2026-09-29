@@ -32,7 +32,7 @@ struct SmartCleanupScreen: View {
             }
 
             Section("整理脈絡") {
-                Toggle("讓整理參考目前欄位文字", isOn: $includeAppContext)
+                Toggle("整理時參考前文（最多 500 字）", isOn: $includeAppContext)
                 Text("開啟後，會把目前欄位游標前最多 500 個字和辨識文字一起送到所選整理服務，只用來理解指涉與語氣。iOS 鍵盤無法讀取宿主 App 名稱，因此不會傳送 App 名稱。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -40,8 +40,8 @@ struct SmartCleanupScreen: View {
 
             Section("服務") {
                 Picker("服務", selection: $provider) {
-                    Text("Google Gemini（推薦）").tag(SmartCleanup.Provider.gemini)
-                    Text("Groq").tag(SmartCleanup.Provider.groq)
+                    Text("Groq（推薦）").tag(SmartCleanup.Provider.groq)
+                    Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
                     Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
                     Text("自訂（OpenAI 相容）").tag(SmartCleanup.Provider.custom)
                 }
