@@ -57,7 +57,14 @@ class PredictionUiParityTest {
         throw AssertionError("選不到 UTUVO Type 輸入法：先用 android/scripts/run-device-tests.sh 跑（它會從電腦端 ime enable）")
     }
 
+    /** 使用者可能把「繁」設成拼音（Micky 的 Pixel 就是）：注音測試要先切回注音，測完還原。 */
+    private var savedHantPinyin = false
+
+    @org.junit.After fun restoreHantInput() { HantInput.setUsesPinyin(app, savedHantPinyin) }
+
     @Before fun setUp() {
+        savedHantPinyin = HantInput.usesPinyin(app)
+        HantInput.setUsesPinyin(app, false)
         // 無視窗模擬器的自動旋轉會自己轉橫（橫向是全螢幕擷取模式，版面不同）；這組測的是直向。
         device.setOrientationPortrait()
         selectOurKeyboard()
