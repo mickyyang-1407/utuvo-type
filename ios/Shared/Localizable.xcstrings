@@ -3445,6 +3445,26 @@
         }
       }
     },
+    "更多候選字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多候选字"
+          }
+        }
+      }
+    },
+    "收起候選字" : {
+      "localizations" : {
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起候选字"
+          }
+        }
+      }
+    },
     "整理時參考前文（最多 500 字）" : {
       "localizations" : {
         "zh-Hans" : {

@@ -66,6 +66,7 @@ final class KeyboardViewController: UIInputViewController {
     private let layoutKey = UIButton(type: .custom)
     private let typingView = TypingKeyboardView()
     private let candidateBar = CandidateBarView()
+    private let candidatePanel = CandidatePanelView()
     private var heightConstraint: NSLayoutConstraint?
     private lazy var zhuyin = ImeSession(kind: .zhuyin)
     private lazy var pinyin = ImeSession(kind: .pinyin)
@@ -275,6 +276,8 @@ final class KeyboardViewController: UIInputViewController {
         transcriptLabel.textColor = .label
         transcriptLabel.numberOfLines = 1
         transcriptLabel.lineBreakMode = .byTruncatingHead
+        // 字幕再長也是它讓位（截頭），不能去擠右上的語言徽章。
+        transcriptLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         transcriptLabel.isHidden = true
         let band = UIStackView(arrangedSubviews: [brandIcon, brandLabel, liveDot, transcriptLabel])
         band.axis = .horizontal
@@ -313,7 +316,12 @@ final class KeyboardViewController: UIInputViewController {
         langConfig.cornerStyle = .capsule
         langConfig.baseForegroundColor = .label
         langConfig.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 12, bottom: 8, trailing: 12)
+        // 09-29 真機：徽章偶爾被擠窄，「繁中」折成直排兩行、按鈕變高（模擬器重現不出觸發點）。
+        // 一律單行、不准被壓縮，寬高下限寫死在約束裡（見 activate 區塊）。
+        langConfig.titleLineBreakMode = .byClipping
         languageButton.configuration = langConfig
+        languageButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+        languageButton.setContentHuggingPriority(.required, for: .horizontal)
         languageButton.titleLabel?.font = .systemFont(ofSize: 13, weight: .semibold)
         languageButton.showsMenuAsPrimaryAction = true
         applyGlass(to: languageButton, radius: 17)
@@ -406,6 +414,8 @@ final class KeyboardViewController: UIInputViewController {
 
             languageButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.sideInset),
             languageButton.centerYAnchor.constraint(equalTo: transcriptPill.centerYAnchor),
+            languageButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 56),
+            languageButton.heightAnchor.constraint(equalToConstant: 34),
 
             hantButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
             hantButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
@@ -642,6 +652,9 @@ final class KeyboardViewController: UIInputViewController {
         typingView.isHidden = true
         candidateBar.isHidden = true
         view.addSubview(typingView)
+        candidatePanel.translatesAutoresizingMaskIntoConstraints = false
+        candidatePanel.isHidden = true
+        view.addSubview(candidatePanel)
         view.addSubview(candidateBar)
         view.addSubview(voiceKey)
         view.addSubview(layoutKey)
@@ -663,8 +676,14 @@ final class KeyboardViewController: UIInputViewController {
             typingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             typingView.topAnchor.constraint(equalTo: voiceKey.bottomAnchor, constant: 6),
             typingView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -2),
+            candidatePanel.leadingAnchor.constraint(equalTo: typingView.leadingAnchor),
+            candidatePanel.trailingAnchor.constraint(equalTo: typingView.trailingAnchor),
+            candidatePanel.topAnchor.constraint(equalTo: typingView.topAnchor),
+            candidatePanel.bottomAnchor.constraint(equalTo: typingView.bottomAnchor),
         ])
         candidateBar.onPick = { [weak self] index in self?.candidateTapped(index) }
+        candidateBar.onExpand = { [weak self] in self?.toggleCandidatePanel() }
+        candidatePanel.onPick = { [weak self] index in self?.pickCandidate(index) }
         // 左右滑切換（語音 → EN → 繁 → 語音）；光球上不接，免得跟長按翻譯的拖曳打架。
         // 用 pan 自己判斷：UISwipe 從按鍵上起手時不穩（按鍵自己也在追蹤觸控）。
         // 掛在語音區、打字區自己身上（掛在鍵盤根 view 上實測收不到）。
@@ -681,6 +700,7 @@ final class KeyboardViewController: UIInputViewController {
     private func setSurface(_ mode: ModeSwitchView.Mode, animated: Bool) {
         // 換模式前把還在選字的中文送出（不丟使用者打的字）。
         if let ime, !ime.isEmpty { commitComposition() }
+        hideCandidatePanel()
         clearSuggestions()
         englishWord = ""
         // 切到 EN／語音時：ime 已經 nil，我們也沒有 mark 要保留——顯式收掉（setMarkedText("", 0) +
@@ -744,6 +764,7 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     private func abandonComposition() {
+        hideCandidatePanel()
         ownedMarkedText = nil
         ime?.reset()
         suggestions = .none
@@ -753,6 +774,8 @@ final class KeyboardViewController: UIInputViewController {
     /// 同時更新候選列與宿主輸入框的 mark。**只在 typing(compose:)／undo compose／zhuyin space 收尾
     /// 等「組字狀態真的變了」的入口呼叫**——其他地方用 clearOwnedMarkedText() 把 mark 收掉就好。
     private func renderComposition() {
+        // 組字一變（打字、選字、刪字）整頁候選就過期了：收起來，候選列回到一般的前 20 個。
+        hideCandidatePanel()
         guard let ime else {
             suggestions = .none
             candidateBar.show(preedit: "", candidates: [])
@@ -804,6 +827,25 @@ final class KeyboardViewController: UIInputViewController {
         renderComposition()
         // 整串選完：接著給聯想詞（你好 → 嗎）。
         if ime.isEmpty, !text.isEmpty { showAssociations(after: text) }
+    }
+
+    /// 候選列右端「⌄／⌃」：展開或收起整頁候選字。
+    private func toggleCandidatePanel() {
+        guard candidatePanel.isHidden else { hideCandidatePanel(); return }
+        guard let ime, !ime.isEmpty else { return }
+        let all = ime.allCandidates()
+        guard !all.isEmpty else { return }
+        // 候選列也換成同一份清單的前段，兩邊的索引才會對到同一個候選。
+        candidateBar.show(preedit: ime.conversion, candidates: all)
+        candidatePanel.show(all)
+        candidatePanel.isHidden = false
+        candidateBar.setExpanded(true)
+    }
+
+    private func hideCandidatePanel() {
+        guard !candidatePanel.isHidden else { return }
+        candidatePanel.isHidden = true
+        candidateBar.setExpanded(false)
     }
 
     private func candidateTapped(_ index: Int) {
