@@ -5,12 +5,21 @@
   python3 scripts/make-zh-hans.py --build          # 先用 SWIFT_EMIT_LOC_STRINGS=YES 編一次，收 .stringsdata
   python3 scripts/make-zh-hans.py                  # 用上次編出來的 .stringsdata 同步、補翻譯
   python3 scripts/make-zh-hans.py --mark-reviewed  # 人工逐條看過後，把機器翻譯標成 translated（之後不再覆寫）
-  python3 scripts/make-zh-hans.py --check          # 只檢查：有沒有缺翻譯／還沒審的，有就 exit 1
+  python3 scripts/make-zh-hans.py --check          # 只檢查：缺翻譯／還沒審的／比 git HEAD 少掉的 zh-Hans，有就 exit 1
   python3 scripts/make-zh-hans.py --force          # 連 translated 的也重算（OVERRIDES 仍優先）
 
 key 的來源＝編譯器自己吐的 .stringsdata（`xcstringstool sync`），所以含插值的 key
 （%@、%lld）跟 runtime 查表用的是同一份格式，不靠手抄。
 Info.plist 的權限說明（NS*UsageDescription）另外寫進 App／Keyboard 各自的 InfoPlist.xcstrings。
+
+手動條目（extractionState=manual，例 vocab.pack.*.name 這種 String(localized:) 動態 key）與
+key 本身沒有中文、但人工給過 zh-Hans 的條目（例 "Google Gemini"、"%@・%@"）：原文取 zh-Hant 值，
+已有的 zh-Hans 一律保留。sync 前先存一份 zh-Hans 快照，寫回前比對；有任何一條消失就補回，
+補不回（整個 key 被刪）就不寫檔、exit 1。2026-09-26 實際踩過：32 條被清成 shouldTranslate=false，
+简中使用者會看到繁體詞庫名。
+
+--build 預設帶 -clonedSourcePackagesDirPath（UTUVO_L10N_SOURCE_PACKAGES 可覆寫，設空字串＝不帶）
+與 -skipPackagePluginValidation -skipMacroValidation；這台機器不帶會解析不到套件。
 
 依賴：`pip3 install opencc`（Apache-2.0，只在建置期用，不進 app）。
 """
@@ -18,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import plistlib
 import re
 import subprocess
@@ -34,6 +44,7 @@ INFOPLIST_CATALOGS = {
     IOS / "Keyboard" / "InfoPlist.xcstrings": IOS / "Keyboard" / "Info.plist",
 }
 DERIVED = ROOT / ".derivedData-l10n"
+DEFAULT_SOURCE_PACKAGES = Path.home() / "Library/Caches/UTUVOTypeASRBench/ios-qwen-spike/build/SourcePackages"
 INFOPLIST_KEYS = ("NSMicrophoneUsageDescription", "NSSpeechRecognitionUsageDescription")
 
 SOURCE = "zh-Hant"
@@ -45,6 +56,11 @@ REVIEWED_STATE = "translated"
 GLOSSARY: list[tuple[str, str]] = [
     ("设置 → 一般", "设置 → 通用"),          # 系統設定路徑：一般＝通用
     ("加入新键盘", "添加新键盘"),
+    # iOS 27 繁中改叫「新增鍵盤」「允許完整取用」（2026-09-26 模擬器實見）；简中 iOS 仍是「添加新键盘」「允许完全访问」。
+    ("新增键盘", "添加新键盘"),
+    ("添加键盘", "添加新键盘"),       # tw2sp 會先把「新增」轉成「添加」
+    ("允许完整取用", "允许完全访问"),
+    ("完整取用", "完全访问"),
     ("允许完整访问", "允许完全访问"),
     ("完整访问", "完全访问"),
     ("语音辨识", "语音识别"),
@@ -154,13 +170,22 @@ def run(cmd: list[str]) -> None:
     subprocess.run(cmd, check=True)
 
 
-def build() -> None:
+def build(derived: Path) -> None:
+    packages = os.environ.get("UTUVO_L10N_SOURCE_PACKAGES", str(DEFAULT_SOURCE_PACKAGES))
+    extra: list[str] = []
+    if packages:
+        if not Path(packages).is_dir():
+            sys.exit(f"找不到 SourcePackages：{packages}（設 UTUVO_L10N_SOURCE_PACKAGES 指到別處，或設空字串不帶）")
+        extra += ["-clonedSourcePackagesDirPath", packages]
     run([
         "xcodebuild", "build",
         "-project", str(IOS / "UTUVO Type.xcodeproj"),
         "-scheme", "UTUVOTypeiOS",
         "-destination", "generic/platform=iOS Simulator",
-        "-derivedDataPath", str(DERIVED),
+        "-derivedDataPath", str(derived),
+        *extra,
+        "-skipPackagePluginValidation",
+        "-skipMacroValidation",
         "SWIFT_EMIT_LOC_STRINGS=YES",
         "CODE_SIGNING_ALLOWED=NO",
         "-quiet",
@@ -220,14 +245,19 @@ def fill(entries: dict, source_text, force: bool) -> tuple[int, int]:
     for key, entry in entries.items():
         if entry.get("extractionState") == "stale":
             continue
-        src = source_text(key)
-        if not has_cjk(src):
-            # 純格式／英文（%lld、EN…）：不需要翻譯。
-            entry["shouldTranslate"] = False
-            entry.get("localizations", {}).pop(TARGET, None)
-            continue
+        src = source_text(key, entry)
         locs = entry.setdefault("localizations", {})
         unit = locs.get(TARGET, {}).get("stringUnit")
+        if not has_cjk(src):
+            if unit:
+                kept += 1  # 人工給過 zh-Hans（"Google Gemini"、"%@・%@"）：保留，不標 shouldTranslate=false
+                continue
+            # 純格式／英文（%lld、EN…）：不需要翻譯。
+            entry["shouldTranslate"] = False
+            locs.pop(TARGET, None)
+            if not locs:
+                entry.pop("localizations")
+            continue
         if key in OVERRIDES:
             state = REVIEWED_STATE
         elif unit and unit.get("state") == REVIEWED_STATE and not force:
@@ -240,6 +270,58 @@ def fill(entries: dict, source_text, force: bool) -> tuple[int, int]:
             written += 1
         locs[TARGET] = {"stringUnit": {"state": state, "value": value}}
     return written, kept
+
+
+def localizable_source(key: str, entry: dict | None = None) -> str:
+    """Localizable 的原文：manual 條目（String(localized:) 的動態 key，例 vocab.pack.law.name）
+    key 不是原文，要讀 zh-Hant 值；其他條目 key 就是原文。"""
+    if entry and entry.get("extractionState") == "manual":
+        value = entry.get("localizations", {}).get(SOURCE, {}).get("stringUnit", {}).get("value")
+        if value:
+            return value
+    return key
+
+
+def target_units(entries: dict) -> dict[str, dict]:
+    """key → zh-Hans stringUnit（只收有值的）。"""
+    out = {}
+    for key, entry in entries.items():
+        unit = entry.get("localizations", {}).get(TARGET, {}).get("stringUnit")
+        if unit and unit.get("value"):
+            out[key] = unit
+    return out
+
+
+def lost_units(baseline: dict[str, dict], entries: dict) -> list[str]:
+    """baseline 有 zh-Hans、現在沒了的 key（整個 key 被刪也算）。stale 的條目 zh-Hans 還在就不算。"""
+    lost = []
+    for key in baseline:
+        entry = entries.get(key)
+        if entry is None or not entry.get("localizations", {}).get(TARGET, {}).get("stringUnit", {}).get("value"):
+            lost.append(key)
+    return sorted(lost)
+
+
+def restore_units(baseline: dict[str, dict], entries: dict) -> list[str]:
+    """把 sync／fill 弄丟的 zh-Hans 補回去（連同拿掉 shouldTranslate=false）。回傳補回的 key。"""
+    restored = []
+    for key in lost_units(baseline, entries):
+        entry = entries.get(key)
+        if entry is None:
+            continue  # 整個 key 被刪：補不回，交給呼叫端報錯
+        entry.setdefault("localizations", {})[TARGET] = {"stringUnit": dict(baseline[key])}
+        if entry.get("shouldTranslate") is False:
+            del entry["shouldTranslate"]
+        restored.append(key)
+    return restored
+
+
+def git_baseline(path: Path) -> dict | None:
+    rel = path.relative_to(ROOT)
+    proc = subprocess.run(["git", "-C", str(ROOT), "show", f"HEAD:{rel}"], capture_output=True, text=True)
+    if proc.returncode != 0:
+        return None
+    return json.loads(proc.stdout)
 
 
 def load(path: Path) -> dict:
@@ -260,12 +342,16 @@ def main() -> int:
     ap.add_argument("--mark-reviewed", action="store_true", help="needs_review → translated")
     ap.add_argument("--check", action="store_true", help="只檢查，不寫檔")
     ap.add_argument("--list", action="store_true", help="印出全部 zh-Hant → zh-Hans 對照")
+    ap.add_argument("--baseline", type=Path, help="--check 比對用的舊 catalog（預設 git HEAD 版）")
     args = ap.parse_args()
 
+    snapshot: dict[str, dict] = {}
+    snapshot_bytes = CATALOG.read_bytes()
     if not args.check and not args.list:
         if args.build:
-            build()
+            build(args.derived_data)
         files = stringsdata_files(args.derived_data)
+        snapshot = target_units(load(CATALOG)["strings"])
         cmd = ["xcrun", "xcstringstool", "sync", str(CATALOG)]
         for f in files:
             cmd += ["--stringsdata", str(f)]
@@ -274,7 +360,7 @@ def main() -> int:
 
     # 每份 catalog 配一個「key → zh-Hant 原文」：Localizable 的 key 就是原文；
     # InfoPlist 的 key 是 plist 欄位名，原文從 Info.plist（xcodegen 由 project.yml 產生）讀。
-    catalogs: dict[Path, object] = {CATALOG: lambda key: key}
+    catalogs: dict[Path, object] = {CATALOG: localizable_source}
     for cat_path, plist_path in INFOPLIST_CATALOGS.items():
         plist = plistlib.loads(plist_path.read_bytes())
         sources = {k: plist[k] for k in INFOPLIST_KEYS if k in plist}
@@ -288,7 +374,7 @@ def main() -> int:
                 # zh-Hant.lproj/InfoPlist.strings 會是「key = key」，權限框直接顯示欄位名。
                 entry.setdefault("localizations", {})[SOURCE] = {"stringUnit": {"state": REVIEWED_STATE, "value": text}}
             save(cat_path, data)
-        catalogs[cat_path] = sources.__getitem__
+        catalogs[cat_path] = lambda key, entry=None, s=sources: s[key]
 
     problems = 0
     total = 0
@@ -302,18 +388,37 @@ def main() -> int:
                 unit = entry.get("localizations", {}).get(TARGET, {}).get("stringUnit")
                 total += 1
                 if args.list:
-                    print(f"{source_text(key)}\n  → {unit['value'] if unit else '（缺）'}  [{unit['state'] if unit else '-'}]")
+                    print(f"{source_text(key, entry)}\n  → {unit['value'] if unit else '（缺）'}  [{unit['state'] if unit else '-'}]")
                 if not unit or unit.get("state") != REVIEWED_STATE:
                     problems += 1
                     if args.check:
                         print(f"未審／缺：{path.relative_to(ROOT)}  {key}")
                 if path != CATALOG:
                     src_unit = entry.get("localizations", {}).get(SOURCE, {}).get("stringUnit") or {}
-                    if src_unit.get("value") != source_text(key):
+                    if src_unit.get("value") != source_text(key, entry):
                         problems += 1
                         print(f"原文跟 Info.plist 不同步：{path.relative_to(ROOT)}  {key}（重跑本腳本）")
+            if args.check and path == CATALOG:
+                if args.baseline:
+                    base = load(args.baseline)
+                else:
+                    base = git_baseline(path)
+                    if base is None:
+                        print("讀不到 git HEAD 的 catalog，略過 zh-Hans 消失檢查（用 --baseline 指定）")
+                if base is not None:
+                    for key in lost_units(target_units(base["strings"]), entries):
+                        problems += 1
+                        print(f"zh-Hans 消失：{path.relative_to(ROOT)}  {key}")
             continue
         written, kept = fill(entries, source_text, args.force)
+        if path == CATALOG:
+            restored = restore_units(snapshot, entries)
+            for key in restored:
+                print(f"補回 zh-Hans：{key}")
+            gone = lost_units(snapshot, entries)
+            if gone:
+                CATALOG.write_bytes(snapshot_bytes)  # sync 已經改寫了檔案：還原成跑之前的樣子
+                sys.exit(f"sync 刪掉了 {len(gone)} 條有 zh-Hans 的 key（例：{gone[0]}），已還原 catalog、未寫入。")
         if args.mark_reviewed:
             for entry in entries.values():
                 unit = entry.get("localizations", {}).get(TARGET, {}).get("stringUnit")

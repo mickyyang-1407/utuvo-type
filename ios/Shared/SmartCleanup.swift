@@ -5,7 +5,7 @@ import UTUVOTypeCore
 import FoundationModels
 #endif
 
-/// 智慧整理（選配，使用者自備 key；2026-09-19 Micky 決定：Gemini 主推、Groq 備選）。
+/// 智慧整理（選配，使用者自備 key；2026-09-19 Gemini 主推；2026-09-26 改推薦 Groq）。
 ///
 /// 預設優先在手機辨識；使用者可另外選擇把音訊送 Apple 雲端辨識。辨識好的**文字**再送到使用者選的整理服務；
 /// 目前不把原始音訊轉送給整理服務。選配欄位脈絡與文字分開標示，且只在明確開啟後提供。
@@ -90,8 +90,28 @@ enum SmartCleanup {
     }
 
     static var provider: Provider {
-        get { Provider(rawValue: defaults.string(forKey: providerKey) ?? "") ?? .gemini }
+        get {
+            let stored = defaults.string(forKey: providerKey)
+            if let stored, let value = Provider(rawValue: stored) { return value }
+            let resolved = resolvedDefaultProvider(stored: stored, hasGeminiKey: !key(for: .gemini).isEmpty,
+                                                   hasGroqKey: !key(for: .groq).isEmpty)
+            // 第一次解析就釘住：之後新增／清除 key 都不會讓服務在背後換家（舊版 Gemini 使用者維持 Gemini）。
+            defaults.set(resolved.rawValue, forKey: providerKey)
+            return resolved
+        }
         set { defaults.set(newValue.rawValue, forKey: providerKey) }
+    }
+
+    /// 推薦服務（2026-09-26 Micky：改推薦 Groq；Gemini 免費版實測每天只有 20 次）。
+    static let recommendedProvider: Provider = .groq
+
+    /// 沒選過服務時用哪一家。0.2.2 以前預設是 Gemini、而且不會寫入 providerKey，
+    /// 所以「沒存過 provider 但有 Gemini key」＝舊使用者正在用 Gemini，要維持。
+    /// 例外：鑰匙圈在刪 App 重裝後還在、偏好不在；兩把 key 都有時選推薦的 Groq（不猜成舊的 Gemini）。
+    static func resolvedDefaultProvider(stored: String?, hasGeminiKey: Bool, hasGroqKey: Bool = false) -> Provider {
+        if let stored, let value = Provider(rawValue: stored) { return value }
+        if hasGroqKey { return .groq }
+        return hasGeminiKey ? .gemini : recommendedProvider
     }
     static var customEndpoint: String { defaults.string(forKey: customEndpointKey) ?? "" }
     static var customModel: String { defaults.string(forKey: customModelKey) ?? "" }

@@ -389,44 +389,44 @@ final class KeyboardOrbUITests: XCTestCase {
         app.buttons["英文鍵盤"].tap()
         // 空欄位起手 → 自動大寫：H 鍵是 shift-state 變化（once→onDown 進 .once 之外的 setter 路徑）
         app.buttons["h"].tap()
-        XCTAssertEqual(text(in: field), "H",
+        XCTAssertEqual(settledText(in: field, expecting: "H"), "H",
                        "空欄位起手要自動大寫（與 testR01EnglishLongPressDeleteCommits 一致）")
         app.buttons["i"].tap()
-        XCTAssertEqual(text(in: field), "Hi", "第二字起小寫（句中）")
+        XCTAssertEqual(settledText(in: field, expecting: "Hi"), "Hi", "第二字起小寫（句中）")
 
         // 切到標點層，打「.」+ 空白 → 下一字應該自動大寫
         app.buttons["123"].tap()
         app.buttons["."].tap()
-        XCTAssertEqual(text(in: field), "Hi.",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi."), "Hi.",
                        "EN 句號 . 要即時進宿主")
         app.buttons["space"].tap()
-        XCTAssertEqual(text(in: field), "Hi. ",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. "), "Hi. ",
                        "EN 空白要即時進宿主")
 
         // 句號 + 空白後下一字自動大寫：這條是 setShift 從 .off → .once 的合法變化，
         // guard 不能把它守死
         app.buttons["ABC"].tap()
         app.buttons["h"].tap()
-        XCTAssertEqual(text(in: field), "Hi. H",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. H"), "Hi. H",
                        "句號 + 空白後要自動大寫（setShift guard 不能守死合法變化）")
 
         // 反例：逗號後維持小寫（不要為了 oracle 把產品行為改壞）
         app.buttons["i"].tap()
-        XCTAssertEqual(text(in: field), "Hi. Hi",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. Hi"), "Hi. Hi",
                        "句中字母繼續小寫")
 
         app.buttons["123"].tap()
         app.buttons[","].tap()
-        XCTAssertEqual(text(in: field), "Hi. Hi,",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. Hi,"), "Hi. Hi,",
                        "逗號即時進宿主")
         app.buttons["space"].tap()
-        XCTAssertEqual(text(in: field), "Hi. Hi, ",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. Hi, "), "Hi. Hi, ",
                        "逗號後空白即時進宿主")
 
         // 逗號後下一字小寫（comma 不是句末標點）
         app.buttons["ABC"].tap()
         app.buttons["h"].tap()
-        XCTAssertEqual(text(in: field), "Hi. Hi, h",
+        XCTAssertEqual(settledText(in: field, expecting: "Hi. Hi, h"), "Hi. Hi, h",
                        "逗號 + 空白後不該自動大寫（產品行為，不是 setShift 該守死合法變化的鍋）")
     }
 
@@ -608,6 +608,91 @@ final class KeyboardOrbUITests: XCTestCase {
         // readings 還原：「你」必須還在候選列
         XCTAssertTrue(app.buttons["你"].waitForExistence(timeout: 2),
                       "ime readings 必須還原（候選列還看得到「你」）")
+    }
+
+    /// 0.2.5（Threads 回饋「注音好像沒有預測字，要打完整注音」）：邊打邊出候選、簡拼、沒打聲調、聯想詞。
+    /// 走產品入口：主 app 字典欄 → UTUVO Type 鍵盤 → 注音版面，候選列點選，看輸入框真的收到字。
+    func testZhuyinPredictionAndAssociations() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        app.buttons["注音鍵盤"].tap()
+        if app.buttons["改用注音"].waitForExistence(timeout: 1) { app.buttons["改用注音"].tap() }
+        XCTAssertTrue(app.buttons["ㄅ"].waitForExistence(timeout: 2), "注音版面沒出來")
+
+        // ①只打一個聲母就有候選：ㄋ → 點「你」
+        app.buttons["ㄋ"].tap()
+        let ni = app.buttons["你"]
+        XCTAssertTrue(ni.waitForExistence(timeout: 2), "只打 ㄋ 候選列就要有「你」")
+        shot("zhuyin-partial-n")
+        ni.tap()
+        XCTAssertEqual(settledText(in: field, expecting: "你"), "你", "點預測的「你」要進輸入框")
+
+        // ②選完接聯想詞：你 → 們（小麥注音聯想詞表第一個）
+        let men = app.buttons["們"]
+        XCTAssertTrue(men.waitForExistence(timeout: 2), "選字後要出聯想詞「們」")
+        shot("zhuyin-association")
+        men.tap()
+        XCTAssertEqual(settledText(in: field, expecting: "你們"), "你們", "點聯想詞要接在後面")
+
+        // ③簡拼：ㄉㄋ → 候選列有「電腦」，輸入框先顯示打的符號
+        app.buttons["ㄉ"].tap()
+        app.buttons["ㄋ"].tap()
+        let computer = app.buttons["電腦"]
+        XCTAssertTrue(computer.waitForExistence(timeout: 2), "簡拼 ㄉㄋ 候選列要有「電腦」")
+        XCTAssertEqual(settledText(in: field, expecting: "你們ㄉㄋ"), "你們ㄉㄋ", "組字時輸入框顯示打的注音")
+        shot("zhuyin-abbreviation")
+        computer.tap()
+        XCTAssertEqual(settledText(in: field, expecting: "你們電腦"), "你們電腦")
+
+        // ④不打聲調：ㄋㄧㄏㄠ ＋ 空白 → 整串送出「你好」
+        for key in ["ㄋ", "ㄧ", "ㄏ", "ㄠ"] { app.buttons[key].tap() }
+        XCTAssertTrue(app.buttons["你好"].waitForExistence(timeout: 2), "ㄋㄧㄏㄠ 候選列第一格要是「你好」")
+        app.buttons["空白"].tap()
+        XCTAssertEqual(settledText(in: field, expecting: "你們電腦你好"), "你們電腦你好", "沒打聲調按空白＝送出最佳轉換")
+        shot("zhuyin-toneless-space")
+    }
+
+    /// 0.2.5：英文建議列（UITextChecker 補完／拼字建議），點了換掉正在打的字並補空白；句首大寫照舊。
+    func testEnglishSuggestionBar() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        app.buttons["英文鍵盤"].tap()
+        for key in ["t", "o", "m", "o", "r"] { app.buttons[key].tap() }
+        XCTAssertEqual(settledText(in: field, expecting: "Tomor"), "Tomor", "句首自動大寫照舊")
+        let tomorrow = app.buttons["Tomorrow"]
+        XCTAssertTrue(tomorrow.waitForExistence(timeout: 3), "Tomor 建議列要有「Tomorrow」（照打的大小寫）")
+        shot("english-suggestions")
+        tomorrow.tap()
+        XCTAssertEqual(settledText(in: field, expecting: "Tomorrow "), "Tomorrow ", "點建議換掉整個字並補空白")
+
+        // 拼錯 → 拼字建議
+        for key in ["r", "e", "c", "i", "e", "v", "e"] { app.buttons[key].tap() }
+        let receive = app.buttons["receive"]
+        XCTAssertTrue(receive.waitForExistence(timeout: 3), "recieve 要有拼字建議「receive」")
+        receive.tap()
+        XCTAssertEqual(settledText(in: field, expecting: "Tomorrow receive "), "Tomorrow receive ")
+        // 空白之後建議列收起來
+        XCTAssertFalse(app.buttons["receive"].exists, "換完字建議列要清掉")
+    }
+
+    /// 鍵盤→宿主是非同步的：最多等 5 秒到期望值，再回傳實際值給 XCTAssertEqual 報錯。
+    private func settledText(in field: XCUIElement, expecting expected: String) -> String {
+        let deadline = Date().addingTimeInterval(5)
+        while Date() < deadline {
+            if text(in: field) == expected { return expected }
+            RunLoop.current.run(until: Date().addingTimeInterval(0.1))
+        }
+        return text(in: field)
     }
 
     private func text(in field: XCUIElement) -> String {

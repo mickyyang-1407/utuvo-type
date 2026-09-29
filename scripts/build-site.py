@@ -34,7 +34,7 @@ ZH = {
         '點一下鍵盤上的光球，把話說完，整理好的文字就出現在游標的位置——任何 app 都可以。裝置端優先，不用帳號，程式碼開源。',
     '>Download for Mac</a>': '>下載 Mac 版</a>',
     'View source': '看原始碼',
-    '<b>iPhone</b><span class="status"><i></i>In App Store review — coming soon</span>': '<b>iPhone</b><span class="status"><i></i>App Store 審核中，即將上架</span>',
+    '<b>iPhone</b><span class="status"><i></i>Free on the App Store</span>': '<b>iPhone</b><span class="status"><i></i>App Store 免費下載</span>',
     '<b>Mac</b><span>Free download, signed and notarized</span>': '<b>Mac</b><span>免費下載，已簽章與公證</span>',
     'The UTUVO Type keyboard in Messages while dictating: the live transcript runs along the top, the orb glows in the middle': '在「訊息」裡用 UTUVO Type 鍵盤聽寫：上方跑即時字幕，中間是光球',
     # iPhone
@@ -51,8 +51,8 @@ ZH = {
     'The built-in Zhuyin keyboard with candidates along the top': '內建注音鍵盤，上方是候選字',
     'The built-in Pinyin keyboard typing Traditional Chinese': '內建拼音鍵盤打繁體字',
     'Fix a word without leaving': '打錯字，當場改',
-    'EN, 繁 and 简 sit beside the orb. Correct a word with English, Zhuyin or Pinyin — Traditional or Simplified — then tap Voice to keep talking.':
-        'EN、繁、简 就在光球旁邊。用英文、注音或拼音改一個字——繁體簡體都行——改完點「語音」繼續說。',
+    'EN, 繁 and 简 sit beside the orb. Correct a word with English, Zhuyin or Pinyin — Traditional or Simplified, with suggestions as you type — then tap Voice to keep talking.':
+        'EN、繁、简 就在光球旁邊。用英文、注音或拼音改一個字——繁體簡體都行，邊打邊出候選字——改完點「語音」繼續說。',
     'History grouped by day, with star and copy buttons on each dictation': '依日期分組的歷史紀錄，每筆都能加星號、複製',
     'Everything you said, on your phone': '說過的話，都留在手機上',
     'Each dictation is kept on the device — searchable, starrable, one tap to copy. A personal dictionary teaches it the names and jargon you use.':
@@ -79,7 +79,7 @@ ZH = {
     'On-device recognition first; turn on “Only on-device” and audio never leaves the phone': '裝置端辨識優先；打開「只用裝置端辨識」，音訊就永遠不離開手機',
     'Rewriting and translation use Apple Intelligence on the device; a cloud key is optional and yours': '改寫與翻譯在裝置上用 Apple Intelligence；雲端 key 是選配，用你自己的',
     'The keyboard never records what you type with the other keys': '鍵盤不會記錄你用其他按鍵打的字',
-    'Full Access is needed only so the keyboard can ask the app to record — iOS keeps the microphone away from keyboards': '需要「允許完整存取」只是因為 iOS 不讓鍵盤用麥克風，鍵盤要請 app 代為錄音',
+    'Full Access is needed only so the keyboard can ask the app to record — iOS keeps the microphone away from keyboards': '需要「允許完整取用」只是因為 iOS 不讓鍵盤用麥克風，鍵盤要請 app 代為錄音',
     'The default engine runs locally: Qwen3-ASR 0.6B through MLX on Apple silicon': '預設引擎在本機跑：Apple silicon 上用 MLX 執行 Qwen3-ASR 0.6B',
     'Accessibility is used to read the focused field and paste back — never the whole screen': '輔助使用權限只用來讀目前的輸入欄位並貼回去，不會讀整個螢幕',
     'Cloud formatting is opt-in, with your own key in the Keychain': '雲端整理要你自己打開，key 存在鑰匙圈',
@@ -87,8 +87,9 @@ ZH = {
     'Read the full <a href="privacy/">privacy policy</a>.': '完整說明請看<a href="privacy/">隱私權政策</a>。',
     # get
     'Get it': '下載', 'Free on both.': '兩邊都免費。',
-    'Version 0.2.0 is in App Store review. This page will link to it as soon as it’s live.': '0.2.0 版正在 App Store 審核，上架後這裡會放連結。',
-    '<span><b>iOS 17+</b></span><span><b>iPhone</b> only for now</span><span>Keyboard needs <b>Full Access</b></span>': '<span><b>iOS 17+</b></span><span>目前只支援 <b>iPhone</b></span><span>鍵盤需要<b>完整存取</b></span>',
+    'Free on the App Store. The keyboard, history and dictionary all work on the device.': 'App Store 免費下載。鍵盤、歷史紀錄、個人字典都在手機上運作。',
+    'Get it on the App Store': '到 App Store 下載',
+    '<span><b>iOS 18+</b></span><span><b>iPhone</b> only for now</span><span>Keyboard needs <b>Full Access</b></span>': '<span><b>iOS 18+</b></span><span>目前只支援 <b>iPhone</b></span><span>鍵盤需要<b>完整取用</b></span>',
     'Signed and notarized. The speech model is a one-time 1.2 GB download from Settings, only when you click.': '已簽章與公證。語音模型要在設定裡按一下才會下載，約 1.2 GB，只下載一次。',
     '<span><b>macOS 14+</b></span><span><b>Apple silicon</b> for the local engine</span><span><b>8 GB</b> memory · <b>16 GB</b> for the local editor</span>': '<span><b>macOS 14+</b></span><span>本機引擎需要 <b>Apple silicon</b></span><span>記憶體 <b>8 GB</b>・本機 editor 建議 <b>16 GB</b></span>',
     'Build from source': '從原始碼編譯',

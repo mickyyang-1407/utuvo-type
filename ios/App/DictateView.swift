@@ -134,8 +134,8 @@ struct DictateView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            guideStep(1, String(localized: "設定 → 一般 → 鍵盤 → 鍵盤 → 加入新鍵盤 → UTUVO Type"))
-            guideStep(2, String(localized: "點進 UTUVO Type，打開「允許完整存取」（語音辨識需要）"))
+            guideStep(1, String(localized: "設定 → 一般 → 鍵盤 → 鍵盤 → 新增鍵盤 → UTUVO Type"))
+            guideStep(2, String(localized: "點進 UTUVO Type，打開「允許完整取用」（語音辨識需要）"))
             guideStep(3, String(localized: "在任何輸入框按 🌐 切到 UTUVO Type，點光球開始說"))
             Button("第一次會跳到 UTUVO Type 開麥克風？看完整教學") { showingGuide = true }
                 .font(.footnote.weight(.medium))

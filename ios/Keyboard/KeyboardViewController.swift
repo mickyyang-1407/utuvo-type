@@ -78,6 +78,18 @@ final class KeyboardViewController: UIInputViewController {
         default: nil
         }
     }
+    /// 候選列沒在組字時放的建議：中文選字後的聯想詞、英文的補完／拼字建議。
+    private enum Suggestions {
+        case none
+        /// `context`＝剛送出的文字（接著點聯想詞會一路累加，用結尾找下一段）。
+        case association(context: String, items: [String])
+        case english(items: [String])
+    }
+    private var suggestions: Suggestions = .none
+    private let englishSuggester = EnglishSuggester()
+    /// 英文：游標前正在打的字。自己插的字母直接累加（打字熱路徑不問宿主）；刪字、外部變動時從宿主的游標前文字重算。
+    private var englishWord = ""
+    private var englishRefreshScheduled = false
     private var pickerDots: [UIView] = []
     private var pickerLabels: [UILabel] = []
     private var highlightedPick: Int?
@@ -113,7 +125,7 @@ final class KeyboardViewController: UIInputViewController {
         // iPhone 文字替換的展開詞＋聯絡人姓名（系統給鍵盤的 UILexicon）→ 只當語音辨識提示，人名更容易聽對；資料不離開手機。
         requestSupplementaryLexicon(completion: Self.lexiconHandler())
         bridgeObserver = DarwinObserver(.update) { [weak self] in self?.bridgeUpdated() }
-        // 打字手感：沒開「允許完整存取」就震不了（系統靜默忽略），先記下來；Taptic 引擎先預熱。
+        // 打字手感：沒開「允許完整取用」就震不了（系統靜默忽略），先記下來；Taptic 引擎先預熱。
         KeyButton.hasFullAccess = hasFullAccess
         Haptics.prepare()
         KeyFeedback.prepare()
@@ -129,6 +141,7 @@ final class KeyboardViewController: UIInputViewController {
         if !isRecording { setSurface(.voice, animated: false) }
         KeyButton.hasFullAccess = hasFullAccess
         KeyFeedback.prepare()   // 閒置後第一下才不會慢半拍
+        englishSuggester.reloadUserTerms()
         HostAppResolver.noteKeyboardAppeared()
         HostAppResolver.harvest()
         // 新的 extension process 第一次出現時 arbiter 約 200 ms 後才有資料，補讀一次。
@@ -163,6 +176,7 @@ final class KeyboardViewController: UIInputViewController {
         // Delegate notifications represent external host changes. Keep host text intact.
         abandonComposition()
         refreshContext()
+        rereadEnglishWord()
     }
 
     override func selectionDidChange(_ textInput: UITextInput?) {
@@ -171,6 +185,7 @@ final class KeyboardViewController: UIInputViewController {
         HostAppResolver.harvest()
         abandonComposition()
         refreshContext()
+        rereadEnglishWord()
     }
 
     /// 在呼叫文字代理前先記下預期的 delegate 回呼數。同步回呼會立即消耗，若宿主沒有回呼，
@@ -649,7 +664,7 @@ final class KeyboardViewController: UIInputViewController {
             typingView.topAnchor.constraint(equalTo: voiceKey.bottomAnchor, constant: 6),
             typingView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -2),
         ])
-        candidateBar.onPick = { [weak self] index in self?.pickCandidate(index) }
+        candidateBar.onPick = { [weak self] index in self?.candidateTapped(index) }
         // 左右滑切換（語音 → EN → 繁 → 語音）；光球上不接，免得跟長按翻譯的拖曳打架。
         // 用 pan 自己判斷：UISwipe 從按鍵上起手時不穩（按鍵自己也在追蹤觸控）。
         // 掛在語音區、打字區自己身上（掛在鍵盤根 view 上實測收不到）。
@@ -666,6 +681,8 @@ final class KeyboardViewController: UIInputViewController {
     private func setSurface(_ mode: ModeSwitchView.Mode, animated: Bool) {
         // 換模式前把還在選字的中文送出（不丟使用者打的字）。
         if let ime, !ime.isEmpty { commitComposition() }
+        clearSuggestions()
+        englishWord = ""
         // 切到 EN／語音時：ime 已經 nil，我們也沒有 mark 要保留——顯式收掉（setMarkedText("", 0) +
         // unmark 才會清掉 ghost，純 unmark 會留字）。如果沒 owned mark 這條是 no-op。
         if mode == .voice || mode == .english { clearOwnedMarkedText() }
@@ -677,13 +694,20 @@ final class KeyboardViewController: UIInputViewController {
         voiceKey.isHidden = voice
         layoutKey.isHidden = voice
         layoutKey.configuration?.title = mode == .zhuyin ? "繁" : (mode == .pinyin ? "简" : "EN")
-        candidateBar.isHidden = ime == nil
+        // 英文也有建議列（補完／拼字建議），放在同一個位置。
+        candidateBar.isHidden = ime == nil && mode != .english
+        var contextBefore: String?
         if !voice {
             typingView.layout = mode == .zhuyin ? (hantPinyin ? .pinyinHant : .zhuyin) : (mode == .pinyin ? .pinyin : .english)
-            typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
+            contextBefore = textDocumentProxy.documentContextBeforeInput
+            typingView.updateAutoCapitalization(contextBefore: contextBefore)
         }
         heightConstraint?.constant = voice ? Self.voiceHeight : (mode == .zhuyin && !hantPinyin ? Self.zhuyinHeight : (mode == .english ? Self.englishHeight : Self.pinyinHeight))
         refreshCandidates()
+        if mode == .english {
+            englishWord = EnglishSuggestions.currentWord(before: contextBefore)
+            scheduleEnglishSuggestions()
+        }
     }
 
     @objc private func panned(_ gesture: UIPanGestureRecognizer) {
@@ -722,6 +746,7 @@ final class KeyboardViewController: UIInputViewController {
     private func abandonComposition() {
         ownedMarkedText = nil
         ime?.reset()
+        suggestions = .none
         candidateBar.show(preedit: "", candidates: [])
     }
 
@@ -729,6 +754,7 @@ final class KeyboardViewController: UIInputViewController {
     /// 等「組字狀態真的變了」的入口呼叫**——其他地方用 clearOwnedMarkedText() 把 mark 收掉就好。
     private func renderComposition() {
         guard let ime else {
+            suggestions = .none
             candidateBar.show(preedit: "", candidates: [])
             clearOwnedMarkedText()
             return
@@ -738,7 +764,9 @@ final class KeyboardViewController: UIInputViewController {
         let candidates = ime.candidates
         // 先把文字送到宿主，候選列是輔助 UI；這樣按鍵後輸入框不會等候選列 layout 才更新。
         syncOwnedMarkedText(to: preedit)
-        candidateBar.show(preedit: preedit, candidates: candidates)
+        if !ime.isEmpty { suggestions = .none }
+        // 第 0 格＝整串送出會得到的字（注音簡拼時輸入框顯示 ㄋㄏ、第 0 格顯示 你好）。
+        candidateBar.show(preedit: ime.isEmpty ? "" : ime.conversion, candidates: candidates)
     }
 
     /// 把宿主端 mark 對齊到 `preedit`：空字串且我們有 mark 時，先 setMarkedText("", range 0) 把現有
@@ -774,6 +802,88 @@ final class KeyboardViewController: UIInputViewController {
         }
         // 選字後 ime 可能還剩半段（例 pinyin 吃掉「ni」、剩「hao」），renderComposition 會把宿主端 mark 更新。
         renderComposition()
+        // 整串選完：接著給聯想詞（你好 → 嗎）。
+        if ime.isEmpty, !text.isEmpty { showAssociations(after: text) }
+    }
+
+    private func candidateTapped(_ index: Int) {
+        switch suggestions {
+        case .association(let context, let items) where items.indices.contains(index):
+            pickAssociation(items[index], context: context)
+        case .english(let items) where items.indices.contains(index):
+            pickEnglishSuggestion(items[index])
+        default:
+            pickCandidate(index)
+        }
+    }
+
+    // MARK: - 聯想詞與英文建議
+
+    private func showAssociations(after text: String) {
+        guard let ime, ime.isEmpty else { return }
+        let items = ime.associations(after: text)
+        suggestions = items.isEmpty ? .none : .association(context: text, items: items)
+        candidateBar.show(suggestions: items)
+    }
+
+    private func pickAssociation(_ text: String, context: String) {
+        releaseOwnership()
+        insertText(text)
+        learnTyped(text)
+        showAssociations(after: context + text)
+    }
+
+    private func clearSuggestions() {
+        if case .none = suggestions { return }
+        suggestions = .none
+        candidateBar.show(suggestions: [])
+    }
+
+    /// 宿主那邊的文字或游標變了（不是我們插的）：英文模式重讀游標前的字。
+    private func rereadEnglishWord() {
+        guard surface == .english else { return }
+        englishWord = EnglishSuggestions.currentWord(before: textDocumentProxy.documentContextBeforeInput)
+        scheduleEnglishSuggestions()
+    }
+
+    /// 英文插了字之後更新目前的字：字母（與字中撇號）累加，其他字元（空白、標點、數字）結束這個字。
+    private func noteEnglishInserted(_ text: String) {
+        guard surface == .english else { return }
+        if text.count == 1, let c = text.first, EnglishSuggestions.isWordCharacter(c) {
+            englishWord.append(c)
+        } else {
+            englishWord = ""
+        }
+        scheduleEnglishSuggestions()
+    }
+
+    /// 建議列在字插進宿主之後才算（下一輪主執行緒），查字典不拖慢按鍵本身；連打時只算最後一次。
+    private func scheduleEnglishSuggestions() {
+        guard !englishRefreshScheduled else { return }
+        englishRefreshScheduled = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.englishRefreshScheduled = false
+            guard self.surface == .english else { return }
+            let word = EnglishSuggestions.currentWord(before: self.englishWord)
+            let items = word.isEmpty ? [] : self.englishSuggester.suggestions(for: word)
+            self.suggestions = items.isEmpty ? .none : .english(items: items)
+            self.candidateBar.show(suggestions: items)
+        }
+    }
+
+    /// 點英文建議：把游標前正在打的字換成建議、後面補一個空白（跟系統鍵盤一樣）。
+    /// 以宿主當下的游標前文字為準重算要換掉的字，不靠累加的 englishWord（避免跟宿主不同步時刪錯字）。
+    private func pickEnglishSuggestion(_ suggestion: String) {
+        let word = EnglishSuggestions.currentWord(before: textDocumentProxy.documentContextBeforeInput)
+        clearSuggestions()
+        englishWord = ""
+        guard !word.isEmpty else { return }
+        releaseOwnership()
+        for _ in word { deleteBackward() }
+        let inserted = suggestion + " "
+        insertText(inserted)
+        typingView.updateAutoCapitalization(afterInserting: inserted)
     }
 
     @discardableResult
@@ -1001,7 +1111,7 @@ final class KeyboardViewController: UIInputViewController {
     private func startRecognition() async {
         guard !isRecording else { return }
         guard hasAccess else {
-            setHint(String(localized: "請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整存取」"), error: true)
+            setHint(String(localized: "請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整取用」"), error: true)
             return
         }
         mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: pendingTranslateTarget)
@@ -1322,16 +1432,23 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
     /// 插字之後的大小寫狀態可以直接從「剛剛插進去的字」算出來（2026-09-20 Micky：打字頓頓的）。
     func typing(insert text: String, learn: Bool = true) {
         if let ime, !ime.isEmpty { commitComposition() }
+        clearSuggestions()
         releaseOwnership()
         insertText(text)
         if learn { learnTyped(text) }
         typingView.updateAutoCapitalization(afterInserting: text)
+        noteEnglishInserted(text)
     }
 
     func typingUndoInsert(_ text: String) {
         guard !text.isEmpty else { return }
         for _ in text { deleteBackward() }
-        typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
+        let before = textDocumentProxy.documentContextBeforeInput
+        typingView.updateAutoCapitalization(contextBefore: before)
+        if surface == .english {
+            englishWord = EnglishSuggestions.currentWord(before: before)
+            scheduleEnglishSuggestions()
+        }
     }
 
     func typingLearn(_ text: String) {
@@ -1359,7 +1476,12 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
             // 英文空白：剛剛只插了一個空白、沒 owned mark，清乾淨就好。
             clearOwnedMarkedText()
         }
-        typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
+        let before = textDocumentProxy.documentContextBeforeInput
+        typingView.updateAutoCapitalization(contextBefore: before)
+        if surface == .english {
+            englishWord = EnglishSuggestions.currentWord(before: before)
+            scheduleEnglishSuggestions()
+        }
     }
 
     /// 按下就刪了，但手指滑開＝那是切換鍵盤的手勢：把剛剛刪掉的字補回去。
@@ -1370,6 +1492,7 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
         lastDeleted = nil
         insertText(text)
         typingView.updateAutoCapitalization(afterInserting: text)
+        noteEnglishInserted(text)
     }
 
     func typingUndoCompose() {
@@ -1381,6 +1504,7 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
     }
 
     func typing(compose key: Character) {
+        clearSuggestions()
         ime?.type(key)
         // 中文組字開始 → 不再是語音逐字稿的擁有者（之後學字典會走 ime 路徑）。
         releaseOwnership()
@@ -1391,6 +1515,7 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
         // 入口就清——這次 delete 早退（ime 有組字）時不該拿舊的 lastDeleted 誤插。
         lastDeleted = nil
         if ime?.backspace() == true { renderComposition(); return }
+        clearSuggestions()
         // 沒有 ime 組字才會走到這：刪掉之前先把宿主端殘留的 marked text 收掉，否則 deleteBackward
         // 只會刪 mark 內最後一個字而不是使用者想刪的字。看 owned 旗標：有 mark 才清，不要碰 selection。
         clearOwnedMarkedText()
@@ -1401,7 +1526,12 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
         learner.willDelete(before?.last)
         lastDeleted = before?.last.map(String.init)
         deleteBackward()
-        typingView.updateAutoCapitalization(contextBefore: before.map { String($0.dropLast()) })
+        let after = before.map { String($0.dropLast()) }
+        typingView.updateAutoCapitalization(contextBefore: after)
+        if surface == .english {
+            englishWord = EnglishSuggestions.currentWord(before: after)
+            scheduleEnglishSuggestions()
+        }
     }
 
     func typingSpace() {
@@ -1410,21 +1540,23 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
             // 否則 commitAll 之後 ime 是空的，undo 只能刪 doc 不能還原組字）。
             let snapshot = ime.snapshot()
             let inserted: String
-            if ime.kind == .zhuyin, ime.hasComposing {
+            if ime.kind == .zhuyin, ime.hasComposing, ime.space() {
                 // 注音一聲收尾：沒插 doc，但 ime 內部 readings 多了一筆；undo 要靠 snapshot 還原。
-                ime.space()
                 // preedit 變了（多一個音節或 composing 清空），由 renderComposition 把宿主 mark 對齊。
                 inserted = ""
                 pendingSpaceUndo = SpaceUndo(snapshot: snapshot, insertedText: inserted)
                 renderComposition()
                 return
             }
-            // 拼音空白、注音無 composing 時：整段送出，doc 多出 N 個字、ime 清空。
+            // 拼音空白、注音無 composing、注音簡拼／沒打聲調／只有聲母（space 不收尾）時：
+            // 整段送出（＝候選列第 0 格），doc 多出 N 個字、ime 清空。
             inserted = commitComposition()
             pendingSpaceUndo = SpaceUndo(snapshot: snapshot, insertedText: inserted)
             renderComposition()
+            if !inserted.isEmpty { showAssociations(after: inserted) }
             return
         }
+        clearSuggestions()
         // 英文／無 IME：照舊插一個空白；undo 對應刪一個空白。
         pendingSpaceUndo = SpaceUndo(snapshot: nil, insertedText: " ")
         typing(insert: " ")
@@ -1443,6 +1575,8 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
 
     func typingReturn() {
         if let ime, !ime.isEmpty { commitComposition(); return }
+        clearSuggestions()
+        englishWord = ""
         releaseOwnership()
         // 切到 Return 前清掉任何殘留的 marked text：Enter 送出訊息的宿主不該看到 inline 組字。
         clearOwnedMarkedText()
@@ -1458,7 +1592,7 @@ extension KeyboardViewController: TypingKeyboardDelegate, UIGestureRecognizerDel
 }
 
 /// 鍵盤觸覺回饋：開始錄音偏重、停止偏脆，一聽就分得出來；滑過翻譯語言給輕點。
-/// 鍵盤 extension 要開「允許完整存取」才會震（沒開時系統靜默忽略，不會出錯）。
+/// 鍵盤 extension 要開「允許完整取用」才會震（沒開時系統靜默忽略，不會出錯）。
 @MainActor
 enum Haptics {
     private static let startGenerator = UIImpactFeedbackGenerator(style: .medium)

@@ -1,3 +1,4 @@
+import StoreKitTest
 import XCTest
 
 /// App Store 截圖（6.9 吋）：`TEST_RUNNER_UTUVO_STORE_SHOTS=1` 才跑，截圖存成 xcresult 附件。
@@ -122,5 +123,248 @@ final class AppStoreScreenshotTests: XCTestCase {
             shot(name)
             messages.terminate()
         }
+    }
+}
+
+/// 教學影片分場（2026-09-26，照「還能花」做法）：`TEST_RUNNER_UTUVO_TOUR=<scene>` 才跑，一場一次，
+/// 外面用 `simctl io recordVideo` 錄。模擬器要是繁中系統語言（設定、訊息的標籤都是中文）。
+/// 結束時印 `TOUR-DONE <scene>`，錄影腳本看到它才收。
+@MainActor
+final class TutorialTourUITests: XCTestCase {
+    private var scene: String { ProcessInfo.processInfo.environment["UTUVO_TOUR"] ?? "" }
+
+    override func setUp() async throws {
+        try XCTSkipIf(scene.isEmpty, "只在錄教學影片時跑")
+        continueAfterFailure = false
+    }
+
+    private func any(_ app: XCUIApplication, _ format: String, _ args: CVarArg...) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: format, argumentArray: args)).firstMatch
+    }
+
+    private func tapWhenReady(_ element: XCUIElement, _ what: String, in app: XCUIApplication, timeout: TimeInterval = 8) {
+        XCTAssertTrue(element.waitForExistence(timeout: timeout), "找不到 \(what)：\n\(app.debugDescription)")
+        element.tap()
+    }
+
+    private func launchApp(_ args: [String] = []) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = ["-utuvo.type.ios.keyboardGuideDismissed", "YES", "-utuvo.type.keyboard.language", "zh-TW",
+                               "-utuvo.type.ios.language", "zh-TW"] + args
+        app.launch()
+        return app
+    }
+
+    private func shotToDir(_ name: String) {
+        guard let dir = ProcessInfo.processInfo.environment["UTUVO_SHOT_DIR"] else { return }
+        try? XCUIScreen.main.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: dir).appendingPathComponent("\(name).png"))
+    }
+
+    private func openSettingsTab(_ app: XCUIApplication) {
+        tapWhenReady(app.tabBars.buttons["設定"], "設定 tab", in: app)
+        sleep(1)
+    }
+
+    private func scrollTo(_ element: XCUIElement, in app: XCUIApplication, maxSwipes: Int = 10) {
+        for _ in 0..<maxSwipes where !(element.exists && element.isHittable) {
+            app.swipeUp(velocity: .slow)
+            usleep(600_000)
+        }
+    }
+
+    /// 訊息 App 的輸入框，並切到 UTUVO Type 鍵盤。
+    private func messagesWithOurKeyboard() -> XCUIApplication {
+        let messages = XCUIApplication(bundleIdentifier: "com.apple.MobileSMS")
+        messages.launch()
+        for label in ["繼續", "以後", "好", "Continue", "Not Now", "OK"] where messages.buttons[label].waitForExistence(timeout: 1) {
+            messages.buttons[label].tap()
+        }
+        let thread = messages.cells.firstMatch
+        if thread.waitForExistence(timeout: 4) { thread.tap() }
+        let body = messages.textFields["messageBodyField"]
+        tapWhenReady(body, "訊息輸入框", in: messages)
+        return messages
+    }
+
+    private func pickOurKeyboard(_ messages: XCUIApplication) {
+        let badge = messages.buttons.matching(NSPredicate(format: "label IN {'繁中', '简中'}")).firstMatch
+        if badge.waitForExistence(timeout: 2) { return }
+        let globe = messages.buttons.matching(NSPredicate(format: "label IN {'Next keyboard', '下一個鍵盤', '下一个键盘'}")).firstMatch
+        XCTAssertTrue(globe.waitForExistence(timeout: 5), "找不到地球鍵：\n\(messages.debugDescription)")
+        sleep(1)
+        globe.press(forDuration: 1.4)
+        sleep(1)
+        tapWhenReady(any(messages, "label == 'UTUVO Type'"), "鍵盤清單的 UTUVO Type", in: messages)
+    }
+
+    func testTour() throws {
+        switch scene {
+        case "home":
+            _ = launchApp(["-utuvo.type.ios.orbDemo", "YES",
+                           "-utuvo.type.ios.previewOutput", "明天下午三點在錄音室對 Atmos 母帶，記得帶硬碟和耳機。"])
+            sleep(7)
+
+        case "addkb":
+            let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+            settings.terminate()
+            settings.launch()
+            sleep(2)
+            let general = any(settings, "label == '一般'")
+            scrollTo(general, in: settings)
+            tapWhenReady(general, "一般", in: settings)
+            sleep(1)
+            let keyboard = any(settings, "label == '鍵盤'")
+            scrollTo(keyboard, in: settings)
+            tapWhenReady(keyboard, "鍵盤", in: settings)
+            sleep(1)
+            tapWhenReady(settings.cells.matching(NSPredicate(format: "label BEGINSWITH '鍵盤'")).firstMatch, "鍵盤清單", in: settings)
+            sleep(1)
+            tapWhenReady(any(settings, "identifier == 'AddNewKeyboard' OR label BEGINSWITH '新增鍵盤' OR label BEGINSWITH '加入新鍵盤'"), "新增鍵盤", in: settings)
+            sleep(1)
+            let ours = any(settings, "label == 'UTUVO Type'")
+            scrollTo(ours, in: settings)
+            tapWhenReady(ours, "UTUVO Type", in: settings)
+            sleep(2)
+
+        case "fullaccess":
+            let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+            settings.activate()
+            sleep(1)
+            let toggle = settings.switches.firstMatch
+            if !toggle.waitForExistence(timeout: 2) {
+                tapWhenReady(any(settings, "label BEGINSWITH 'UTUVO Type'"), "鍵盤清單裡的 UTUVO Type", in: settings)
+                sleep(1)
+            }
+            XCTAssertTrue(toggle.waitForExistence(timeout: 5), "找不到允許完整取用開關：\n\(settings.debugDescription)")
+            sleep(1)
+            // iOS 26+ 的開關要點在開關本體（右側），點整列不會切。
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+            let allow = settings.alerts.buttons.matching(NSPredicate(format: "label IN {'允許', 'Allow'}")).firstMatch
+            if allow.waitForExistence(timeout: 4) { sleep(1); allow.tap() }
+            sleep(1)
+            XCTAssertEqual(toggle.value as? String, "1", "允許完整取用沒有打開：\n\(settings.debugDescription)")
+            sleep(1)
+
+        case "switchkb":
+            let messages = messagesWithOurKeyboard()
+            sleep(1)
+            pickOurKeyboard(messages)
+            sleep(3)
+
+        case "jump":
+            // 鍵盤第一次點光球：跳到 UTUVO Type 開麥克風（URL 跟鍵盤送的一樣，帶回訊息的 bundle id）。
+            let messages = messagesWithOurKeyboard()
+            pickOurKeyboard(messages)
+            sleep(2)
+            XCUIDevice.shared.system.open(URL(string: "utuvotype://voice?lang=zh-TW&return=com.apple.MobileSMS")!)
+            let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+            for label in ["打開", "Open"] where springboard.buttons[label].waitForExistence(timeout: 2) { springboard.buttons[label].tap() }
+            let app = XCUIApplication()
+            _ = app.wait(for: .runningForeground, timeout: 8)
+            // 第一次會問麥克風／語音辨識權限：照實按「允許」（這也是教學的一步）。
+            for _ in 0..<3 {
+                let allow = springboard.buttons.matching(NSPredicate(format: "label IN {'允許', '好', 'Allow', 'OK'}")).firstMatch
+                if allow.waitForExistence(timeout: 3) { sleep(1); allow.tap() } else { break }
+            }
+            sleep(5)
+            let end = app.buttons["結束鍵盤語音"]
+            if end.waitForExistence(timeout: 3) { end.tap() }
+            sleep(1)
+
+        case "speak":
+            let app = launchApp(["-utuvo.type.keyboard.debugPose", "flow:4"])
+            sleep(1)
+            app.terminate()
+            let messages = messagesWithOurKeyboard()
+            pickOurKeyboard(messages)
+            sleep(7)
+            messages.terminate()
+            // 收掉姿態，免得之後的場景又自動演一次。
+            let clean = launchApp()
+            sleep(1)
+            clean.terminate()
+
+        case "keepopen":
+            let app = launchApp()
+            openSettingsTab(app)
+            let picker = any(app, "label BEGINSWITH '鍵盤語音保持開啟'")
+            scrollTo(picker, in: app)
+            sleep(1)
+            picker.tap()
+            sleep(1)
+            let thirty = any(app, "label == '30 分鐘'")
+            if thirty.waitForExistence(timeout: 3) { thirty.tap() }
+            sleep(2)
+
+        case "groqapp":
+            let app = launchApp()
+            openSettingsTab(app)
+            let row = app.descendants(matching: .any)["smartCleanupRow"]
+            scrollTo(row, in: app)
+            sleep(1)
+            row.tap()
+            sleep(2)
+            let picker = app.buttons.containing(NSPredicate(format: "label CONTAINS '服務'")).firstMatch
+            if picker.waitForExistence(timeout: 3) {
+                picker.tap(); sleep(1)
+                any(app, "label == 'Groq（推薦）'").tap(); sleep(1)
+            }
+            let field = app.secureTextFields["smartKey"]
+            scrollTo(field, in: app)
+            field.tap()
+            field.typeText("gsk_demo_placeholder_0000")
+            sleep(1)
+            app.buttons["儲存"].firstMatch.tap()
+            sleep(1)
+            let toggle = app.switches["用這把 key 辨識語音"]
+            scrollTo(toggle, in: app)
+            sleep(1)
+            if toggle.exists { toggle.switches.firstMatch.exists ? toggle.switches.firstMatch.tap() : toggle.tap() }
+            sleep(2)
+
+        case "dict":
+            let app = launchApp()
+            openSettingsTab(app)
+            let field = app.textFields["dictionaryTerm"]
+            scrollTo(field, in: app)
+            sleep(1)
+            field.tap()
+            field.typeText("Tonmeister")
+            sleep(1)
+            app.buttons["加入"].firstMatch.tap()
+            sleep(2)
+
+        case "tipjar":
+            // 幫我加油（0.2.4）：本機 StoreKit 設定，真的走一次購買；兩張截圖（清單＋謝謝）也是 IAP 送審截圖。
+            let session = try SKTestSession(configurationFileNamed: "TypeTips")
+            session.disableDialogs = true
+            session.failTransactionsEnabled = false
+            session.askToBuyEnabled = false
+            session.clearTransactions()
+            let app = launchApp()
+            openSettingsTab(app)
+            let row = app.descendants(matching: .any)["tipJarRow"]
+            scrollTo(row, in: app)
+            sleep(1)
+            row.tap()
+            let coffee = app.buttons["tip:com.utuvo.type.ios.tip.coffee"]
+            XCTAssertTrue(coffee.waitForExistence(timeout: 10), "加油清單沒載出來：\n\(app.debugDescription)")
+            XCTAssertTrue(app.buttons["tip:com.utuvo.type.ios.tip.boost"].exists)
+            sleep(1)
+            shotToDir("tipjar-list")
+            coffee.tap()
+            let thanks = app.alerts["謝謝你的加油！"]
+            XCTAssertTrue(thanks.waitForExistence(timeout: 10), "買完沒有出現謝謝：\n\(app.debugDescription)")
+            sleep(1)
+            shotToDir("tipjar-thanks")
+            thanks.buttons.firstMatch.tap()
+            XCTAssertEqual(session.allTransactions().count, 1, "應該剛好一筆交易")
+            session.clearTransactions()
+            sleep(1)
+
+        default:
+            XCTFail("不認得的場景 \(scene)")
+        }
+        print("TOUR-DONE \(scene)")
     }
 }
