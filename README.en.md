@@ -32,6 +32,15 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
    into `~/Library/Application Support/UTUVO Type/engine/`. Cloud mode works before that.
 3. Grant Microphone and Accessibility when asked, then press ⌥Space to dictate.
 
+## Android (APK, beta)
+
+1. Download `UTUVO-Type-0.2.0-android.apk` (with SHA-256) from the [Android 0.2.0 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0). It is **not on Google Play** yet.
+2. Allow installing unknown apps, install it, then follow the three steps in the app: allow the microphone → enable the UTUVO Type keyboard in system settings → switch to UTUVO Type.
+3. Needs **Android 10+**. Dictation uses the phone's speech service (usually Google); you can also add your own cloud key under Settings.
+
+The keyboard matches the iPhone version: Zhuyin (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, long-press translate and the language badge.
+If you installed a development build from Android Studio, uninstall it first (different signature). Build from source: `cd android && ./gradlew :app:assembleDebug` (JDK 21, Android SDK 36).
+
 ## Install from source (three steps)
 
 ```bash

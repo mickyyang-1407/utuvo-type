@@ -1,0 +1,2179 @@
+[
+  {
+    "cleaned" : "我今天很累。",
+    "cleanedWithDictionary" : "我今天很累。",
+    "input" : "我今天很累。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我今天很累。"
+  },
+  {
+    "cleaned" : "今天天氣不錯啊。",
+    "cleanedWithDictionary" : "今天天氣不錯啊。",
+    "input" : "嗯今天天氣不錯啊。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "嗯今天天氣不錯啊。"
+  },
+  {
+    "cleaned" : "我等一下就到。",
+    "cleanedWithDictionary" : "我等一下就到。",
+    "input" : "那個我等一下就到。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "那個我等一下就到。"
+  },
+  {
+    "cleaned" : "幫我訂一間 near Tokyo Station 的飯店。",
+    "cleanedWithDictionary" : "幫我訂一間 near Tokyo Station 的飯店。",
+    "input" : "幫我訂一間 near Tokyo Station 的飯店。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "幫我訂一間 near Tokyo Station 的飯店。"
+  },
+  {
+    "cleaned" : "今天 sprint 進度大概完成八成。",
+    "cleanedWithDictionary" : "今天 sprint 進度大概完成八成。",
+    "input" : "今天 sprint 進度大概完成八成。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "今天 sprint 進度大概完成八成。"
+  },
+  {
+    "cleaned" : "把 README 裡的 install 步驟翻成繁中。",
+    "cleanedWithDictionary" : "把 README 裡的 install 步驟翻成繁中。",
+    "input" : "把 README 裡的 install 步驟翻成繁中。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "把 README 裡的 install 步驟翻成繁中。"
+  },
+  {
+    "cleaned" : "我們楊敏奇老師今天會到台藝大。",
+    "cleanedWithDictionary" : "我們楊敏奇老師今天會到台藝大。",
+    "input" : "我們楊敏奇老師今天會到台藝大。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我們楊敏奇老師今天會到台藝大。"
+  },
+  {
+    "cleaned" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。",
+    "cleanedWithDictionary" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。",
+    "input" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "這台 Dolby Atmos 的監聽喇叭要送回原廠。"
+  },
+  {
+    "cleaned" : "我下週二會去北藝大跟台藝大。",
+    "cleanedWithDictionary" : "我下週二會去北藝大跟台藝大。",
+    "input" : "我下週二會去北藝大跟台藝大。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我下週二會去北藝大跟台藝大。"
+  },
+  {
+    "cleaned" : "明天週二開會。",
+    "cleanedWithDictionary" : "明天週二開會。",
+    "input" : "明天不是週一，是週二開會。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "明天不是週一，是週二開會。"
+  },
+  {
+    "cleaned" : "明天做。",
+    "cleanedWithDictionary" : "明天做。",
+    "input" : "不是今天做，是明天做。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "不是今天做，是明天做。"
+  },
+  {
+    "cleaned" : "下週三開會。",
+    "cleanedWithDictionary" : "下週三開會。",
+    "input" : "改成下週三開會。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "改成下週三開會。"
+  },
+  {
+    "cleaned" : "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。",
+    "cleanedWithDictionary" : "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。",
+    "input" : "今天有三件事第一買牛奶第二回email第三寫報告。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "今天有三件事第一買牛奶第二回email第三寫報告。"
+  },
+  {
+    "cleaned" : "首先整理桌面\n其次回信\n最後趕稿。",
+    "cleanedWithDictionary" : "首先整理桌面\n其次回信\n最後趕稿。",
+    "input" : "首先整理桌面其次回信最後趕稿。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "首先整理桌面其次回信最後趕稿。"
+  },
+  {
+    "cleaned" : "接下來是測試\n然後是驗收\n最後是上線。",
+    "cleanedWithDictionary" : "接下來是測試\n然後是驗收\n最後是上線。",
+    "input" : "接下來是測試然後是驗收最後是上線。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "接下來是測試然後是驗收最後是上線。"
+  },
+  {
+    "cleaned" : "幫我記一下買牛奶跟回email跟寫報告。",
+    "cleanedWithDictionary" : "幫我記一下買牛奶跟回email跟寫報告。",
+    "input" : "幫我記一下買牛奶跟回email跟寫報告。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "幫我記一下買牛奶跟回email跟寫報告。"
+  },
+  {
+    "cleaned" : "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。",
+    "cleanedWithDictionary" : "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。",
+    "input" : "記一下第一繳電費第二預約洗車第三買貓砂。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "記一下第一繳電費第二預約洗車第三買貓砂。"
+  },
+  {
+    "cleaned" : "明天的待辦是繳電費預約洗車還有買貓砂。",
+    "cleanedWithDictionary" : "明天的待辦是繳電費預約洗車還有買貓砂。",
+    "input" : "明天的待辦是繳電費預約洗車還有買貓砂。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "明天的待辦是繳電費預約洗車還有買貓砂。"
+  },
+  {
+    "cleaned" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。",
+    "cleanedWithDictionary" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。",
+    "input" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。"
+  },
+  {
+    "cleaned" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 30題 fixtures verify 腳本與 run-benchmark 腳本。",
+    "cleanedWithDictionary" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 30題 fixtures verify 腳本與 run-benchmark 腳本。",
+    "input" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。"
+  },
+  {
+    "cleaned" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認7:30交付但中間還要插一次內部 review。",
+    "cleanedWithDictionary" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認7:30交付但中間還要插一次內部 review。",
+    "input" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認七點半交付但中間還要插一次內部 review。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我今天一整天都在處理混音案子的母帶審視 Atmos bed 的物件擺位客戶那邊已經確認七點半交付但中間還要插一次內部 review。"
+  },
+  {
+    "cleaned" : "2026 年 8 月 17 日下午3:00開會結論是先跑 benchmark 再決定 UI 進入時機。",
+    "cleanedWithDictionary" : "2026 年 8 月 17 日下午3:00開會結論是先跑 benchmark 再決定 UI 進入時機。",
+    "input" : "二〇二六年八月十七日下午三點開會結論是先跑 benchmark 再決定 UI 進入時機。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "二〇二六年八月十七日下午三點開會結論是先跑 benchmark 再決定 UI 進入時機。"
+  },
+  {
+    "cleaned" : "會議時間是8 月 18 號早上10:30地點在公司會議室。",
+    "cleanedWithDictionary" : "會議時間是8 月 18 號早上10:30地點在公司會議室。",
+    "input" : "會議時間是八月十八號早上十點半地點在公司會議室。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "會議時間是八月十八號早上十點半地點在公司會議室。"
+  },
+  {
+    "cleaned" : "會議結論是專案預算1,200,000元時程八週交付。",
+    "cleanedWithDictionary" : "會議結論是專案預算1,200,000元時程八週交付。",
+    "input" : "會議結論是專案預算一百二十萬元時程八週交付。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "會議結論是專案預算一百二十萬元時程八週交付。"
+  },
+  {
+    "cleaned" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>",
+    "cleanedWithDictionary" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>",
+    "input" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>",
+    "steps" : [
+      "trim",
+      "selection-preserved"
+    ],
+    "taiwan" : "把這段改得更正式一點。\n<selected>謝謝你今天的幫忙 我們下次再合作</selected>"
+  },
+  {
+    "cleaned" : "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。",
+    "cleanedWithDictionary" : "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。",
+    "input" : "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。",
+    "steps" : [
+      "trim",
+      "selection-preserved"
+    ],
+    "taiwan" : "<selected>這個 bug 很嚴重需要馬上修</selected> 改溫和一點。"
+  },
+  {
+    "cleaned" : "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。",
+    "cleanedWithDictionary" : "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。",
+    "input" : "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。",
+    "steps" : [
+      "trim",
+      "selection-preserved"
+    ],
+    "taiwan" : "<selected>這是原本已經寫好的內容</selected> 把它改成更白話。"
+  },
+  {
+    "cleaned" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點",
+    "cleanedWithDictionary" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點",
+    "input" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點\n",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "# 標題\n內文有一些重點。\n- 第一點\n- 第二點\n"
+  },
+  {
+    "cleaned" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告",
+    "cleanedWithDictionary" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告",
+    "input" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告\n",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "## 進度\n- [ ] 買牛奶\n- [x] 回email\n- [ ] 寫報告\n"
+  },
+  {
+    "cleaned" : "重點是 **不要** 翻譯 `code` 區塊。",
+    "cleanedWithDictionary" : "重點是 **不要** 翻譯 `code` 區塊。",
+    "input" : "重點是 **不要** 翻譯 `code` 區塊。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "重點是 **不要** 翻譯 `code` 區塊。"
+  },
+  {
+    "cleaned" : "你好",
+    "cleanedWithDictionary" : "你好",
+    "input" : "   你好   ",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "   你好   "
+  },
+  {
+    "cleaned" : "你好，世界",
+    "cleanedWithDictionary" : "你好，世界",
+    "input" : "你好,世界",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "你好,世界"
+  },
+  {
+    "cleaned" : "hello, world",
+    "cleanedWithDictionary" : "hello, world",
+    "input" : "hello, world",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "hello, world"
+  },
+  {
+    "cleaned" : "我今天很累",
+    "cleanedWithDictionary" : "我今天很累",
+    "input" : "那個我今天很累",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "那個我今天很累"
+  },
+  {
+    "cleaned" : "今天天氣不錯啊",
+    "cleanedWithDictionary" : "今天天氣不錯啊",
+    "input" : "嗯今天天氣不錯啊",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "嗯今天天氣不錯啊"
+  },
+  {
+    "cleaned" : "當然啊",
+    "cleanedWithDictionary" : "當然啊",
+    "input" : "當然啊",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "當然啊"
+  },
+  {
+    "cleaned" : "好啊，我等你",
+    "cleanedWithDictionary" : "好啊，我等你",
+    "input" : "好啊，我等你",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好啊，我等你"
+  },
+  {
+    "cleaned" : "對啊，就是這樣",
+    "cleanedWithDictionary" : "對啊，就是這樣",
+    "input" : "對啊，就是這樣",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "對啊，就是這樣"
+  },
+  {
+    "cleaned" : "你要來嗎？好欸",
+    "cleanedWithDictionary" : "你要來嗎？好欸",
+    "input" : "你要來嗎？好欸",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "你要來嗎？好欸"
+  },
+  {
+    "cleaned" : "我忘了帶硬碟",
+    "cleanedWithDictionary" : "我忘了帶硬碟",
+    "input" : "啊，我忘了帶硬碟",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "啊，我忘了帶硬碟"
+  },
+  {
+    "cleaned" : "你看這個",
+    "cleanedWithDictionary" : "你看這個",
+    "input" : "欸 你看這個",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "欸 你看這個"
+  },
+  {
+    "cleaned" : "明天在錄音室對 Atmos 母帶",
+    "cleanedWithDictionary" : "明天在錄音室對 Atmos 母帶",
+    "input" : "明天在錄音室對 Atmos 母帶",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "明天在錄音室對 Atmos 母帶"
+  },
+  {
+    "cleaned" : "這個不對",
+    "cleanedWithDictionary" : "這個不對",
+    "input" : "這個不對",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "這個不對"
+  },
+  {
+    "cleaned" : "明天見",
+    "cleanedWithDictionary" : "明天見",
+    "input" : "對，明天見",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "對，明天見"
+  },
+  {
+    "cleaned" : "好，就這樣",
+    "cleanedWithDictionary" : "好，就這樣",
+    "input" : "好，對，就這樣",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好，對，就這樣"
+  },
+  {
+    "cleaned" : "我要用這個 app 記筆記",
+    "cleanedWithDictionary" : "我要用這個 app 記筆記",
+    "input" : "我要用這個 app 記筆記",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我要用這個 app 記筆記"
+  },
+  {
+    "cleaned" : "我今天很累",
+    "cleanedWithDictionary" : "我今天很累",
+    "input" : "那个我今天很累",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "那个我今天很累"
+  },
+  {
+    "cleaned" : "明天见",
+    "cleanedWithDictionary" : "明天见",
+    "input" : "对，明天见",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "对，明天见"
+  },
+  {
+    "cleaned" : "这个不对",
+    "cleanedWithDictionary" : "这个不对",
+    "input" : "这个不对",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "这个不对"
+  },
+  {
+    "cleaned" : "明天在录音室对 Atmos 母带",
+    "cleanedWithDictionary" : "明天在录音室对 Atmos 母带",
+    "input" : "明天在录音室对 Atmos 母带",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "明天在录音室对 Atmos 母带"
+  },
+  {
+    "cleaned" : "我要用这个 app 记笔记",
+    "cleanedWithDictionary" : "我要用这个 app 记笔记",
+    "input" : "我要用这个 app 记笔记",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我要用这个 app 记笔记"
+  },
+  {
+    "cleaned" : "我覺得這樣不好",
+    "cleanedWithDictionary" : "我覺得這樣不好",
+    "input" : "我我覺得這樣這樣不好",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我我覺得這樣這樣不好"
+  },
+  {
+    "cleaned" : "我想看看報告",
+    "cleanedWithDictionary" : "我想看看報告",
+    "input" : "我想看看報告",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我想看看報告"
+  },
+  {
+    "cleaned" : "明天週二開會",
+    "cleanedWithDictionary" : "明天週二開會",
+    "input" : "明天不是週一，是週二開會",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "明天不是週一，是週二開會"
+  },
+  {
+    "cleaned" : "這是他的",
+    "cleanedWithDictionary" : "這是他的",
+    "input" : "這不是我的，是他的",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "這不是我的，是他的"
+  },
+  {
+    "cleaned" : "我是累了",
+    "cleanedWithDictionary" : "我是累了",
+    "input" : "我不是生氣，是累了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我不是生氣，是累了"
+  },
+  {
+    "cleaned" : "下週三開會",
+    "cleanedWithDictionary" : "下週三開會",
+    "input" : "改成下週三開會",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "改成下週三開會"
+  },
+  {
+    "cleaned" : "2026 年 8 月 17 日開會",
+    "cleanedWithDictionary" : "2026 年 8 月 17 日開會",
+    "input" : "二〇二六年八月十七日開會",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "二〇二六年八月十七日開會"
+  },
+  {
+    "cleaned" : "5:30出門",
+    "cleanedWithDictionary" : "5:30出門",
+    "input" : "五點半出門",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "五點半出門"
+  },
+  {
+    "cleaned" : "3:00開會",
+    "cleanedWithDictionary" : "3:00開會",
+    "input" : "三點開會",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "三點開會"
+  },
+  {
+    "cleaned" : "預算1,200,000元",
+    "cleanedWithDictionary" : "預算1,200,000元",
+    "input" : "預算一百二十萬元",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "預算一百二十萬元"
+  },
+  {
+    "cleaned" : "123元",
+    "cleanedWithDictionary" : "123元",
+    "input" : "一百二十三元",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "一百二十三元"
+  },
+  {
+    "cleaned" : "我去台藝大",
+    "cleanedWithDictionary" : "我去台藝大",
+    "input" : "我去台藝大",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我去台藝大"
+  },
+  {
+    "cleaned" : "我買了蘋果派",
+    "cleanedWithDictionary" : "我買了蘋果派",
+    "input" : "我買了蘋果派",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我買了蘋果派"
+  },
+  {
+    "cleaned" : "我在用pik播放器",
+    "cleanedWithDictionary" : "我在用Pik播放器",
+    "input" : "我在用pik播放器",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我在用pik播放器"
+  },
+  {
+    "cleaned" : "pik很好用",
+    "cleanedWithDictionary" : "Pik很好用",
+    "input" : "pik很好用",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "pik很好用"
+  },
+  {
+    "cleaned" : "我抓到pika了",
+    "cleanedWithDictionary" : "我抓到pika了",
+    "input" : "我抓到pika了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我抓到pika了"
+  },
+  {
+    "cleaned" : "看apik這個字",
+    "cleanedWithDictionary" : "看apik這個字",
+    "input" : "看apik這個字",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "看apik這個字"
+  },
+  {
+    "cleaned" : "檔名pik2要改",
+    "cleanedWithDictionary" : "檔名pik2要改",
+    "input" : "檔名pik2要改",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "檔名pik2要改"
+  },
+  {
+    "cleaned" : "第一買牛奶\n第二回email\n第三寫報告",
+    "cleanedWithDictionary" : "第一買牛奶\n第二回email\n第三寫報告",
+    "input" : "第一買牛奶第二回email第三寫報告",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "第一買牛奶第二回email第三寫報告"
+  },
+  {
+    "cleaned" : "- 第一點\n- 第二點",
+    "cleanedWithDictionary" : "- 第一點\n- 第二點",
+    "input" : "- 第一點\n- 第二點",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "- 第一點\n- 第二點"
+  },
+  {
+    "cleaned" : "那個明天3:30開會四點",
+    "cleanedWithDictionary" : "那個明天3:30開會四點",
+    "input" : "嗯那個明天三點半開會不是三點是四點",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "嗯那個明天三點半開會不是三點是四點"
+  },
+  {
+    "cleaned" : "KCFS在哪裡呀？",
+    "cleanedWithDictionary" : "KCFS在哪裡呀？",
+    "input" : "K C F S在哪裡呀？",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "K C F S在哪裡呀？"
+  },
+  {
+    "cleaned" : "我們交 ADM 檔",
+    "cleanedWithDictionary" : "我們交 ADM 檔",
+    "input" : "我們交 A D M 檔",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我們交 A D M 檔"
+  },
+  {
+    "cleaned" : "plan A 跟 plan B",
+    "cleanedWithDictionary" : "plan A 跟 plan B",
+    "input" : "plan A 跟 plan B",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "plan A 跟 plan B"
+  },
+  {
+    "cleaned" : "I am fine",
+    "cleanedWithDictionary" : "I am fine",
+    "input" : "I am fine",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "I am fine"
+  },
+  {
+    "cleaned" : "KCFS在哪裡",
+    "cleanedWithDictionary" : "KCFS在哪裡",
+    "input" : "K C F S在哪裡",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "K C F S在哪裡"
+  },
+  {
+    "cleaned" : "我現在在慢慢走過去學校了",
+    "cleanedWithDictionary" : "我現在在慢慢走過去學校了",
+    "input" : "我現在在慢慢走過去學校，了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我現在在慢慢走過去學校，了"
+  },
+  {
+    "cleaned" : "我到學校了。",
+    "cleanedWithDictionary" : "我到學校了。",
+    "input" : "我到學校。了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我到學校。了"
+  },
+  {
+    "cleaned" : "好啦，那我們走吧",
+    "cleanedWithDictionary" : "好啦，那我們走吧",
+    "input" : "好，啦，那我們走吧",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好，啦，那我們走吧"
+  },
+  {
+    "cleaned" : "你到了嗎？",
+    "cleanedWithDictionary" : "你到了嗎？",
+    "input" : "你到了，嗎？",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "你到了，嗎？"
+  },
+  {
+    "cleaned" : "我了解，了解你的意思",
+    "cleanedWithDictionary" : "我了解，了解你的意思",
+    "input" : "我了解，了解你的意思",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我了解，了解你的意思"
+  },
+  {
+    "cleaned" : "吃飯了，我們走",
+    "cleanedWithDictionary" : "吃飯了，我們走",
+    "input" : "吃飯了，我們走",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "吃飯了，我們走"
+  },
+  {
+    "cleaned" : "老師你好，我是上週來上課的同學，謝謝",
+    "cleanedWithDictionary" : "老師你好，我是上週來上課的同學，謝謝",
+    "input" : "老師你好 ，我是上週來上課的同學 ，謝謝",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "老師你好 ，我是上週來上課的同學 ，謝謝"
+  },
+  {
+    "cleaned" : "只剩 300 多，我就搞不懂，哎。",
+    "cleanedWithDictionary" : "只剩 300 多，我就搞不懂，哎。",
+    "input" : "只剩 300 多，我就搞不懂。哎。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "只剩 300 多，我就搞不懂。哎。"
+  },
+  {
+    "cleaned" : "好累，唉。",
+    "cleanedWithDictionary" : "好累，唉。",
+    "input" : "好累。唉",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好累。唉"
+  },
+  {
+    "cleaned" : "哎，今天好累。",
+    "cleanedWithDictionary" : "哎，今天好累。",
+    "input" : "哎，今天好累。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "哎，今天好累。"
+  },
+  {
+    "cleaned" : "而且你看我上次坐車之前就儲值了",
+    "cleanedWithDictionary" : "而且你看我上次坐車之前就儲值了",
+    "input" : "而且你看我上次做完，應該說我上次坐車之前就儲值了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "而且你看我上次做完，應該說我上次坐車之前就儲值了"
+  },
+  {
+    "cleaned" : "我們約禮拜四下午",
+    "cleanedWithDictionary" : "我們約禮拜四下午",
+    "input" : "我們約禮拜三，我是說禮拜四下午",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我們約禮拜三，我是說禮拜四下午"
+  },
+  {
+    "cleaned" : "我應該說實話",
+    "cleanedWithDictionary" : "我應該說實話",
+    "input" : "我應該說實話",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我應該說實話"
+  },
+  {
+    "cleaned" : "我是剛出門要搭937",
+    "cleanedWithDictionary" : "我是剛出門要搭937",
+    "input" : "我是剛上去哦剛出門要搭937",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我是剛上去哦剛出門要搭937"
+  },
+  {
+    "cleaned" : "我先走哦我明天再來",
+    "cleanedWithDictionary" : "我先走哦我明天再來",
+    "input" : "我先走哦我明天再來",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我先走哦我明天再來"
+  },
+  {
+    "cleaned" : "好喔好的",
+    "cleanedWithDictionary" : "好喔好的",
+    "input" : "好喔好的",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好喔好的"
+  },
+  {
+    "cleaned" : "1000他是寫 5:49，但是 5:49的時候我剛出門",
+    "cleanedWithDictionary" : "1000他是寫 5:49，但是 5:49的時候我剛出門",
+    "input" : "1000他是寫 5.49，但是 5.49的時候我剛出門",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "1000他是寫 5.49，但是 5.49的時候我剛出門"
+  },
+  {
+    "cleaned" : "下午 3:15 開會",
+    "cleanedWithDictionary" : "下午 3:15 開會",
+    "input" : "下午 3.15 開會",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "下午 3.15 開會"
+  },
+  {
+    "cleaned" : "這杯 5.49 美元",
+    "cleanedWithDictionary" : "這杯 5.49 美元",
+    "input" : "這杯 5.49 美元",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "這杯 5.49 美元"
+  },
+  {
+    "cleaned" : "版本 2.10 更新了",
+    "cleanedWithDictionary" : "版本 2.10 更新了",
+    "input" : "版本 2.10 更新了",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "版本 2.10 更新了"
+  },
+  {
+    "cleaned" : "好，1000他是寫的",
+    "cleanedWithDictionary" : "好，1000他是寫的",
+    "input" : "好， 1000他是寫的",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "好， 1000他是寫的"
+  },
+  {
+    "cleaned" : "我是下午 5:49出門的，然後大概 7:42到",
+    "cleanedWithDictionary" : "我是下午 5:49出門的，然後大概 7:42到",
+    "input" : "我是下午 5:49出門的，然後大概 7:4。12到",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我是下午 5:49出門的，然後大概 7:4。12到"
+  },
+  {
+    "cleaned" : "然後大概 7:42到",
+    "cleanedWithDictionary" : "然後大概 7:42到",
+    "input" : "然後大概 7.40二到",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "然後大概 7.40二到"
+  },
+  {
+    "cleaned" : "我們約禮拜四下午3點在公司見。",
+    "cleanedWithDictionary" : "我們約禮拜四下午3點在公司見。",
+    "input" : "我們約禮拜三，不是，禮拜四下午三點在公司見。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我們約禮拜三，不是，禮拜四下午三點在公司見。"
+  },
+  {
+    "cleaned" : "我是剛出門要搭937。",
+    "cleanedWithDictionary" : "我是剛出門要搭937。",
+    "input" : "我是剛上去，喔不對，剛出門要搭937。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我是剛上去，喔不對，剛出門要搭937。"
+  },
+  {
+    "cleaned" : "但是不是應該都是 500嗎？",
+    "cleanedWithDictionary" : "但是不是應該都是 500嗎？",
+    "input" : "但是不是應該都是 500嗎？",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "但是不是應該都是 500嗎？"
+  },
+  {
+    "cleaned" : "把軟件的數據庫設置默認",
+    "cleanedWithDictionary" : "把軟件的數據庫設置默認",
+    "input" : "把軟件的數據庫設置改成默認",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "把軟體的資料庫設定改成預設"
+  },
+  {
+    "cleaned" : "鼠標點視頻裡的鏈接",
+    "cleanedWithDictionary" : "鼠標點視頻裡的鏈接",
+    "input" : "鼠標點視頻裡的鏈接",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "滑鼠點影片裡的連結"
+  },
+  {
+    "cleaned" : "數據庫和數據",
+    "cleanedWithDictionary" : "數據庫和數據",
+    "input" : "數據庫和數據",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "資料庫和資料"
+  },
+  {
+    "cleaned" : "源代碼裡的代碼",
+    "cleanedWithDictionary" : "源代碼裡的代碼",
+    "input" : "源代碼裡的代碼",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "原始碼裡的程式碼"
+  },
+  {
+    "cleaned" : "軟件和硬件",
+    "cleanedWithDictionary" : "軟件和硬件",
+    "input" : "軟件和硬件",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "軟體和硬體"
+  },
+  {
+    "cleaned" : "",
+    "cleanedWithDictionary" : "",
+    "input" : "",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : ""
+  },
+  {
+    "cleaned" : "ship it today",
+    "cleanedWithDictionary" : "ship it today",
+    "input" : "ship it today",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "ship it today"
+  },
+  {
+    "cleaned" : "utuvo的新版",
+    "cleanedWithDictionary" : "UTUVO的新版",
+    "input" : "utuvo的新版",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "utuvo的新版"
+  },
+  {
+    "cleaned" : "Atmos混音",
+    "cleanedWithDictionary" : "Atmos混音",
+    "input" : "Atmos混音",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "Atmos混音"
+  },
+  {
+    "cleaned" : "今天下午跟唱片公司開會，主要是討論下一張專輯的混音時程，他們希望十月底之前可以交出第一版的 Atmos 混音，然後我跟他們說這個時間有點趕，因為我們還在等錄音室那邊把弦樂的分軌整理好。\n\n關於預算的部分，他們說可以再加10%，但是要把 stereo 版本也一起交。\n\n另外他們也問到之後有沒有可能做現場演唱會的空間音訊版本，我說可以先評估看看，需要先看場地的錄音條件。\n\n最後我們約好下禮拜三再開一次會，確認最後的時程。",
+    "cleanedWithDictionary" : "今天下午跟唱片公司開會，主要是討論下一張專輯的混音時程，他們希望十月底之前可以交出第一版的 Atmos 混音，然後我跟他們說這個時間有點趕，因為我們還在等錄音室那邊把弦樂的分軌整理好。\n\n關於預算的部分，他們說可以再加10%，但是要把 stereo 版本也一起交。\n\n另外他們也問到之後有沒有可能做現場演唱會的空間音訊版本，我說可以先評估看看，需要先看場地的錄音條件。\n\n最後我們約好下禮拜三再開一次會，確認最後的時程。",
+    "input" : "嗯今天下午跟唱片公司開會，主要是討論下一張專輯的混音時程，他們希望十月底之前可以交出第一版的 Atmos 混音，然後我跟他們說這個時間有點趕，因為我們還在等錄音室那邊把弦樂的分軌整理好。然後關於預算的部分，他們說可以再加百分之十，但是要把 stereo 版本也一起交。另外他們也問到之後有沒有可能做現場演唱會的空間音訊版本，我說可以先評估看看，需要先看場地的錄音條件。最後我們約好下禮拜三再開一次會，確認最後的時程。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "嗯今天下午跟唱片公司開會，主要是討論下一張專輯的混音時程，他們希望十月底之前可以交出第一版的 Atmos 混音，然後我跟他們說這個時間有點趕，因為我們還在等錄音室那邊把弦樂的分軌整理好。然後關於預算的部分，他們說可以再加百分之十，但是要把 stereo 版本也一起交。另外他們也問到之後有沒有可能做現場演唱會的空間音訊版本，我說可以先評估看看，需要先看場地的錄音條件。最後我們約好下禮拜三再開一次會，確認最後的時程。"
+  },
+  {
+    "cleaned" : "老師你好，\n\n我是上週來上課的同學，想請問一下期末作業的部分。\n\n首先是作業的長度，老師上課說大概三到五分鐘，但是如果我的作品是七分鐘會不會扣分？\n\n再來是交件格式，我們需要交 ADM BWF 還是只要交 binaural 的立體聲版本就可以了？\n\n還有就是如果我要用自己錄的素材，需要附上錄音的 session 檔案嗎？\n\n謝謝老師，不好意思問了這麼多問題。",
+    "cleanedWithDictionary" : "老師你好，\n\n我是上週來上課的同學，想請問一下期末作業的部分。\n\n首先是作業的長度，老師上課說大概三到五分鐘，但是如果我的作品是七分鐘會不會扣分？\n\n再來是交件格式，我們需要交 ADM BWF 還是只要交 binaural 的立體聲版本就可以了？\n\n還有就是如果我要用自己錄的素材，需要附上錄音的 session 檔案嗎？\n\n謝謝老師，不好意思問了這麼多問題。",
+    "input" : "老師你好，我是上週來上課的同學，想請問一下期末作業的部分。首先是作業的長度，老師上課說大概三到五分鐘，但是如果我的作品是七分鐘會不會扣分？再來是交件格式，我們需要交 ADM BWF 還是只要交 binaural 的立體聲版本就可以了？還有就是如果我要用自己錄的素材，需要附上錄音的 session 檔案嗎？謝謝老師，不好意思問了這麼多問題。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "老師你好，我是上週來上課的同學，想請問一下期末作業的部分。首先是作業的長度，老師上課說大概三到五分鐘，但是如果我的作品是七分鐘會不會扣分？再來是交件格式，我們需要交 ADM BWF 還是只要交 binaural 的立體聲版本就可以了？還有就是如果我要用自己錄的素材，需要附上錄音的 session 檔案嗎？謝謝老師，不好意思問了這麼多問題。"
+  },
+  {
+    "cleaned" : "我覺得這次的改版方向是對的，整體的介面比之前乾淨很多，特別是主畫面的光球放大之後，一眼就知道要按哪裡。\n\n不過鍵盤的部分我還是覺得有點擠，左右兩排的按鈕距離光球太近了，手指大一點的人可能會按錯。然後翻譯的功能我試了幾次，英文跟日文都還不錯，但是韓文偶爾會把人名翻錯。\n\n對了，還有一個小問題，就是在夜間模式的時候，字幕帶的文字顏色有點太淡了，看不太清楚。\n\n整體來說我給這個版本八十分，再修一下應該就可以上架了。",
+    "cleanedWithDictionary" : "我覺得這次的改版方向是對的，整體的介面比之前乾淨很多，特別是主畫面的光球放大之後，一眼就知道要按哪裡。\n\n不過鍵盤的部分我還是覺得有點擠，左右兩排的按鈕距離光球太近了，手指大一點的人可能會按錯。然後翻譯的功能我試了幾次，英文跟日文都還不錯，但是韓文偶爾會把人名翻錯。\n\n對了，還有一個小問題，就是在夜間模式的時候，字幕帶的文字顏色有點太淡了，看不太清楚。\n\n整體來說我給這個版本八十分，再修一下應該就可以上架了。",
+    "input" : "我覺得這次的改版方向是對的，整體的介面比之前乾淨很多，特別是主畫面的光球放大之後，一眼就知道要按哪裡。不過鍵盤的部分我還是覺得有點擠，左右兩排的按鈕距離光球太近了，手指大一點的人可能會按錯。然後翻譯的功能我試了幾次，英文跟日文都還不錯，但是韓文偶爾會把人名翻錯。對了，還有一個小問題，就是在夜間模式的時候，字幕帶的文字顏色有點太淡了，看不太清楚。整體來說我給這個版本八十分，再修一下應該就可以上架了。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "我覺得這次的改版方向是對的，整體的介面比之前乾淨很多，特別是主畫面的光球放大之後，一眼就知道要按哪裡。不過鍵盤的部分我還是覺得有點擠，左右兩排的按鈕距離光球太近了，手指大一點的人可能會按錯。然後翻譯的功能我試了幾次，英文跟日文都還不錯，但是韓文偶爾會把人名翻錯。對了，還有一個小問題，就是在夜間模式的時候，字幕帶的文字顏色有點太淡了，看不太清楚。整體來說我給這個版本八十分，再修一下應該就可以上架了。"
+  },
+  {
+    "cleaned" : "他們想要第一版的混音，最後的時程再確認。",
+    "cleanedWithDictionary" : "他們想要第一版的混音，最後的時程再確認。",
+    "input" : "他們想要第一版的混音，最後的時程再確認。",
+    "steps" : [
+      "trim",
+      "spelled-letters",
+      "filler",
+      "repeat",
+      "self-correction",
+      "number-date-amount",
+      "list",
+      "punctuation",
+      "particles",
+      "collapse-whitespace",
+      "paragraph"
+    ],
+    "taiwan" : "他們想要第一版的混音，最後的時程再確認。"
+  }
+]

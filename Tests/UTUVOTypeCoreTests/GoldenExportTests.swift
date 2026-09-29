@@ -76,13 +76,44 @@ final class GoldenExportTests: XCTestCase {
                      "ㄆㄥˊㄧㄡˇ", "ㄍㄨㄥ ㄙ ", "ㄏㄨㄟˋㄧˋ", "ㄕˊㄐㄧㄢ ", "ㄒㄧㄚˋㄨˇ", "ㄗㄠˇㄕㄤˋ",
                      "ㄨㄢˇㄈㄢˋ", "ㄎㄚ ㄈㄟ ", "ㄊㄞˊㄨㄢ ", "ㄍㄠ ㄒㄩㄥˊ", "ㄒㄧㄣ ㄓㄨˊ", "ㄙㄨㄥˋ",
                      "ㄅㄚ", "ㄇㄚ ", "ㄋㄧˇㄏㄠˇㄇㄚ˙", "ㄓ ㄉㄠˋ", "ㄎㄜˇㄧˇ", "ㄅㄨˋㄒㄧㄥˊ",
-                     "ㄧ ㄉㄧㄢˇ", "ㄒㄧㄤˋㄇㄨˋ", "ㄏㄜˊㄗㄨㄛˋ", "ㄐㄧˋㄉㄜ˙", "ㄉㄞˋ", "ㄧㄥˋㄆㄢˊ"]
-        let zkeys = Array(NSOrderedSet(array: captures(#"typeAll\(\w+, "([^"]+)"\)"#, in: try source("ZhuyinTests.swift")) + extra)) as! [String]
-        try write(zkeys.map { keys -> [String: Any] in
+                     "ㄧ ㄉㄧㄢˇ", "ㄒㄧㄤˋㄇㄨˋ", "ㄏㄜˊㄗㄨㄛˋ", "ㄐㄧˋㄉㄜ˙", "ㄉㄞˋ", "ㄧㄥˋㄆㄢˊ",
+                     // 介音槽被韻母佔住再打介音 → 擠成兩段；一路只打聲母的最壞情況
+                     "ㄓㄨㄥㄨ", "ㄨㄇㄐㄊㄗㄊㄅㄕㄉㄉㄋㄍㄙㄎㄏㄊㄌㄒㄐㄏ"]
+        let zkeys = Array(NSOrderedSet(array: captures(#"typeAll\(\w+, "([^"]+)"\)"#, in: try source("ZhuyinTests.swift"))
+                                        + captures(#"typeAll\(\w+, "([^"]+)"\)"#, in: try source("ZhuyinPredictionTests.swift"))
+                                        + extra)) as! [String]
+        /// 倒退用這個符號表示（不是鍵盤上有的鍵，只是為了讓案例能重播）。
+        let backspace = "<BS>"
+        struct ZScript { let keys: String; let ops: [String] }
+        var scripts: [ZScript] = zkeys.map { ZScript(keys: $0, ops: Array($0).map(String.init)) }
+        // 簡拼／倒退／空白的行為光靠鍵序看不出來，另外幾個帶動作的案例
+        scripts += [ZScript(keys: "ㄋㄏ<BS>", ops: ["ㄋ", "ㄏ", backspace]),
+                    ZScript(keys: "ㄙ ", ops: ["ㄙ", " "]),
+                    ZScript(keys: "ㄋ ", ops: ["ㄋ", " "])]
+        try write(scripts.map { s -> [String: Any] in
             let e = ZhuyinEngine(lexicon: zlex)
-            for ch in keys { if ch == " " { e.space() } else { e.type(ch) } }
-            return ["keys": keys, "preedit": e.preedit, "composing": e.composing,
-                    "candidates": e.candidates.prefix(12).map(\.text), "commitAll": e.commitAll()]
+            for op in s.ops {
+                if op == backspace { e.backspace() }
+                else if op == " " { e.space() }
+                else if let ch = op.first { e.type(ch) }
+            }
+            let cands8 = e.candidates(limit: 8)
+            let cands20 = e.candidates(limit: 20)
+            let out: [String: Any] = [
+                "keys": s.keys,
+                "readings": e.readings,
+                "composing": e.composing,
+                "preedit": e.preedit,
+                "conversion": e.conversion,
+                "candidates": e.candidates.prefix(12).map(\.text),
+                "candidates8": cands8.map { ["text": $0.text, "readingCount": $0.readingCount] },
+                "candidates20": cands20.map { ["text": $0.text, "readingCount": $0.readingCount] },
+                "hasUncompletedSyllables": e.hasUncompletedSyllables,
+                // 案例結束時再按一次空白：簡拼時應該回 false（交給呼叫端整句送出）
+                "spaceAccepted": e.space(),
+                "commitAll": e.commitAll(),
+            ]
+            return out
         }, "zhuyin.json", to: dir)
 
         // 拼音（簡＋繁）：測試裡出現過的拼音字串
@@ -95,8 +126,53 @@ final class GoldenExportTests: XCTestCase {
                 for ch in k { e.type(ch) }
                 return ["keys": k, "preedit": e.preedit, "segmentation": e.bestSegmentation,
                         "candidates": e.candidates.prefix(12).map { ["text": $0.text, "consumed": $0.consumed] },
+                        "candidates8": e.candidates(limit: 8).map { ["text": $0.text, "consumed": $0.consumed] },
                         "commitAll": e.commitAll()]
             }, name, to: dir)
         }
+
+        // 聯想詞：繁簡兩份詞庫，前文 → 接續建議（查不到、limit 0、空前文也進來當邊界）
+        for (dat, name) in [("assoc-hant.dat", "associations-hant.json"), ("assoc-hans.dat", "associations-hans.json")] {
+            let assoc = try XCTUnwrap(PhraseAssociations(url: Self.repo.appendingPathComponent("ios/Keyboard/Resources/\(dat)")))
+            let contexts = ["你好", "你", "好", "中国", "谢谢", "我們今天說你好", "", "🙂", "abc",
+                            "中文詞", "我們今天", "今天"]
+            try write(contexts.map { c -> [String: Any] in
+                ["context": c,
+                 "continuations8": assoc.continuations(after: c, limit: 8),
+                 "continuations0": assoc.continuations(after: c, limit: 0)]
+            }, name, to: dir)
+        }
+
+        // 英文建議列：currentWord／matchCase／merge 的案例
+        let wordCases: [String?] = ["Hello wor", "I don't kn", "I don't", "end. ", "abc,", "中文abc", "'quo", nil, "abc123", "a"]
+        try write(wordCases.map { w -> [String: Any] in
+            ["before": w as Any, "word": EnglishSuggestions.currentWord(before: w)]
+        }, "english-current-word.json", to: dir)
+        let caseCases: [[String]] = [["hello", "Hel"], ["hello", "HEL"], ["hello", "hel"], ["iPhone", "iph"], ["hello", "H"]]
+        try write(caseCases.map { pair -> [String: Any] in
+            ["suggestion": pair[0], "typed": pair[1], "matched": EnglishSuggestions.matchCase(pair[0], to: pair[1])]
+        }, "english-match-case.json", to: dir)
+        struct MergeCase {
+            let word: String, isMisspelled: Bool, completions: [String], guesses: [String]
+            let terms: [String], limit: Int
+        }
+        let mergeCases = [
+            MergeCase(word: "atm", isMisspelled: true, completions: ["atmosphere", "atm"], guesses: ["arm", "atom"],
+                      terms: ["Dolby Atmos", "Atmosphere", "McBopomofo", "中文詞"], limit: 8),
+            MergeCase(word: "Hel", isMisspelled: false, completions: ["hello", "help", "held"], guesses: ["gel"],
+                      terms: [], limit: 3),
+            MergeCase(word: "", isMisspelled: false, completions: ["a"], guesses: [], terms: [], limit: 8),
+            MergeCase(word: "iPh", isMisspelled: false, completions: ["iphone", "iphonex"], guesses: [],
+                      terms: ["iPhone 15 Pro"], limit: 8),
+            MergeCase(word: "don", isMisspelled: true, completions: ["don't", "done"], guesses: ["dog", "donut"],
+                      terms: [], limit: 4),
+        ]
+        try write(mergeCases.map { c -> [String: Any] in
+            ["word": c.word, "isMisspelled": c.isMisspelled, "limit": c.limit,
+             "completions": c.completions, "guesses": c.guesses, "terms": c.terms,
+             "merged": EnglishSuggestions.merge(word: c.word, isMisspelled: c.isMisspelled,
+                                               completions: c.completions, guesses: c.guesses,
+                                               userTerms: c.terms, limit: c.limit)]
+        }, "english-merge.json", to: dir)
     }
 }

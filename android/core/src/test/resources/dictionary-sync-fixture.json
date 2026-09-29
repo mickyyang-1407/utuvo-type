@@ -1,0 +1,17 @@
+{
+  "entries" : {
+    "Atmos" : {
+      "at" : 1789000000,
+      "output" : "Atmos"
+    },
+    "cloud code" : {
+      "at" : 1789000000.5,
+      "output" : "Claude Code"
+    },
+    "jamin" : {
+      "at" : 1789000100
+    }
+  },
+  "format" : "utuvo-type-dictionary",
+  "version" : 1
+}

@@ -1,0 +1,166 @@
+[
+  {
+    "context" : "你好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "啊",
+      "像",
+      "的",
+      "了",
+      "好",
+      "多",
+      "久",
+      "吧"
+    ]
+  },
+  {
+    "context" : "你",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "们",
+      "的",
+      "好",
+      "是",
+      "要",
+      "说",
+      "就",
+      "在"
+    ]
+  },
+  {
+    "context" : "好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "像",
+      "的",
+      "了",
+      "好",
+      "多",
+      "久",
+      "吧",
+      "看"
+    ]
+  },
+  {
+    "context" : "中国",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "人",
+      "队",
+      "特色",
+      "政府",
+      "经济",
+      "市场",
+      "人民",
+      "移动"
+    ]
+  },
+  {
+    "context" : "谢谢",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "了",
+      "大家",
+      "合作",
+      "谢",
+      "谢了",
+      "谢大家",
+      "霆锋",
+      "绝"
+    ]
+  },
+  {
+    "context" : "我們今天說你好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "啊",
+      "像",
+      "的",
+      "了",
+      "好",
+      "多",
+      "久",
+      "吧"
+    ]
+  },
+  {
+    "context" : "",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "🙂",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "abc",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "中文詞",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "我們今天",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "天",
+      "涯",
+      "气",
+      "津",
+      "下",
+      "空",
+      "使",
+      "堂"
+    ]
+  },
+  {
+    "context" : "今天",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "天",
+      "涯",
+      "气",
+      "津",
+      "下",
+      "空",
+      "使",
+      "堂"
+    ]
+  }
+]

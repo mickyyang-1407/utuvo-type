@@ -1,0 +1,42 @@
+[
+  {
+    "before" : "Hello wor",
+    "word" : "wor"
+  },
+  {
+    "before" : "I don't kn",
+    "word" : "kn"
+  },
+  {
+    "before" : "I don't",
+    "word" : "don't"
+  },
+  {
+    "before" : "end. ",
+    "word" : ""
+  },
+  {
+    "before" : "abc,",
+    "word" : ""
+  },
+  {
+    "before" : "中文abc",
+    "word" : "abc"
+  },
+  {
+    "before" : "'quo",
+    "word" : "quo"
+  },
+  {
+    "before" : null,
+    "word" : ""
+  },
+  {
+    "before" : "abc123",
+    "word" : ""
+  },
+  {
+    "before" : "a",
+    "word" : "a"
+  }
+]

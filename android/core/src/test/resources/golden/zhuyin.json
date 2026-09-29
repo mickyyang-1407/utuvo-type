@@ -1,0 +1,8550 @@
+[
+  {
+    "candidates" : [
+      "你好",
+      "妳好",
+      "你",
+      "妳",
+      "擬",
+      "昵",
+      "旎",
+      "薿",
+      "禰",
+      "抳",
+      "檷",
+      "祢"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䦵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "聻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦗚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馜"
+      }
+    ],
+    "commitAll" : "你蒿",
+    "composing" : "ㄏㄠ",
+    "conversion" : "你好",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄧˇㄏㄠ",
+    "preedit" : "你ㄏㄠ",
+    "readings" : [
+      "ㄋㄧˇ"
+    ],
+    "spaceAccepted" : true
+  },
+  {
+    "candidates" : [
+      "你好",
+      "妳好",
+      "你",
+      "妳",
+      "擬",
+      "昵",
+      "旎",
+      "薿",
+      "禰",
+      "抳",
+      "檷",
+      "祢"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䦵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "聻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦗚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馜"
+      }
+    ],
+    "commitAll" : "你好",
+    "composing" : "",
+    "conversion" : "你好",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄧˇㄏㄠˇ",
+    "preedit" : "你好",
+    "readings" : [
+      "ㄋㄧˇ",
+      "ㄏㄠˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "台北",
+      "臺北",
+      "台",
+      "抬",
+      "颱",
+      "檯",
+      "苔",
+      "跆",
+      "邰",
+      "鮐",
+      "炲",
+      "枱"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "台北"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺北"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "跆"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "台北"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺北"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "跆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鮐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "臺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嬯"
+      }
+    ],
+    "commitAll" : "台北",
+    "composing" : "",
+    "conversion" : "台北",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄊㄞˊㄅㄟˇ",
+    "preedit" : "台北",
+    "readings" : [
+      "ㄊㄞˊ",
+      "ㄅㄟˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "是",
+      "事",
+      "市",
+      "式",
+      "示",
+      "視",
+      "世",
+      "士",
+      "識",
+      "試",
+      "勢",
+      "適"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "是"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "事"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "市"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "式"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "示"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "視"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "世"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "士"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "是"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "事"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "市"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "式"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "示"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "視"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "世"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "士"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "識"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "試"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "勢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "適"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "室"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "釋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "氏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "飾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "誓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "仕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "侍"
+      }
+    ],
+    "commitAll" : "是",
+    "composing" : "",
+    "conversion" : "是",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄕˋ",
+    "preedit" : "是",
+    "readings" : [
+      "ㄕˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "台北市",
+      "臺北市",
+      "台北",
+      "臺北",
+      "台",
+      "抬",
+      "颱",
+      "檯",
+      "苔",
+      "跆",
+      "邰",
+      "鮐"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 3,
+        "text" : "台北市"
+      },
+      {
+        "readingCount" : 3,
+        "text" : "臺北市"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "台北"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺北"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 3,
+        "text" : "台北市"
+      },
+      {
+        "readingCount" : 3,
+        "text" : "臺北市"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "台北"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺北"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "跆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鮐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "臺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駘"
+      }
+    ],
+    "commitAll" : "台北市",
+    "composing" : "",
+    "conversion" : "台北市",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄊㄞˊㄅㄟˇㄕˋ",
+    "preedit" : "台北市",
+    "readings" : [
+      "ㄊㄞˊ",
+      "ㄅㄟˇ",
+      "ㄕˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "今天",
+      "今",
+      "金",
+      "津",
+      "斤",
+      "筋",
+      "巾",
+      "襟",
+      "矜",
+      "觔",
+      "禁",
+      "浸"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "觔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "浸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鵭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瑧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "珒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "埐"
+      }
+    ],
+    "commitAll" : "今天",
+    "composing" : "ㄊㄧㄢ",
+    "conversion" : "今天",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄐㄧㄣ ㄊㄧㄢ",
+    "preedit" : "今ㄊㄧㄢ",
+    "readings" : [
+      "ㄐㄧㄣ"
+    ],
+    "spaceAccepted" : true
+  },
+  {
+    "candidates" : [
+      "擬辦",
+      "你",
+      "妳",
+      "擬",
+      "昵",
+      "旎",
+      "薿",
+      "禰",
+      "抳",
+      "檷",
+      "祢",
+      "䦵"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "擬辦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "擬辦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䦵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "聻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦗚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "隬"
+      }
+    ],
+    "commitAll" : "你不",
+    "composing" : "ㄅ",
+    "conversion" : "你不",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄧˇㄅ",
+    "preedit" : "你ㄅ",
+    "readings" : [
+      "ㄋㄧˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "是",
+      "時",
+      "十",
+      "事",
+      "實",
+      "市",
+      "使",
+      "式",
+      "什",
+      "師",
+      "示",
+      "視"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "是"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "時"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "十"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "事"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "實"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "市"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "使"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "式"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "是"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "時"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "十"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "事"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "實"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "市"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "使"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "式"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "什"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "師"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "示"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "視"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "世"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "始"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "士"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "失"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "識"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "施"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "史"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "試"
+      }
+    ],
+    "commitAll" : "師",
+    "composing" : "ㄕ",
+    "conversion" : "是",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄕ",
+    "preedit" : "ㄕ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : true
+  },
+  {
+    "candidates" : [
+      "你",
+      "尼",
+      "妳",
+      "年",
+      "擬",
+      "泥",
+      "逆",
+      "兒",
+      "妮",
+      "膩",
+      "念",
+      "匿"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "泥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兒"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "泥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "念"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "匿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "您"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "溺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "倪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鳥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "寧"
+      }
+    ],
+    "commitAll" : "你",
+    "composing" : "ㄋㄧ",
+    "conversion" : "你",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄧ",
+    "preedit" : "ㄋㄧ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "女孩",
+      "年後",
+      "男孩",
+      "南韓",
+      "內涵",
+      "你會",
+      "濃厚",
+      "農會",
+      "年會",
+      "內湖",
+      "你好",
+      "腦海"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "女孩"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "年後"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "男孩"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "南韓"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "內涵"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "你會"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "女孩"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "年後"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "男孩"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "南韓"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "內涵"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "你會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "濃厚"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "農會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "年會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "內湖"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "腦海"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "年華"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "奈何"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "南海"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      }
+    ],
+    "commitAll" : "女孩",
+    "composing" : "ㄏ",
+    "conversion" : "女孩",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄋㄏ",
+    "preedit" : "ㄋㄏ",
+    "readings" : [
+      "ㄋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "你好",
+      "妳好",
+      "您好",
+      "逆號",
+      "念好",
+      "唸好",
+      "年號",
+      "你",
+      "尼",
+      "妳",
+      "年",
+      "擬"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "您好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "逆號"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "念好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "唸好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "您好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "逆號"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "念好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "唸好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "年號"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "泥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "念"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "匿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "您"
+      }
+    ],
+    "commitAll" : "你好",
+    "composing" : "ㄏㄠ",
+    "conversion" : "你好",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄋㄧㄏㄠ",
+    "preedit" : "ㄋㄧㄏㄠ",
+    "readings" : [
+      "ㄋㄧ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "今天",
+      "今",
+      "金",
+      "津",
+      "斤",
+      "筋",
+      "巾",
+      "襟",
+      "矜",
+      "觔",
+      "禁",
+      "浸"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "觔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "浸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鵭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瑧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "珒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "埐"
+      }
+    ],
+    "commitAll" : "今天好",
+    "composing" : "",
+    "conversion" : "今天好",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄐㄧㄣ ㄊㄧㄢ ㄏㄠˇ",
+    "preedit" : "今天好",
+    "readings" : [
+      "ㄐㄧㄣ",
+      "ㄊㄧㄢ",
+      "ㄏㄠˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "今天",
+      "家庭",
+      "交通",
+      "具體",
+      "檢討",
+      "集團",
+      "鏡頭",
+      "幾天",
+      "集體",
+      "街頭",
+      "劇團",
+      "津貼"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "家庭"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "交通"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "具體"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "檢討"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "集團"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "就"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "家"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "家庭"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "交通"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "具體"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "檢討"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "集團"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "鏡頭"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "幾天"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "集體"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "街頭"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "劇團"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "津貼"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "教堂"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "腳踏"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "交談"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "就"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "家"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "經"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "及"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "將"
+      }
+    ],
+    "commitAll" : "今天",
+    "composing" : "ㄊ",
+    "conversion" : "今天",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄐㄊ",
+    "preedit" : "ㄐㄊ",
+    "readings" : [
+      "ㄐ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "你好",
+      "您好",
+      "弄好",
+      "妳好",
+      "念好",
+      "拿好",
+      "唸好",
+      "年",
+      "能",
+      "你",
+      "那",
+      "內"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "您好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "弄好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "念好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "拿好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "您好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "弄好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "念好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "拿好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "唸好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "女"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "難"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "南"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "念"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "腦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "男"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "農"
+      }
+    ],
+    "commitAll" : "你好",
+    "composing" : "",
+    "conversion" : "你好",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄋㄏㄠˇ",
+    "preedit" : "ㄋ好",
+    "readings" : [
+      "ㄋ",
+      "ㄏㄠˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "中",
+      "種",
+      "重",
+      "眾",
+      "終",
+      "鐘",
+      "忠",
+      "鍾",
+      "仲",
+      "腫",
+      "衷",
+      "塚"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "種"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "重"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "眾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "終"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍾"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "種"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "重"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "眾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "終"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "仲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "腫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "塚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "踵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "螽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "盅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "冢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "徸"
+      }
+    ],
+    "commitAll" : "中",
+    "composing" : "ㄓㄨㄥ",
+    "conversion" : "中",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄓㄨㄥ",
+    "preedit" : "ㄓㄨㄥ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : true
+  },
+  {
+    "candidates" : [
+
+    ],
+    "candidates8" : [
+
+    ],
+    "candidates20" : [
+
+    ],
+    "commitAll" : "ㄅㄩ",
+    "composing" : "ㄅㄩ",
+    "conversion" : "ㄅㄩ",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄅㄩ",
+    "preedit" : "ㄅㄩ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "你會",
+      "你好",
+      "妳會",
+      "妳好",
+      "你",
+      "妳",
+      "擬",
+      "昵",
+      "旎",
+      "薿",
+      "禰",
+      "抳"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳會"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䦵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "聻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦗚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柅"
+      }
+    ],
+    "commitAll" : "你會之",
+    "composing" : "ㄓ",
+    "conversion" : "你會之",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄋㄧˇㄏㄓ",
+    "preedit" : "你ㄏㄓ",
+    "readings" : [
+      "ㄋㄧˇ",
+      "ㄏ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "中文",
+      "中",
+      "終",
+      "鐘",
+      "忠",
+      "鍾",
+      "衷",
+      "螽",
+      "盅",
+      "忪",
+      "柊",
+      "徸"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "中文"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "終"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "螽"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "中文"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "終"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "螽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "盅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "徸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "伀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蔠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "煄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "舯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "籦"
+      }
+    ],
+    "commitAll" : "中文",
+    "composing" : "",
+    "conversion" : "中文",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄓㄨㄥ ㄨㄣˊ",
+    "preedit" : "中文",
+    "readings" : [
+      "ㄓㄨㄥ",
+      "ㄨㄣˊ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "今天",
+      "今",
+      "金",
+      "津",
+      "斤",
+      "筋",
+      "巾",
+      "襟",
+      "矜",
+      "觔",
+      "禁",
+      "浸"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "今天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "今"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "金"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "津"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "筋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "觔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "浸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "矝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鵭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瑧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "珒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "埐"
+      }
+    ],
+    "commitAll" : "今天",
+    "composing" : "",
+    "conversion" : "今天",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄐㄧㄣ ㄊㄧㄢ ",
+    "preedit" : "今天",
+    "readings" : [
+      "ㄐㄧㄣ",
+      "ㄊㄧㄢ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "明天",
+      "明",
+      "名",
+      "銘",
+      "鳴",
+      "冥",
+      "茗",
+      "瞑",
+      "酩",
+      "暝",
+      "螟",
+      "溟"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "明天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "明"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "名"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鳴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "冥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "茗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瞑"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "明天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "明"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "名"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鳴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "冥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "茗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瞑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "酩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "螟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "溟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鄍"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㫥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蓂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "洺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "榠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嫇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "覭"
+      }
+    ],
+    "commitAll" : "明天",
+    "composing" : "",
+    "conversion" : "明天",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄇㄧㄥˊㄊㄧㄢ ",
+    "preedit" : "明天",
+    "readings" : [
+      "ㄇㄧㄥˊ",
+      "ㄊㄧㄢ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "謝謝",
+      "🙏",
+      "謝",
+      "洩",
+      "械",
+      "卸",
+      "蟹",
+      "屑",
+      "瀉",
+      "懈",
+      "泄",
+      "褻"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "謝謝"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🙏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "謝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "洩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "械"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "卸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蟹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "屑"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "謝謝"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🙏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "謝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "洩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "械"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "卸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蟹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "屑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瀉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "懈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "泄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "褻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "榭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "楔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "燮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "契"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "解"
+      }
+    ],
+    "commitAll" : "謝謝",
+    "composing" : "",
+    "conversion" : "謝謝",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄒㄧㄝˋㄒㄧㄝˋ",
+    "preedit" : "謝謝",
+    "readings" : [
+      "ㄒㄧㄝˋ",
+      "ㄒㄧㄝˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "對不起",
+      "隊部",
+      "對",
+      "隊",
+      "兌",
+      "懟",
+      "䥦",
+      "鐜",
+      "碓",
+      "譈",
+      "濧",
+      "薱"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 3,
+        "text" : "對不起"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "隊部"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "對"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "隊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "懟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䥦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐜"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 3,
+        "text" : "對不起"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "隊部"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "對"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "隊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "懟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䥦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "碓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "譈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "濧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "轛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "濻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瀩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "憝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㦠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㬣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㻻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兊"
+      }
+    ],
+    "commitAll" : "對不起",
+    "composing" : "",
+    "conversion" : "對不起",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄉㄨㄟˋㄅㄨˋㄑㄧˇ",
+    "preedit" : "對不起",
+    "readings" : [
+      "ㄉㄨㄟˋ",
+      "ㄅㄨˋ",
+      "ㄑㄧˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "我愛你",
+      "我",
+      "䂺",
+      "婐",
+      "捰",
+      "𣇫"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 3,
+        "text" : "我愛你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "我"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䂺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "捰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𣇫"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 3,
+        "text" : "我愛你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "我"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䂺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "捰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𣇫"
+      }
+    ],
+    "commitAll" : "我愛你",
+    "composing" : "",
+    "conversion" : "我愛你",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄨㄛˇㄞˋㄋㄧˇ",
+    "preedit" : "我愛你",
+    "readings" : [
+      "ㄨㄛˇ",
+      "ㄞˋ",
+      "ㄋㄧˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "天氣",
+      "天契",
+      "天",
+      "添",
+      "㕟",
+      "沗",
+      "訮",
+      "詽",
+      "倎",
+      "屇",
+      "酟",
+      "婖"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "天氣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "天契"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "添"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㕟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "沗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "訮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "詽"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "天氣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "天契"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "天"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "添"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㕟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "沗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "訮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "詽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "倎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "屇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "酟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "兲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㬲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䀖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䋬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䚶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "靝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "黇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦧝"
+      }
+    ],
+    "commitAll" : "天氣",
+    "composing" : "",
+    "conversion" : "天氣",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄊㄧㄢ ㄑㄧˋ",
+    "preedit" : "天氣",
+    "readings" : [
+      "ㄊㄧㄢ",
+      "ㄑㄧˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "電腦",
+      "💻",
+      "🖥",
+      "電",
+      "店",
+      "殿",
+      "墊",
+      "甸",
+      "奠",
+      "澱",
+      "佃",
+      "惦"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "電腦"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "💻"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🖥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "電"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "店"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "殿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "墊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "甸"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "電腦"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "💻"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🖥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "電"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "店"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "殿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "墊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "甸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "奠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佃"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "惦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "玷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鈿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "淀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "踮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "靛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "簟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "癜"
+      }
+    ],
+    "commitAll" : "電腦",
+    "composing" : "",
+    "conversion" : "電腦",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄉㄧㄢˋㄋㄠˇ",
+    "preedit" : "電腦",
+    "readings" : [
+      "ㄉㄧㄢˋ",
+      "ㄋㄠˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "手機",
+      "手跡",
+      "📱",
+      "📲",
+      "手",
+      "首",
+      "守",
+      "掱",
+      "垨",
+      "艏",
+      "㝊",
+      "䭭"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "手機"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "手跡"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "📱"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "📲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "手"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "首"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "守"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "掱"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "手機"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "手跡"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "📱"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "📲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "手"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "首"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "守"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "掱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "垨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "艏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㝊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䭭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "扌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𢬇"
+      }
+    ],
+    "commitAll" : "手機",
+    "composing" : "",
+    "conversion" : "手機",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄕㄡˇㄐㄧ ",
+    "preedit" : "手機",
+    "readings" : [
+      "ㄕㄡˇ",
+      "ㄐㄧ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "音樂",
+      "陰月",
+      "♪",
+      "因",
+      "音",
+      "陰",
+      "姻",
+      "殷",
+      "茵",
+      "湮",
+      "氤",
+      "慇"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "音樂"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "陰月"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "♪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "因"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "音"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "陰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "殷"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "音樂"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "陰月"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "♪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "因"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "音"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "陰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "殷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "茵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "湮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "氤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瘖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "闉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "韽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "侌"
+      }
+    ],
+    "commitAll" : "音樂",
+    "composing" : "",
+    "conversion" : "音樂",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄧㄣ ㄩㄝˋ",
+    "preedit" : "音樂",
+    "readings" : [
+      "ㄧㄣ",
+      "ㄩㄝˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "混",
+      "諢",
+      "渾",
+      "梡",
+      "㮯",
+      "溷",
+      "圂",
+      "慁",
+      "輥",
+      "倱",
+      "㥵",
+      "䫟"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "混"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "諢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "梡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㮯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "溷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "圂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慁"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "混"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "諢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "梡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㮯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "溷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "圂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "輥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "倱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㥵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䫟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "俒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "焝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "謴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦞢"
+      }
+    ],
+    "commitAll" : "混因",
+    "composing" : "",
+    "conversion" : "混因",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄏㄨㄣˋㄧㄣ ",
+    "preedit" : "混因",
+    "readings" : [
+      "ㄏㄨㄣˋ",
+      "ㄧㄣ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "錄音室",
+      "錄音",
+      "路",
+      "錄",
+      "陸",
+      "露",
+      "鹿",
+      "祿",
+      "碌",
+      "鷺",
+      "麓",
+      "戮"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 3,
+        "text" : "錄音室"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "錄音"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "路"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "錄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "陸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "露"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鹿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祿"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 3,
+        "text" : "錄音室"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "錄音"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "路"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "錄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "陸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "露"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鹿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "碌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鷺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "麓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "戮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "賂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "轆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "漉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蓼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "潞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "璐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "氯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逯"
+      }
+    ],
+    "commitAll" : "錄音室",
+    "composing" : "",
+    "conversion" : "錄音室",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄌㄨˋㄧㄣ ㄕˋ",
+    "preedit" : "錄音室",
+    "readings" : [
+      "ㄌㄨˋ",
+      "ㄧㄣ",
+      "ㄕˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "母帶",
+      "母",
+      "姆",
+      "畝",
+      "牡",
+      "拇",
+      "姥",
+      "㽗",
+      "畂",
+      "畆",
+      "畞",
+      "畮"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "母帶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "母"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㽗"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "母帶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "母"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㽗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鉧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "峔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "砪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "娒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "胟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𤝕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𧿹"
+      }
+    ],
+    "commitAll" : "母帶",
+    "composing" : "",
+    "conversion" : "母帶",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄇㄨˇㄉㄞˋ",
+    "preedit" : "母帶",
+    "readings" : [
+      "ㄇㄨˇ",
+      "ㄉㄞˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "耳機",
+      "爾",
+      "耳",
+      "餌",
+      "邇",
+      "洱",
+      "薾",
+      "鉺",
+      "珥",
+      "駬",
+      "峏",
+      "尒"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "耳機"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "爾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "耳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "餌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "洱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鉺"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "耳機"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "爾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "耳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "餌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "洱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鉺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "珥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "峏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "栮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "趰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "迩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𡁠"
+      }
+    ],
+    "commitAll" : "耳機",
+    "composing" : "",
+    "conversion" : "耳機",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄦˇㄐㄧ ",
+    "preedit" : "耳機",
+    "readings" : [
+      "ㄦˇ",
+      "ㄐㄧ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "客戶",
+      "客",
+      "課",
+      "克",
+      "喀",
+      "剋",
+      "嗑",
+      "恪",
+      "刻",
+      "可",
+      "溘",
+      "緙"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "客戶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "客"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "課"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "克"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "剋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嗑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "恪"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "客戶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "客"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "課"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "克"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "剋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嗑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "恪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "刻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "可"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "溘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "緙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㕉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "礊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㗐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䘔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𤸱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "榼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "髁"
+      }
+    ],
+    "commitAll" : "客戶",
+    "composing" : "",
+    "conversion" : "客戶",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄎㄜˋㄏㄨˋ",
+    "preedit" : "客戶",
+    "readings" : [
+      "ㄎㄜˋ",
+      "ㄏㄨˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "學生",
+      "學",
+      "穴",
+      "踅",
+      "鷽",
+      "壆",
+      "学",
+      "𧋍",
+      "𧎴",
+      "宂",
+      "㙾",
+      "觷"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "學生"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "學"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "穴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "踅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鷽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "壆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "学"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𧋍"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "學生"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "學"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "穴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "踅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鷽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "壆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "学"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𧋍"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𧎴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㙾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "觷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "燢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𢻯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㝷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㰒"
+      }
+    ],
+    "commitAll" : "學生",
+    "composing" : "",
+    "conversion" : "學生",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄒㄩㄝˊㄕㄥ ",
+    "preedit" : "學生",
+    "readings" : [
+      "ㄒㄩㄝˊ",
+      "ㄕㄥ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "老師",
+      "老",
+      "佬",
+      "荖",
+      "姥",
+      "栳",
+      "耊",
+      "狫",
+      "轑",
+      "咾",
+      "橑",
+      "銠"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "老師"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "老"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "荖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "栳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "耊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "狫"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "老師"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "老"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "荖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "姥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "栳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "耊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "狫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "轑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "橑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "恅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㖈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㺐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䇭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䝤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "珯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "硓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "粩"
+      }
+    ],
+    "commitAll" : "老師",
+    "composing" : "",
+    "conversion" : "老師",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄌㄠˇㄕ ",
+    "preedit" : "老師",
+    "readings" : [
+      "ㄌㄠˇ",
+      "ㄕ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "朋友",
+      "朋",
+      "澎",
+      "膨",
+      "彭",
+      "蓬",
+      "棚",
+      "鵬",
+      "篷",
+      "芃",
+      "硼",
+      "㧍"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "朋友"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "朋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蓬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "棚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鵬"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "朋友"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "朋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蓬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "棚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鵬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "篷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "芃"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "硼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㧍"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㱶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "挷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "浲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "漨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𥦜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䧛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "騯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㝑"
+      }
+    ],
+    "commitAll" : "朋友",
+    "composing" : "",
+    "conversion" : "朋友",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄆㄥˊㄧㄡˇ",
+    "preedit" : "朋友",
+    "readings" : [
+      "ㄆㄥˊ",
+      "ㄧㄡˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "公司",
+      "公私",
+      "公",
+      "工",
+      "供",
+      "功",
+      "攻",
+      "宮",
+      "恭",
+      "弓",
+      "躬",
+      "龔"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "公司"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "公私"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "公"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "工"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "供"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "功"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "攻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宮"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "公司"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "公私"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "公"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "工"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "供"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "功"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "攻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "恭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "弓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "躬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "龔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蚣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "紅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "共"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "肱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "觥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "釭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "娂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慐"
+      }
+    ],
+    "commitAll" : "公司",
+    "composing" : "",
+    "conversion" : "公司",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄍㄨㄥ ㄙ ",
+    "preedit" : "公司",
+    "readings" : [
+      "ㄍㄨㄥ",
+      "ㄙ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "會議",
+      "會意",
+      "會",
+      "慧",
+      "惠",
+      "匯",
+      "繪",
+      "彙",
+      "賄",
+      "蕙",
+      "彗",
+      "諱"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "會議"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "會意"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "會"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "惠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "匯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "繪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彙"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "會議"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "會意"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "會"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "慧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "惠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "匯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "繪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "賄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蕙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "彗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "諱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "卉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "潰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "晦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "穢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "誨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "燴"
+      }
+    ],
+    "commitAll" : "會議",
+    "composing" : "",
+    "conversion" : "會議",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄏㄨㄟˋㄧˋ",
+    "preedit" : "會議",
+    "readings" : [
+      "ㄏㄨㄟˋ",
+      "ㄧˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "時間",
+      "時艱",
+      "十間",
+      "時",
+      "十",
+      "實",
+      "什",
+      "食",
+      "石",
+      "拾",
+      "蝕",
+      "鰣"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "時間"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "時艱"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "十間"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "時"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "十"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "實"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "什"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "食"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "時間"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "時艱"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "十間"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "時"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "十"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "實"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "什"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "食"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "石"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蝕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鰣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蒔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "碩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "射"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "提"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "湜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "寔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "塒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "乭"
+      }
+    ],
+    "commitAll" : "時間",
+    "composing" : "",
+    "conversion" : "時間",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄕˊㄐㄧㄢ ",
+    "preedit" : "時間",
+    "readings" : [
+      "ㄕˊ",
+      "ㄐㄧㄢ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "下午",
+      "㏘",
+      "下",
+      "夏",
+      "嚇",
+      "廈",
+      "暇",
+      "罅",
+      "㗿",
+      "㰰",
+      "吓",
+      "昰"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "下午"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "㏘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "下"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "夏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嚇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "罅"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "下午"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "㏘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "下"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "夏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嚇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "罅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㗿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㰰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "厦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "芐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "欱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鏬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鶷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㙈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㰺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "丅"
+      }
+    ],
+    "commitAll" : "下午",
+    "composing" : "",
+    "conversion" : "下午",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄒㄧㄚˋㄨˇ",
+    "preedit" : "下午",
+    "readings" : [
+      "ㄒㄧㄚˋ",
+      "ㄨˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "早上",
+      "早",
+      "澡",
+      "藻",
+      "棗",
+      "蚤",
+      "繰",
+      "䲃",
+      "璪",
+      "枣",
+      "栆",
+      "薻"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "早上"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "早"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "藻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "棗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蚤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "繰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䲃"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "早上"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "早"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "澡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "藻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "棗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蚤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "繰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䲃"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "璪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "栆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薻"
+      }
+    ],
+    "commitAll" : "早上",
+    "composing" : "",
+    "conversion" : "早上",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄗㄠˇㄕㄤˋ",
+    "preedit" : "早上",
+    "readings" : [
+      "ㄗㄠˇ",
+      "ㄕㄤˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "晚飯",
+      "碗飯",
+      "晚",
+      "碗",
+      "婉",
+      "宛",
+      "挽",
+      "蜿",
+      "琬",
+      "莞",
+      "娩",
+      "輓"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "晚飯"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "碗飯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "晚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "碗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "挽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蜿"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "晚飯"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "碗飯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "晚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "碗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "婉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "挽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蜿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "琬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "莞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "娩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "輓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "綰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "皖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "浣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "畹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "睕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "魭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㛯"
+      }
+    ],
+    "commitAll" : "晚飯",
+    "composing" : "",
+    "conversion" : "晚飯",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄨㄢˇㄈㄢˋ",
+    "preedit" : "晚飯",
+    "readings" : [
+      "ㄨㄢˇ",
+      "ㄈㄢˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "咖啡",
+      "⛾",
+      "咖",
+      "喀",
+      "哈",
+      "鉲",
+      "咔",
+      "䘔",
+      "衉"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "咖啡"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "⛾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鉲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䘔"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "咖啡"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "⛾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "喀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鉲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䘔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衉"
+      }
+    ],
+    "commitAll" : "咖啡",
+    "composing" : "",
+    "conversion" : "咖啡",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄎㄚ ㄈㄟ ",
+    "preedit" : "咖啡",
+    "readings" : [
+      "ㄎㄚ",
+      "ㄈㄟ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "台灣",
+      "臺灣",
+      "🇹🇼",
+      "台",
+      "抬",
+      "颱",
+      "檯",
+      "苔",
+      "跆",
+      "邰",
+      "鮐",
+      "炲"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "台灣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺灣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🇹🇼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苔"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "台灣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "臺灣"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "🇹🇼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "台"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "颱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "跆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "邰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鮐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呞"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "菭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "臺"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "駘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儓"
+      }
+    ],
+    "commitAll" : "台灣",
+    "composing" : "",
+    "conversion" : "台灣",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄊㄞˊㄨㄢ ",
+    "preedit" : "台灣",
+    "readings" : [
+      "ㄊㄞˊ",
+      "ㄨㄢ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "高雄",
+      "高",
+      "糕",
+      "膏",
+      "羔",
+      "睪",
+      "篙",
+      "皋",
+      "櫜",
+      "鼛",
+      "羙",
+      "䣗"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "高雄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "高"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "糕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "羔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "睪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "篙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "皋"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "高雄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "高"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "糕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "羔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "睪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "篙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "皋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "櫜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鼛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "羙"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䣗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "曍"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "皡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "皥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嘷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "噑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "獆"
+      }
+    ],
+    "commitAll" : "高雄",
+    "composing" : "",
+    "conversion" : "高雄",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄍㄠ ㄒㄩㄥˊ",
+    "preedit" : "高雄",
+    "readings" : [
+      "ㄍㄠ",
+      "ㄒㄩㄥˊ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "新竹",
+      "心",
+      "新",
+      "辛",
+      "欣",
+      "薪",
+      "馨",
+      "鑫",
+      "莘",
+      "昕",
+      "芯",
+      "鋅"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "新竹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "心"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "新"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "辛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "欣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鑫"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "新竹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "心"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "新"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "辛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "欣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鑫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "莘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "芯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鋅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "歆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "訢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "亲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㖕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㖖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䛥"
+      }
+    ],
+    "commitAll" : "新竹",
+    "composing" : "",
+    "conversion" : "新竹",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄒㄧㄣ ㄓㄨˊ",
+    "preedit" : "新竹",
+    "readings" : [
+      "ㄒㄧㄣ",
+      "ㄓㄨˊ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "送",
+      "宋",
+      "訟",
+      "頌",
+      "誦",
+      "䛦",
+      "吅",
+      "餸"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "送"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "訟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "頌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "誦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䛦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "餸"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "送"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "宋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "訟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "頌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "誦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䛦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "餸"
+      }
+    ],
+    "commitAll" : "送",
+    "composing" : "",
+    "conversion" : "送",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄙㄨㄥˋ",
+    "preedit" : "送",
+    "readings" : [
+      "ㄙㄨㄥˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "把",
+      "八",
+      "吧",
+      "巴",
+      "爸",
+      "拔",
+      "罷",
+      "霸",
+      "芭",
+      "壩",
+      "叭",
+      "琶"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "把"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "八"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "爸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "罷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "霸"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "把"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "八"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "爸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "罷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "霸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "芭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "壩"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "叭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "琶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "跋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "疤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "峇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "靶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "笆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "杷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "捌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "扒"
+      }
+    ],
+    "commitAll" : "八",
+    "composing" : "ㄅㄚ",
+    "conversion" : "把",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄅㄚ",
+    "preedit" : "ㄅㄚ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : true
+  },
+  {
+    "candidates" : [
+      "嗎",
+      "媽",
+      "嬤",
+      "㕰",
+      "嬷"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "嗎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "媽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嬤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㕰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嬷"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "嗎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "媽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嬤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㕰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嬷"
+      }
+    ],
+    "commitAll" : "嗎",
+    "composing" : "",
+    "conversion" : "嗎",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄇㄚ ",
+    "preedit" : "嗎",
+    "readings" : [
+      "ㄇㄚ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "你好",
+      "妳好",
+      "你",
+      "妳",
+      "擬",
+      "昵",
+      "旎",
+      "薿",
+      "禰",
+      "抳",
+      "檷",
+      "祢"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "你好"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "妳好"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "擬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "昵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "旎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "薿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "抳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "檷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䦵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "聻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𦗚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "儗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "柅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "苨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "馜"
+      }
+    ],
+    "commitAll" : "你好嗎",
+    "composing" : "",
+    "conversion" : "你好嗎",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄧˇㄏㄠˇㄇㄚ˙",
+    "preedit" : "你好嗎",
+    "readings" : [
+      "ㄋㄧˇ",
+      "ㄏㄠˇ",
+      "ㄇㄚ˙"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "知道",
+      "之道",
+      "之",
+      "知",
+      "支",
+      "織",
+      "隻",
+      "枝",
+      "肢",
+      "芝",
+      "汁",
+      "脂"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "知道"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "之道"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "之"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "知"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "支"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "織"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "隻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枝"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "知道"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "之道"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "之"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "知"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "支"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "織"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "隻"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "枝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "肢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "芝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "汁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "脂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "吱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蜘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "ㄓ"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鴟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "只"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "氏"
+      }
+    ],
+    "commitAll" : "知道",
+    "composing" : "",
+    "conversion" : "知道",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄓ ㄉㄠˋ",
+    "preedit" : "知道",
+    "readings" : [
+      "ㄓ",
+      "ㄉㄠˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "可以",
+      "可",
+      "渴",
+      "坷",
+      "哿",
+      "堁",
+      "𤸎",
+      "渇",
+      "岢",
+      "敤",
+      "嶱",
+      "閜"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "可以"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "可"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "堁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𤸎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渇"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "可以"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "可"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "坷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "堁"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𤸎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "渇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "岢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "敤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嶱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "閜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㞹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㪼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "炣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "🉑"
+      }
+    ],
+    "commitAll" : "可以",
+    "composing" : "",
+    "conversion" : "可以",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄎㄜˇㄧˇ",
+    "preedit" : "可以",
+    "readings" : [
+      "ㄎㄜˇ",
+      "ㄧˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "不行",
+      "步行",
+      "不",
+      "部",
+      "步",
+      "布",
+      "佈",
+      "怖",
+      "簿",
+      "埠",
+      "蔀",
+      "鈽"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "不行"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "步行"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "不"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "部"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "步"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "布"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "怖"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "不行"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "步行"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "不"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "部"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "步"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "布"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "佈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "怖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "簿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "埠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蔀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鈽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㧫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鞴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "陠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "篰"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "捗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㐬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㱛"
+      }
+    ],
+    "commitAll" : "不行",
+    "composing" : "",
+    "conversion" : "不行",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄅㄨˋㄒㄧㄥˊ",
+    "preedit" : "不行",
+    "readings" : [
+      "ㄅㄨˋ",
+      "ㄒㄧㄥˊ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "一點",
+      "一",
+      "醫",
+      "依",
+      "衣",
+      "伊",
+      "ㄧ",
+      "壹",
+      "漪",
+      "猗",
+      "咿",
+      "揖"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "一點"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "一"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "醫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "依"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "伊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "ㄧ"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "壹"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "一點"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "一"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "醫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "依"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "伊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "ㄧ"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "壹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "漪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "猗"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "咿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "揖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "噫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鷖"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "黟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "欹"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鎄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "㾨"
+      }
+    ],
+    "commitAll" : "一點",
+    "composing" : "",
+    "conversion" : "一點",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄧ ㄉㄧㄢˇ",
+    "preedit" : "一點",
+    "readings" : [
+      "ㄧ",
+      "ㄉㄧㄢˇ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "項目",
+      "橡木",
+      "相",
+      "像",
+      "向",
+      "象",
+      "項",
+      "巷",
+      "嚮",
+      "橡",
+      "鄉",
+      "曏"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "項目"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "橡木"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "相"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "像"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "向"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "象"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "項"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巷"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "項目"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "橡木"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "相"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "像"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "向"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "象"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "項"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "巷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嚮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "橡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鄉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "曏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "閧"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "闂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "銄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "塂"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鑜"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "様"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "郷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鄊"
+      }
+    ],
+    "commitAll" : "項目",
+    "composing" : "",
+    "conversion" : "項目",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄒㄧㄤˋㄇㄨˋ",
+    "preedit" : "項目",
+    "readings" : [
+      "ㄒㄧㄤˋ",
+      "ㄇㄨˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "合作",
+      "合做",
+      "合",
+      "何",
+      "和",
+      "核",
+      "河",
+      "荷",
+      "盒",
+      "褐",
+      "禾",
+      "劾"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "合作"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "合做"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "合"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "何"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "和"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "核"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "河"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "荷"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "合作"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "合做"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "合"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "何"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "和"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "核"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "河"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "荷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "盒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "褐"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "禾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "劾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "閡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "闔"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "涸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "曷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "紇"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "覈"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "閤"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蓋"
+      }
+    ],
+    "commitAll" : "合作",
+    "composing" : "",
+    "conversion" : "合作",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄏㄜˊㄗㄨㄛˋ",
+    "preedit" : "合作",
+    "readings" : [
+      "ㄏㄜˊ",
+      "ㄗㄨㄛˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "記得",
+      "寄的",
+      "計",
+      "記",
+      "際",
+      "紀",
+      "濟",
+      "技",
+      "繼",
+      "季",
+      "既",
+      "寄"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "記得"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "寄的"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "計"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "記"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "際"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "紀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "濟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "技"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "記得"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "寄的"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "計"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "記"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "際"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "紀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "濟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "技"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "繼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "季"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "既"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "寄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "祭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "劑"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忌"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妓"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "冀"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "悸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "伎"
+      }
+    ],
+    "commitAll" : "記得",
+    "composing" : "",
+    "conversion" : "記得",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄐㄧˋㄉㄜ˙",
+    "preedit" : "記得",
+    "readings" : [
+      "ㄐㄧˋ",
+      "ㄉㄜ˙"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "代",
+      "帶",
+      "待",
+      "袋",
+      "貸",
+      "戴",
+      "黛",
+      "怠",
+      "殆",
+      "岱",
+      "迨",
+      "玳"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "代"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "帶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "待"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "袋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "貸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "戴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "黛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "怠"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "代"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "帶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "待"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "袋"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "貸"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "戴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "黛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "怠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "殆"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "岱"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "迨"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "玳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "大"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "逮"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "紿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䲦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "亣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "襶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "埭"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "靆"
+      }
+    ],
+    "commitAll" : "代",
+    "composing" : "",
+    "conversion" : "代",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄉㄞˋ",
+    "preedit" : "代",
+    "readings" : [
+      "ㄉㄞˋ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "硬",
+      "映",
+      "瀅",
+      "應",
+      "䤝",
+      "膡",
+      "噟",
+      "応",
+      "譍",
+      "𧃽",
+      "媵",
+      "鎣"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "硬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "映"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瀅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "應"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䤝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "噟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "応"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "硬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "映"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "瀅"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "應"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䤝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "膡"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "噟"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "応"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "譍"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "𧃽"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "媵"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鎣"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "摬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "賏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "䙬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "暎"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "眏"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "迊"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鞕"
+      }
+    ],
+    "commitAll" : "硬盤",
+    "composing" : "",
+    "conversion" : "硬盤",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄧㄥˋㄆㄢˊ",
+    "preedit" : "硬盤",
+    "readings" : [
+      "ㄧㄥˋ",
+      "ㄆㄢˊ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "中午",
+      "中文",
+      "重物",
+      "中外",
+      "眾望",
+      "中尉",
+      "中衛",
+      "中",
+      "種",
+      "重",
+      "眾",
+      "終"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 2,
+        "text" : "中午"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中文"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "重物"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中外"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "眾望"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中尉"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "種"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 2,
+        "text" : "中午"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中文"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "重物"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中外"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "眾望"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中尉"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "中衛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "中"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "種"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "重"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "眾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "終"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鐘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "忠"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍾"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "仲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "腫"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "衷"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "塚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "踵"
+      }
+    ],
+    "commitAll" : "中午",
+    "composing" : "ㄨ",
+    "conversion" : "中午",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄓㄨㄥㄨ",
+    "preedit" : "ㄓㄨㄥㄨ",
+    "readings" : [
+      "ㄓㄨㄥ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "烏梅酒",
+      "我們",
+      "無名",
+      "五名",
+      "污名",
+      "嫵媚",
+      "無明",
+      "我沒",
+      "外面",
+      "文明",
+      "五秒",
+      "汙名"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 3,
+        "text" : "烏梅酒"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "我們"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "無名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "五名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "污名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "嫵媚"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "無"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "五"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 3,
+        "text" : "烏梅酒"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "我們"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "無名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "五名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "污名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "嫵媚"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "無明"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "我沒"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "外面"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "文明"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "五秒"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "汙名"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "完美"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "污衊"
+      },
+      {
+        "readingCount" : 2,
+        "text" : "五毛"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "無"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "五"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "物"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "務"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "我"
+      }
+    ],
+    "commitAll" : "我們簡體字台北市的都能夠思考回頭路消基會",
+    "composing" : "ㄏ",
+    "conversion" : "我們簡體字台北市的都能夠思考回頭路消基會",
+    "hasUncompletedSyllables" : true,
+    "keys" : "ㄨㄇㄐㄊㄗㄊㄅㄕㄉㄉㄋㄍㄙㄎㄏㄊㄌㄒㄐㄏ",
+    "preedit" : "ㄨㄇㄐㄊㄗㄊㄅㄕㄉㄉㄋㄍㄙㄎㄏㄊㄌㄒㄐㄏ",
+    "readings" : [
+      "ㄨ",
+      "ㄇ",
+      "ㄐ",
+      "ㄊ",
+      "ㄗ",
+      "ㄊ",
+      "ㄅ",
+      "ㄕ",
+      "ㄉ",
+      "ㄉ",
+      "ㄋ",
+      "ㄍ",
+      "ㄙ",
+      "ㄎ",
+      "ㄏ",
+      "ㄊ",
+      "ㄌ",
+      "ㄒ",
+      "ㄐ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "年",
+      "能",
+      "你",
+      "那",
+      "內",
+      "女",
+      "難",
+      "南",
+      "念",
+      "呢",
+      "腦",
+      "男"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "女"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "難"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "南"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "女"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "難"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "南"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "念"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "腦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "男"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "農"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "您"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鳥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牛"
+      }
+    ],
+    "commitAll" : "年",
+    "composing" : "ㄋ",
+    "conversion" : "年",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋㄏ<BS>",
+    "preedit" : "ㄋ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "司",
+      "思",
+      "斯",
+      "私",
+      "絲",
+      "撕",
+      "廝",
+      "嘶",
+      "鷥",
+      "ㄙ",
+      "虒",
+      "偲"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "司"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "思"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "私"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "絲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "撕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嘶"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "司"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "思"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "斯"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "私"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "絲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "撕"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "廝"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "嘶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鷥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "ㄙ"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "虒"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "偲"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "緦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鍶"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蕬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "蟴"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "螄"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "凘"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "俬"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "幺"
+      }
+    ],
+    "commitAll" : "司",
+    "composing" : "",
+    "conversion" : "司",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄙ ",
+    "preedit" : "司",
+    "readings" : [
+      "ㄙ"
+    ],
+    "spaceAccepted" : false
+  },
+  {
+    "candidates" : [
+      "年",
+      "能",
+      "你",
+      "那",
+      "內",
+      "女",
+      "難",
+      "南",
+      "念",
+      "呢",
+      "腦",
+      "男"
+    ],
+    "candidates8" : [
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "女"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "難"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "南"
+      }
+    ],
+    "candidates20" : [
+      {
+        "readingCount" : 1,
+        "text" : "年"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "能"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "你"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "那"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "內"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "女"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "難"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "南"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "念"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "呢"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "腦"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "男"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "農"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "拿"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "您"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "哪"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "尼"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "妳"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "鳥"
+      },
+      {
+        "readingCount" : 1,
+        "text" : "牛"
+      }
+    ],
+    "commitAll" : "年",
+    "composing" : "ㄋ",
+    "conversion" : "年",
+    "hasUncompletedSyllables" : false,
+    "keys" : "ㄋ ",
+    "preedit" : "ㄋ",
+    "readings" : [
+
+    ],
+    "spaceAccepted" : false
+  }
+]
