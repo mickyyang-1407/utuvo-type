@@ -30,6 +30,15 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
+## Android（APK，測試版）
+
+1. 到 [Android 0.2.0 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0) 下載 `UTUVO-Type-0.2.0-android.apk`（附 SHA-256）。目前**不在 Google Play**。
+2. 手機允許「安裝未知應用程式」後安裝，打開 App 照三步：允許麥克風 → 在系統設定啟用 UTUVO Type 鍵盤 → 切換成 UTUVO Type。
+3. 需要 **Android 10 以上**。聽寫用手機的系統語音服務（多數是 Google 語音）；也可以在設定→智慧整理／雲端辨識填自己的 key。
+
+鍵盤功能與 iPhone 版同步：注音（簡拼、不打聲調）、拼音、聯想詞、整頁候選、英文建議列、選取文字後說出要怎麼改、長按光球翻譯、語言徽章。
+之前用 Android Studio 裝過開發版的話要先移除，簽章不同無法直接覆蓋。從原始碼建置：`cd android && ./gradlew :app:assembleDebug`（JDK 21、Android SDK 36）。
+
 ## 從原始碼安裝（三步驟）
 
 ```bash

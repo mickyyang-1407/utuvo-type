@@ -1,0 +1,27 @@
+[
+  {
+    "matched" : "Hello",
+    "suggestion" : "hello",
+    "typed" : "Hel"
+  },
+  {
+    "matched" : "HELLO",
+    "suggestion" : "hello",
+    "typed" : "HEL"
+  },
+  {
+    "matched" : "hello",
+    "suggestion" : "hello",
+    "typed" : "hel"
+  },
+  {
+    "matched" : "iPhone",
+    "suggestion" : "iPhone",
+    "typed" : "iph"
+  },
+  {
+    "matched" : "Hello",
+    "suggestion" : "hello",
+    "typed" : "H"
+  }
+]

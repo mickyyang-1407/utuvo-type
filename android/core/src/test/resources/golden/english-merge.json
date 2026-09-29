@@ -1,0 +1,106 @@
+[
+  {
+    "completions" : [
+      "atmosphere",
+      "atm"
+    ],
+    "guesses" : [
+      "arm",
+      "atom"
+    ],
+    "isMisspelled" : true,
+    "limit" : 8,
+    "merged" : [
+      "Atmos",
+      "Atmosphere",
+      "arm",
+      "atom"
+    ],
+    "terms" : [
+      "Dolby Atmos",
+      "Atmosphere",
+      "McBopomofo",
+      "中文詞"
+    ],
+    "word" : "atm"
+  },
+  {
+    "completions" : [
+      "hello",
+      "help",
+      "held"
+    ],
+    "guesses" : [
+      "gel"
+    ],
+    "isMisspelled" : false,
+    "limit" : 3,
+    "merged" : [
+      "Hello",
+      "Help",
+      "Held"
+    ],
+    "terms" : [
+
+    ],
+    "word" : "Hel"
+  },
+  {
+    "completions" : [
+      "a"
+    ],
+    "guesses" : [
+
+    ],
+    "isMisspelled" : false,
+    "limit" : 8,
+    "merged" : [
+
+    ],
+    "terms" : [
+
+    ],
+    "word" : ""
+  },
+  {
+    "completions" : [
+      "iphone",
+      "iphonex"
+    ],
+    "guesses" : [
+
+    ],
+    "isMisspelled" : false,
+    "limit" : 8,
+    "merged" : [
+      "iPhone",
+      "iphonex"
+    ],
+    "terms" : [
+      "iPhone 15 Pro"
+    ],
+    "word" : "iPh"
+  },
+  {
+    "completions" : [
+      "don't",
+      "done"
+    ],
+    "guesses" : [
+      "dog",
+      "donut"
+    ],
+    "isMisspelled" : true,
+    "limit" : 4,
+    "merged" : [
+      "dog",
+      "donut",
+      "don't",
+      "done"
+    ],
+    "terms" : [
+
+    ],
+    "word" : "don"
+  }
+]

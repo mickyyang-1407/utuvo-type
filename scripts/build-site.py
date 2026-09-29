@@ -28,7 +28,7 @@ ZH = {
     # nav
     '<a href="#iphone">iPhone</a><a href="#mac">Mac</a><a href="#privacy">Privacy</a>': '<a href="#iphone">iPhone</a><a href="#mac">Mac</a><a href="#privacy">隱私</a>',
     # hero
-    'Voice typing for iPhone and Mac': 'iPhone 與 Mac 的語音輸入',
+    'Voice typing for iPhone, Mac and Android': 'iPhone、Mac 與 Android 的語音輸入',
     'Speak.<br>It types.': '你說。<br>它打字。',
     'Tap the orb on the keyboard, say what you mean, and clean text lands at your cursor — in any app. On-device first, no account, open source.':
         '點一下鍵盤上的光球，把話說完，整理好的文字就出現在游標的位置——任何 app 都可以。裝置端優先，不用帳號，程式碼開源。',
@@ -36,6 +36,7 @@ ZH = {
     'View source': '看原始碼',
     '<b>iPhone</b><span class="status"><i></i>Free on the App Store</span>': '<b>iPhone</b><span class="status"><i></i>App Store 免費下載</span>',
     '<b>Mac</b><span>Free download, signed and notarized</span>': '<b>Mac</b><span>免費下載，已簽章與公證</span>',
+    '<b>Android</b><span>Beta APK on GitHub</span>': '<b>Android</b><span>GitHub 下載 APK（測試版）</span>',
     'The UTUVO Type keyboard in Messages while dictating: the live transcript runs along the top, the orb glows in the middle': '在「訊息」裡用 UTUVO Type 鍵盤聽寫：上方跑即時字幕，中間是光球',
     # iPhone
     'A keyboard with an orb in it.': '一個有光球的鍵盤。',
@@ -86,13 +87,16 @@ ZH = {
     'Routing rules, prompts and benchmarks are all in the repository': '路由規則、提示詞、benchmark 都在 repo 裡',
     'Read the full <a href="privacy/">privacy policy</a>.': '完整說明請看<a href="privacy/">隱私權政策</a>。',
     # get
-    'Get it': '下載', 'Free on both.': '兩邊都免費。',
+    'Get it': '下載', 'Free everywhere.': '每個平台都免費。',
     'Free on the App Store. The keyboard, history and dictionary all work on the device.': 'App Store 免費下載。鍵盤、歷史紀錄、個人字典都在手機上運作。',
     'Get it on the App Store': '到 App Store 下載',
     '<span><b>iOS 18+</b></span><span><b>iPhone</b> only for now</span><span>Keyboard needs <b>Full Access</b></span>': '<span><b>iOS 18+</b></span><span>目前只支援 <b>iPhone</b></span><span>鍵盤需要<b>完整取用</b></span>',
     'Signed and notarized. The speech model is a one-time 1.2 GB download from Settings, only when you click.': '已簽章與公證。語音模型要在設定裡按一下才會下載，約 1.2 GB，只下載一次。',
     '<span><b>macOS 14+</b></span><span><b>Apple silicon</b> for the local engine</span><span><b>8 GB</b> memory · <b>16 GB</b> for the local editor</span>': '<span><b>macOS 14+</b></span><span>本機引擎需要 <b>Apple silicon</b></span><span>記憶體 <b>8 GB</b>・本機 editor 建議 <b>16 GB</b></span>',
     'Build from source': '從原始碼編譯',
+    'Beta APK on GitHub, not on Google Play yet. Same keyboard as iPhone: Zhuyin, Pinyin, English suggestions, edit by voice.': 'GitHub 下載 APK（測試版），還沒上 Google Play。鍵盤跟 iPhone 版一樣：注音、拼音、英文建議、用說的改字。',
+    'Download the APK': '下載 APK',
+    "<span><b>Android 10+</b></span><span>Allow <b>install unknown apps</b></span><span>Uses the phone's <b>speech service</b></span>": '<span><b>Android 10+</b></span><span>要允許<b>安裝未知應用程式</b></span><span>聽寫用手機的<b>語音服務</b></span>',
     '# Python venv + Qwen3-ASR model, one time': '# Python venv＋Qwen3-ASR 模型，只要一次',
     # footer
     'The UTUVO Type name and mark are not part of the license.': 'UTUVO Type 名稱與標誌不在授權範圍內。',

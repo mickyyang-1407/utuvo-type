@@ -1,0 +1,4906 @@
+[
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "您"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腻"
+      },
+      {
+        "consumed" : 2,
+        "text" : "逆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倪"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "您"
+      }
+    ],
+    "commitAll" : "你",
+    "keys" : "ni",
+    "preedit" : "你",
+    "segmentation" : [
+      "ni"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "好"
+      },
+      {
+        "consumed" : 3,
+        "text" : "号"
+      },
+      {
+        "consumed" : 3,
+        "text" : "浩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "豪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "耗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "郝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "昊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "皓"
+      },
+      {
+        "consumed" : 3,
+        "text" : "毫"
+      },
+      {
+        "consumed" : 3,
+        "text" : "灏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "嚎"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蒿"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "好"
+      },
+      {
+        "consumed" : 3,
+        "text" : "号"
+      },
+      {
+        "consumed" : 3,
+        "text" : "浩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "豪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "耗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "郝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "昊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "皓"
+      }
+    ],
+    "commitAll" : "好",
+    "keys" : "hao",
+    "preedit" : "好",
+    "segmentation" : [
+      "hao"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "装"
+      },
+      {
+        "consumed" : 6,
+        "text" : "状"
+      },
+      {
+        "consumed" : 6,
+        "text" : "庄"
+      },
+      {
+        "consumed" : 6,
+        "text" : "撞"
+      },
+      {
+        "consumed" : 6,
+        "text" : "壮"
+      },
+      {
+        "consumed" : 6,
+        "text" : "妆"
+      },
+      {
+        "consumed" : 6,
+        "text" : "桩"
+      },
+      {
+        "consumed" : 6,
+        "text" : "幢"
+      },
+      {
+        "consumed" : 6,
+        "text" : "裝"
+      },
+      {
+        "consumed" : 6,
+        "text" : "狀"
+      },
+      {
+        "consumed" : 6,
+        "text" : "莊"
+      },
+      {
+        "consumed" : 6,
+        "text" : "专柜"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "专柜"
+      },
+      {
+        "consumed" : 6,
+        "text" : "转告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "转过"
+      },
+      {
+        "consumed" : 6,
+        "text" : "转给"
+      },
+      {
+        "consumed" : 6,
+        "text" : "专稿"
+      },
+      {
+        "consumed" : 6,
+        "text" : "转轨"
+      },
+      {
+        "consumed" : 6,
+        "text" : "专攻"
+      },
+      {
+        "consumed" : 6,
+        "text" : "专供"
+      }
+    ],
+    "commitAll" : "装",
+    "keys" : "zhuang",
+    "preedit" : "装",
+    "segmentation" : [
+      "zhuang"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "履"
+      },
+      {
+        "consumed" : 2,
+        "text" : "滤"
+      },
+      {
+        "consumed" : 2,
+        "text" : "虑"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屡"
+      }
+    ],
+    "commitAll" : "率",
+    "keys" : "lv",
+    "preedit" : "率",
+    "segmentation" : [
+      "lv"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "女"
+      },
+      {
+        "consumed" : 2,
+        "text" : "钕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "籹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "釹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "恧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "聏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衂"
+      },
+      {
+        "consumed" : 2,
+        "text" : "朒"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "女"
+      },
+      {
+        "consumed" : 2,
+        "text" : "钕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "籹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "釹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "恧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "聏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衂"
+      }
+    ],
+    "commitAll" : "女",
+    "keys" : "nv",
+    "preedit" : "女",
+    "segmentation" : [
+      "nv"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "畧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "路"
+      },
+      {
+        "consumed" : 2,
+        "text" : "陆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "录"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鲁"
+      },
+      {
+        "consumed" : 2,
+        "text" : "露"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "炉"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "畧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "路"
+      },
+      {
+        "consumed" : 2,
+        "text" : "陆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "录"
+      }
+    ],
+    "commitAll" : "略",
+    "keys" : "lue",
+    "preedit" : "略",
+    "segmentation" : [
+      "lue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "虐"
+      },
+      {
+        "consumed" : 3,
+        "text" : "疟"
+      },
+      {
+        "consumed" : 3,
+        "text" : "瘧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "怒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "奴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "努"
+      },
+      {
+        "consumed" : 2,
+        "text" : "弩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驽"
+      },
+      {
+        "consumed" : 2,
+        "text" : "胬"
+      },
+      {
+        "consumed" : 2,
+        "text" : "孥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "帑"
+      },
+      {
+        "consumed" : 2,
+        "text" : "砮"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "虐"
+      },
+      {
+        "consumed" : 3,
+        "text" : "疟"
+      },
+      {
+        "consumed" : 3,
+        "text" : "瘧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "怒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "奴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "努"
+      },
+      {
+        "consumed" : 2,
+        "text" : "弩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驽"
+      }
+    ],
+    "commitAll" : "虐",
+    "keys" : "nue",
+    "preedit" : "虐",
+    "segmentation" : [
+      "nue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "而"
+      },
+      {
+        "consumed" : 2,
+        "text" : "二"
+      },
+      {
+        "consumed" : 2,
+        "text" : "儿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "耳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "贰"
+      },
+      {
+        "consumed" : 2,
+        "text" : "饵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "迩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "弍"
+      },
+      {
+        "consumed" : 2,
+        "text" : "兒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "洱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "珥"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "而"
+      },
+      {
+        "consumed" : 2,
+        "text" : "二"
+      },
+      {
+        "consumed" : 2,
+        "text" : "儿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "耳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "贰"
+      },
+      {
+        "consumed" : 2,
+        "text" : "恶人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "愕然"
+      }
+    ],
+    "commitAll" : "而",
+    "keys" : "er",
+    "preedit" : "而",
+    "segmentation" : [
+      "er"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "嗯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "唔"
+      },
+      {
+        "consumed" : 1,
+        "text" : "嗯"
+      },
+      {
+        "consumed" : 1,
+        "text" : "唔"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "嗯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "唔"
+      },
+      {
+        "consumed" : 1,
+        "text" : "嗯"
+      },
+      {
+        "consumed" : 1,
+        "text" : "唔"
+      }
+    ],
+    "commitAll" : "嗯",
+    "keys" : "ng",
+    "preedit" : "嗯",
+    "segmentation" : [
+      "ng"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "畧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "畧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      }
+    ],
+    "commitAll" : "略",
+    "keys" : "lve",
+    "preedit" : "略",
+    "segmentation" : [
+      "lve"
+    ]
+  },
+  {
+    "candidates" : [
+
+    ],
+    "candidates8" : [
+
+    ],
+    "commitAll" : "",
+    "keys" : "iu",
+    "preedit" : "",
+    "segmentation" : [
+
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "中"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这"
+      },
+      {
+        "consumed" : 2,
+        "text" : "着"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找"
+      },
+      {
+        "consumed" : 2,
+        "text" : "真"
+      },
+      {
+        "consumed" : 2,
+        "text" : "之"
+      },
+      {
+        "consumed" : 2,
+        "text" : "只"
+      },
+      {
+        "consumed" : 2,
+        "text" : "者"
+      },
+      {
+        "consumed" : 2,
+        "text" : "张"
+      },
+      {
+        "consumed" : 2,
+        "text" : "住"
+      },
+      {
+        "consumed" : 2,
+        "text" : "装"
+      },
+      {
+        "consumed" : 2,
+        "text" : "正"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "最后"
+      },
+      {
+        "consumed" : 2,
+        "text" : "之后"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "做好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "综合"
+      },
+      {
+        "consumed" : 2,
+        "text" : "帐号"
+      },
+      {
+        "consumed" : 2,
+        "text" : "正好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "只好"
+      }
+    ],
+    "commitAll" : "中v",
+    "keys" : "zhv",
+    "preedit" : "中v",
+    "segmentation" : [
+      "zh",
+      "v"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "波"
+      },
+      {
+        "consumed" : 2,
+        "text" : "博"
+      },
+      {
+        "consumed" : 2,
+        "text" : "播"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "伯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "薄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "啵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "剥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "搏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "柏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "勃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泊"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "波"
+      },
+      {
+        "consumed" : 2,
+        "text" : "博"
+      },
+      {
+        "consumed" : 2,
+        "text" : "播"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "伯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "薄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "啵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "剥"
+      }
+    ],
+    "commitAll" : "波嗯",
+    "keys" : "bong",
+    "preedit" : "波嗯",
+    "segmentation" : [
+      "bo",
+      "ng"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "想啊"
+      },
+      {
+        "consumed" : 2,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喜爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "性爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "相爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "心爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "狭隘"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腺癌"
+      },
+      {
+        "consumed" : 2,
+        "text" : "小艾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "血案"
+      },
+      {
+        "consumed" : 2,
+        "text" : "笑傲"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "想啊"
+      },
+      {
+        "consumed" : 2,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喜爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "性爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "相爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "心爱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "狭隘"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腺癌"
+      }
+    ],
+    "commitAll" : "想啊",
+    "keys" : "xa",
+    "preedit" : "想啊",
+    "segmentation" : [
+      "x",
+      "a"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "中"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这"
+      },
+      {
+        "consumed" : 2,
+        "text" : "着"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找"
+      },
+      {
+        "consumed" : 2,
+        "text" : "真"
+      },
+      {
+        "consumed" : 2,
+        "text" : "之"
+      },
+      {
+        "consumed" : 2,
+        "text" : "只"
+      },
+      {
+        "consumed" : 2,
+        "text" : "者"
+      },
+      {
+        "consumed" : 2,
+        "text" : "张"
+      },
+      {
+        "consumed" : 2,
+        "text" : "住"
+      },
+      {
+        "consumed" : 2,
+        "text" : "装"
+      },
+      {
+        "consumed" : 2,
+        "text" : "正"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "最后"
+      },
+      {
+        "consumed" : 2,
+        "text" : "之后"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "做好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "综合"
+      },
+      {
+        "consumed" : 2,
+        "text" : "帐号"
+      },
+      {
+        "consumed" : 2,
+        "text" : "正好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "只好"
+      }
+    ],
+    "commitAll" : "中",
+    "keys" : "zh",
+    "preedit" : "中",
+    "segmentation" : [
+      "zh"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腻"
+      },
+      {
+        "consumed" : 2,
+        "text" : "逆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "昵"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      }
+    ],
+    "commitAll" : "你好",
+    "keys" : "nihao",
+    "preedit" : "你好",
+    "segmentation" : [
+      "ni",
+      "hao"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "先"
+      },
+      {
+        "consumed" : 4,
+        "text" : "线"
+      },
+      {
+        "consumed" : 4,
+        "text" : "县"
+      },
+      {
+        "consumed" : 4,
+        "text" : "现"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "咁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "想"
+      },
+      {
+        "consumed" : 4,
+        "text" : "闲"
+      },
+      {
+        "consumed" : 4,
+        "text" : "仙"
+      },
+      {
+        "consumed" : 4,
+        "text" : "显"
+      },
+      {
+        "consumed" : 4,
+        "text" : "嫌"
+      },
+      {
+        "consumed" : 4,
+        "text" : "贤"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "先"
+      },
+      {
+        "consumed" : 4,
+        "text" : "线"
+      },
+      {
+        "consumed" : 4,
+        "text" : "县"
+      },
+      {
+        "consumed" : 4,
+        "text" : "现"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "咁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "想"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西岸"
+      }
+    ],
+    "commitAll" : "先",
+    "keys" : "xian",
+    "preedit" : "先",
+    "segmentation" : [
+      "xian"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "系"
+      },
+      {
+        "consumed" : 2,
+        "text" : "西"
+      },
+      {
+        "consumed" : 2,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "下"
+      },
+      {
+        "consumed" : 2,
+        "text" : "想"
+      },
+      {
+        "consumed" : 2,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 2,
+        "text" : "係"
+      },
+      {
+        "consumed" : 2,
+        "text" : "细"
+      },
+      {
+        "consumed" : 2,
+        "text" : "小"
+      },
+      {
+        "consumed" : 2,
+        "text" : "先"
+      },
+      {
+        "consumed" : 2,
+        "text" : "新"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "系"
+      },
+      {
+        "consumed" : 2,
+        "text" : "西"
+      },
+      {
+        "consumed" : 2,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "下"
+      },
+      {
+        "consumed" : 2,
+        "text" : "想"
+      },
+      {
+        "consumed" : 2,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 2,
+        "text" : "係"
+      }
+    ],
+    "commitAll" : "系",
+    "keys" : "xi",
+    "preedit" : "系",
+    "segmentation" : [
+      "xi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "按"
+      },
+      {
+        "consumed" : 2,
+        "text" : "俺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "安"
+      },
+      {
+        "consumed" : 2,
+        "text" : "案"
+      },
+      {
+        "consumed" : 2,
+        "text" : "暗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "岸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鞍"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "庵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "胺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "黯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铵"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "按"
+      },
+      {
+        "consumed" : 2,
+        "text" : "俺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "安"
+      },
+      {
+        "consumed" : 2,
+        "text" : "案"
+      },
+      {
+        "consumed" : 2,
+        "text" : "暗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "岸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "阿尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "阿诺"
+      }
+    ],
+    "commitAll" : "按",
+    "keys" : "an",
+    "preedit" : "按",
+    "segmentation" : [
+      "an"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 5,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      },
+      {
+        "consumed" : 3,
+        "text" : "细"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "希"
+      },
+      {
+        "consumed" : 3,
+        "text" : "溪"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 5,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      }
+    ],
+    "commitAll" : "西安",
+    "keys" : "xi'an",
+    "preedit" : "西安",
+    "segmentation" : [
+      "xi",
+      "an"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 11,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 7,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      },
+      {
+        "consumed" : 5,
+        "text" : "肿"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 11,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 7,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      }
+    ],
+    "commitAll" : "中国人",
+    "keys" : "zhongguoren",
+    "preedit" : "中国人",
+    "segmentation" : [
+      "zhong",
+      "guo",
+      "ren"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      },
+      {
+        "consumed" : 5,
+        "text" : "肿"
+      },
+      {
+        "consumed" : 5,
+        "text" : "冢"
+      },
+      {
+        "consumed" : 5,
+        "text" : "衷"
+      },
+      {
+        "consumed" : 5,
+        "text" : "盅"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      }
+    ],
+    "commitAll" : "中",
+    "keys" : "zhong",
+    "preedit" : "中",
+    "segmentation" : [
+      "zhong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "过"
+      },
+      {
+        "consumed" : 3,
+        "text" : "国"
+      },
+      {
+        "consumed" : 3,
+        "text" : "果"
+      },
+      {
+        "consumed" : 3,
+        "text" : "郭"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "裹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "過"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "國"
+      },
+      {
+        "consumed" : 3,
+        "text" : "囗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "虢"
+      },
+      {
+        "consumed" : 3,
+        "text" : "椁"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "过"
+      },
+      {
+        "consumed" : 3,
+        "text" : "国"
+      },
+      {
+        "consumed" : 3,
+        "text" : "果"
+      },
+      {
+        "consumed" : 3,
+        "text" : "郭"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "裹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "過"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掴"
+      }
+    ],
+    "commitAll" : "过",
+    "keys" : "guo",
+    "preedit" : "过",
+    "segmentation" : [
+      "guo"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "任"
+      },
+      {
+        "consumed" : 3,
+        "text" : "忍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "认"
+      },
+      {
+        "consumed" : 3,
+        "text" : "仁"
+      },
+      {
+        "consumed" : 3,
+        "text" : "刃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "仍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "韧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "壬"
+      },
+      {
+        "consumed" : 3,
+        "text" : "热闹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "扔"
+      },
+      {
+        "consumed" : 3,
+        "text" : "刄"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "任"
+      },
+      {
+        "consumed" : 3,
+        "text" : "忍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "认"
+      },
+      {
+        "consumed" : 3,
+        "text" : "仁"
+      },
+      {
+        "consumed" : 3,
+        "text" : "刃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "热闹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "热能"
+      }
+    ],
+    "commitAll" : "人",
+    "keys" : "ren",
+    "preedit" : "人",
+    "segmentation" : [
+      "ren"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "履行"
+      },
+      {
+        "consumed" : 6,
+        "text" : "旅行"
+      },
+      {
+        "consumed" : 5,
+        "text" : "滤芯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氯"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "履行"
+      },
+      {
+        "consumed" : 6,
+        "text" : "旅行"
+      },
+      {
+        "consumed" : 5,
+        "text" : "滤芯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "绿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "铝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "驴"
+      }
+    ],
+    "commitAll" : "履行",
+    "keys" : "lvxing",
+    "preedit" : "履行",
+    "segmentation" : [
+      "lv",
+      "xing"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "行"
+      },
+      {
+        "consumed" : 4,
+        "text" : "性"
+      },
+      {
+        "consumed" : 4,
+        "text" : "型"
+      },
+      {
+        "consumed" : 4,
+        "text" : "星"
+      },
+      {
+        "consumed" : 4,
+        "text" : "姓"
+      },
+      {
+        "consumed" : 4,
+        "text" : "醒"
+      },
+      {
+        "consumed" : 4,
+        "text" : "兴"
+      },
+      {
+        "consumed" : 4,
+        "text" : "形"
+      },
+      {
+        "consumed" : 4,
+        "text" : "幸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "刑"
+      },
+      {
+        "consumed" : 4,
+        "text" : "邢"
+      },
+      {
+        "consumed" : 4,
+        "text" : "杏"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "新高"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新股"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新歌"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新规"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新贵"
+      },
+      {
+        "consumed" : 4,
+        "text" : "心肝"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新光"
+      },
+      {
+        "consumed" : 4,
+        "text" : "新港"
+      }
+    ],
+    "commitAll" : "行",
+    "keys" : "xing",
+    "preedit" : "行",
+    "segmentation" : [
+      "xing"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "偶"
+      },
+      {
+        "consumed" : 2,
+        "text" : "欧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "藕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鸥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "殴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "耦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "瓯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沤"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鏂"
+      },
+      {
+        "consumed" : 2,
+        "text" : "区"
+      },
+      {
+        "consumed" : 2,
+        "text" : "歐"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "偶"
+      },
+      {
+        "consumed" : 2,
+        "text" : "欧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "藕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呕"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鸥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "殴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "耦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "瓯"
+      }
+    ],
+    "commitAll" : "偶",
+    "keys" : "iou",
+    "preedit" : "偶",
+    "segmentation" : [
+      "ou"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "照顾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "职工"
+      },
+      {
+        "consumed" : 3,
+        "text" : "主管"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中共"
+      },
+      {
+        "consumed" : 3,
+        "text" : "正规"
+      },
+      {
+        "consumed" : 3,
+        "text" : "珍贵"
+      },
+      {
+        "consumed" : 3,
+        "text" : "主观"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整改"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 3,
+        "text" : "照顾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "职工"
+      },
+      {
+        "consumed" : 3,
+        "text" : "主管"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中共"
+      }
+    ],
+    "commitAll" : "这个",
+    "keys" : "zhg",
+    "preedit" : "这个",
+    "segmentation" : [
+      "zh",
+      "g"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "方案"
+      },
+      {
+        "consumed" : 6,
+        "text" : "反感"
+      },
+      {
+        "consumed" : 4,
+        "text" : "放"
+      },
+      {
+        "consumed" : 4,
+        "text" : "方"
+      },
+      {
+        "consumed" : 4,
+        "text" : "房"
+      },
+      {
+        "consumed" : 4,
+        "text" : "防"
+      },
+      {
+        "consumed" : 4,
+        "text" : "芳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "坊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "仿"
+      },
+      {
+        "consumed" : 4,
+        "text" : "访"
+      },
+      {
+        "consumed" : 4,
+        "text" : "纺"
+      },
+      {
+        "consumed" : 4,
+        "text" : "舫"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "方案"
+      },
+      {
+        "consumed" : 6,
+        "text" : "反感"
+      },
+      {
+        "consumed" : 4,
+        "text" : "放"
+      },
+      {
+        "consumed" : 4,
+        "text" : "方"
+      },
+      {
+        "consumed" : 4,
+        "text" : "房"
+      },
+      {
+        "consumed" : 4,
+        "text" : "防"
+      },
+      {
+        "consumed" : 4,
+        "text" : "芳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "坊"
+      }
+    ],
+    "commitAll" : "方案",
+    "keys" : "fangan",
+    "preedit" : "方案",
+    "segmentation" : [
+      "fang",
+      "an"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "放"
+      },
+      {
+        "consumed" : 4,
+        "text" : "方"
+      },
+      {
+        "consumed" : 4,
+        "text" : "房"
+      },
+      {
+        "consumed" : 4,
+        "text" : "防"
+      },
+      {
+        "consumed" : 4,
+        "text" : "芳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "坊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "仿"
+      },
+      {
+        "consumed" : 4,
+        "text" : "访"
+      },
+      {
+        "consumed" : 4,
+        "text" : "纺"
+      },
+      {
+        "consumed" : 4,
+        "text" : "舫"
+      },
+      {
+        "consumed" : 4,
+        "text" : "妨"
+      },
+      {
+        "consumed" : 4,
+        "text" : "反感"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "反感"
+      },
+      {
+        "consumed" : 4,
+        "text" : "犯规"
+      },
+      {
+        "consumed" : 4,
+        "text" : "饭馆"
+      },
+      {
+        "consumed" : 4,
+        "text" : "反光"
+      },
+      {
+        "consumed" : 4,
+        "text" : "翻过"
+      },
+      {
+        "consumed" : 4,
+        "text" : "翻滚"
+      },
+      {
+        "consumed" : 4,
+        "text" : "反攻"
+      },
+      {
+        "consumed" : 4,
+        "text" : "返工"
+      }
+    ],
+    "commitAll" : "放",
+    "keys" : "fang",
+    "preedit" : "放",
+    "segmentation" : [
+      "fang"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "喜爱"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      },
+      {
+        "consumed" : 3,
+        "text" : "细"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "希"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "喜爱"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      }
+    ],
+    "commitAll" : "西安",
+    "keys" : "xi'a",
+    "preedit" : "西安",
+    "segmentation" : [
+      "xi",
+      "a"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      },
+      {
+        "consumed" : 3,
+        "text" : "细"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "希"
+      },
+      {
+        "consumed" : 3,
+        "text" : "溪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "锡"
+      },
+      {
+        "consumed" : 3,
+        "text" : "息"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "戏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      },
+      {
+        "consumed" : 3,
+        "text" : "细"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吸"
+      }
+    ],
+    "commitAll" : "系",
+    "keys" : "xi'",
+    "preedit" : "系",
+    "segmentation" : [
+      "xi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "是"
+      },
+      {
+        "consumed" : 3,
+        "text" : "时"
+      },
+      {
+        "consumed" : 3,
+        "text" : "事"
+      },
+      {
+        "consumed" : 3,
+        "text" : "使"
+      },
+      {
+        "consumed" : 3,
+        "text" : "市"
+      },
+      {
+        "consumed" : 3,
+        "text" : "式"
+      },
+      {
+        "consumed" : 3,
+        "text" : "试"
+      },
+      {
+        "consumed" : 3,
+        "text" : "石"
+      },
+      {
+        "consumed" : 3,
+        "text" : "十"
+      },
+      {
+        "consumed" : 3,
+        "text" : "室"
+      },
+      {
+        "consumed" : 3,
+        "text" : "师"
+      },
+      {
+        "consumed" : 3,
+        "text" : "诗"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "是"
+      },
+      {
+        "consumed" : 3,
+        "text" : "时"
+      },
+      {
+        "consumed" : 3,
+        "text" : "事"
+      },
+      {
+        "consumed" : 3,
+        "text" : "使"
+      },
+      {
+        "consumed" : 3,
+        "text" : "市"
+      },
+      {
+        "consumed" : 3,
+        "text" : "式"
+      },
+      {
+        "consumed" : 3,
+        "text" : "试"
+      },
+      {
+        "consumed" : 3,
+        "text" : "石"
+      }
+    ],
+    "commitAll" : "是",
+    "keys" : "shi",
+    "preedit" : "是",
+    "segmentation" : [
+      "shi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "被"
+      },
+      {
+        "consumed" : 3,
+        "text" : "呗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北"
+      },
+      {
+        "consumed" : 3,
+        "text" : "背"
+      },
+      {
+        "consumed" : 3,
+        "text" : "倍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "杯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "贝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "备"
+      },
+      {
+        "consumed" : 3,
+        "text" : "悲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "碑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "卑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "辈"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "被"
+      },
+      {
+        "consumed" : 3,
+        "text" : "呗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北"
+      },
+      {
+        "consumed" : 3,
+        "text" : "背"
+      },
+      {
+        "consumed" : 3,
+        "text" : "倍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "杯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "贝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "备"
+      }
+    ],
+    "commitAll" : "被",
+    "keys" : "bei",
+    "preedit" : "被",
+    "segmentation" : [
+      "bei"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "经"
+      },
+      {
+        "consumed" : 4,
+        "text" : "静"
+      },
+      {
+        "consumed" : 4,
+        "text" : "竟"
+      },
+      {
+        "consumed" : 4,
+        "text" : "精"
+      },
+      {
+        "consumed" : 4,
+        "text" : "景"
+      },
+      {
+        "consumed" : 4,
+        "text" : "净"
+      },
+      {
+        "consumed" : 4,
+        "text" : "京"
+      },
+      {
+        "consumed" : 4,
+        "text" : "井"
+      },
+      {
+        "consumed" : 4,
+        "text" : "惊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "镜"
+      },
+      {
+        "consumed" : 4,
+        "text" : "敬"
+      },
+      {
+        "consumed" : 4,
+        "text" : "晶"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "尽管"
+      },
+      {
+        "consumed" : 4,
+        "text" : "进攻"
+      },
+      {
+        "consumed" : 4,
+        "text" : "金刚"
+      },
+      {
+        "consumed" : 4,
+        "text" : "仅供"
+      },
+      {
+        "consumed" : 4,
+        "text" : "紧跟"
+      },
+      {
+        "consumed" : 4,
+        "text" : "筋骨"
+      },
+      {
+        "consumed" : 4,
+        "text" : "金光"
+      },
+      {
+        "consumed" : 4,
+        "text" : "禁锢"
+      }
+    ],
+    "commitAll" : "经",
+    "keys" : "jing",
+    "preedit" : "经",
+    "segmentation" : [
+      "jing"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "打"
+      },
+      {
+        "consumed" : 2,
+        "text" : "大"
+      },
+      {
+        "consumed" : 2,
+        "text" : "达"
+      },
+      {
+        "consumed" : 2,
+        "text" : "到"
+      },
+      {
+        "consumed" : 2,
+        "text" : "但"
+      },
+      {
+        "consumed" : 2,
+        "text" : "答"
+      },
+      {
+        "consumed" : 2,
+        "text" : "搭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "当"
+      },
+      {
+        "consumed" : 2,
+        "text" : "哒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "带"
+      },
+      {
+        "consumed" : 2,
+        "text" : "道"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倒"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "打"
+      },
+      {
+        "consumed" : 2,
+        "text" : "大"
+      },
+      {
+        "consumed" : 2,
+        "text" : "达"
+      },
+      {
+        "consumed" : 2,
+        "text" : "到"
+      },
+      {
+        "consumed" : 2,
+        "text" : "但"
+      },
+      {
+        "consumed" : 2,
+        "text" : "答"
+      },
+      {
+        "consumed" : 2,
+        "text" : "搭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "当"
+      }
+    ],
+    "commitAll" : "打",
+    "keys" : "da",
+    "preedit" : "打",
+    "segmentation" : [
+      "da"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "学"
+      },
+      {
+        "consumed" : 3,
+        "text" : "血"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "薛"
+      },
+      {
+        "consumed" : 3,
+        "text" : "穴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "靴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "削"
+      },
+      {
+        "consumed" : 3,
+        "text" : "彐"
+      },
+      {
+        "consumed" : 3,
+        "text" : "學"
+      },
+      {
+        "consumed" : 3,
+        "text" : "谑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鳕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "踅"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "学"
+      },
+      {
+        "consumed" : 3,
+        "text" : "血"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "薛"
+      },
+      {
+        "consumed" : 3,
+        "text" : "穴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "靴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "削"
+      },
+      {
+        "consumed" : 3,
+        "text" : "彐"
+      }
+    ],
+    "commitAll" : "学",
+    "keys" : "xue",
+    "preedit" : "学",
+    "segmentation" : [
+      "xue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 8,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 7,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      },
+      {
+        "consumed" : 5,
+        "text" : "肿"
+      },
+      {
+        "consumed" : 5,
+        "text" : "冢"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 8,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 7,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      }
+    ],
+    "commitAll" : "中国",
+    "keys" : "zhongguo",
+    "preedit" : "中国",
+    "segmentation" : [
+      "zhong",
+      "guo"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "我们"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "涡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "蜗"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "我们"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      }
+    ],
+    "commitAll" : "我们",
+    "keys" : "women",
+    "preedit" : "我们",
+    "segmentation" : [
+      "wo",
+      "men"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 7,
+        "text" : "现在"
+      },
+      {
+        "consumed" : 7,
+        "text" : "先在"
+      },
+      {
+        "consumed" : 4,
+        "text" : "先"
+      },
+      {
+        "consumed" : 4,
+        "text" : "线"
+      },
+      {
+        "consumed" : 4,
+        "text" : "县"
+      },
+      {
+        "consumed" : 4,
+        "text" : "现"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "咁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "闲"
+      },
+      {
+        "consumed" : 4,
+        "text" : "仙"
+      },
+      {
+        "consumed" : 4,
+        "text" : "显"
+      },
+      {
+        "consumed" : 4,
+        "text" : "嫌"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 7,
+        "text" : "现在"
+      },
+      {
+        "consumed" : 7,
+        "text" : "先在"
+      },
+      {
+        "consumed" : 4,
+        "text" : "先"
+      },
+      {
+        "consumed" : 4,
+        "text" : "线"
+      },
+      {
+        "consumed" : 4,
+        "text" : "县"
+      },
+      {
+        "consumed" : 4,
+        "text" : "现"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西岸"
+      }
+    ],
+    "commitAll" : "现在",
+    "keys" : "xianzai",
+    "preedit" : "现在",
+    "segmentation" : [
+      "xian",
+      "zai"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 12,
+        "text" : "北京大学"
+      },
+      {
+        "consumed" : 7,
+        "text" : "北京"
+      },
+      {
+        "consumed" : 7,
+        "text" : "背景"
+      },
+      {
+        "consumed" : 6,
+        "text" : "被禁"
+      },
+      {
+        "consumed" : 5,
+        "text" : "北极"
+      },
+      {
+        "consumed" : 3,
+        "text" : "被"
+      },
+      {
+        "consumed" : 3,
+        "text" : "呗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北"
+      },
+      {
+        "consumed" : 3,
+        "text" : "背"
+      },
+      {
+        "consumed" : 3,
+        "text" : "倍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "杯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "贝"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 12,
+        "text" : "北京大学"
+      },
+      {
+        "consumed" : 7,
+        "text" : "北京"
+      },
+      {
+        "consumed" : 7,
+        "text" : "背景"
+      },
+      {
+        "consumed" : 6,
+        "text" : "被禁"
+      },
+      {
+        "consumed" : 5,
+        "text" : "北极"
+      },
+      {
+        "consumed" : 3,
+        "text" : "被"
+      },
+      {
+        "consumed" : 3,
+        "text" : "呗"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北"
+      }
+    ],
+    "commitAll" : "北京大学",
+    "keys" : "beijingdaxue",
+    "preedit" : "北京大学",
+    "segmentation" : [
+      "bei",
+      "jing",
+      "da",
+      "xue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 7,
+        "text" : "我想"
+      },
+      {
+        "consumed" : 6,
+        "text" : "我先"
+      },
+      {
+        "consumed" : 6,
+        "text" : "我县"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "涡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倭"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 7,
+        "text" : "我想"
+      },
+      {
+        "consumed" : 6,
+        "text" : "我先"
+      },
+      {
+        "consumed" : 6,
+        "text" : "我县"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      }
+    ],
+    "commitAll" : "我想去北京大学",
+    "keys" : "woxiangqubeijingdaxue",
+    "preedit" : "我想去北京大学",
+    "segmentation" : [
+      "wo",
+      "xiang",
+      "qu",
+      "bei",
+      "jing",
+      "da",
+      "xue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 8,
+        "text" : "中华"
+      },
+      {
+        "consumed" : 8,
+        "text" : "种花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中化"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      },
+      {
+        "consumed" : 5,
+        "text" : "肿"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 8,
+        "text" : "中华"
+      },
+      {
+        "consumed" : 8,
+        "text" : "种花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中化"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      }
+    ],
+    "commitAll" : "中华人民共和国",
+    "keys" : "zhonghuarenmingongheguo",
+    "preedit" : "中华人民共和国",
+    "segmentation" : [
+      "zhong",
+      "hua",
+      "ren",
+      "min",
+      "gong",
+      "he",
+      "guo"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腻"
+      },
+      {
+        "consumed" : 2,
+        "text" : "逆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "昵"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      }
+    ],
+    "commitAll" : "你好i",
+    "keys" : "nihaoi",
+    "preedit" : "你好i",
+    "segmentation" : [
+      "ni",
+      "hao",
+      "i"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "女孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "您好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你会"
+      },
+      {
+        "consumed" : 2,
+        "text" : "男孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你还"
+      },
+      {
+        "consumed" : 2,
+        "text" : "内涵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年后"
+      },
+      {
+        "consumed" : 2,
+        "text" : "农户"
+      },
+      {
+        "consumed" : 2,
+        "text" : "内核"
+      },
+      {
+        "consumed" : 2,
+        "text" : "南海"
+      },
+      {
+        "consumed" : 2,
+        "text" : "农行"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "女孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "您好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你会"
+      },
+      {
+        "consumed" : 2,
+        "text" : "男孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你还"
+      },
+      {
+        "consumed" : 2,
+        "text" : "内涵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年后"
+      }
+    ],
+    "commitAll" : "你好",
+    "keys" : "nh",
+    "preedit" : "你好",
+    "segmentation" : [
+      "n",
+      "h"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最高"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "足够"
+      },
+      {
+        "consumed" : 2,
+        "text" : "照顾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "资格"
+      },
+      {
+        "consumed" : 2,
+        "text" : "职工"
+      },
+      {
+        "consumed" : 2,
+        "text" : "主管"
+      },
+      {
+        "consumed" : 2,
+        "text" : "做过"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中共"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最高"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "足够"
+      },
+      {
+        "consumed" : 2,
+        "text" : "照顾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "资格"
+      }
+    ],
+    "commitAll" : "这个",
+    "keys" : "zg",
+    "preedit" : "这个",
+    "segmentation" : [
+      "z",
+      "g"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "这个人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "张国荣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最高"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "足够"
+      },
+      {
+        "consumed" : 2,
+        "text" : "照顾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "资格"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "这个人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "张国荣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最高"
+      }
+    ],
+    "commitAll" : "中国人",
+    "keys" : "zgr",
+    "preedit" : "中国人",
+    "segmentation" : [
+      "z",
+      "g",
+      "r"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "北京大学"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较多"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较大"
+      },
+      {
+        "consumed" : 3,
+        "text" : "不记得"
+      },
+      {
+        "consumed" : 3,
+        "text" : "不见得"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较低"
+      },
+      {
+        "consumed" : 3,
+        "text" : "报价单"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北京队"
+      },
+      {
+        "consumed" : 2,
+        "text" : "比较"
+      },
+      {
+        "consumed" : 2,
+        "text" : "北京"
+      },
+      {
+        "consumed" : 2,
+        "text" : "不仅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "毕竟"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "北京大学"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较多"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较大"
+      },
+      {
+        "consumed" : 3,
+        "text" : "不记得"
+      },
+      {
+        "consumed" : 3,
+        "text" : "不见得"
+      },
+      {
+        "consumed" : 3,
+        "text" : "比较低"
+      },
+      {
+        "consumed" : 3,
+        "text" : "报价单"
+      },
+      {
+        "consumed" : 3,
+        "text" : "北京队"
+      }
+    ],
+    "commitAll" : "北京大学",
+    "keys" : "bjdx",
+    "preedit" : "北京大学",
+    "segmentation" : [
+      "b",
+      "j",
+      "d",
+      "x"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中共"
+      },
+      {
+        "consumed" : 6,
+        "text" : "忠告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "终归"
+      },
+      {
+        "consumed" : 6,
+        "text" : "重工"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中共"
+      },
+      {
+        "consumed" : 6,
+        "text" : "忠告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "终归"
+      },
+      {
+        "consumed" : 6,
+        "text" : "重工"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      }
+    ],
+    "commitAll" : "中国",
+    "keys" : "zhongg",
+    "preedit" : "中国",
+    "segmentation" : [
+      "zhong",
+      "g"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你会"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你还"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你和"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你很"
+      },
+      {
+        "consumed" : 3,
+        "text" : "拟合"
+      },
+      {
+        "consumed" : 3,
+        "text" : "霓虹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你会"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你还"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你和"
+      },
+      {
+        "consumed" : 3,
+        "text" : "你很"
+      },
+      {
+        "consumed" : 3,
+        "text" : "拟合"
+      },
+      {
+        "consumed" : 3,
+        "text" : "霓虹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      }
+    ],
+    "commitAll" : "你好",
+    "keys" : "nih",
+    "preedit" : "你好",
+    "segmentation" : [
+      "ni",
+      "h"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "我们"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我没"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我妈"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我吗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "涡"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "我们"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我没"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我妈"
+      },
+      {
+        "consumed" : 3,
+        "text" : "我吗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      }
+    ],
+    "commitAll" : "我们",
+    "keys" : "wom",
+    "preedit" : "我们",
+    "segmentation" : [
+      "wo",
+      "m"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      },
+      {
+        "consumed" : 5,
+        "text" : "肿"
+      },
+      {
+        "consumed" : 5,
+        "text" : "冢"
+      },
+      {
+        "consumed" : 5,
+        "text" : "衷"
+      },
+      {
+        "consumed" : 5,
+        "text" : "盅"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "种"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "钟"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "众"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "终"
+      }
+    ],
+    "commitAll" : "中u哦",
+    "keys" : "zhonguo",
+    "preedit" : "中u哦",
+    "segmentation" : [
+      "zhong",
+      "u",
+      "o"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "握紧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      },
+      {
+        "consumed" : 2,
+        "text" : "涡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "蜗"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "握紧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "喔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "卧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "硪"
+      }
+    ],
+    "commitAll" : "我今天去北京大学看朋友",
+    "keys" : "wojintianqubeijingdaxuekanpengyou",
+    "preedit" : "我今天去北京大学看朋友",
+    "segmentation" : [
+      "wo",
+      "jin",
+      "tian",
+      "qu",
+      "bei",
+      "jing",
+      "da",
+      "xue",
+      "kan",
+      "peng",
+      "you"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "中国人民"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "这个人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "张国荣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "最高"
+      },
+      {
+        "consumed" : 2,
+        "text" : "找个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "足够"
+      },
+      {
+        "consumed" : 2,
+        "text" : "照顾"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "中国人民"
+      },
+      {
+        "consumed" : 3,
+        "text" : "中国人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "这个人"
+      },
+      {
+        "consumed" : 3,
+        "text" : "张国荣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "整个人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "这个"
+      },
+      {
+        "consumed" : 2,
+        "text" : "中国"
+      },
+      {
+        "consumed" : 2,
+        "text" : "整个"
+      }
+    ],
+    "commitAll" : "中国人民共和国晚上北京大学清华大学这个科学院",
+    "keys" : "zgrmghgwsbjdxqhdxzgkxy",
+    "preedit" : "中国人民共和国晚上北京大学清华大学这个科学院",
+    "segmentation" : [
+      "z",
+      "g",
+      "r",
+      "m",
+      "g",
+      "h",
+      "g",
+      "w",
+      "s",
+      "b",
+      "j",
+      "d",
+      "x",
+      "q",
+      "h",
+      "d",
+      "x",
+      "z",
+      "g",
+      "k",
+      "x",
+      "y"
+    ]
+  }
+]

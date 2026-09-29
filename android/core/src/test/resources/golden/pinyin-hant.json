@@ -1,0 +1,5501 @@
+[
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 5,
+        "text" : "妳好"
+      },
+      {
+        "consumed" : 5,
+        "text" : "逆號"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "擬"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "逆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "兒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "膩"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 5,
+        "text" : "妳好"
+      },
+      {
+        "consumed" : 5,
+        "text" : "逆號"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "擬"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      }
+    ],
+    "commitAll" : "你好",
+    "keys" : "nihao",
+    "preedit" : "你好",
+    "segmentation" : [
+      "ni",
+      "hao"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "台北"
+      },
+      {
+        "consumed" : 6,
+        "text" : "泰北"
+      },
+      {
+        "consumed" : 6,
+        "text" : "臺北"
+      },
+      {
+        "consumed" : 3,
+        "text" : "台"
+      },
+      {
+        "consumed" : 3,
+        "text" : "太"
+      },
+      {
+        "consumed" : 3,
+        "text" : "態"
+      },
+      {
+        "consumed" : 3,
+        "text" : "泰"
+      },
+      {
+        "consumed" : 3,
+        "text" : "胎"
+      },
+      {
+        "consumed" : 3,
+        "text" : "抬"
+      },
+      {
+        "consumed" : 3,
+        "text" : "颱"
+      },
+      {
+        "consumed" : 3,
+        "text" : "汰"
+      },
+      {
+        "consumed" : 3,
+        "text" : "檯"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "台北"
+      },
+      {
+        "consumed" : 6,
+        "text" : "泰北"
+      },
+      {
+        "consumed" : 6,
+        "text" : "臺北"
+      },
+      {
+        "consumed" : 3,
+        "text" : "台"
+      },
+      {
+        "consumed" : 3,
+        "text" : "太"
+      },
+      {
+        "consumed" : 3,
+        "text" : "態"
+      },
+      {
+        "consumed" : 3,
+        "text" : "泰"
+      },
+      {
+        "consumed" : 3,
+        "text" : "胎"
+      }
+    ],
+    "commitAll" : "台北",
+    "keys" : "taibei",
+    "preedit" : "台北",
+    "segmentation" : [
+      "tai",
+      "bei"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 8,
+        "text" : "中華"
+      },
+      {
+        "consumed" : 8,
+        "text" : "種花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "重話"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中環"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中黃"
+      },
+      {
+        "consumed" : 7,
+        "text" : "種戶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "眾"
+      },
+      {
+        "consumed" : 5,
+        "text" : "終"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鐘"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 8,
+        "text" : "中華"
+      },
+      {
+        "consumed" : 8,
+        "text" : "種花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "重話"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中環"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中黃"
+      },
+      {
+        "consumed" : 7,
+        "text" : "種戶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      }
+    ],
+    "commitAll" : "中華",
+    "keys" : "zhonghua",
+    "preedit" : "中華",
+    "segmentation" : [
+      "zhong",
+      "hua"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "我們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "臥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "萵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "斡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "幄"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "我們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "臥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      }
+    ],
+    "commitAll" : "我們",
+    "keys" : "women",
+    "preedit" : "我們",
+    "segmentation" : [
+      "wo",
+      "men"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 7,
+        "text" : "電腦"
+      },
+      {
+        "consumed" : 7,
+        "text" : "💻"
+      },
+      {
+        "consumed" : 7,
+        "text" : "🖥"
+      },
+      {
+        "consumed" : 4,
+        "text" : "電"
+      },
+      {
+        "consumed" : 4,
+        "text" : "點"
+      },
+      {
+        "consumed" : 4,
+        "text" : "店"
+      },
+      {
+        "consumed" : 4,
+        "text" : "典"
+      },
+      {
+        "consumed" : 4,
+        "text" : "殿"
+      },
+      {
+        "consumed" : 4,
+        "text" : "顛"
+      },
+      {
+        "consumed" : 4,
+        "text" : "墊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "甸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "奠"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 7,
+        "text" : "電腦"
+      },
+      {
+        "consumed" : 7,
+        "text" : "💻"
+      },
+      {
+        "consumed" : 7,
+        "text" : "🖥"
+      },
+      {
+        "consumed" : 4,
+        "text" : "電"
+      },
+      {
+        "consumed" : 4,
+        "text" : "點"
+      },
+      {
+        "consumed" : 4,
+        "text" : "店"
+      },
+      {
+        "consumed" : 4,
+        "text" : "典"
+      },
+      {
+        "consumed" : 4,
+        "text" : "殿"
+      }
+    ],
+    "commitAll" : "電腦",
+    "keys" : "diannao",
+    "preedit" : "電腦",
+    "segmentation" : [
+      "dian",
+      "nao"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 14,
+        "text" : "中華民國"
+      },
+      {
+        "consumed" : 14,
+        "text" : "🇹🇼"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中華"
+      },
+      {
+        "consumed" : 8,
+        "text" : "種花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "重話"
+      },
+      {
+        "consumed" : 7,
+        "text" : "種戶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "眾"
+      },
+      {
+        "consumed" : 5,
+        "text" : "終"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鐘"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 14,
+        "text" : "中華民國"
+      },
+      {
+        "consumed" : 14,
+        "text" : "🇹🇼"
+      },
+      {
+        "consumed" : 8,
+        "text" : "中華"
+      },
+      {
+        "consumed" : 8,
+        "text" : "種花"
+      },
+      {
+        "consumed" : 8,
+        "text" : "重話"
+      },
+      {
+        "consumed" : 7,
+        "text" : "種戶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      }
+    ],
+    "commitAll" : "中華民國",
+    "keys" : "zhonghuaminguo",
+    "preedit" : "中華民國",
+    "segmentation" : [
+      "zhong",
+      "hua",
+      "min",
+      "guo"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 7,
+        "text" : "今天"
+      },
+      {
+        "consumed" : 3,
+        "text" : "進"
+      },
+      {
+        "consumed" : 3,
+        "text" : "今"
+      },
+      {
+        "consumed" : 3,
+        "text" : "金"
+      },
+      {
+        "consumed" : 3,
+        "text" : "近"
+      },
+      {
+        "consumed" : 3,
+        "text" : "僅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "緊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "盡"
+      },
+      {
+        "consumed" : 3,
+        "text" : "禁"
+      },
+      {
+        "consumed" : 3,
+        "text" : "儘"
+      },
+      {
+        "consumed" : 3,
+        "text" : "津"
+      },
+      {
+        "consumed" : 3,
+        "text" : "錦"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 7,
+        "text" : "今天"
+      },
+      {
+        "consumed" : 3,
+        "text" : "紀念"
+      },
+      {
+        "consumed" : 3,
+        "text" : "幾年"
+      },
+      {
+        "consumed" : 3,
+        "text" : "技能"
+      },
+      {
+        "consumed" : 3,
+        "text" : "機能"
+      },
+      {
+        "consumed" : 3,
+        "text" : "妓女"
+      },
+      {
+        "consumed" : 3,
+        "text" : "急難"
+      },
+      {
+        "consumed" : 3,
+        "text" : "濟南"
+      }
+    ],
+    "commitAll" : "今天天氣很好",
+    "keys" : "jintiantianqihenhao",
+    "preedit" : "今天天氣很好",
+    "segmentation" : [
+      "jin",
+      "tian",
+      "tian",
+      "qi",
+      "hen",
+      "hao"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "現"
+      },
+      {
+        "consumed" : 4,
+        "text" : "先"
+      },
+      {
+        "consumed" : 4,
+        "text" : "見"
+      },
+      {
+        "consumed" : 4,
+        "text" : "線"
+      },
+      {
+        "consumed" : 4,
+        "text" : "縣"
+      },
+      {
+        "consumed" : 4,
+        "text" : "顯"
+      },
+      {
+        "consumed" : 4,
+        "text" : "限"
+      },
+      {
+        "consumed" : 4,
+        "text" : "險"
+      },
+      {
+        "consumed" : 4,
+        "text" : "獻"
+      },
+      {
+        "consumed" : 4,
+        "text" : "洗"
+      },
+      {
+        "consumed" : 4,
+        "text" : "閒"
+      },
+      {
+        "consumed" : 4,
+        "text" : "鮮"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 4,
+        "text" : "下年"
+      },
+      {
+        "consumed" : 4,
+        "text" : "醯胺"
+      },
+      {
+        "consumed" : 4,
+        "text" : "下女"
+      },
+      {
+        "consumed" : 4,
+        "text" : "俠女"
+      },
+      {
+        "consumed" : 4,
+        "text" : "狎暱"
+      },
+      {
+        "consumed" : 4,
+        "text" : "瞎鬧"
+      }
+    ],
+    "commitAll" : "現",
+    "keys" : "xian",
+    "preedit" : "現",
+    "segmentation" : [
+      "xian"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 5,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 5,
+        "text" : "醯胺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "希"
+      },
+      {
+        "consumed" : 3,
+        "text" : "習"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      },
+      {
+        "consumed" : 3,
+        "text" : "喜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "席"
+      },
+      {
+        "consumed" : 3,
+        "text" : "息"
+      },
+      {
+        "consumed" : 3,
+        "text" : "細"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "西岸"
+      },
+      {
+        "consumed" : 5,
+        "text" : "西安"
+      },
+      {
+        "consumed" : 5,
+        "text" : "醯胺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "西"
+      },
+      {
+        "consumed" : 3,
+        "text" : "系"
+      },
+      {
+        "consumed" : 3,
+        "text" : "希"
+      },
+      {
+        "consumed" : 3,
+        "text" : "習"
+      },
+      {
+        "consumed" : 3,
+        "text" : "係"
+      }
+    ],
+    "commitAll" : "西岸",
+    "keys" : "xi'an",
+    "preedit" : "西岸",
+    "segmentation" : [
+      "xi",
+      "an"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "女孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年後"
+      },
+      {
+        "consumed" : 2,
+        "text" : "男孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "南韓"
+      },
+      {
+        "consumed" : 2,
+        "text" : "內涵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你會"
+      },
+      {
+        "consumed" : 2,
+        "text" : "濃厚"
+      },
+      {
+        "consumed" : 2,
+        "text" : "農會"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年會"
+      },
+      {
+        "consumed" : 2,
+        "text" : "內湖"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你好"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腦海"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "女孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "年後"
+      },
+      {
+        "consumed" : 2,
+        "text" : "男孩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "南韓"
+      },
+      {
+        "consumed" : 2,
+        "text" : "內涵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你會"
+      },
+      {
+        "consumed" : 2,
+        "text" : "濃厚"
+      },
+      {
+        "consumed" : 2,
+        "text" : "農會"
+      }
+    ],
+    "commitAll" : "女孩",
+    "keys" : "nh",
+    "preedit" : "女孩",
+    "segmentation" : [
+      "n",
+      "h"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "中國"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中共"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中廣"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中高"
+      },
+      {
+        "consumed" : 6,
+        "text" : "忠告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中鋼"
+      },
+      {
+        "consumed" : 6,
+        "text" : "重工"
+      },
+      {
+        "consumed" : 6,
+        "text" : "鐘鼓"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中谷"
+      },
+      {
+        "consumed" : 6,
+        "text" : "終歸"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中固"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "中國"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中共"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中廣"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中高"
+      },
+      {
+        "consumed" : 6,
+        "text" : "忠告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中古"
+      },
+      {
+        "consumed" : 6,
+        "text" : "中鋼"
+      },
+      {
+        "consumed" : 5,
+        "text" : "中"
+      }
+    ],
+    "commitAll" : "中國",
+    "keys" : "zhongg",
+    "preedit" : "中國",
+    "segmentation" : [
+      "zhong",
+      "g"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "旅行"
+      },
+      {
+        "consumed" : 6,
+        "text" : "履行"
+      },
+      {
+        "consumed" : 5,
+        "text" : "履新"
+      },
+      {
+        "consumed" : 4,
+        "text" : "縷析"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "綠"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呂"
+      },
+      {
+        "consumed" : 2,
+        "text" : "履"
+      },
+      {
+        "consumed" : 2,
+        "text" : "侶"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "旅行"
+      },
+      {
+        "consumed" : 6,
+        "text" : "履行"
+      },
+      {
+        "consumed" : 5,
+        "text" : "履新"
+      },
+      {
+        "consumed" : 4,
+        "text" : "縷析"
+      },
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慮"
+      }
+    ],
+    "commitAll" : "旅行",
+    "keys" : "lvxing",
+    "preedit" : "旅行",
+    "segmentation" : [
+      "lv",
+      "xing"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "撂"
+      },
+      {
+        "consumed" : 3,
+        "text" : "剠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "摾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "擽"
+      },
+      {
+        "consumed" : 3,
+        "text" : "㑼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "㨼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "䌎"
+      },
+      {
+        "consumed" : 3,
+        "text" : "攊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "畧"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "撂"
+      },
+      {
+        "consumed" : 3,
+        "text" : "剠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "摾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "擽"
+      },
+      {
+        "consumed" : 3,
+        "text" : "驢兒"
+      }
+    ],
+    "commitAll" : "略",
+    "keys" : "lve",
+    "preedit" : "略",
+    "segmentation" : [
+      "lve"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "虐"
+      },
+      {
+        "consumed" : 3,
+        "text" : "謔"
+      },
+      {
+        "consumed" : 3,
+        "text" : "瘧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "嚯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "硸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "努"
+      },
+      {
+        "consumed" : 2,
+        "text" : "怒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "奴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "弩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "駑"
+      },
+      {
+        "consumed" : 2,
+        "text" : "孥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "砮"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "虐"
+      },
+      {
+        "consumed" : 3,
+        "text" : "謔"
+      },
+      {
+        "consumed" : 3,
+        "text" : "瘧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "嚯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "硸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "努"
+      },
+      {
+        "consumed" : 2,
+        "text" : "怒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "奴"
+      }
+    ],
+    "commitAll" : "虐",
+    "keys" : "nue",
+    "preedit" : "虐",
+    "segmentation" : [
+      "nue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "把"
+      },
+      {
+        "consumed" : 2,
+        "text" : "八"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "巴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "爸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "罷"
+      },
+      {
+        "consumed" : 2,
+        "text" : "霸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "保"
+      },
+      {
+        "consumed" : 2,
+        "text" : "報"
+      },
+      {
+        "consumed" : 2,
+        "text" : "百"
+      },
+      {
+        "consumed" : 2,
+        "text" : "辦"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "把"
+      },
+      {
+        "consumed" : 2,
+        "text" : "八"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "巴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "爸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "罷"
+      },
+      {
+        "consumed" : 2,
+        "text" : "霸"
+      }
+    ],
+    "commitAll" : "把",
+    "keys" : "ba",
+    "preedit" : "把",
+    "segmentation" : [
+      "ba"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "破"
+      },
+      {
+        "consumed" : 2,
+        "text" : "波"
+      },
+      {
+        "consumed" : 2,
+        "text" : "迫"
+      },
+      {
+        "consumed" : 2,
+        "text" : "坡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "婆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "頗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "潑"
+      },
+      {
+        "consumed" : 2,
+        "text" : "剖"
+      },
+      {
+        "consumed" : 2,
+        "text" : "魄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "珀"
+      },
+      {
+        "consumed" : 2,
+        "text" : "朴"
+      },
+      {
+        "consumed" : 2,
+        "text" : "醱"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "破"
+      },
+      {
+        "consumed" : 2,
+        "text" : "波"
+      },
+      {
+        "consumed" : 2,
+        "text" : "迫"
+      },
+      {
+        "consumed" : 2,
+        "text" : "坡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "婆"
+      },
+      {
+        "consumed" : 2,
+        "text" : "頗"
+      },
+      {
+        "consumed" : 2,
+        "text" : "潑"
+      },
+      {
+        "consumed" : 2,
+        "text" : "剖"
+      }
+    ],
+    "commitAll" : "破",
+    "keys" : "po",
+    "preedit" : "破",
+    "segmentation" : [
+      "po"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "麼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "美"
+      },
+      {
+        "consumed" : 2,
+        "text" : "每"
+      },
+      {
+        "consumed" : 2,
+        "text" : "門"
+      },
+      {
+        "consumed" : 2,
+        "text" : "媒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "夢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "盟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "梅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "蒙"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "麼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "美"
+      },
+      {
+        "consumed" : 2,
+        "text" : "每"
+      },
+      {
+        "consumed" : 2,
+        "text" : "門"
+      },
+      {
+        "consumed" : 2,
+        "text" : "媒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "夢"
+      }
+    ],
+    "commitAll" : "麼",
+    "keys" : "me",
+    "preedit" : "麼",
+    "segmentation" : [
+      "me"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "風"
+      },
+      {
+        "consumed" : 4,
+        "text" : "豐"
+      },
+      {
+        "consumed" : 4,
+        "text" : "封"
+      },
+      {
+        "consumed" : 4,
+        "text" : "峰"
+      },
+      {
+        "consumed" : 4,
+        "text" : "鳳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "奉"
+      },
+      {
+        "consumed" : 4,
+        "text" : "鋒"
+      },
+      {
+        "consumed" : 4,
+        "text" : "逢"
+      },
+      {
+        "consumed" : 4,
+        "text" : "縫"
+      },
+      {
+        "consumed" : 4,
+        "text" : "瘋"
+      },
+      {
+        "consumed" : 4,
+        "text" : "諷"
+      },
+      {
+        "consumed" : 4,
+        "text" : "蜂"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "分工"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分割"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分給"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分隔"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分館"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分國"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分光"
+      },
+      {
+        "consumed" : 4,
+        "text" : "分過"
+      }
+    ],
+    "commitAll" : "風",
+    "keys" : "feng",
+    "preedit" : "風",
+    "segmentation" : [
+      "feng"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "丟"
+      },
+      {
+        "consumed" : 3,
+        "text" : "厾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "銩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "丢"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "丟"
+      },
+      {
+        "consumed" : 3,
+        "text" : "厾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "銩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "丢"
+      }
+    ],
+    "commitAll" : "丟",
+    "keys" : "diu",
+    "preedit" : "丟",
+    "segmentation" : [
+      "diu"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "推"
+      },
+      {
+        "consumed" : 3,
+        "text" : "退"
+      },
+      {
+        "consumed" : 3,
+        "text" : "腿"
+      },
+      {
+        "consumed" : 3,
+        "text" : "頹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蛻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蓷"
+      },
+      {
+        "consumed" : 3,
+        "text" : "隤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "魋"
+      },
+      {
+        "consumed" : 3,
+        "text" : "橔"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蹪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "駾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "螁"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "推"
+      },
+      {
+        "consumed" : 3,
+        "text" : "退"
+      },
+      {
+        "consumed" : 3,
+        "text" : "腿"
+      },
+      {
+        "consumed" : 3,
+        "text" : "頹"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蛻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蓷"
+      },
+      {
+        "consumed" : 3,
+        "text" : "隤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "魋"
+      }
+    ],
+    "commitAll" : "推",
+    "keys" : "tui",
+    "preedit" : "推",
+    "segmentation" : [
+      "tui"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "女"
+      },
+      {
+        "consumed" : 2,
+        "text" : "忸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "籹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "釹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "𥫭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "𧴱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䋈"
+      },
+      {
+        "consumed" : 2,
+        "text" : "恧"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衄"
+      },
+      {
+        "consumed" : 2,
+        "text" : "朒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "㵖"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䘐"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "女"
+      },
+      {
+        "consumed" : 2,
+        "text" : "忸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "籹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "釹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "𥫭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "𧴱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䋈"
+      },
+      {
+        "consumed" : 2,
+        "text" : "恧"
+      }
+    ],
+    "commitAll" : "女",
+    "keys" : "nv",
+    "preedit" : "女",
+    "segmentation" : [
+      "nv"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "綠"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呂"
+      },
+      {
+        "consumed" : 2,
+        "text" : "履"
+      },
+      {
+        "consumed" : 2,
+        "text" : "侶"
+      },
+      {
+        "consumed" : 2,
+        "text" : "濾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鋁"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氯"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "率"
+      },
+      {
+        "consumed" : 2,
+        "text" : "旅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "律"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "綠"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呂"
+      },
+      {
+        "consumed" : 2,
+        "text" : "履"
+      },
+      {
+        "consumed" : 2,
+        "text" : "侶"
+      }
+    ],
+    "commitAll" : "率",
+    "keys" : "lv",
+    "preedit" : "率",
+    "segmentation" : [
+      "lv"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "撂"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蓼莪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "剠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "摾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "擽"
+      },
+      {
+        "consumed" : 3,
+        "text" : "㑼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "㨼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "䌎"
+      },
+      {
+        "consumed" : 3,
+        "text" : "攊"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "略"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "撂"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蓼莪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "剠"
+      },
+      {
+        "consumed" : 3,
+        "text" : "摾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鋝"
+      },
+      {
+        "consumed" : 3,
+        "text" : "擽"
+      }
+    ],
+    "commitAll" : "略",
+    "keys" : "lue",
+    "preedit" : "略",
+    "segmentation" : [
+      "lue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "公"
+      },
+      {
+        "consumed" : 4,
+        "text" : "工"
+      },
+      {
+        "consumed" : 4,
+        "text" : "共"
+      },
+      {
+        "consumed" : 4,
+        "text" : "供"
+      },
+      {
+        "consumed" : 4,
+        "text" : "功"
+      },
+      {
+        "consumed" : 4,
+        "text" : "攻"
+      },
+      {
+        "consumed" : 4,
+        "text" : "宮"
+      },
+      {
+        "consumed" : 4,
+        "text" : "貢"
+      },
+      {
+        "consumed" : 4,
+        "text" : "恭"
+      },
+      {
+        "consumed" : 4,
+        "text" : "弓"
+      },
+      {
+        "consumed" : 4,
+        "text" : "拱"
+      },
+      {
+        "consumed" : 4,
+        "text" : "躬"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "公"
+      },
+      {
+        "consumed" : 4,
+        "text" : "工"
+      },
+      {
+        "consumed" : 4,
+        "text" : "共"
+      },
+      {
+        "consumed" : 4,
+        "text" : "供"
+      },
+      {
+        "consumed" : 4,
+        "text" : "功"
+      },
+      {
+        "consumed" : 4,
+        "text" : "攻"
+      },
+      {
+        "consumed" : 4,
+        "text" : "宮"
+      },
+      {
+        "consumed" : 4,
+        "text" : "貢"
+      }
+    ],
+    "commitAll" : "公",
+    "keys" : "gong",
+    "preedit" : "公",
+    "segmentation" : [
+      "gong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "困"
+      },
+      {
+        "consumed" : 3,
+        "text" : "昆"
+      },
+      {
+        "consumed" : 3,
+        "text" : "坤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "堃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "崑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "焜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "捆"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鯤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "綑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "睏"
+      },
+      {
+        "consumed" : 3,
+        "text" : "錕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "琨"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "困"
+      },
+      {
+        "consumed" : 3,
+        "text" : "昆"
+      },
+      {
+        "consumed" : 3,
+        "text" : "坤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "堃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "苦難"
+      },
+      {
+        "consumed" : 3,
+        "text" : "苦惱"
+      },
+      {
+        "consumed" : 3,
+        "text" : "哭鬧"
+      },
+      {
+        "consumed" : 3,
+        "text" : "酷虐"
+      }
+    ],
+    "commitAll" : "困",
+    "keys" : "kun",
+    "preedit" : "困",
+    "segmentation" : [
+      "kun"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "或"
+      },
+      {
+        "consumed" : 3,
+        "text" : "活"
+      },
+      {
+        "consumed" : 3,
+        "text" : "獲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "火"
+      },
+      {
+        "consumed" : 3,
+        "text" : "貨"
+      },
+      {
+        "consumed" : 3,
+        "text" : "禍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "惑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "夥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "伙"
+      },
+      {
+        "consumed" : 3,
+        "text" : "霍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "穫"
+      },
+      {
+        "consumed" : 3,
+        "text" : "豁"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "或"
+      },
+      {
+        "consumed" : 3,
+        "text" : "活"
+      },
+      {
+        "consumed" : 3,
+        "text" : "獲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "火"
+      },
+      {
+        "consumed" : 3,
+        "text" : "貨"
+      },
+      {
+        "consumed" : 3,
+        "text" : "禍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "惑"
+      },
+      {
+        "consumed" : 3,
+        "text" : "互毆"
+      }
+    ],
+    "commitAll" : "或",
+    "keys" : "huo",
+    "preedit" : "或",
+    "segmentation" : [
+      "huo"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "局"
+      },
+      {
+        "consumed" : 2,
+        "text" : "具"
+      },
+      {
+        "consumed" : 2,
+        "text" : "舉"
+      },
+      {
+        "consumed" : 2,
+        "text" : "據"
+      },
+      {
+        "consumed" : 2,
+        "text" : "劇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "居"
+      },
+      {
+        "consumed" : 2,
+        "text" : "句"
+      },
+      {
+        "consumed" : 2,
+        "text" : "距"
+      },
+      {
+        "consumed" : 2,
+        "text" : "聚"
+      },
+      {
+        "consumed" : 2,
+        "text" : "巨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "俱"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "局"
+      },
+      {
+        "consumed" : 2,
+        "text" : "具"
+      },
+      {
+        "consumed" : 2,
+        "text" : "舉"
+      },
+      {
+        "consumed" : 2,
+        "text" : "據"
+      },
+      {
+        "consumed" : 2,
+        "text" : "劇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "居"
+      },
+      {
+        "consumed" : 2,
+        "text" : "句"
+      },
+      {
+        "consumed" : 2,
+        "text" : "距"
+      }
+    ],
+    "commitAll" : "局",
+    "keys" : "ju",
+    "preedit" : "局",
+    "segmentation" : [
+      "ju"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "覺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "決"
+      },
+      {
+        "consumed" : 3,
+        "text" : "絕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掘"
+      },
+      {
+        "consumed" : 3,
+        "text" : "爵"
+      },
+      {
+        "consumed" : 3,
+        "text" : "巨額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "訣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鉅額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "崛"
+      },
+      {
+        "consumed" : 3,
+        "text" : "抉"
+      },
+      {
+        "consumed" : 3,
+        "text" : "厥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "獗"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "覺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "決"
+      },
+      {
+        "consumed" : 3,
+        "text" : "絕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "掘"
+      },
+      {
+        "consumed" : 3,
+        "text" : "爵"
+      },
+      {
+        "consumed" : 3,
+        "text" : "巨額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鉅額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遽爾"
+      }
+    ],
+    "commitAll" : "覺",
+    "keys" : "jue",
+    "preedit" : "覺",
+    "segmentation" : [
+      "jue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "全"
+      },
+      {
+        "consumed" : 4,
+        "text" : "權"
+      },
+      {
+        "consumed" : 4,
+        "text" : "券"
+      },
+      {
+        "consumed" : 4,
+        "text" : "圈"
+      },
+      {
+        "consumed" : 4,
+        "text" : "泉"
+      },
+      {
+        "consumed" : 4,
+        "text" : "勸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "詮"
+      },
+      {
+        "consumed" : 4,
+        "text" : "拳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "犬"
+      },
+      {
+        "consumed" : 4,
+        "text" : "銓"
+      },
+      {
+        "consumed" : 4,
+        "text" : "痊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "蜷"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "全"
+      },
+      {
+        "consumed" : 4,
+        "text" : "權"
+      },
+      {
+        "consumed" : 4,
+        "text" : "券"
+      },
+      {
+        "consumed" : 4,
+        "text" : "圈"
+      },
+      {
+        "consumed" : 4,
+        "text" : "泉"
+      },
+      {
+        "consumed" : 4,
+        "text" : "勸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "詮"
+      },
+      {
+        "consumed" : 4,
+        "text" : "拳"
+      }
+    ],
+    "commitAll" : "全",
+    "keys" : "quan",
+    "preedit" : "全",
+    "segmentation" : [
+      "quan"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "訊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "訓"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尋"
+      },
+      {
+        "consumed" : 3,
+        "text" : "詢"
+      },
+      {
+        "consumed" : 3,
+        "text" : "巡"
+      },
+      {
+        "consumed" : 3,
+        "text" : "循"
+      },
+      {
+        "consumed" : 3,
+        "text" : "迅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遜"
+      },
+      {
+        "consumed" : 3,
+        "text" : "旬"
+      },
+      {
+        "consumed" : 3,
+        "text" : "勳"
+      },
+      {
+        "consumed" : 3,
+        "text" : "馴"
+      },
+      {
+        "consumed" : 3,
+        "text" : "薰"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "訊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "訓"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尋"
+      },
+      {
+        "consumed" : 3,
+        "text" : "詢"
+      },
+      {
+        "consumed" : 3,
+        "text" : "巡"
+      },
+      {
+        "consumed" : 3,
+        "text" : "虛擬"
+      },
+      {
+        "consumed" : 3,
+        "text" : "許諾"
+      },
+      {
+        "consumed" : 3,
+        "text" : "絮凝"
+      }
+    ],
+    "commitAll" : "訊",
+    "keys" : "xun",
+    "preedit" : "訊",
+    "segmentation" : [
+      "xun"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "雄"
+      },
+      {
+        "consumed" : 5,
+        "text" : "兄"
+      },
+      {
+        "consumed" : 5,
+        "text" : "熊"
+      },
+      {
+        "consumed" : 5,
+        "text" : "胸"
+      },
+      {
+        "consumed" : 5,
+        "text" : "兇"
+      },
+      {
+        "consumed" : 5,
+        "text" : "凶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "洶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "匈"
+      },
+      {
+        "consumed" : 5,
+        "text" : "敻"
+      },
+      {
+        "consumed" : 5,
+        "text" : "哅"
+      },
+      {
+        "consumed" : 5,
+        "text" : "㕼"
+      },
+      {
+        "consumed" : 5,
+        "text" : "匃"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "雄"
+      },
+      {
+        "consumed" : 5,
+        "text" : "兄"
+      },
+      {
+        "consumed" : 5,
+        "text" : "熊"
+      },
+      {
+        "consumed" : 5,
+        "text" : "胸"
+      },
+      {
+        "consumed" : 5,
+        "text" : "兇"
+      },
+      {
+        "consumed" : 5,
+        "text" : "凶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "洶"
+      },
+      {
+        "consumed" : 5,
+        "text" : "匈"
+      }
+    ],
+    "commitAll" : "雄",
+    "keys" : "xiong",
+    "preedit" : "雄",
+    "segmentation" : [
+      "xiong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "之"
+      },
+      {
+        "consumed" : 3,
+        "text" : "只"
+      },
+      {
+        "consumed" : 3,
+        "text" : "知"
+      },
+      {
+        "consumed" : 3,
+        "text" : "至"
+      },
+      {
+        "consumed" : 3,
+        "text" : "制"
+      },
+      {
+        "consumed" : 3,
+        "text" : "指"
+      },
+      {
+        "consumed" : 3,
+        "text" : "直"
+      },
+      {
+        "consumed" : 3,
+        "text" : "治"
+      },
+      {
+        "consumed" : 3,
+        "text" : "質"
+      },
+      {
+        "consumed" : 3,
+        "text" : "支"
+      },
+      {
+        "consumed" : 3,
+        "text" : "製"
+      },
+      {
+        "consumed" : 3,
+        "text" : "值"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "之"
+      },
+      {
+        "consumed" : 3,
+        "text" : "只"
+      },
+      {
+        "consumed" : 3,
+        "text" : "知"
+      },
+      {
+        "consumed" : 3,
+        "text" : "至"
+      },
+      {
+        "consumed" : 3,
+        "text" : "制"
+      },
+      {
+        "consumed" : 3,
+        "text" : "指"
+      },
+      {
+        "consumed" : 3,
+        "text" : "直"
+      },
+      {
+        "consumed" : 3,
+        "text" : "治"
+      }
+    ],
+    "commitAll" : "之",
+    "keys" : "zhi",
+    "preedit" : "之",
+    "segmentation" : [
+      "zhi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "持"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "池"
+      },
+      {
+        "consumed" : 3,
+        "text" : "赤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "齒"
+      },
+      {
+        "consumed" : 3,
+        "text" : "斥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "翅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "恥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "馳"
+      },
+      {
+        "consumed" : 3,
+        "text" : "癡"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "持"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吃"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "池"
+      },
+      {
+        "consumed" : 3,
+        "text" : "赤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "齒"
+      },
+      {
+        "consumed" : 3,
+        "text" : "斥"
+      }
+    ],
+    "commitAll" : "持",
+    "keys" : "chi",
+    "preedit" : "持",
+    "segmentation" : [
+      "chi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "是"
+      },
+      {
+        "consumed" : 3,
+        "text" : "時"
+      },
+      {
+        "consumed" : 3,
+        "text" : "十"
+      },
+      {
+        "consumed" : 3,
+        "text" : "事"
+      },
+      {
+        "consumed" : 3,
+        "text" : "實"
+      },
+      {
+        "consumed" : 3,
+        "text" : "市"
+      },
+      {
+        "consumed" : 3,
+        "text" : "使"
+      },
+      {
+        "consumed" : 3,
+        "text" : "式"
+      },
+      {
+        "consumed" : 3,
+        "text" : "什"
+      },
+      {
+        "consumed" : 3,
+        "text" : "師"
+      },
+      {
+        "consumed" : 3,
+        "text" : "示"
+      },
+      {
+        "consumed" : 3,
+        "text" : "視"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "是"
+      },
+      {
+        "consumed" : 3,
+        "text" : "時"
+      },
+      {
+        "consumed" : 3,
+        "text" : "十"
+      },
+      {
+        "consumed" : 3,
+        "text" : "事"
+      },
+      {
+        "consumed" : 3,
+        "text" : "實"
+      },
+      {
+        "consumed" : 3,
+        "text" : "市"
+      },
+      {
+        "consumed" : 3,
+        "text" : "使"
+      },
+      {
+        "consumed" : 3,
+        "text" : "式"
+      }
+    ],
+    "commitAll" : "是",
+    "keys" : "shi",
+    "preedit" : "是",
+    "segmentation" : [
+      "shi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "日"
+      },
+      {
+        "consumed" : 2,
+        "text" : "馹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䈇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䤠"
+      },
+      {
+        "consumed" : 2,
+        "text" : "囸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鈤"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氜"
+      },
+      {
+        "consumed" : 2,
+        "text" : "釰"
+      },
+      {
+        "consumed" : 2,
+        "text" : "☀️"
+      },
+      {
+        "consumed" : 2,
+        "text" : "🌞"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "日"
+      },
+      {
+        "consumed" : 2,
+        "text" : "馹"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䈇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "䤠"
+      },
+      {
+        "consumed" : 2,
+        "text" : "囸"
+      },
+      {
+        "consumed" : 2,
+        "text" : "衵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鈤"
+      },
+      {
+        "consumed" : 2,
+        "text" : "氜"
+      }
+    ],
+    "commitAll" : "日",
+    "keys" : "ri",
+    "preedit" : "日",
+    "segmentation" : [
+      "ri"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "自"
+      },
+      {
+        "consumed" : 2,
+        "text" : "子"
+      },
+      {
+        "consumed" : 2,
+        "text" : "資"
+      },
+      {
+        "consumed" : 2,
+        "text" : "字"
+      },
+      {
+        "consumed" : 2,
+        "text" : "仔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "滋"
+      },
+      {
+        "consumed" : 2,
+        "text" : "姿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "諮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "茲"
+      },
+      {
+        "consumed" : 2,
+        "text" : "紫"
+      },
+      {
+        "consumed" : 2,
+        "text" : "梓"
+      },
+      {
+        "consumed" : 2,
+        "text" : "漬"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "自"
+      },
+      {
+        "consumed" : 2,
+        "text" : "子"
+      },
+      {
+        "consumed" : 2,
+        "text" : "資"
+      },
+      {
+        "consumed" : 2,
+        "text" : "字"
+      },
+      {
+        "consumed" : 2,
+        "text" : "仔"
+      },
+      {
+        "consumed" : 2,
+        "text" : "滋"
+      },
+      {
+        "consumed" : 2,
+        "text" : "姿"
+      },
+      {
+        "consumed" : 2,
+        "text" : "諮"
+      }
+    ],
+    "commitAll" : "自",
+    "keys" : "zi",
+    "preedit" : "自",
+    "segmentation" : [
+      "zi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "此"
+      },
+      {
+        "consumed" : 2,
+        "text" : "次"
+      },
+      {
+        "consumed" : 2,
+        "text" : "詞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "刺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "辭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慈"
+      },
+      {
+        "consumed" : 2,
+        "text" : "瓷"
+      },
+      {
+        "consumed" : 2,
+        "text" : "茲"
+      },
+      {
+        "consumed" : 2,
+        "text" : "磁"
+      },
+      {
+        "consumed" : 2,
+        "text" : "賜"
+      },
+      {
+        "consumed" : 2,
+        "text" : "雌"
+      },
+      {
+        "consumed" : 2,
+        "text" : "疵"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "此"
+      },
+      {
+        "consumed" : 2,
+        "text" : "次"
+      },
+      {
+        "consumed" : 2,
+        "text" : "詞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "刺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "辭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "慈"
+      },
+      {
+        "consumed" : 2,
+        "text" : "瓷"
+      },
+      {
+        "consumed" : 2,
+        "text" : "茲"
+      }
+    ],
+    "commitAll" : "此",
+    "keys" : "ci",
+    "preedit" : "此",
+    "segmentation" : [
+      "ci"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "四"
+      },
+      {
+        "consumed" : 2,
+        "text" : "司"
+      },
+      {
+        "consumed" : 2,
+        "text" : "思"
+      },
+      {
+        "consumed" : 2,
+        "text" : "死"
+      },
+      {
+        "consumed" : 2,
+        "text" : "斯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "似"
+      },
+      {
+        "consumed" : 2,
+        "text" : "私"
+      },
+      {
+        "consumed" : 2,
+        "text" : "絲"
+      },
+      {
+        "consumed" : 2,
+        "text" : "寺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "伺"
+      },
+      {
+        "consumed" : 2,
+        "text" : "飼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "肆"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "四"
+      },
+      {
+        "consumed" : 2,
+        "text" : "司"
+      },
+      {
+        "consumed" : 2,
+        "text" : "思"
+      },
+      {
+        "consumed" : 2,
+        "text" : "死"
+      },
+      {
+        "consumed" : 2,
+        "text" : "斯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "似"
+      },
+      {
+        "consumed" : 2,
+        "text" : "私"
+      },
+      {
+        "consumed" : 2,
+        "text" : "絲"
+      }
+    ],
+    "commitAll" : "四",
+    "keys" : "si",
+    "preedit" : "四",
+    "segmentation" : [
+      "si"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "而"
+      },
+      {
+        "consumed" : 2,
+        "text" : "二"
+      },
+      {
+        "consumed" : 2,
+        "text" : "兒"
+      },
+      {
+        "consumed" : 2,
+        "text" : "爾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "耳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "貳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "餌"
+      },
+      {
+        "consumed" : 2,
+        "text" : "邇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "惡人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "洱"
+      },
+      {
+        "consumed" : 2,
+        "text" : "薾"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鵝肉"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "而"
+      },
+      {
+        "consumed" : 2,
+        "text" : "惡人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鵝肉"
+      },
+      {
+        "consumed" : 2,
+        "text" : "愕然"
+      },
+      {
+        "consumed" : 2,
+        "text" : "啞然"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鵝絨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "俄人"
+      },
+      {
+        "consumed" : 2,
+        "text" : "訛人"
+      }
+    ],
+    "commitAll" : "而",
+    "keys" : "er",
+    "preedit" : "而",
+    "segmentation" : [
+      "er"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "一"
+      },
+      {
+        "consumed" : 2,
+        "text" : "以"
+      },
+      {
+        "consumed" : 2,
+        "text" : "意"
+      },
+      {
+        "consumed" : 2,
+        "text" : "已"
+      },
+      {
+        "consumed" : 2,
+        "text" : "議"
+      },
+      {
+        "consumed" : 2,
+        "text" : "義"
+      },
+      {
+        "consumed" : 2,
+        "text" : "醫"
+      },
+      {
+        "consumed" : 2,
+        "text" : "易"
+      },
+      {
+        "consumed" : 2,
+        "text" : "藝"
+      },
+      {
+        "consumed" : 2,
+        "text" : "依"
+      },
+      {
+        "consumed" : 2,
+        "text" : "益"
+      },
+      {
+        "consumed" : 2,
+        "text" : "異"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "一"
+      },
+      {
+        "consumed" : 2,
+        "text" : "以"
+      },
+      {
+        "consumed" : 2,
+        "text" : "意"
+      },
+      {
+        "consumed" : 2,
+        "text" : "已"
+      },
+      {
+        "consumed" : 2,
+        "text" : "議"
+      },
+      {
+        "consumed" : 2,
+        "text" : "義"
+      },
+      {
+        "consumed" : 2,
+        "text" : "醫"
+      },
+      {
+        "consumed" : 2,
+        "text" : "易"
+      }
+    ],
+    "commitAll" : "一",
+    "keys" : "yi",
+    "preedit" : "一",
+    "segmentation" : [
+      "yi"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "無"
+      },
+      {
+        "consumed" : 2,
+        "text" : "五"
+      },
+      {
+        "consumed" : 2,
+        "text" : "物"
+      },
+      {
+        "consumed" : 2,
+        "text" : "務"
+      },
+      {
+        "consumed" : 2,
+        "text" : "午"
+      },
+      {
+        "consumed" : 2,
+        "text" : "舞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屋"
+      },
+      {
+        "consumed" : 2,
+        "text" : "武"
+      },
+      {
+        "consumed" : 2,
+        "text" : "誤"
+      },
+      {
+        "consumed" : 2,
+        "text" : "污"
+      },
+      {
+        "consumed" : 2,
+        "text" : "烏"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "無"
+      },
+      {
+        "consumed" : 2,
+        "text" : "五"
+      },
+      {
+        "consumed" : 2,
+        "text" : "物"
+      },
+      {
+        "consumed" : 2,
+        "text" : "務"
+      },
+      {
+        "consumed" : 2,
+        "text" : "午"
+      },
+      {
+        "consumed" : 2,
+        "text" : "舞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "吳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "屋"
+      }
+    ],
+    "commitAll" : "無",
+    "keys" : "wu",
+    "preedit" : "無",
+    "segmentation" : [
+      "wu"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "於"
+      },
+      {
+        "consumed" : 2,
+        "text" : "與"
+      },
+      {
+        "consumed" : 2,
+        "text" : "育"
+      },
+      {
+        "consumed" : 2,
+        "text" : "語"
+      },
+      {
+        "consumed" : 2,
+        "text" : "預"
+      },
+      {
+        "consumed" : 2,
+        "text" : "域"
+      },
+      {
+        "consumed" : 2,
+        "text" : "魚"
+      },
+      {
+        "consumed" : 2,
+        "text" : "餘"
+      },
+      {
+        "consumed" : 2,
+        "text" : "雨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "遇"
+      },
+      {
+        "consumed" : 2,
+        "text" : "予"
+      },
+      {
+        "consumed" : 2,
+        "text" : "愈"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "於"
+      },
+      {
+        "consumed" : 2,
+        "text" : "與"
+      },
+      {
+        "consumed" : 2,
+        "text" : "育"
+      },
+      {
+        "consumed" : 2,
+        "text" : "語"
+      },
+      {
+        "consumed" : 2,
+        "text" : "預"
+      },
+      {
+        "consumed" : 2,
+        "text" : "域"
+      },
+      {
+        "consumed" : 2,
+        "text" : "魚"
+      },
+      {
+        "consumed" : 2,
+        "text" : "餘"
+      }
+    ],
+    "commitAll" : "於",
+    "keys" : "yu",
+    "preedit" : "於",
+    "segmentation" : [
+      "yu"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "有"
+      },
+      {
+        "consumed" : 3,
+        "text" : "由"
+      },
+      {
+        "consumed" : 3,
+        "text" : "又"
+      },
+      {
+        "consumed" : 3,
+        "text" : "友"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "油"
+      },
+      {
+        "consumed" : 3,
+        "text" : "優"
+      },
+      {
+        "consumed" : 3,
+        "text" : "右"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尤"
+      },
+      {
+        "consumed" : 3,
+        "text" : "游"
+      },
+      {
+        "consumed" : 3,
+        "text" : "幼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "憂"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "有"
+      },
+      {
+        "consumed" : 3,
+        "text" : "由"
+      },
+      {
+        "consumed" : 3,
+        "text" : "又"
+      },
+      {
+        "consumed" : 3,
+        "text" : "友"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "油"
+      },
+      {
+        "consumed" : 3,
+        "text" : "優"
+      },
+      {
+        "consumed" : 3,
+        "text" : "右"
+      }
+    ],
+    "commitAll" : "有",
+    "keys" : "you",
+    "preedit" : "有",
+    "segmentation" : [
+      "you"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "為"
+      },
+      {
+        "consumed" : 3,
+        "text" : "位"
+      },
+      {
+        "consumed" : 3,
+        "text" : "委"
+      },
+      {
+        "consumed" : 3,
+        "text" : "未"
+      },
+      {
+        "consumed" : 3,
+        "text" : "維"
+      },
+      {
+        "consumed" : 3,
+        "text" : "味"
+      },
+      {
+        "consumed" : 3,
+        "text" : "衛"
+      },
+      {
+        "consumed" : 3,
+        "text" : "謂"
+      },
+      {
+        "consumed" : 3,
+        "text" : "圍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "威"
+      },
+      {
+        "consumed" : 3,
+        "text" : "微"
+      },
+      {
+        "consumed" : 3,
+        "text" : "危"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "為"
+      },
+      {
+        "consumed" : 3,
+        "text" : "位"
+      },
+      {
+        "consumed" : 3,
+        "text" : "委"
+      },
+      {
+        "consumed" : 3,
+        "text" : "未"
+      },
+      {
+        "consumed" : 3,
+        "text" : "維"
+      },
+      {
+        "consumed" : 3,
+        "text" : "味"
+      },
+      {
+        "consumed" : 3,
+        "text" : "衛"
+      },
+      {
+        "consumed" : 3,
+        "text" : "謂"
+      }
+    ],
+    "commitAll" : "為",
+    "keys" : "wei",
+    "preedit" : "為",
+    "segmentation" : [
+      "wei"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "文"
+      },
+      {
+        "consumed" : 3,
+        "text" : "問"
+      },
+      {
+        "consumed" : 3,
+        "text" : "聞"
+      },
+      {
+        "consumed" : 3,
+        "text" : "溫"
+      },
+      {
+        "consumed" : 3,
+        "text" : "穩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "紋"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蚊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "塭"
+      },
+      {
+        "consumed" : 3,
+        "text" : "紊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "玟"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "文"
+      },
+      {
+        "consumed" : 3,
+        "text" : "問"
+      },
+      {
+        "consumed" : 3,
+        "text" : "聞"
+      },
+      {
+        "consumed" : 3,
+        "text" : "溫"
+      },
+      {
+        "consumed" : 3,
+        "text" : "穩"
+      },
+      {
+        "consumed" : 3,
+        "text" : "紋"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蚊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吻"
+      }
+    ],
+    "commitAll" : "文",
+    "keys" : "wen",
+    "preedit" : "文",
+    "segmentation" : [
+      "wen"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "翁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "嗡"
+      },
+      {
+        "consumed" : 4,
+        "text" : "甕"
+      },
+      {
+        "consumed" : 4,
+        "text" : "穩固"
+      },
+      {
+        "consumed" : 4,
+        "text" : "鶲"
+      },
+      {
+        "consumed" : 4,
+        "text" : "蓊"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文革"
+      },
+      {
+        "consumed" : 4,
+        "text" : "問過"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文官"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文稿"
+      },
+      {
+        "consumed" : 4,
+        "text" : "問個"
+      },
+      {
+        "consumed" : 4,
+        "text" : "溫故"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "穩固"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文革"
+      },
+      {
+        "consumed" : 4,
+        "text" : "問過"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文官"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文稿"
+      },
+      {
+        "consumed" : 4,
+        "text" : "問個"
+      },
+      {
+        "consumed" : 4,
+        "text" : "溫故"
+      },
+      {
+        "consumed" : 4,
+        "text" : "文公"
+      }
+    ],
+    "commitAll" : "翁",
+    "keys" : "weng",
+    "preedit" : "翁",
+    "segmentation" : [
+      "weng"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "月"
+      },
+      {
+        "consumed" : 3,
+        "text" : "約"
+      },
+      {
+        "consumed" : 3,
+        "text" : "越"
+      },
+      {
+        "consumed" : 3,
+        "text" : "閱"
+      },
+      {
+        "consumed" : 3,
+        "text" : "曰"
+      },
+      {
+        "consumed" : 3,
+        "text" : "躍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "悅"
+      },
+      {
+        "consumed" : 3,
+        "text" : "餘額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "岳"
+      },
+      {
+        "consumed" : 3,
+        "text" : "耀"
+      },
+      {
+        "consumed" : 3,
+        "text" : "粵"
+      },
+      {
+        "consumed" : 3,
+        "text" : "嶽"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "月"
+      },
+      {
+        "consumed" : 3,
+        "text" : "約"
+      },
+      {
+        "consumed" : 3,
+        "text" : "越"
+      },
+      {
+        "consumed" : 3,
+        "text" : "餘額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "魚兒"
+      },
+      {
+        "consumed" : 3,
+        "text" : "育兒"
+      },
+      {
+        "consumed" : 3,
+        "text" : "逾額"
+      },
+      {
+        "consumed" : 3,
+        "text" : "魚餌"
+      }
+    ],
+    "commitAll" : "月",
+    "keys" : "yue",
+    "preedit" : "月",
+    "segmentation" : [
+      "yue"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "員"
+      },
+      {
+        "consumed" : 4,
+        "text" : "院"
+      },
+      {
+        "consumed" : 4,
+        "text" : "原"
+      },
+      {
+        "consumed" : 4,
+        "text" : "元"
+      },
+      {
+        "consumed" : 4,
+        "text" : "園"
+      },
+      {
+        "consumed" : 4,
+        "text" : "源"
+      },
+      {
+        "consumed" : 4,
+        "text" : "遠"
+      },
+      {
+        "consumed" : 4,
+        "text" : "願"
+      },
+      {
+        "consumed" : 4,
+        "text" : "圓"
+      },
+      {
+        "consumed" : 4,
+        "text" : "援"
+      },
+      {
+        "consumed" : 4,
+        "text" : "緣"
+      },
+      {
+        "consumed" : 4,
+        "text" : "怨"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "員"
+      },
+      {
+        "consumed" : 4,
+        "text" : "院"
+      },
+      {
+        "consumed" : 4,
+        "text" : "原"
+      },
+      {
+        "consumed" : 4,
+        "text" : "元"
+      },
+      {
+        "consumed" : 4,
+        "text" : "園"
+      },
+      {
+        "consumed" : 4,
+        "text" : "源"
+      },
+      {
+        "consumed" : 4,
+        "text" : "遠"
+      },
+      {
+        "consumed" : 4,
+        "text" : "願"
+      }
+    ],
+    "commitAll" : "員",
+    "keys" : "yuan",
+    "preedit" : "員",
+    "segmentation" : [
+      "yuan"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "運"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "允"
+      },
+      {
+        "consumed" : 3,
+        "text" : "孕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "韻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "云"
+      },
+      {
+        "consumed" : 3,
+        "text" : "暈"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蘊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "勻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "芸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "耘"
+      },
+      {
+        "consumed" : 3,
+        "text" : "隕"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "餘年"
+      },
+      {
+        "consumed" : 3,
+        "text" : "遇難"
+      },
+      {
+        "consumed" : 3,
+        "text" : "玉女"
+      },
+      {
+        "consumed" : 3,
+        "text" : "慾念"
+      },
+      {
+        "consumed" : 3,
+        "text" : "淤泥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "愚弄"
+      },
+      {
+        "consumed" : 3,
+        "text" : "芋泥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "餘孽"
+      }
+    ],
+    "commitAll" : "運",
+    "keys" : "yun",
+    "preedit" : "運",
+    "segmentation" : [
+      "yun"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "用"
+      },
+      {
+        "consumed" : 4,
+        "text" : "永"
+      },
+      {
+        "consumed" : 4,
+        "text" : "擁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "勇"
+      },
+      {
+        "consumed" : 4,
+        "text" : "泳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "湧"
+      },
+      {
+        "consumed" : 4,
+        "text" : "庸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "詠"
+      },
+      {
+        "consumed" : 4,
+        "text" : "踴"
+      },
+      {
+        "consumed" : 4,
+        "text" : "佣"
+      },
+      {
+        "consumed" : 4,
+        "text" : "傭"
+      },
+      {
+        "consumed" : 4,
+        "text" : "雍"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "用"
+      },
+      {
+        "consumed" : 4,
+        "text" : "永"
+      },
+      {
+        "consumed" : 4,
+        "text" : "擁"
+      },
+      {
+        "consumed" : 4,
+        "text" : "勇"
+      },
+      {
+        "consumed" : 4,
+        "text" : "泳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "湧"
+      },
+      {
+        "consumed" : 4,
+        "text" : "庸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "詠"
+      }
+    ],
+    "commitAll" : "用",
+    "keys" : "yong",
+    "preedit" : "用",
+    "segmentation" : [
+      "yong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "因"
+      },
+      {
+        "consumed" : 3,
+        "text" : "音"
+      },
+      {
+        "consumed" : 3,
+        "text" : "引"
+      },
+      {
+        "consumed" : 3,
+        "text" : "印"
+      },
+      {
+        "consumed" : 3,
+        "text" : "銀"
+      },
+      {
+        "consumed" : 3,
+        "text" : "隱"
+      },
+      {
+        "consumed" : 3,
+        "text" : "飲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "吟"
+      },
+      {
+        "consumed" : 3,
+        "text" : "陰"
+      },
+      {
+        "consumed" : 3,
+        "text" : "應"
+      },
+      {
+        "consumed" : 3,
+        "text" : "姻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "影"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "一年"
+      },
+      {
+        "consumed" : 3,
+        "text" : "以內"
+      },
+      {
+        "consumed" : 3,
+        "text" : "意念"
+      },
+      {
+        "consumed" : 3,
+        "text" : "以南"
+      },
+      {
+        "consumed" : 3,
+        "text" : "役男"
+      },
+      {
+        "consumed" : 3,
+        "text" : "翌年"
+      },
+      {
+        "consumed" : 3,
+        "text" : "藝能"
+      },
+      {
+        "consumed" : 3,
+        "text" : "疑難"
+      }
+    ],
+    "commitAll" : "因",
+    "keys" : "yin",
+    "preedit" : "因",
+    "segmentation" : [
+      "yin"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "應"
+      },
+      {
+        "consumed" : 4,
+        "text" : "影"
+      },
+      {
+        "consumed" : 4,
+        "text" : "營"
+      },
+      {
+        "consumed" : 4,
+        "text" : "英"
+      },
+      {
+        "consumed" : 4,
+        "text" : "迎"
+      },
+      {
+        "consumed" : 4,
+        "text" : "硬"
+      },
+      {
+        "consumed" : 4,
+        "text" : "映"
+      },
+      {
+        "consumed" : 4,
+        "text" : "贏"
+      },
+      {
+        "consumed" : 4,
+        "text" : "螢"
+      },
+      {
+        "consumed" : 4,
+        "text" : "嬰"
+      },
+      {
+        "consumed" : 4,
+        "text" : "因果"
+      },
+      {
+        "consumed" : 4,
+        "text" : "因故"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "因果"
+      },
+      {
+        "consumed" : 4,
+        "text" : "因故"
+      },
+      {
+        "consumed" : 4,
+        "text" : "因公"
+      },
+      {
+        "consumed" : 4,
+        "text" : "陰溝"
+      },
+      {
+        "consumed" : 4,
+        "text" : "音高"
+      },
+      {
+        "consumed" : 4,
+        "text" : "銀根"
+      },
+      {
+        "consumed" : 4,
+        "text" : "銀光"
+      },
+      {
+        "consumed" : 4,
+        "text" : "陰乾"
+      }
+    ],
+    "commitAll" : "應",
+    "keys" : "ying",
+    "preedit" : "應",
+    "segmentation" : [
+      "ying"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 6,
+        "text" : "裝"
+      },
+      {
+        "consumed" : 6,
+        "text" : "狀"
+      },
+      {
+        "consumed" : 6,
+        "text" : "莊"
+      },
+      {
+        "consumed" : 6,
+        "text" : "壯"
+      },
+      {
+        "consumed" : 6,
+        "text" : "撞"
+      },
+      {
+        "consumed" : 6,
+        "text" : "妝"
+      },
+      {
+        "consumed" : 6,
+        "text" : "庄"
+      },
+      {
+        "consumed" : 6,
+        "text" : "樁"
+      },
+      {
+        "consumed" : 6,
+        "text" : "粧"
+      },
+      {
+        "consumed" : 6,
+        "text" : "奘"
+      },
+      {
+        "consumed" : 6,
+        "text" : "轉過"
+      },
+      {
+        "consumed" : 6,
+        "text" : "專櫃"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 6,
+        "text" : "轉過"
+      },
+      {
+        "consumed" : 6,
+        "text" : "專櫃"
+      },
+      {
+        "consumed" : 6,
+        "text" : "專攻"
+      },
+      {
+        "consumed" : 6,
+        "text" : "轉告"
+      },
+      {
+        "consumed" : 6,
+        "text" : "撰稿"
+      },
+      {
+        "consumed" : 6,
+        "text" : "專供"
+      },
+      {
+        "consumed" : 5,
+        "text" : "抓拿"
+      },
+      {
+        "consumed" : 5,
+        "text" : "抓撓"
+      }
+    ],
+    "commitAll" : "裝",
+    "keys" : "zhuang",
+    "preedit" : "裝",
+    "segmentation" : [
+      "zhuang"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "卻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "確"
+      },
+      {
+        "consumed" : 3,
+        "text" : "缺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雀"
+      },
+      {
+        "consumed" : 3,
+        "text" : "怯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鵲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "闕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "榷"
+      },
+      {
+        "consumed" : 3,
+        "text" : "恪"
+      },
+      {
+        "consumed" : 3,
+        "text" : "瘸"
+      },
+      {
+        "consumed" : 3,
+        "text" : "殼"
+      },
+      {
+        "consumed" : 3,
+        "text" : "闋"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "卻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "確"
+      },
+      {
+        "consumed" : 3,
+        "text" : "缺"
+      },
+      {
+        "consumed" : 3,
+        "text" : "雀"
+      },
+      {
+        "consumed" : 3,
+        "text" : "怯"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鵲"
+      },
+      {
+        "consumed" : 3,
+        "text" : "闕"
+      },
+      {
+        "consumed" : 3,
+        "text" : "榷"
+      }
+    ],
+    "commitAll" : "卻",
+    "keys" : "que",
+    "preedit" : "卻",
+    "segmentation" : [
+      "que"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "選"
+      },
+      {
+        "consumed" : 4,
+        "text" : "宣"
+      },
+      {
+        "consumed" : 4,
+        "text" : "旋"
+      },
+      {
+        "consumed" : 4,
+        "text" : "懸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "玄"
+      },
+      {
+        "consumed" : 4,
+        "text" : "軒"
+      },
+      {
+        "consumed" : 4,
+        "text" : "炫"
+      },
+      {
+        "consumed" : 4,
+        "text" : "喧"
+      },
+      {
+        "consumed" : 4,
+        "text" : "萱"
+      },
+      {
+        "consumed" : 4,
+        "text" : "眩"
+      },
+      {
+        "consumed" : 4,
+        "text" : "瑄"
+      },
+      {
+        "consumed" : 4,
+        "text" : "渲"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "選"
+      },
+      {
+        "consumed" : 4,
+        "text" : "宣"
+      },
+      {
+        "consumed" : 4,
+        "text" : "旋"
+      },
+      {
+        "consumed" : 4,
+        "text" : "懸"
+      },
+      {
+        "consumed" : 4,
+        "text" : "玄"
+      },
+      {
+        "consumed" : 4,
+        "text" : "軒"
+      },
+      {
+        "consumed" : 4,
+        "text" : "炫"
+      },
+      {
+        "consumed" : 4,
+        "text" : "喧"
+      }
+    ],
+    "commitAll" : "選",
+    "keys" : "xuan",
+    "preedit" : "選",
+    "segmentation" : [
+      "xuan"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "軍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "均"
+      },
+      {
+        "consumed" : 3,
+        "text" : "君"
+      },
+      {
+        "consumed" : 3,
+        "text" : "俊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "菌"
+      },
+      {
+        "consumed" : 3,
+        "text" : "鈞"
+      },
+      {
+        "consumed" : 3,
+        "text" : "駿"
+      },
+      {
+        "consumed" : 3,
+        "text" : "郡"
+      },
+      {
+        "consumed" : 3,
+        "text" : "峻"
+      },
+      {
+        "consumed" : 3,
+        "text" : "竣"
+      },
+      {
+        "consumed" : 3,
+        "text" : "蕈"
+      },
+      {
+        "consumed" : 3,
+        "text" : "濬"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "軍"
+      },
+      {
+        "consumed" : 3,
+        "text" : "拘泥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "局內"
+      },
+      {
+        "consumed" : 3,
+        "text" : "巨鳥"
+      },
+      {
+        "consumed" : 3,
+        "text" : "拒拿"
+      },
+      {
+        "consumed" : 3,
+        "text" : "疽囊"
+      },
+      {
+        "consumed" : 3,
+        "text" : "懼內"
+      },
+      {
+        "consumed" : 3,
+        "text" : "駒鳥"
+      }
+    ],
+    "commitAll" : "軍",
+    "keys" : "jun",
+    "preedit" : "軍",
+    "segmentation" : [
+      "jun"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "眾"
+      },
+      {
+        "consumed" : 5,
+        "text" : "終"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鐘"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鍾"
+      },
+      {
+        "consumed" : 5,
+        "text" : "仲"
+      },
+      {
+        "consumed" : 5,
+        "text" : "腫"
+      },
+      {
+        "consumed" : 5,
+        "text" : "衷"
+      },
+      {
+        "consumed" : 5,
+        "text" : "塚"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "中"
+      },
+      {
+        "consumed" : 5,
+        "text" : "種"
+      },
+      {
+        "consumed" : 5,
+        "text" : "重"
+      },
+      {
+        "consumed" : 5,
+        "text" : "眾"
+      },
+      {
+        "consumed" : 5,
+        "text" : "終"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鐘"
+      },
+      {
+        "consumed" : 5,
+        "text" : "忠"
+      },
+      {
+        "consumed" : 5,
+        "text" : "鍾"
+      }
+    ],
+    "commitAll" : "中",
+    "keys" : "zhong",
+    "preedit" : "中",
+    "segmentation" : [
+      "zhong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 4,
+        "text" : "動"
+      },
+      {
+        "consumed" : 4,
+        "text" : "東"
+      },
+      {
+        "consumed" : 4,
+        "text" : "懂"
+      },
+      {
+        "consumed" : 4,
+        "text" : "董"
+      },
+      {
+        "consumed" : 4,
+        "text" : "冬"
+      },
+      {
+        "consumed" : 4,
+        "text" : "洞"
+      },
+      {
+        "consumed" : 4,
+        "text" : "凍"
+      },
+      {
+        "consumed" : 4,
+        "text" : "棟"
+      },
+      {
+        "consumed" : 4,
+        "text" : "咚"
+      },
+      {
+        "consumed" : 4,
+        "text" : "苳"
+      },
+      {
+        "consumed" : 4,
+        "text" : "恫"
+      },
+      {
+        "consumed" : 4,
+        "text" : "鶇"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 4,
+        "text" : "動"
+      },
+      {
+        "consumed" : 4,
+        "text" : "東"
+      },
+      {
+        "consumed" : 4,
+        "text" : "懂"
+      },
+      {
+        "consumed" : 4,
+        "text" : "董"
+      },
+      {
+        "consumed" : 4,
+        "text" : "冬"
+      },
+      {
+        "consumed" : 4,
+        "text" : "洞"
+      },
+      {
+        "consumed" : 4,
+        "text" : "凍"
+      },
+      {
+        "consumed" : 4,
+        "text" : "棟"
+      }
+    ],
+    "commitAll" : "動",
+    "keys" : "dong",
+    "preedit" : "動",
+    "segmentation" : [
+      "dong"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 2,
+        "text" : "亞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "壓"
+      },
+      {
+        "consumed" : 2,
+        "text" : "要"
+      },
+      {
+        "consumed" : 2,
+        "text" : "雅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呀"
+      },
+      {
+        "consumed" : 2,
+        "text" : "牙"
+      },
+      {
+        "consumed" : 2,
+        "text" : "樣"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鴨"
+      },
+      {
+        "consumed" : 2,
+        "text" : "研"
+      },
+      {
+        "consumed" : 2,
+        "text" : "涯"
+      },
+      {
+        "consumed" : 2,
+        "text" : "押"
+      },
+      {
+        "consumed" : 2,
+        "text" : "演"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 2,
+        "text" : "亞"
+      },
+      {
+        "consumed" : 2,
+        "text" : "壓"
+      },
+      {
+        "consumed" : 2,
+        "text" : "要"
+      },
+      {
+        "consumed" : 2,
+        "text" : "雅"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呀"
+      },
+      {
+        "consumed" : 2,
+        "text" : "牙"
+      },
+      {
+        "consumed" : 2,
+        "text" : "樣"
+      },
+      {
+        "consumed" : 2,
+        "text" : "鴨"
+      }
+    ],
+    "commitAll" : "亞",
+    "keys" : "ya",
+    "preedit" : "亞",
+    "segmentation" : [
+      "ya"
+    ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 5,
+        "text" : "我們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "臥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "萵"
+      },
+      {
+        "consumed" : 2,
+        "text" : "倭"
+      },
+      {
+        "consumed" : 2,
+        "text" : "斡"
+      },
+      {
+        "consumed" : 2,
+        "text" : "幄"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 5,
+        "text" : "我們"
+      },
+      {
+        "consumed" : 2,
+        "text" : "我"
+      },
+      {
+        "consumed" : 2,
+        "text" : "握"
+      },
+      {
+        "consumed" : 2,
+        "text" : "窩"
+      },
+      {
+        "consumed" : 2,
+        "text" : "臥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "沃"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渦"
+      },
+      {
+        "consumed" : 2,
+        "text" : "渥"
+      }
+    ],
+    "commitAll" : "我們今天在台北市的電腦公司開會",
+    "keys" : "womenjintianzaitaibeishidediannaogongsikaihui",
+    "preedit" : "我們今天在台北市的電腦公司開會",
+    "segmentation" : [
+      "wo",
+      "men",
+      "jin",
+      "tian",
+      "zai",
+      "tai",
+      "bei",
+      "shi",
+      "de",
+      "dian",
+      "nao",
+      "gong",
+      "si",
+      "kai",
+      "hui"
+    ]
+  }
+]

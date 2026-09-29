@@ -1,0 +1,159 @@
+[
+  {
+    "context" : "你好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "嗎",
+      "像",
+      "的",
+      "不容易",
+      "了",
+      "好",
+      "像是",
+      "幾"
+    ]
+  },
+  {
+    "context" : "你",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "們",
+      "的",
+      "要",
+      "是",
+      "們的",
+      "有",
+      "自己",
+      "說"
+    ]
+  },
+  {
+    "context" : "好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "像",
+      "的",
+      "不容易",
+      "了",
+      "好",
+      "像是",
+      "幾",
+      "不好"
+    ]
+  },
+  {
+    "context" : "中国",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "谢谢",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "我們今天說你好",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "嗎",
+      "像",
+      "的",
+      "不容易",
+      "了",
+      "好",
+      "像是",
+      "幾"
+    ]
+  },
+  {
+    "context" : "",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "🙂",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "abc",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+
+    ]
+  },
+  {
+    "context" : "中文詞",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "典",
+      "彙",
+      "類",
+      "庫",
+      "不達意",
+      "語",
+      "曲",
+      "句"
+    ]
+  },
+  {
+    "context" : "我們今天",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "的",
+      "在",
+      "是",
+      "有",
+      "會",
+      "能",
+      "氣",
+      "下"
+    ]
+  },
+  {
+    "context" : "今天",
+    "continuations0" : [
+
+    ],
+    "continuations8" : [
+      "的",
+      "在",
+      "是",
+      "有",
+      "會",
+      "能",
+      "氣",
+      "下"
+    ]
+  }
+]
