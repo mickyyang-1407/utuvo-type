@@ -536,6 +536,8 @@ final class ModeSwitchView: UIControl {
 @MainActor
 final class CandidateBarView: UIView {
     var onPick: ((Int) -> Void)?       // -1＝整串
+    /// 右端「⌄」：展開整頁候選字（09-29 Micky：拼音只看得到一排、沒辦法往下選）。
+    var onExpand: (() -> Void)?
     /// 跟 ImeSession.keyboardCandidateLimit 對齊：列可以左右捲，看不到的格子不佔版面。
     private static let visibleCandidateLimit = 20
     private struct Item: Equatable {
@@ -543,11 +545,14 @@ final class CandidateBarView: UIView {
         let index: Int
         let lead: Bool
     }
-    private let scroll = UIScrollView()
+    private let scroll = CandidateScrollView()
     private let stack = UIStackView()
     private let leadFont = UIFont.systemFont(ofSize: 19, weight: .semibold)
     private let candidateFont = UIFont.systemFont(ofSize: 20, weight: .regular)
     private var lastItems: [Item] = []
+    private let expandButton = UIButton(type: .system)
+    private var scrollToEdge: NSLayoutConstraint!
+    private var scrollToExpand: NSLayoutConstraint!
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -564,9 +569,21 @@ final class CandidateBarView: UIView {
         stack.spacing = 2
         stack.translatesAutoresizingMaskIntoConstraints = false
         scroll.addSubview(stack)
+        expandButton.translatesAutoresizingMaskIntoConstraints = false
+        expandButton.tintColor = .secondaryLabel
+        expandButton.isHidden = true
+        expandButton.addAction(UIAction { [weak self] _ in self?.onExpand?() }, for: .touchUpInside)
+        addSubview(expandButton)
+        setExpanded(false)
+        scrollToEdge = scroll.trailingAnchor.constraint(equalTo: trailingAnchor)
+        scrollToExpand = scroll.trailingAnchor.constraint(equalTo: expandButton.leadingAnchor)
         NSLayoutConstraint.activate([
+            scrollToEdge,
+            expandButton.trailingAnchor.constraint(equalTo: trailingAnchor),
+            expandButton.topAnchor.constraint(equalTo: topAnchor),
+            expandButton.bottomAnchor.constraint(equalTo: bottomAnchor),
+            expandButton.widthAnchor.constraint(equalToConstant: 34),
             scroll.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scroll.trailingAnchor.constraint(equalTo: trailingAnchor),
             scroll.topAnchor.constraint(equalTo: topAnchor),
             scroll.bottomAnchor.constraint(equalTo: bottomAnchor),
             stack.leadingAnchor.constraint(equalTo: scroll.contentLayoutGuide.leadingAnchor, constant: 6),
@@ -582,6 +599,7 @@ final class CandidateBarView: UIView {
     /// preedit：整串轉換（含還沒打完的注音）；candidates：句首候選。
     /// 每按一鍵都會叫：重用既有的格子只換字，不要每次都拆掉重建（2026-09-20：打字頓頓的）。
     func show(preedit: String, candidates: [String]) {
+        setExpandable(!preedit.isEmpty && !candidates.isEmpty)
         guard !preedit.isEmpty else {
             guard !lastItems.isEmpty else { return }
             lastItems.removeAll(keepingCapacity: true)
@@ -599,7 +617,22 @@ final class CandidateBarView: UIView {
 
     /// 沒有組字時的建議（聯想詞、英文補完）：沒有「整串」那一格，點第 i 格回 `onPick(i)`。空陣列＝收起來。
     func show(suggestions: [String]) {
+        setExpandable(false)
         apply(suggestions.prefix(Self.visibleCandidateLimit).enumerated().map { Item(text: $1, index: $0, lead: false) })
+    }
+
+    private func setExpandable(_ on: Bool) {
+        guard expandButton.isHidden == on else { return }
+        expandButton.isHidden = !on
+        scrollToEdge.isActive = !on
+        scrollToExpand.isActive = on
+    }
+
+    /// 展開中顯示「⌃」（點了收起），收起時顯示「⌄」。
+    func setExpanded(_ on: Bool) {
+        let config = UIImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
+        expandButton.setImage(UIImage(systemName: on ? "chevron.up" : "chevron.down", withConfiguration: config), for: .normal)
+        expandButton.accessibilityLabel = on ? String(localized: "收起候選字") : String(localized: "更多候選字")
     }
 
     private func apply(_ wanted: [Item]) {
@@ -640,4 +673,76 @@ final class CandidateBarView: UIView {
         }, for: .touchUpInside)
         return b
     }
+}
+
+/// 展開的整頁候選字（蓋在按鍵上，跟系統鍵盤的「⌄」一樣）：依字寬換行排列、可以上下捲。
+@MainActor
+final class CandidatePanelView: UIView {
+    var onPick: ((Int) -> Void)?
+    private let scroll = CandidateScrollView()
+    private var buttons: [UIButton] = []
+    private let font = UIFont.systemFont(ofSize: 22, weight: .regular)
+    private static let rowHeight: CGFloat = 46
+    private static let gap: CGFloat = 6
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .secondarySystemBackground
+        scroll.alwaysBounceVertical = true
+        scroll.accessibilityIdentifier = "candidatePanel"
+        addSubview(scroll)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func show(_ items: [String]) {
+        while buttons.count < items.count {
+            let b = UIButton(type: .system)
+            b.titleLabel?.font = font
+            b.setTitleColor(.label, for: .normal)
+            b.backgroundColor = .systemBackground
+            b.layer.cornerRadius = 8
+            b.addAction(UIAction { _ in KeyFeedback.down(.pick, hasFullAccess: KeyButton.hasFullAccess) }, for: .touchDown)
+            b.addAction(UIAction { [weak self, weak b] _ in
+                guard let b else { return }
+                self?.onPick?(b.tag)
+            }, for: .touchUpInside)
+            scroll.addSubview(b)
+            buttons.append(b)
+        }
+        for (i, b) in buttons.enumerated() {
+            b.isHidden = i >= items.count
+            guard i < items.count else { continue }
+            b.tag = i
+            b.setTitle(items[i], for: .normal)
+        }
+        scroll.contentOffset = .zero
+        setNeedsLayout()
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        scroll.frame = bounds
+        let inset: CGFloat = 8
+        var x = inset, y = inset
+        let maxX = bounds.width - inset
+        for b in buttons where !b.isHidden {
+            let text = (b.title(for: .normal) ?? "") as NSString
+            let w = min(maxX - inset, max(52, ceil(text.size(withAttributes: [.font: font]).width) + 24))
+            if x > inset && x + w > maxX {
+                x = inset
+                y += Self.rowHeight + Self.gap
+            }
+            b.frame = CGRect(x: x, y: y, width: w, height: Self.rowHeight)
+            x += w + Self.gap
+        }
+        scroll.contentSize = CGSize(width: bounds.width, height: y + Self.rowHeight + inset)
+    }
+}
+
+/// 候選列／整頁候選的捲動視圖：裡面整片都是按鈕，手指一定是從某個候選字上開始滑。
+/// UIScrollView 預設不會從 UIControl 手上搶回觸控（touchesShouldCancel 對按鈕回 false），
+/// 手指先停一下再滑就變成「按住那個字」、整條列捲不動（09-29 Micky：拼音沒辦法往下選字，UI 測試量到位置完全沒動）。
+final class CandidateScrollView: UIScrollView {
+    override func touchesShouldCancel(in view: UIView) -> Bool { true }
 }

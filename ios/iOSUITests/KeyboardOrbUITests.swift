@@ -610,6 +610,82 @@ final class KeyboardOrbUITests: XCTestCase {
                       "ime readings 必須還原（候選列還看得到「你」）")
     }
 
+    /// 09-29 Micky：拼音「除了列出來的候選字，無法往下繼續選字」。候選列要能左右捲，
+    /// 右端「⌄」要能展開整頁候選（最多 60 個），點了就選、面板收起。用他截圖的情境：繁體拼音打 suoyi。
+    func testCandidateBarScrollsAndExpands() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        app.buttons["注音鍵盤"].tap()
+        if !app.buttons["改用注音"].waitForExistence(timeout: 1) { app.buttons["改用拼音"].tap() }
+        XCTAssertTrue(app.buttons["分隔音節"].waitForExistence(timeout: 2), "繁體拼音版面沒出來")
+        for key in ["s", "u", "o", "y", "i"] { app.buttons[key].tap() }
+        XCTAssertTrue(app.buttons["所以"].waitForExistence(timeout: 2), "suoyi 沒有候選")
+
+        // ①候選列左右捲：往左滑，前面的候選要真的移走（量位置，不靠猜哪個字排第幾）
+        let second = app.buttons["索引"]
+        let before = second.frame.minX
+        // 手指慢慢拖（跟真人一樣先按住一下再滑），不是 XCTest 的瞬間 swipe
+        let start = second.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        start.press(forDuration: 0.2, thenDragTo: start.withOffset(CGVector(dx: -150, dy: 0)), withVelocity: .slow, thenHoldForDuration: 0.1)
+        sleep(1)
+        shot("bar-after-drag")
+        let movedOrGone = !second.exists || !second.isHittable || second.frame.minX < before - 40
+        XCTAssertTrue(movedOrGone, "候選列往左滑沒有捲動：「索引」還在 x=\(second.frame.minX)（原本 \(before)）")
+
+        // ②展開整頁：第 35 個候選（速）要在整頁裡找得到，往上捲就點得到
+        let more = app.buttons["更多候選字"]
+        XCTAssertTrue(more.waitForExistence(timeout: 2), "候選列右端要有「更多候選字」")
+        more.tap()
+        XCTAssertTrue(app.buttons["收起候選字"].waitForExistence(timeout: 2), "展開後按鈕要變成「收起」")
+        let su = app.buttons["速"]
+        XCTAssertTrue(su.waitForExistence(timeout: 3), "展開後整頁候選要有「速」")
+        let panel = app.scrollViews["candidatePanel"]
+        XCTAssertTrue(panel.exists, "找不到整頁候選")
+        for _ in 0..<6 where !su.isHittable {
+            let p = panel.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
+            p.press(forDuration: 0.2, thenDragTo: p.withOffset(CGVector(dx: 0, dy: -120)), withVelocity: .slow, thenHoldForDuration: 0.1)
+        }
+        XCTAssertTrue(su.isHittable, "整頁候選往上捲後「速」要點得到")
+        shot("pinyin-expanded")
+        su.tap()
+        let picked = NSPredicate { _, _ in ((field.value as? String) ?? "").hasPrefix("速") }
+        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: picked, object: nil)], timeout: 5), .completed,
+                       "選了「速」要進輸入框：「\((field.value as? String) ?? "")」")
+        XCTAssertFalse(app.buttons["收起候選字"].exists, "選字後整頁候選要收起來")
+        XCTAssertTrue(app.buttons["q"].isHittable, "收起後按鍵要點得到")
+    }
+
+    /// 09-29 Micky 截圖：右上「繁中」徽章被字幕帶擠窄，折成直排兩行、按鈕變高。
+    /// 錄音姿態會放一段長逐字稿進字幕帶，徽章要維持一行、高度跟兩側圓鈕一樣。
+    func testLanguageBadgeStaysOnOneLineWithLongTranscript() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-utuvo.type.keyboard.debugPose", "recording"]
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        app.terminate()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        let badge = app.buttons["繁中"]
+        XCTAssertTrue(badge.waitForExistence(timeout: 5), "找不到語言徽章")
+        sleep(2)   // 姿態 0.3 秒後才放逐字稿
+        shot("badge-with-long-transcript")
+        let f = badge.frame
+        XCTAssertLessThanOrEqual(f.height, 44, "徽章高度 \(f.height) pt：字被擠成兩行")
+        XCTAssertGreaterThanOrEqual(f.width, f.height, "徽章寬 \(f.width) < 高 \(f.height)：被擠成直的")
+    }
+
     /// 0.2.5（Threads 回饋「注音好像沒有預測字，要打完整注音」）：邊打邊出候選、簡拼、沒打聲調、聯想詞。
     /// 走產品入口：主 app 字典欄 → UTUVO Type 鍵盤 → 注音版面，候選列點選，看輸入框真的收到字。
     func testZhuyinPredictionAndAssociations() throws {
@@ -752,13 +828,27 @@ final class KeyboardOrbUITests: XCTestCase {
             guard tabBar.exists else { return true }
             return field.frame.maxY < tabBar.frame.minY - 8 && field.frame.minY > 0
         }
-        for _ in 0..<6 {
+        // 往上捲找；捲過頭（欄位跑到畫面上方、或被懶載入移出樹）就往回捲（09-29 設定頁變長後假紅三次）。
+        for i in 0..<10 {
             if ready() { return field }
-            app.swipeUp()
+            if field.exists {
+                if field.frame.minY < 120 { app.swipeDown() } else { app.swipeUp() }
+            } else if i < 4 {
+                app.swipeUp()
+            } else {
+                app.swipeDown()
+            }
             sleep(1) // 等慣性捲動停下來：還在滑就點，會點到下面的 API key 密碼欄（系統鍵盤）
         }
         return field
     }
 
 
+}
+
+private extension XCUIElement {
+    func waitForHittable(timeout: TimeInterval) -> Bool {
+        let p = NSPredicate(format: "exists == true AND hittable == true")
+        return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: p, object: self)], timeout: timeout) == .completed
+    }
 }

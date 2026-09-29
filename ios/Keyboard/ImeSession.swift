@@ -64,6 +64,19 @@ final class ImeSession {
         return []
     }
 
+    /// 展開整頁候選字用的完整清單（引擎上限 60）。會換掉目前的候選對照表，之後 `select(at:)` 的索引以這份為準。
+    func allCandidates() -> [String] {
+        if let zhuyin {
+            shownZhuyin = zhuyin.isEmpty ? [] : zhuyin.candidates(limit: ZhuyinEngine.candidateLimit)
+            return shownZhuyin.map(\.text)
+        }
+        if let pinyin {
+            shownPinyin = pinyin.isEmpty ? [] : pinyin.candidates(limit: PinyinEngine.candidateLimit)
+            return shownPinyin.map(\.text)
+        }
+        return []
+    }
+
     /// 引擎狀態的快照。注音存引擎的 State；拼音／fallback 只存 composing，restore 直接重打
     /// composing／chars（這兩個本來就是使用者原始輸入）。
     struct Snapshot: Equatable {
