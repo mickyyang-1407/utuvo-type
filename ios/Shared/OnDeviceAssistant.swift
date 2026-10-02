@@ -30,7 +30,13 @@ enum OnDeviceAssistant {
         return .unavailable(String(localized: "需要 iOS 26 的 Apple Intelligence，或在主 app 設定雲端 key"))
     }
 
+    /// Debug 版限定：UI 測試用來模擬「沒有 Apple Intelligence」（主 app 收 launch arg 後寫進 App Group）。
+    static let debugDisableKey = "utuvo.type.debug.noOnDeviceAI"
+
     static var onDeviceAvailable: Bool {
+        #if DEBUG
+        if KeyboardPresence.defaults.bool(forKey: debugDisableKey) { return false }
+        #endif
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
             if case .available = SystemLanguageModel.default.availability { return true }

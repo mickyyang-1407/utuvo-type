@@ -37,7 +37,7 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
 
 ## Android（APK，測試版）
 
-1. 到 [Android 0.2.0 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0) 下載 `UTUVO-Type-0.2.0-android.apk`（附 SHA-256）。目前**不在 Google Play**。
+1. 到 [Android 0.2.1 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.1) 下載 `UTUVO-Type-0.2.1-android.apk`（附 SHA-256）。目前**不在 Google Play**。
 2. 手機允許「安裝未知應用程式」後安裝，打開 App 照三步：允許麥克風 → 在系統設定啟用 UTUVO Type 鍵盤 → 切換成 UTUVO Type。
 3. 需要 **Android 10 以上**。聽寫用手機的系統語音服務（多數是 Google 語音）；也可以在設定→智慧整理／雲端辨識填自己的 key。
 

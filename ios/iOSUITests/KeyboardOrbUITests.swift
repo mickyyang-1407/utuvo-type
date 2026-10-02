@@ -214,7 +214,7 @@ final class KeyboardOrbUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         app.tabBars.buttons["設定"].tap()
-        let term = revealDictionaryField(app)
+        let term = revealDictionaryModePicker(app)
         XCTAssertTrue(term.waitForExistence(timeout: 5), "設定頁找不到字典欄")
         XCTAssertFalse(app.textFields["dictionaryOutput"].exists, "新增詞彙模式不該有「改成」欄")
         shot("dictionary-vocabulary")
@@ -354,7 +354,7 @@ final class KeyboardOrbUITests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         app.tabBars.buttons["設定"].tap()
-        revealDictionaryField(app)
+        revealDictionaryModePicker(app)
         app.buttons["替換"].tap()
         let source = app.textFields["dictionaryTerm"]
         let output = app.textFields["dictionaryOutput"]
@@ -614,7 +614,8 @@ final class KeyboardOrbUITests: XCTestCase {
     /// 模擬器同樣會擋、又沒有雲端 key → 鍵盤要講出原因與補救方法，不能是「無法完成作業」。
     func testEditModeExplainsFailureInsteadOfGenericError() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["-utuvo.type.keyboard.debugPose", "edit:改成正式一點"]
+        // 當作沒有 Apple Intelligence：09-30 起它在 27.0 又能用了，這條測的是「沒有它、也沒 key」的說明。
+        app.launchArguments = ["-utuvo.type.keyboard.debugPose", "edit:改成正式一點", "-utuvo.type.debug.noOnDeviceAI", "YES"]
         app.launch()
         app.tabBars.buttons["設定"].tap()
         let field = revealDictionaryField(app)
@@ -627,7 +628,8 @@ final class KeyboardOrbUITests: XCTestCase {
         revealDictionaryField(app)
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
-        let explained = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '智慧整理'")).firstMatch
+        // 只找鍵盤提示的那句補救方法：只比「智慧整理」會先抓到後面設定頁的「智慧整理（選配）」標題（09-30 假紅）。
+        let explained = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '智慧整理加'")).firstMatch
         let ok = explained.waitForExistence(timeout: 30)
         shot("edit-mode-message")
         XCTAssertTrue(ok, "改寫失敗時要告訴使用者去智慧整理加 key：\(app.staticTexts.allElementsBoundByIndex.map(\.label))")
@@ -817,6 +819,31 @@ final class KeyboardOrbUITests: XCTestCase {
     /// 長按地球從清單選 UTUVO Type，再用我們鍵盤專有的「繁中」語言徽章確認。
     /// 不能用「換行」判斷：系統注音鍵盤的換行鍵標籤也叫「換行」（2026-09-18 假綠）。
     /// 模擬器要先在「設定」加入鍵盤（見 AppStoreScreenshotTests.test0EnableKeyboard）。
+    /// 0.2.7（09-30 Micky：「在輸入框裡加一個設定，可以跳回 App」）：在別的 app 裡點鍵盤左上品牌區，
+    /// 主 app 要被叫起來並停在「設定」分頁。宿主用 Safari 網址列（真實情境：在別人的 app 裡按）。
+    func testBrandTapOpensAppSettings() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["聽寫"].tap()          // 先停在別的分頁，才看得出有沒有跳到設定
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        safari.launch()
+        let address = safari.textFields.firstMatch
+        if !address.waitForExistence(timeout: 8) { safari.buttons["TabBarItemTitle"].firstMatch.tap() }
+        let bar = safari.textFields.firstMatch.exists ? safari.textFields.firstMatch : safari.buttons["Address"].firstMatch
+        XCTAssertTrue(bar.waitForExistence(timeout: 8), "Safari 找不到網址列")
+        bar.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(safari), "Safari 裡切不到 UTUVO Type 鍵盤")
+        let brand = safari.otherElements["openAppSettings"].exists ? safari.otherElements["openAppSettings"]
+                                                                   : safari.descendants(matching: .any)["openAppSettings"]
+        XCTAssertTrue(brand.waitForExistence(timeout: 5), "鍵盤左上找不到設定入口")
+        shot("brand-settings-entry")
+        brand.tap()
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 10), "點了之後主 app 沒有到前景")
+        XCTAssertTrue(app.tabBars.buttons["設定"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["設定"].isSelected, "主 app 沒有停在設定分頁")
+        shot("brand-opened-settings")
+    }
+
     private func switchToUTUVOKeyboard(_ app: XCUIApplication) -> Bool {
         // 叫出鍵盤一律從語音開始：「繁中」語言徽章（或左側「英文鍵盤」鈕）只有 UTUVO Type 鍵盤有。
         let badge = app.buttons.matching(NSPredicate(format: "label IN {'英文鍵盤', '繁中'}")).firstMatch
@@ -840,6 +867,21 @@ final class KeyboardOrbUITests: XCTestCase {
         }
         shot("switch-failed")
         return false
+    }
+
+    /// 字典欄上方的「新增詞彙／替換」切換：欄位剛好停在導覽列下緣時，切換被導覽列蓋住，
+    /// 點下去會點到狀態列＝整頁捲回頂端（10-02 整套跑時連兩次假紅）。從左側空白邊往下拉一小段，讓切換露出來。
+    @discardableResult
+    private func revealDictionaryModePicker(_ app: XCUIApplication) -> XCUIElement {
+        let field = revealDictionaryField(app)
+        let replace = app.buttons["替換"]
+        for _ in 0..<3 {
+            guard replace.exists, replace.frame.minY < 160 else { break }
+            let edge = app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.45))
+            edge.press(forDuration: 0.05, thenDragTo: edge.withOffset(CGVector(dx: 0, dy: 140)))
+            sleep(1)
+        }
+        return field
     }
 
     /// 字典輸入欄可能落在浮動分頁列正後方：直接點會點到分頁列的「歷史」（2026-09-18 假紅）。先往上捲一次。

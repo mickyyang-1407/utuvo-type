@@ -54,6 +54,22 @@ class GoldenOnDeviceTest {
         report("文字整理", cases.length(), diffs)
     }
 
+    /** 句尾語氣：規則用了 lookbehind（(?<!不)太…了）與 \\p{L}，手機上的 ICU 要跟 Swift 一字不差。 */
+    @Test
+    fun sentenceMoodMatchesSwift() {
+        val cases = golden("sentence-mood.json")
+        val diffs = mutableListOf<String>()
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val input = c.getString("input")
+            val apply = com.utuvo.type.core.SentenceMood.apply(input)
+            val finish = com.utuvo.type.core.SentenceMood.finish(input)
+            if (apply != c.getString("apply")) diffs += "apply「$input」swift「${c.getString("apply")}」android「$apply」"
+            if (finish != c.getString("finish")) diffs += "finish「$input」swift「${c.getString("finish")}」android「$finish」"
+        }
+        report("句尾語氣", cases.length(), diffs)
+    }
+
     @Test
     fun zhuyinMatchesSwift() {
         val lexicon = Lexicons.zhuyin(app) ?: error("zhuyin.dat 開不起來")

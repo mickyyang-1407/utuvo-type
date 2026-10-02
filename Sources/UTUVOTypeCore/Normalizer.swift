@@ -123,6 +123,12 @@ public struct Normalizer: Sendable {
             Normalizer.reattachParticles(input)
         }
 
+        // 句尾語氣（2026-10-02 Micky：不要每句都句號）：問句改「？」、明確的感嘆改「！」。
+        // 最後一句的句號由各平台送出前的 SentenceMood.finish 拿掉（智慧整理回來的文字也要走同一步）。
+        working = stage(&steps, "mood", from: working) { input in
+            SentenceMood.apply(input)
+        }
+
         // 收尾：把多餘空白壓回單一。
         working = stage(&steps, "collapse-whitespace", from: working) { input in
             Normalizer.collapseWhitespace(input)

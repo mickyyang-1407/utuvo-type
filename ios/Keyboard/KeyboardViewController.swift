@@ -22,6 +22,8 @@ final class KeyboardViewController: UIInputViewController {
     private var pendingTranslateTarget: TranslationTarget?
     /// 目前由本鍵盤插進文件、還沒定稿的那段文字。
     private var insertedText = ""
+    /// 上一段聽寫插入的文字：最後一句的句號被拿掉了，緊接著再講時要先補回去（SentenceMood.continuationPrefix）。
+    private var lastDictationOutput: String?
     /// 剛貼上的各段定稿（等背景整理）：連講好幾段也都留著，更正回來依序換（CorrectionChain）。
     private var correctionChain: [CorrectionChain.Entry] = []
     private var chainReturnKeys: [UUID: UIReturnKeyType?] = [:]
@@ -46,6 +48,9 @@ final class KeyboardViewController: UIInputViewController {
     private let liveDot = UIView()
     private let brandIcon = UIImageView(image: UIImage(named: "BrandMark"))
     private let brandLabel = UILabel()
+    /// 品牌字後面的小齒輪：點品牌區＝跳回 UTUVO Type 的設定（09-30 Micky：「在輸入框裡加一個設定，可以跳回 App」）。
+    private let settingsGlyph = UIImageView(image: UIImage(systemName: "gearshape.fill",
+        withConfiguration: UIImage.SymbolConfiguration(pointSize: 13, weight: .semibold)))
     private let hintLabel = UILabel()
     private let micButton = OrbButton()
     /// 主 app 錄音時寫的即時音量（App Group 小檔案），光球每幀讀。
@@ -279,12 +284,23 @@ final class KeyboardViewController: UIInputViewController {
         // 字幕再長也是它讓位（截頭），不能去擠右上的語言徽章。
         transcriptLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         transcriptLabel.isHidden = true
-        let band = UIStackView(arrangedSubviews: [brandIcon, brandLabel, liveDot, transcriptLabel])
+        settingsGlyph.tintColor = .secondaryLabel
+        settingsGlyph.contentMode = .scaleAspectFit
+        let band = UIStackView(arrangedSubviews: [brandIcon, brandLabel, settingsGlyph, liveDot, transcriptLabel])
         band.axis = .horizontal
         band.spacing = 8
         band.alignment = .center
         band.translatesAutoresizingMaskIntoConstraints = false
         transcriptPill.addSubview(band)
+        // 錄音中品牌區換成即時字幕，不接點擊（見 setRecordingAppearance）。
+        let settingsTap = UITapGestureRecognizer(target: self, action: #selector(openAppSettings))
+        band.addGestureRecognizer(settingsTap)
+        band.isUserInteractionEnabled = true
+        // 無障礙按鈕只放在齒輪上：整個品牌區當一個元素會把「UTUVO Type」字標從無障礙樹拿掉（VoiceOver 聽不到品牌）。
+        settingsGlyph.isAccessibilityElement = true
+        settingsGlyph.accessibilityTraits = .button
+        settingsGlyph.accessibilityLabel = String(localized: "打開 UTUVO Type 設定")
+        settingsGlyph.accessibilityIdentifier = "openAppSettings"
         NSLayoutConstraint.activate([
             brandIcon.widthAnchor.constraint(equalToConstant: 28),
             brandIcon.heightAnchor.constraint(equalToConstant: 28),
@@ -1126,6 +1142,7 @@ final class KeyboardViewController: UIInputViewController {
         micButton.setRecording(recording)
         // 字幕帶：錄音中品牌退場、橘點＋逐字稿進場
         brandLabel.isHidden = recording
+        settingsGlyph.isHidden = recording
         liveDot.isHidden = !recording
         transcriptLabel.isHidden = !recording
         if recording {
@@ -1268,6 +1285,15 @@ final class KeyboardViewController: UIInputViewController {
         KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
     }
 
+    /// 點左上品牌區：打開主 app 的「設定」分頁。錄音中不動作（那時品牌區是即時字幕）。
+    @objc private func openAppSettings() {
+        guard !isRecording else { return }
+        KeyFeedback.down(.special, hasFullAccess: hasFullAccess)
+        if !openContainingApp(VoiceBridge.settingsURL) {
+            setHint(String(localized: "請從主畫面打開 UTUVO Type"), error: true)
+        }
+    }
+
     /// 鍵盤 extension 不能用 UIApplication.shared.open；沿 responder chain 找到 UIApplication 再呼叫
     /// `open(_:options:completionHandler:)`（iOS 18 起舊的 openURL: 已失效）。找不到就回 false。
     private func openContainingApp(_ url: URL) -> Bool {
@@ -1297,7 +1323,14 @@ final class KeyboardViewController: UIInputViewController {
             let tone = ToneHint.infer(returnKeyType: returnKey)
             var cleaned = ToneHint.apply(TextPipeline().clean(raw).output, tone: tone)
             if !ToneHint.allowsLineBreaks(returnKeyType: returnKey) { cleaned = OutputShape.singleLine(cleaned) }
+            // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
+            if insertedText.isEmpty, !cleaned.isEmpty {
+                let prefix = SentenceMood.continuationPrefix(before: textDocumentProxy.documentContextBeforeInput,
+                                                             previous: lastDictationOutput)
+                if !prefix.isEmpty { insertText(prefix) }
+            }
             applyEdit(to: cleaned)
+            if !cleaned.isEmpty { lastDictationOutput = cleaned }
             if !raw.isEmpty {
                 HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: cleaned, source: .keyboard))
             }
@@ -1378,6 +1411,8 @@ final class KeyboardViewController: UIInputViewController {
                 for _ in 0..<edit.deleteCount { deleteBackward() }
                 if !edit.insert.isEmpty { insertText(edit.insert) }
             }
+            // 整理換掉的正好是最後一段：之後接著講要比對的是換過的文字。
+            if lastDictationOutput == plan.previous { lastDictationOutput = cleaned }
             correctionChain[plan.index].inserted = cleaned
             correctionChain[plan.index].done = true
             learner.dictationInserted(cleaned)

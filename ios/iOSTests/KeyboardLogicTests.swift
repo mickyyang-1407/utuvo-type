@@ -168,12 +168,12 @@ final class KeyboardLogicTests: XCTestCase {
         for single in [UIReturnKeyType.send, .search, .go, .done, .next, .join, .route, .google, .yahoo, .emergencyCall, .continue] {
             XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: single), "\(single.rawValue)")
         }
+        // 2026-10-02 Micky：最後一句不加句號——聊天框、文件都一樣；中間的句號留著；問號驚嘆號不動；分段長文照原樣。
         XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .chat), "我十分鐘到")
-        XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .document), "我十分鐘到。")
-        // 多句不動、太長不動、沒句號不動
-        XCTAssertEqual(ToneHint.apply("先開會。再吃飯。", tone: .chat), "先開會。再吃飯。")
-        let long = String(repeating: "很", count: 41) + "。"
-        XCTAssertEqual(ToneHint.apply(long, tone: .chat), long)
+        XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .document), "我十分鐘到")
+        XCTAssertEqual(ToneHint.apply("先開會。再吃飯。", tone: .chat), "先開會。再吃飯")
+        XCTAssertEqual(ToneHint.apply("你到了嗎？", tone: .chat), "你到了嗎？")
+        XCTAssertEqual(ToneHint.apply("第一段。\n\n第二段。", tone: .document), "第一段。\n\n第二段。")
         XCTAssertEqual(ToneHint.apply("好", tone: .chat), "好")
     }
 

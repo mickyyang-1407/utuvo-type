@@ -55,6 +55,7 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
         stage("list") { if (InputFeatures.hasMarkdown(it)) it else normalizeListCues(it) }
         stage("punctuation") { normalizePunctuation(it) }
         stage("particles") { reattachParticles(it) }
+        stage("mood") { SentenceMood.apply(it) }   // 同 Swift：問句「？」、感嘆「！」；最後句號由送出前拿掉
         stage("collapse-whitespace") { collapseWhitespace(it) }
         stage("paragraph") { paragraphize(it) }
         return NormalizedText(text, working, steps)

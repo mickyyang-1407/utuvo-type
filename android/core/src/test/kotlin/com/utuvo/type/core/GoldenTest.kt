@@ -144,6 +144,29 @@ class GoldenTest {
     fun associationsSimplifiedMatchSwift() = associationCase("assoc-hans.dat", "associations-hans.json")
 
     @Test
+    fun sentenceMoodMatchesSwift() {
+        val cases = golden("sentence-mood.json")
+        val diffs = mutableListOf<String>()
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val input = c.getString("input")
+            val apply = SentenceMood.apply(input)
+            val finish = SentenceMood.finish(input)
+            if (apply != c.getString("apply")) diffs += "apply「$input」 swift「${c.getString("apply")}」 kotlin「$apply」"
+            if (finish != c.getString("finish")) diffs += "finish「$input」 swift「${c.getString("finish")}」 kotlin「$finish」"
+        }
+        val cont = golden("sentence-mood-continuation.json")
+        for (i in 0 until cont.length()) {
+            val c = cont.getJSONObject(i)
+            val before = if (c.isNull("before")) null else c.getString("before")
+            val previous = if (c.isNull("previous")) null else c.getString("previous")
+            val got = SentenceMood.continuationPrefix(before, previous)
+            if (got != c.getString("prefix")) diffs += "continuation「$before」「$previous」 swift「${c.getString("prefix")}」 kotlin「$got」"
+        }
+        report("句尾語氣", cases.length() + cont.length(), diffs)
+    }
+
+    @Test
     fun englishCurrentWordMatchesSwift() {
         val cases = golden("english-current-word.json")
         val diffs = mutableListOf<String>()
