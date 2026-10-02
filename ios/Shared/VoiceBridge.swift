@@ -13,6 +13,8 @@ enum VoiceBridge {
     static let groupID = "group.com.utuvo.type"
     static let urlScheme = "utuvotype"
     static let urlHost = "voice"
+    /// 鍵盤左上品牌區：打開主 app 的「設定」分頁。
+    static let settingsURL = URL(string: "\(urlScheme)://settings")!
 
     enum Note: String, Sendable {
         /// 鍵盤 → 主 app：command.json 有新指令。

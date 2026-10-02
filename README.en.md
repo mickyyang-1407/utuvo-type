@@ -39,7 +39,7 @@ Current version 0.2.6: Zhuyin candidates as you type (abbreviations, tones optio
 
 ## Android (APK, beta)
 
-1. Download `UTUVO-Type-0.2.0-android.apk` (with SHA-256) from the [Android 0.2.0 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.0). It is **not on Google Play** yet.
+1. Download `UTUVO-Type-0.2.1-android.apk` (with SHA-256) from the [Android 0.2.1 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.2.1). It is **not on Google Play** yet.
 2. Allow installing unknown apps, install it, then follow the three steps in the app: allow the microphone → enable the UTUVO Type keyboard in system settings → switch to UTUVO Type.
 3. Needs **Android 10+**. Dictation uses the phone's speech service (usually Google); you can also add your own cloud key under Settings.
 

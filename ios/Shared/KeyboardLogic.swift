@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import UTUVOTypeCore
 
 /// 鍵盤的純邏輯（無 UI、可測）：模式判定、送出鍵文案、用量統計。
 /// 對齊 Typeless：有選取文字＝「說出要怎麼改」；長按麥克風選語言＝「放開就翻譯」；其餘＝聽寫。
@@ -205,14 +206,10 @@ enum ToneHint: Equatable, Sendable {
         return returnKeyType == .default
     }
 
-    private static let terminators: Set<Character> = ["。", "！", "？", ".", "!", "?"]
-
-    /// 聊天：一句話（只有結尾一個句號、40 字以內）就把句號拿掉；多句或長訊息不動。
+    /// 最後一句不加句號（2026-10-02 Micky：不要每句、最後都用句號，很 AI）。以前只在聊天框的單句訊息拿掉；
+    /// 現在所有輸入框都拿掉，分段長文（有換行）照原樣。緊接著再講時由鍵盤補回句號（SentenceMood.continuationPrefix）。
     static func apply(_ text: String, tone: ToneHint) -> String {
-        guard tone == .chat, let last = text.last, last == "。" else { return text }
-        let body = text.dropLast()
-        guard body.count <= 40, !body.contains(where: { terminators.contains($0) }) else { return text }
-        return String(body)
+        SentenceMood.dropFinalPeriod(text)
     }
 }
 

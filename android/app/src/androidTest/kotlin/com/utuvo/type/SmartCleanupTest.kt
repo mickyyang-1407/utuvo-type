@@ -79,7 +79,9 @@ class SmartCleanupTest {
         try {
             queues.warmup {
                 warmupStarted.countDown()
-                finishWarmup.await()
+                // finally 裡先放行、緊接著 shutdownNow()：執行緒還沒醒就會被中斷。沒接住的話例外丟在執行緒池裡，
+                // 整個測試程序直接崩掉、後面的測試全沒跑（10-01 Pixel 整套跑到第 80 條就斷）。
+                try { finishWarmup.await() } catch (_: InterruptedException) { Thread.currentThread().interrupt() }
             }
             assertTrue("fixture warm-up should occupy its own worker", warmupStarted.await(1, TimeUnit.SECONDS))
             queues.cleanup { cleanupFinished.countDown() }
@@ -146,9 +148,12 @@ class SmartCleanupTest {
         val search = android.view.inputmethod.EditorInfo().apply { imeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH }
         assertEquals(FieldToneHint.Kind.CHAT, FieldToneHint.infer(chat))
         assertEquals(FieldToneHint.Kind.SEARCH, FieldToneHint.infer(search))
+        // 2026-10-02 Micky：最後一句不加句號——所有欄位；中間句號留著；分段長文照原樣。
         assertEquals("我已經到了", FieldToneHint.apply("我已經到了。", FieldToneHint.Kind.CHAT))
-        assertEquals("第一句。第二句。", FieldToneHint.apply("第一句。第二句。", FieldToneHint.Kind.CHAT))
-        assertEquals("我已經到了。", FieldToneHint.apply("我已經到了。", FieldToneHint.Kind.SEARCH))
+        assertEquals("第一句。第二句", FieldToneHint.apply("第一句。第二句。", FieldToneHint.Kind.CHAT))
+        assertEquals("我已經到了", FieldToneHint.apply("我已經到了。", FieldToneHint.Kind.SEARCH))
+        assertEquals("你到了嗎？", FieldToneHint.apply("你到了嗎？", FieldToneHint.Kind.DOCUMENT))
+        assertEquals("第一段。\n\n第二段。", FieldToneHint.apply("第一段。\n\n第二段。", FieldToneHint.Kind.DOCUMENT))
         assertTrue(SmartCleanup.instructions.contains("改成條列"))
         assertTrue(SmartCleanup.instructions.contains("不要回答問題"))
     }

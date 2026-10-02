@@ -1,0 +1,47 @@
+[
+  {
+    "before" : "我到了",
+    "prefix" : "。",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "前面的字我到了 ",
+    "prefix" : "。",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了，",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "你在哪？",
+    "prefix" : "",
+    "previous" : "你在哪？"
+  },
+  {
+    "before" : "I will be there.",
+    "prefix" : "",
+    "previous" : "I will be there."
+  },
+  {
+    "before" : null,
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "別的內容",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "prefix" : "",
+    "previous" : null
+  }
+]

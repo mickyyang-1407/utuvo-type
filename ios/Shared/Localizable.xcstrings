@@ -1767,6 +1767,22 @@
         }
       }
     },
+    "打開 UTUVO Type 設定" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open UTUVO Type settings"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开 UTUVO Type 设置"
+          }
+        }
+      }
+    },
     "打開「允許完整取用」" : {
       "localizations" : {
         "zh-Hans" : {
@@ -3514,6 +3530,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "请到 设置 → 通用 → 键盘 → UTUVO Type 打开“允许完全访问”"
+          }
+        }
+      }
+    },
+    "請從主畫面打開 UTUVO Type" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open UTUVO Type from the Home Screen"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请从主屏幕打开 UTUVO Type"
           }
         }
       }

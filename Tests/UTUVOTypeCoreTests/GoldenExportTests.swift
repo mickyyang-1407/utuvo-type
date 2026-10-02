@@ -152,6 +152,32 @@ final class GoldenExportTests: XCTestCase {
         try write(caseCases.map { pair -> [String: Any] in
             ["suggestion": pair[0], "typed": pair[1], "matched": EnglishSuggestions.matchCase(pair[0], to: pair[1])]
         }, "english-match-case.json", to: dir)
+        // 句尾語氣（SentenceMood）：正反例、混合段落、英文、Micky 原話、分段長文樣本。
+        let moodInputs = [
+            "你明天會來嗎。", "我想問問你可以嗎。", "我明天會到，你呢。", "你明天是不是要上課。", "週五有沒有空。",
+            "你覺得這個混音怎麼樣。", "為什麼他還沒回信。", "這個多少錢。", "你明天會來，對吧。",
+            "我不知道他為什麼要這樣。", "我在考慮要不要去。", "等一下問他幾點到。", "什麼都可以。", "誰都知道這件事。",
+            "我還在等呢。", "我不太記得了。", "明天下午三點開會。", "一眼就知道要按哪裡。", "我很清楚他在想什麼。", "看得出他有多開心。", "你知道他在哪裡嗎。",
+            "我過幾天會寄給妳。", "不管他怎麼說我都不想理他。", "隨便挑哪一個都好。", "無論如何我們都要準時交件。",
+            "這件衣服多少有點褪色。", "這是不是事實大家心裡有數。", "我等一下再跟你說怎麼做。", "看你什麼時候方便。",
+            "你為什麼不早說。", "多少錢。", "怎麼這麼貴。", "他太常遲到了。", "你幾點到。",
+            "太好了。", "今天真的太熱了。", "恭喜你升職。", "謝謝你幫忙。", "好漂亮喔。", "生日快樂。",
+            "明天開會改到三點。你可以來嗎。我會帶筆電。", "真的嗎？太棒了！", "第一段。\n\n第二段結束。", "。", "好。",
+            "What time is the session.", "Can you send it tomorrow.", "We will meet tomorrow.", "Is 是英文的 be 動詞。",
+            "I will be there.",
+            "我覺得現在越來越棒，但我一直想修改的是不要每個句子或最後都用句點，偶爾可以有問號、驚歎號等。你還是要稍微了解前後的意思再下判斷，因為一直使用句點會顯得很 AI。就像現在這樣，幾乎都會有句點。",
+            ParagraphTests.meeting, ParagraphTests.email, ParagraphTests.review,
+        ]
+        try write(moodInputs.map { t -> [String: Any] in
+            ["input": t, "apply": SentenceMood.apply(t), "finish": SentenceMood.finish(t)]
+        }, "sentence-mood.json", to: dir)
+        let continuation: [[String?]] = [["我到了", "我到了"], ["前面的字我到了 ", "我到了"], ["", "我到了"], ["我到了，", "我到了"],
+                                         ["你在哪？", "你在哪？"], ["I will be there.", "I will be there."], [nil, "我到了"],
+                                         ["別的內容", "我到了"], ["我到了", nil]]
+        try write(continuation.map { c -> [String: Any] in
+            ["before": c[0] as Any, "previous": c[1] as Any,
+             "prefix": SentenceMood.continuationPrefix(before: c[0], previous: c[1])]
+        }, "sentence-mood-continuation.json", to: dir)
         struct MergeCase {
             let word: String, isMisspelled: Bool, completions: [String], guesses: [String]
             let terms: [String], limit: Int

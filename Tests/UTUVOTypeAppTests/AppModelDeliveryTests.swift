@@ -48,8 +48,9 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertEqual(model.preferences.historyRecords.count, 1)
         await model.waitForBackgroundCleanup()
         XCTAssertEqual(target.replacements, 1)
-        XCTAssertEqual(target.text, "合成測試文字。 ")
-        XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字。")
+        // 2026-10-02：最後一句不加句號（SentenceMood.finish）——整理版換上去時也一樣。
+        XCTAssertEqual(target.text, "合成測試文字 ")
+        XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字")
         model.cancelProcessing()
     }
 
@@ -208,9 +209,10 @@ final class AppModelDeliveryTests: XCTestCase {
             await model.completeSyntheticDictation("合成測試文字")
             await model.waitForBackgroundCleanup()
             XCTAssertEqual(cleanupCalls.value, 1)
-            XCTAssertEqual(model.lastOutput, "合成測試文字。")
+            // 2026-10-02：整理回來的「合成測試文字。」最後一句不加句號（SentenceMood.finish）。
+            XCTAssertEqual(model.lastOutput, "合成測試文字")
             XCTAssertEqual(model.preferences.historyRecords.count, 1, "每一筆都要寫進歷史")
-            XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字。")
+            XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字")
             XCTAssertNotNil(model.preferences.historyRecords.first?.note)
             XCTAssertEqual(target.text, "", "不能 AX 插入的目的地一個字都不寫（改走剪貼簿）")
             XCTAssertFalse(events.contains("inserted"))

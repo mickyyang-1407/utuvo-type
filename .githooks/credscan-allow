@@ -8,3 +8,6 @@ a4068d15434efce5f5489596b2402a4dcb7589bf706a275210dfa71ad38ea46b  # SmartCleanup
 ee9809b957a0fbb550309afbe1ae0eb2db6645216abccb80e0b6185d11fcde2d  # SmartCleanupTest.kt 歷史版本：sk-utuv…not-a-real-key 假 key（2026-09-29 確認）
 c088bc5e693047b4bc51f48c0bbdcea75eb930cf85afbaba8516d1bc1ed294bd  # SmartCleanupTest.kt 歷史版本：sk-utuv…not-a-real-key 假 key（2026-09-29 確認）
 7c236d98b7a553ec4eec4021acc6e9e1e18bffa38cd04e22bf02e0d83578b349  # CloudTranslateTest.kt：A5 改 quickPick(app) 後的版本，同一把刻意假 key（2026-09-29）
+72a9db9532f8b69d20a50bf8f71ead2fdbb40ff884417e17ec63c9f7f3a98af7  # SmartCleanupTest.kt：句尾語氣改 FieldToneHint 期望後的版本，同一把 sk-utuv…not-a-real-key 假 key（2026-10-02）
+53fccbfc88467781d5c1ac848624f3dc3e8fa0b2f71c80d7c85506d4ecbd643d  # SmartCleanupTest.kt：10-01 加 InterruptedException 註解後的版本，同一把刻意假 key（not-a-real-key）
+1332f615ee8d98d954cfd50bf50da3624de1bdbda234f1ee7a03d7dd81943e13  # SmartCleanupTest.kt：10-02 release 合併版（句尾＋連續聽寫），同一把 sk-utuv…not-a-real-key 假 key

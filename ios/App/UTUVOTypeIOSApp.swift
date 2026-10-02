@@ -29,6 +29,10 @@ struct RootView: View {
         } else {
             KeyboardPresence.defaults.removeObject(forKey: key)
         }
+        // UI 測試：`-utuvo.type.debug.noOnDeviceAI YES` 當作沒有 Apple Intelligence，走退路／錯誤說明。
+        // 09-30 起 macOS／iOS 27.0 的 Apple Intelligence 恢復可用，測試不能再靠「它一定壞」。
+        KeyboardPresence.defaults.set(UserDefaults.standard.bool(forKey: OnDeviceAssistant.debugDisableKey),
+                                      forKey: OnDeviceAssistant.debugDisableKey)
         // App Store 截圖：`-utuvo.type.keyboard.language zh-CN` 指定鍵盤聽寫語言（徽章顯示「简中」）。
         if let lang = UserDefaults.standard.string(forKey: "utuvo.type.keyboard.language") {
             KeyboardPresence.defaults.set(lang, forKey: "utuvo.type.keyboard.language")
@@ -75,7 +79,9 @@ struct RootView: View {
             if phase == .active { DictionaryCloud.start() }
         }
         // 鍵盤叫起主 app：utuvotype://voice?lang=…&id=…
+        // 鍵盤左上品牌區：utuvotype://settings → 設定分頁。
         .onOpenURL { url in
+            if url == VoiceBridge.settingsURL { tab = 2; return }
             tab = 0
             voiceHost.handle(url: url)
         }

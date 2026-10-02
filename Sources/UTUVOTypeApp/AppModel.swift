@@ -999,6 +999,12 @@ final class AppModel: ObservableObject {
 
         guard token == operationToken else { return }
 
+        // 句尾語氣（2026-10-02 Micky：不要每句都句號）：問句／感嘆改標點、最後一句不加句號。
+        // 翻譯（日文也用「。」）與改選取（取代使用者原文）不動。
+        if translation == .off && activeMode != .editSelection && moodApplies {
+            output = SentenceMood.finish(output)
+        }
+
         lastOutput = output
 
         preferences.appendHistory(HistoryRecord(
@@ -1077,9 +1083,16 @@ final class AppModel: ObservableObject {
 
     func waitForBackgroundCleanup() async { await pendingCleanupTask?.value }
 
+    /// 句尾語氣規則是中文／英文的（日文也用「。」、也有「誰」這類字）：其他轉錄語言、以及「自動偵測」
+    /// （可能偵測成任何語言）照原樣。
+    private var moodApplies: Bool {
+        [.traditionalChinese, .english].contains(preferences.transcriptionLanguage)
+    }
+
     private func deliverImmediate(_ original: String, raw: String, duration: TimeInterval,
                                   historyID: UUID, audioPath: String?, token: UUID, context: LimitedAppContext,
                                   dictionary: [String: String], useLocalFormatter: Bool) async {
+        let original = moodApplies ? SentenceMood.finish(original) : original   // 先貼的本機版也照句尾語氣
         let trailing = preferences.appendTrailingSpace ? " " : ""
         let promptContext = preferences.includeSurroundingContext
             ? CleanupPromptContext(
@@ -1129,7 +1142,8 @@ final class AppModel: ObservableObject {
             guard let self else { target.invalidate(); return }
             // 整理模型讀的是原始逐字稿（「三點」），先貼出的版本已轉成「3點」：數字格式先對齊，否則把關會把整段擋掉。
             guard !Task.isCancelled, token == self.operationToken, !self.isRecording,
-                  let cleaned = cleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: cleaned),
+                  let checked = cleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: checked),
+                  case let cleaned = self.moodApplies ? SentenceMood.finish(checked) : checked,
                   target.replaceInsertedText(with: cleaned + trailing) else {
                 target.invalidate()
                 if token == self.operationToken { self.onDeliveryEvent?("refused") }
@@ -1166,7 +1180,7 @@ final class AppModel: ObservableObject {
         var output = original
         var note: String? = preferences.tr("此欄位不支援背景替換，已用剪貼簿貼上", "Field doesn't support background replacement; pasted via clipboard")
         if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: cleaned) {
-            output = cleaned
+            output = moodApplies ? SentenceMood.finish(cleaned) : cleaned
             deliveryLog.info("smart fallback paste: cleanup applied in \(elapsed, privacy: .public) ms")
         } else {
             note = preferences.tr("智慧整理沒有在時限內完成（或被把關擋下），已貼上本機整理結果",

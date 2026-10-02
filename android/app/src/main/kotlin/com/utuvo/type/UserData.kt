@@ -1,7 +1,6 @@
 package com.utuvo.type
 
 import android.content.Context
-import android.icu.text.BreakIterator
 import android.view.inputmethod.EditorInfo
 import com.utuvo.type.core.DictionarySync
 import com.utuvo.type.core.Normalizer
@@ -154,7 +153,6 @@ object FieldShape {
 /** Matches iOS tone handling while adding action-specific hints where Android exposes editor intent. */
 internal object FieldToneHint {
     enum class Kind { DOCUMENT, CHAT, SEARCH }
-    private val sentenceTerminators = setOf('。', '！', '？', '.', '!', '?')
 
     fun infer(info: EditorInfo?): Kind {
         val action = info?.imeOptions?.and(EditorInfo.IME_MASK_ACTION) ?: EditorInfo.IME_ACTION_NONE
@@ -171,14 +169,9 @@ internal object FieldToneHint {
         Kind.SEARCH -> "搜尋／前往欄位：保留精簡查詢，不加說明或回答。"
     }
 
-    /** A short chat line drops only its final full stop, matching iOS ToneHint.apply. */
-    fun apply(text: String, kind: Kind): String {
-        if (kind != Kind.CHAT || text.lastOrNull() != '。') return text
-        val body = text.dropLast(1)
-        val graphemes = BreakIterator.getCharacterInstance().apply { setText(body) }
-        var count = 0
-        while (graphemes.next() != BreakIterator.DONE) count++
-        if (count > 40 || body.any { it in sentenceTerminators }) return text
-        return body
-    }
+    /**
+     * 最後一句不加句號（2026-10-02 Micky：不要每句、最後都用句號，很 AI；同 iOS ToneHint.apply）。
+     * 以前只有聊天框的單句訊息；現在所有欄位，分段長文（有換行）照原樣。
+     */
+    fun apply(text: String, kind: Kind): String = com.utuvo.type.core.SentenceMood.dropFinalPeriod(text)
 }

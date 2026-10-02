@@ -39,6 +39,16 @@ class UTUVOImeService : InputMethodService() {
     private var cloudRecognizer: SpeechRecognizer? = null
     private var listening = false
     private var lastPartial = ""
+    /** 上一段聽寫插入的文字：最後一句的句號被拿掉了，緊接著再講時先補回去（SentenceMood.continuationPrefix）。 */
+    private var lastDictationOutput: String? = null
+    /** 這一次聽寫（點光球到再點一次）。辨識器每段結束交回一段，沒按停就重新開始聽（見 [ContinuousDictation]）。 */
+    private var session: ContinuousDictation? = null
+    private var activeIntent: Intent? = null
+    private var restartPending = false
+    private var restartRetries = 0
+    private val restartRunnable = Runnable { restartRecognizer() }
+    /** 重開排程掛在服務自己的主執行緒 Handler：掛在鍵盤 view 上，view 在兩段之間被重建（例：轉向）就永遠不會跑（review 抓到）。 */
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
     private var activeCleanupContext = SmartCleanup.CleanupContext()
     /** 這一次錄音要翻成哪個語言（長按弧選的）；null＝一般聽寫。 */
     private var translateTarget: Translation.Target? = null
@@ -211,6 +221,7 @@ class UTUVOImeService : InputMethodService() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacks(restartRunnable)
         onDeviceRecognizer?.destroy()
         cloudRecognizer?.destroy()
         recognizer = null
@@ -574,6 +585,8 @@ class UTUVOImeService : InputMethodService() {
         keyboard?.setEditMode(mode.isEdit)
         listening = true
         lastPartial = ""
+        session = ContinuousDictation()
+        restartRetries = 0
         val editor = currentInputEditorInfo
         activeCleanupContext = if (SmartCleanup.includeAppContext(this) && editor != null && FieldShape.allowsContext(editor.inputType)) {
             val packageName = editor.packageName.orEmpty()
@@ -593,6 +606,7 @@ class UTUVOImeService : InputMethodService() {
         startCloudRecording()
         keyboard?.setListening(true)
         val intent = recognizeIntent()
+        if (attachDebugAudio(intent)) dropCloudRecording()   // 測試音檔取代麥克風：沒有雲端錄音可送
         if (translateTarget == null && cloudAsrAvailable() && SmartCleanup.cloudRecognitionPreferred(this)) {
             // Explicitly permit network recognition. The selected Android speech service still controls its route.
             intent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, false)
@@ -636,13 +650,37 @@ class UTUVOImeService : InputMethodService() {
      * 同 iOS ToneHint.allowsLineBreaks。
      */
     private fun fitField(text: String, tone: FieldToneHint.Kind = FieldToneHint.infer(currentInputEditorInfo),
-                         inputType: Int? = currentInputEditorInfo?.inputType): String {
-        val toned = FieldToneHint.apply(text, tone)
+                         inputType: Int? = currentInputEditorInfo?.inputType, mood: Boolean = true): String {
+        // 句尾語氣（2026-10-02 Micky：不要每句都句號）：SpeechPunctuation／智慧整理之後才做，它們都可能補回句號。
+        // 翻譯輸出不做（日文也用「。」、也有「誰」這類字）。
+        val toned = FieldToneHint.apply(if (mood) com.utuvo.type.core.SentenceMood.apply(text) else text, tone)
         val type = inputType ?: return toned
         return if (FieldShape.allowsLineBreaks(type)) toned else com.utuvo.type.core.OutputShape.singleLine(toned)
     }
 
     private fun recognizeIntent() = SpeechRequest.build(dictation().code, VocabularyPacks.biasing(this))
+
+    /**
+     * 只在開發版：裝置測試把一段 16 kHz 單聲道 PCM 的路徑寫進偏好 `debugAudioFile`，鍵盤就「聽」這個檔、不開麥克風。
+     * 同一個檔案描述子跨段重用（辨識器每段結束後重開，會從檔案目前的位置接著讀），用來在真機上驗「停頓不會斷」。
+     */
+    private var debugAudio: android.os.ParcelFileDescriptor? = null
+
+    private fun attachDebugAudio(intent: Intent): Boolean {
+        runCatching { debugAudio?.close() }
+        debugAudio = null
+        if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE == 0) return false
+        val path = prefs.getString("debugAudioFile", null) ?: return false
+        val file = java.io.File(path)
+        if (!file.isFile) return false
+        val pfd = android.os.ParcelFileDescriptor.open(file, android.os.ParcelFileDescriptor.MODE_READ_ONLY)
+        debugAudio = pfd
+        intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, pfd.dup())
+        intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_ENCODING, android.media.AudioFormat.ENCODING_PCM_16BIT)
+        intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_CHANNEL_COUNT, 1)
+        intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE_SAMPLING_RATE, 16000)
+        return true
+    }
 
     private fun isTraditionalChinese(tag: String) =
         tag.equals("zh-TW", true) || tag.startsWith("cmn-Hant", true) || tag.startsWith("zh-Hant", true)
@@ -664,6 +702,7 @@ class UTUVOImeService : InputMethodService() {
 
     private fun begin(r: SpeechRecognizer, intent: Intent, onDevice: Boolean) {
         recognizer = r
+        activeIntent = intent
         r.setRecognitionListener(listener)
         r.startListening(intent)
         when (val current = mode) {
@@ -699,6 +738,15 @@ class UTUVOImeService : InputMethodService() {
     }
 
     private fun stopListening() {
+        val s = session
+        s?.requestStop()
+        if (restartPending) {
+            // 正在兩段之間（辨識器剛結束、還沒重新開始）：沒有下一段會回來了，直接收尾。
+            mainHandler.removeCallbacks(restartRunnable)
+            restartPending = false
+            finishSession(s?.finish().orEmpty())
+            return
+        }
         recognizer?.stopListening()
         finishCloudRecording()
         listening = false
@@ -812,7 +860,13 @@ class UTUVOImeService : InputMethodService() {
         translateTarget = null
         mode = KeyboardMode.Dictate
         if (target == null) {
-            currentInputConnection?.commitText(cleaned, 1)
+            // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
+            val ic = currentInputConnection
+            val prefix = com.utuvo.type.core.SentenceMood.continuationPrefix(
+                ic?.getTextBeforeCursor(200, 0)?.toString(), lastDictationOutput)
+            if (prefix.isNotEmpty()) ic?.commitText(prefix, 1)
+            ic?.commitText(cleaned, 1)
+            if (cleaned.isNotEmpty()) lastDictationOutput = cleaned
             HistoryStore.append(this, raw, cleaned)
             learner.dictationInserted(cleaned)
             refine(cleaned, raw, activeCleanupContext, tone, inputType)
@@ -825,7 +879,7 @@ class UTUVOImeService : InputMethodService() {
             keyboard?.showTranscript("")
             result.onSuccess { translated ->
                 keyboard?.setHint(getString(R.string.hint_idle), error = false)
-                val output = fitField(translated.trim(), tone, inputType)
+                val output = fitField(translated.trim(), tone, inputType, mood = false)
                 currentInputConnection?.commitText(output, 1)
                 HistoryStore.append(this, raw, output)
             }.onFailure {
@@ -898,6 +952,7 @@ class UTUVOImeService : InputMethodService() {
             var swapped = false
             val ic = currentInputConnection
             if (corrected != null && corrected != inserted && ic != null && chain.swap(ic, id, corrected)) {
+                if (lastDictationOutput == inserted) lastDictationOutput = corrected   // 之後接著講要比對換過的文字
                 learner.dictationInserted(corrected)
                 swapped = true
             }
@@ -907,28 +962,96 @@ class UTUVOImeService : InputMethodService() {
         }, context = context, validationSource = inserted)
     }
 
+    /** 兩段之間重新開始聽（同一個辨識器、同一份請求）。要在回呼之外做：回呼裡直接 startListening 會 BUSY。 */
+    private fun scheduleRestart(delayMillis: Long = 0) {
+        restartPending = true
+        mainHandler.removeCallbacks(restartRunnable)
+        mainHandler.postDelayed(restartRunnable, delayMillis)
+    }
+
+    private fun restartRecognizer() {
+        restartPending = false
+        val s = session ?: return
+        val r = recognizer
+        val intent = activeIntent
+        if (!listening || s.stopRequested || r == null || intent == null) return
+        // 測試音檔：每段給一份複本（dup 共用讀取位置）。系統讀完一段可能把它拿到的那份關掉，原檔要留在我們手上。
+        debugAudio?.let { intent.putExtra(RecognizerIntent.EXTRA_AUDIO_SOURCE, it.dup()) }
+        r.startListening(intent)
+    }
+
+    /** 整次聽寫收尾：段落接好的文字走原本的輸出流程（雲端重辨識 → 整理 → 貼上，只貼一次）。 */
+    private fun finishSession(text: String) {
+        // 60 秒沒講話自動收尾、或出錯收尾時沒經過 stopListening：雲端錄音在這裡收。
+        // 只在還在錄時才收——finishCloudRecording 對已停的錄音會把取好的樣本清掉。
+        if (cloudRecorder.isActive) finishCloudRecording()
+        session = null
+        restartPending = false
+        mainHandler.removeCallbacks(restartRunnable)
+        runCatching { debugAudio?.close() }
+        debugAudio = null
+        listening = false
+        keyboard?.setListening(false)
+        keyboard?.showTranscript("")
+        keyboard?.setHint(getString(R.string.hint_idle), error = false)
+        if (text.isEmpty()) { dropCloudRecording(); return }
+        deliverWithCloud(text)
+    }
+
     private val listener = object : RecognitionListener {
         override fun onPartialResults(partialResults: Bundle?) {
             val text = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull() ?: return
             lastPartial = text
-            keyboard?.showTranscript(text)      // 只預覽，不動輸入框
+            // 停頓後即時結果會歸零、從下一句重來：交給 session 收起前一句（只預覽，不動輸入框）。
+            keyboard?.showTranscript(session?.partial(text) ?: text)
         }
 
         override fun onResults(results: Bundle?) {
-            listening = false
-            keyboard?.setListening(false)
             // 有些情況最終結果是空的、字只在即時結果裡（音訊檔來源實測），這時用最後一次即時結果，不讓講的話消失。
             val final = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)?.firstOrNull().orEmpty().trim()
-            val raw = final.ifEmpty { lastPartial.trim() }
+            val s = session
+            // 這一段的完整文字：停頓前已經講完、但即時結果歸零而沒進最終結果的句子要接回來（模擬器實測會丟第一句）。
+            val raw = s?.segmentText(final) ?: final.ifEmpty { lastPartial.trim() }
             lastPartial = ""
-            keyboard?.showTranscript("")
-            keyboard?.setHint(getString(R.string.hint_idle), error = false)
-            if (raw.isEmpty()) { dropCloudRecording(); return }
-            deliverWithCloud(raw)
+            restartRetries = 0
+            // 系統聽到停頓就送出一段：使用者還沒按停 → 收起這段、繼續聽（2026-10-01 Micky：停頓一下就自動結束）。
+            if (s != null && s.onSegment(raw) == ContinuousDictation.Next.RESTART) {
+                keyboard?.showTranscript(s.preview())
+                scheduleRestart()
+                return
+            }
+            finishSession(s?.finish() ?: raw)
         }
 
         override fun onError(error: Int) {
             Log.w(TAG, "recognition error $error")
+            val s = session
+            if (s != null) {
+                val pending = s.segmentText("")
+                lastPartial = ""
+                when (error) {
+                    // 這一段沒聽到字（停頓太久）：不是錯，照樣繼續聽；按停了或太久沒講話才收尾。
+                    SpeechRecognizer.ERROR_NO_MATCH, SpeechRecognizer.ERROR_SPEECH_TIMEOUT -> {
+                        val next = if (pending.isNotEmpty()) s.onSegment(pending) else s.onSilence()
+                        if (next == ContinuousDictation.Next.RESTART) { scheduleRestart(); return }
+                        val text = s.finish()
+                        if (text.isNotEmpty()) { finishSession(text); return }
+                    }
+                    // 剛結束一段馬上重開，辨識器偶爾回「忙碌」：稍等再試，三次都不行才照錯誤處理。
+                    SpeechRecognizer.ERROR_RECOGNIZER_BUSY, SpeechRecognizer.ERROR_CLIENT ->
+                        if (!s.stopRequested && listening && restartRetries < 3) {
+                            // 剛取出的這段先收進 session 再重試，不然重試期間就丟了（review 指出）。
+                            if (pending.isNotEmpty()) s.onSegment(pending)
+                            restartRetries++
+                            scheduleRestart(300L * restartRetries)
+                            return
+                        }
+                }
+                // 其他錯誤：前面已經聽到的字不能丟，照樣送出。
+                val text = s.finish(pending)
+                if (text.isNotEmpty()) { finishSession(text); return }
+                session = null
+            }
             listening = false
             // 麥克風同時有兩個人在用（辨識器＋我們的錄音），系統有可能因此報錯。
             // 這種時候手上還有錄音就丟給雲端救；雲端也沒救回來才照原本的錯誤提示走。

@@ -74,6 +74,10 @@ struct SecretLiteralScanner {
         "benchmarks/report.json"
     ]
 
+    /// 只放行「email」這一條規則的檔案：第三方授權聲明依授權條款必須原樣保留原作者的聯絡方式
+    /// （SCOWL 的 Copyright 全文，2026-09-29 Android 英文詞表加入；條款要求保留）。其他規則照掃。
+    static let emailAllowedFiles: Set<String> = ["THIRD_PARTY_NOTICES.md"]
+
     /// 跳過的副檔名（binary／編譯產物）。
     static let skipExtensions: Set<String> = [
         "png", "jpg", "jpeg", "gif", "pdf", "zip", "tar", "gz",
@@ -110,6 +114,7 @@ struct SecretLiteralScanner {
             for (i, line) in lines.enumerated() {
                 let lineStr = String(line)
                 for rule in Self.rules {
+                    if rule.name == "email", Self.emailAllowedFiles.contains(url.lastPathComponent) { continue }
                     let range = NSRange(lineStr.startIndex..<lineStr.endIndex, in: lineStr)
                     if rule.regex.numberOfMatches(in: lineStr, range: range) > 0 {
                         findings.append(Finding(

@@ -14,6 +14,28 @@ export JAVA_HOME
 adb=${ANDROID_HOME:-$HOME/Library/Android/sdk}/platform-tools/adb
 ime=com.utuvo.type/.UTUVOImeService
 
+# 使用者的資料與設定先備份、結束時一律還原（不管成功、失敗或中斷）。
+# 有些測試會清空歷史／字典再自己還原，測試程序中途崩掉就留在清空狀態（2026-10-01 Pixel：歷史 126→0、字典被清）。
+backup=$(mktemp -d)
+had_data=0
+if "$adb" shell run-as com.utuvo.type true 2>/dev/null; then
+  "$adb" exec-out run-as com.utuvo.type tar -cf - files shared_prefs > "$backup/app-data.tar" 2>/dev/null && had_data=1
+fi
+acc=$("$adb" shell settings get system accelerometer_rotation | tr -d '\r')
+urot=$("$adb" shell settings get system user_rotation | tr -d '\r')
+restore() {
+  if [[ $had_data == 1 ]]; then
+    # 先停掉 app，免得記憶體裡的舊狀態寫回去；停掉會讓系統換回預設鍵盤，所以再選一次。
+    "$adb" shell am force-stop com.utuvo.type
+    "$adb" exec-in run-as com.utuvo.type tar -xf - < "$backup/app-data.tar" && echo "已還原使用者資料"
+    "$adb" shell ime enable "$ime" >/dev/null; "$adb" shell ime set "$ime" >/dev/null
+  fi
+  [[ $acc == null ]] || "$adb" shell settings put system accelerometer_rotation "$acc"
+  [[ $urot == null ]] || "$adb" shell settings put system user_rotation "$urot"
+  rm -rf "$backup"
+}
+trap restore EXIT
+
 ./gradlew :app:installDebug --console=plain -q
 "$adb" shell ime enable "$ime"
 "$adb" shell ime set "$ime"
