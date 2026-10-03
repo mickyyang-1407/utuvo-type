@@ -35,7 +35,7 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
 ## iPhone (App Store)
 
 [Free on the App Store](https://apps.apple.com/app/id6813380439), iOS 18 or later. The keyboard needs Full Access.
-Current version 0.2.6: Zhuyin candidates as you type (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, and long-press translate.
+Current version 0.2.7: Zhuyin candidates as you type (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, and long-press translate; punctuation follows meaning (questions end with ？, clear exclamations with ！, no full stop after the last sentence), and the keyboard's gear opens the app's settings.
 
 ## Android (APK, beta)
 
