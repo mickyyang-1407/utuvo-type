@@ -55,6 +55,7 @@ struct VocabularyPacksScreen: View {
                     HStack(spacing: 8) {
                         NavigationLink {
                             PackDetailsScreen(pack: pack)
+                                .pushHaptic()
                         } label: {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(pack.displayName)
@@ -79,6 +80,7 @@ struct VocabularyPacksScreen: View {
         Toggle(String(localized: "開啟"), isOn: Binding(
             get: { enabled.contains(id) },
             set: { newOn in
+                TapPulse.shared.fire()
                 if let catalogPack = VocabularyPacks.catalog.packs.first(where: { $0.id == id }) {
                     VocabularyPacks.setCatalogEnabled(catalogPack, newOn)
                 }
@@ -94,6 +96,7 @@ struct VocabularyPacksScreen: View {
         Toggle(isOn: Binding(
             get: { enabled.contains(id) },
             set: { newOn in
+                TapPulse.shared.fire()
                 if let builtin = VocabularyPacks.all.first(where: { $0.id == id }) {
                     VocabularyPacks.setEnabled(builtin, newOn)
                 } else if let catalogPack = VocabularyPacks.catalog.packs.first(where: { $0.id == id }) {
@@ -129,6 +132,7 @@ struct VocabularyPacksScreen: View {
                 .autocorrectionDisabled()
                 .accessibilityIdentifier("vocabImport")
             Button("匯入到個人字典") {
+                TapPulse.shared.fire()
                 let n = VocabularyPacks.importLines(importText)
                 message = String(localized: "已加入 \(n) 筆。")
                 if n > 0 { importText = "" }
@@ -176,6 +180,7 @@ struct PackDetailsScreen: View {
                 }
                 .accessibilityIdentifier("packToggle:\(pack.id)")
                 .accessibilityLabel(pack.displayName)
+                .feedbackOnChange(of: enabled)
                 .onChange(of: enabled) { _, newValue in
                     VocabularyPacks.setCatalogEnabled(pack, newValue)
                 }

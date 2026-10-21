@@ -1,4 +1,5 @@
 import Foundation
+import UTUVOTypeCore
 #if canImport(FoundationModels)
 import FoundationModels
 #endif
@@ -23,20 +24,16 @@ enum HomophoneCorrector {
 
     // MARK: - 決定論部分（可測）
 
-    static func pinyin(_ c: Character) -> String {
-        let s = String(c).applyingTransform(.mandarinToLatin, reverse: false) ?? String(c)
-        return (s.applyingTransform(.stripDiacritics, reverse: false) ?? s).lowercased()
-    }
+    /// 讀音判定住在 UTUVOTypeCore（Mac 與 iOS 共用，CleanupFidelity 也吃同一份），這裡不再各寫一份。
+    static func pinyin(_ c: Character) -> String { MandarinReading.pinyin(c) }
 
-    static func isCJK(_ c: Character) -> Bool {
-        c.unicodeScalars.allSatisfy { (0x3400...0x9FFF).contains($0.value) || (0xF900...0xFAFF).contains($0.value) }
-    }
+    static func isCJK(_ c: Character) -> Bool { MandarinReading.isCJK(c) }
 
     /// 人稱代名詞同音（他／她／它…）：換了＝替使用者猜性別，一律不換。
-    static let pronouns: Set<Character> = ["他", "她", "它", "牠", "祂", "你", "妳", "您"]
+    static let pronouns = MandarinReading.pronouns
 
     static func isHomophone(_ a: Character, _ b: Character) -> Bool {
-        a != b && isCJK(a) && isCJK(b) && !(pronouns.contains(a) && pronouns.contains(b)) && pinyin(a) == pinyin(b)
+        MandarinReading.isHomophone(a, b) && !(pronouns.contains(a) && pronouns.contains(b))
     }
 
     /// 從模型改過的全文裡，只收同位置的同音單字替換，套回原文。
@@ -89,13 +86,17 @@ enum HomophoneCorrector {
     """
 
     /// 校正；不可用、太短、逾時、出錯都回原文。
-    static func correct(_ text: String, budget: CleanupBudget? = nil) async -> String {
+    ///
+    /// `variant`：使用者的語言變體。**smart 關閉時這條路徑就是唯一的輸出**，
+    /// 不把變體帶進來，模型會拿台灣繁體的標準去「校對」香港／簡體的用字，把使用者選的變體改掉。
+    static func correct(_ text: String, budget: CleanupBudget? = nil,
+                        variant: LanguageVariant = .none) async -> String {
         guard !Task.isCancelled, text.count >= minimumLength, text.contains(where: isCJK), isAvailable else { return text }
         #if canImport(FoundationModels)
         if #available(iOS 26.0, macOS 26.0, *) {
             let ownDeadline = ContinuousClock.now.advanced(by: timeout)
             let limited = CleanupBudget(deadline: min(budget?.deadline ?? ownDeadline, ownDeadline))
-            return (try? await limited.run { await runModels(text) }) ?? text
+            return (try? await limited.run { await runModels(text, variant: variant) }) ?? text
         }
         #endif
         return text
@@ -119,14 +120,19 @@ enum HomophoneCorrector {
     }
 
     /// 兩種問法並行，結果取聯集（逐字收的先套，清單再補）。
+    ///
+    /// 變體的用字要求**附加**在兩份指示後面：校對同音錯字不該動用字地區，
+    /// 但也不能拿台灣標準去改香港／簡體的正確用字——兩件事分開講。
     @available(iOS 26.0, macOS 26.0, *)
-    private static func runModels(_ text: String) async -> String {
+    private static func runModels(_ text: String, variant: LanguageVariant = .none) async -> String {
+        let variantNote = variant.promptInstruction
+            .map { "\n\n\($0)\n只在**讀音相同**的前提下換字；上面指定的用字地區不得當作錯字去改。" } ?? ""
         async let rewritten: String? = {
-            let session = LanguageModelSession(instructions: rewriteInstructions)
+            let session = LanguageModelSession(instructions: rewriteInstructions + variantNote)
             return try? await session.respond(to: text, options: GenerationOptions(temperature: 0)).content
         }()
         async let listed: [(wrong: String, right: String)] = {
-            let session = LanguageModelSession(instructions: listInstructions)
+            let session = LanguageModelSession(instructions: listInstructions + variantNote)
             let r = try? await session.respond(to: text, generating: Fixes.self, options: GenerationOptions(temperature: 0)).content
             return r?.fixes.map { ($0.wrong, $0.right) } ?? []
         }()

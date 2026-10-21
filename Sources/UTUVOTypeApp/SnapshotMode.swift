@@ -61,7 +61,7 @@ enum SnapshotRunner {
             }
 
             // 設定頁：三個代表性分頁。
-            for section in [SettingsSection.general, .models, .cloud, .dictionary] {
+            for section in [SettingsSection.general, .insights, .advanced, .models, .cloud, .dictionary] {
                 guard let window = makeSettingsWindow(section) else { continue }
                 window.level = .modalPanel // 要在 backdrop（.floating）之上
                 let t0 = CFAbsoluteTimeGetCurrent()
@@ -74,6 +74,17 @@ enum SnapshotRunner {
                 try capture(window, to: out.appendingPathComponent("settings-\(section.rawValue)-\(suffix).png"))
                 window.orderOut(nil)
             }
+
+            // Ask anything 回答卡（2026-10-13）。
+            AnswerCardController.shared.show(.init(
+                question: "台北到高雄高鐵大概要多久？",
+                answer: "直達車約 1 小時 30 分，停站較多的班次約 2 小時。",
+                zh: true, onInsert: {}))
+            try await settle(ms: 500)
+            if let card = AnswerCardController.shared.window {
+                try capture(card, to: out.appendingPathComponent("answer-card-\(suffix).png"))
+            }
+            AnswerCardController.shared.close()
 
             // Overlay 膠囊：聆聽中＋處理中。
             for (name, listening) in [("listening", true), ("processing", false)] {

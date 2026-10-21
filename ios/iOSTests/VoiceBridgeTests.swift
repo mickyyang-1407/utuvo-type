@@ -172,4 +172,32 @@ final class VoiceBridgeTests: XCTestCase {
         VoiceBridge.write(s, name: VoiceBridge.stateFile, in: dir)
         XCTAssertEqual(VoiceBridge.read(VoiceBridge.State.self, name: VoiceBridge.stateFile, in: dir), s)
     }
+
+    // MARK: - 收不到聲音（全零樣本）
+
+    func testDigitalSilenceFlagsMutedInputAfterThreshold() {
+        var meter = DigitalSilenceMeter()
+        for _ in 0..<70 { meter.add(peak: 0, duration: 1024.0 / 48_000) }   // ≈1.49 s
+        XCTAssertFalse(meter.isMuted, "還沒滿 1.5 秒")
+        meter.add(peak: 0, duration: 1024.0 / 48_000)
+        XCTAssertTrue(meter.isMuted, "連續 1.5 秒全零＝麥克風被系統靜音")
+    }
+
+    func testQuietRoomIsNotMuted() {
+        var meter = DigitalSilenceMeter()
+        // 安靜房間的底噪（約 −90 dBFS）：再久都不算被靜音。
+        for _ in 0..<500 { meter.add(peak: 0.00003, duration: 1024.0 / 48_000) }
+        XCTAssertFalse(meter.isMuted)
+        XCTAssertGreaterThan(meter.heard, 10)
+    }
+
+    func testAnyRealSampleResetsTheZeroRun() {
+        var meter = DigitalSilenceMeter()
+        for _ in 0..<60 { meter.add(peak: 0, duration: 0.02) }
+        meter.add(peak: 0.01, duration: 0.02)
+        for _ in 0..<60 { meter.add(peak: 0, duration: 0.02) }
+        XCTAssertFalse(meter.isMuted, "中間有真的聲音就重新計時")
+        meter.reset()
+        XCTAssertEqual(meter, DigitalSilenceMeter())
+    }
 }

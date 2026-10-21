@@ -95,6 +95,15 @@ class PredictionUiParityTest {
 
     private fun fieldText(): String = device.findObject(By.desc("tryField")).text.orEmpty()
 
+    /**
+     * 鍵盤上的字串要跟鍵盤**當下的語言**比對，不是跟測試程序的語言。
+     *
+     * android-D：App 支援「每個 App 的語言」之後，鍵盤的字串走 `AppTheme.wrapContext`，
+     * 而儀器測試的 `targetContext` 拿到的是**系統語言**那份資源（per-app locale 不會套到它身上）。
+     * 兩邊語言不同時，`inst.targetContext.getString(...)` 會拿到別的語言，於是找得到按鍵卻按不到。
+     */
+    private fun res(id: Int): String = AppTheme.wrapContext(app).getString(id)
+
     /** 換版面：語音頁左排有 EN／繁／简 三顆。 */
     private fun switchTo(key: String) {
         device.wait(Until.findObject(By.text(key)), 5_000)?.click()
@@ -111,8 +120,8 @@ class PredictionUiParityTest {
     private fun tapKeys(vararg labels: String) { labels.forEach(::tapKey) }
 
     private fun tapSpace() {
-        val key = device.wait(Until.findObject(By.text("空白")), 3_000)
-            ?: device.wait(Until.findObject(By.text("空格")), 3_000)
+        val key = device.wait(Until.findObject(By.text(res(R.string.key_space))), 3_000)
+            ?: device.wait(Until.findObject(By.text(res(R.string.key_space_pinyin))), 3_000)
         assertNotNull("找不到空白鍵", key)
         key.click()
         device.waitForIdle(2_000)
@@ -129,7 +138,7 @@ class PredictionUiParityTest {
 
     /** 候選列右端「⌄／⌃」。 */
     private fun togglePanel() {
-        val more = device.wait(Until.findObject(By.desc("更多候選字")), 5_000)
+        val more = device.wait(Until.findObject(By.desc(res(R.string.key_more_candidates))), 5_000)
         assertNotNull("候選列沒有展開鈕", more)
         more.click()
         device.waitForIdle(1_000)
@@ -178,7 +187,7 @@ class PredictionUiParityTest {
         togglePanel()
         // 面板蓋在鍵上面，要真的捲下去第 35 格才會進到畫面（uiautomator 只找看得到的）。
         // 在面板自己的範圍裡滑（面板只蓋按鍵區，螢幕中間是 app 不是面板）。
-        val panel = device.wait(Until.findObject(By.desc(app.getString(R.string.candidate_panel))), 3_000)
+        val panel = device.wait(Until.findObject(By.desc(res(R.string.candidate_panel))), 3_000)
         assertNotNull("找不到整頁候選面板", panel)
         val box = panel.visibleBounds
         var cells = device.findObjects(By.descStartsWith(CandidatePanelView.CELL_DESC_PREFIX))
@@ -203,7 +212,7 @@ class PredictionUiParityTest {
         tapKeys("s", "h", "i")
         togglePanel()
         assertTrue("整頁沒打開", device.wait(Until.hasObject(By.descStartsWith(CandidatePanelView.CELL_DESC_PREFIX)), 3_000))
-        val less = device.wait(Until.findObject(By.desc("收起候選字")), 3_000)
+        val less = device.wait(Until.findObject(By.desc(res(R.string.key_fewer_candidates))), 3_000)
         assertNotNull("展開後找不到收起鈕", less)
         less.click()
         assertTrue("按 ⌃ 之後整頁還在", device.wait(Until.gone(By.descStartsWith(CandidatePanelView.CELL_DESC_PREFIX)), 3_000))

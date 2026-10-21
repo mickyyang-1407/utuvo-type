@@ -116,4 +116,22 @@ class SmartCleanupLogTest {
         assertEquals(R.string.smart_provider_custom, SmartLog.providerNameRes("custom"))
         assertNull(SmartLog.providerNameRes("retired-service"))
     }
+
+    // MARK: - 手機上整理（Gemma 4，2026-10-11）
+
+    @Test
+    fun onDeviceTimeoutScalesWithLengthWithinBounds() {
+        assertEquals(8000L, SmartCleanup.onDeviceTimeoutMs("短句"))
+        assertEquals(6000L + 80L * 50, SmartCleanup.onDeviceTimeoutMs("字".repeat(50)))
+        assertEquals(20_000L, SmartCleanup.onDeviceTimeoutMs("字".repeat(500)))
+        assertEquals(24_000L, SmartCleanup.onDeviceTimeoutMs("短句", cpuOnly = true))
+        assertEquals(60_000L, SmartCleanup.onDeviceTimeoutMs("字".repeat(500), cpuOnly = true))
+    }
+
+    @Test
+    fun onDeviceEntriesHaveAName() {
+        assertEquals(R.string.smart_provider_ondevice, SmartLog.providerNameRes(SmartCleanup.ON_DEVICE_ID))
+        // 手機上整理不是雲端服務：不能出現在服務選單、也不能被當成雲端 provider 解析。
+        assertEquals(null, SmartCleanup.Provider.entries.firstOrNull { it.id == SmartCleanup.ON_DEVICE_ID })
+    }
 }

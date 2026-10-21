@@ -1,0 +1,1 @@
+../../../ios/Shared/TranscriptGuard.swift

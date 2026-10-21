@@ -167,6 +167,27 @@ object VocabularyPacks {
      * RUNTIME-FINDINGS #2：不要先 append enabledTerms（ai+tw 預設就 >200），
      * 改為【內建三包 terms + 六新包 seed】公平輪流。
      */
+    /**
+     * 雲端辨識（Whisper prompt，約 200 字放得下 30 幾個詞）用的提示詞：個人字典 → 音訊包 → AI 包 → 其他內建包 → 目錄包。
+     * 2026-10-20 實測（真人 44 句，Groq whisper-large-v3）：[biasing] 的公平輪流把心肌梗塞、憲法、鋼筋混凝土排進前 36 個，
+     * 專名命中 22/39、27 句回簡體；只放個人字典＋音訊詞 30/39、0 句簡體。系統辨識器（上限 200 詞）照用 [biasing]。
+     * `traditional`：繁中時把詞轉成繁體（字典裡存成簡體的詞會把 Whisper 帶去輸出簡體）。
+     */
+    @JvmStatic fun cloudHints(c: Context, traditional: Boolean = true): List<String> {
+        val out = LinkedHashSet<String>()
+        for ((k, v) in DictionaryStore.entries(c)) {
+            val term = if (v.isNotEmpty()) v else k
+            if (term.isNotEmpty()) out.add(term)
+        }
+        val order = listOf("audio", "ai")
+        val builtIns = all.filter { isEnabled(c, it) }.sortedBy { p -> order.indexOf(p.id).let { if (it < 0) order.size else it } }
+        for (p in builtIns) out.addAll(p.terms)
+        for (p in enabledCatalogPacks(c)) out.addAll(p.seedTerms)
+        val list = out.toList().take(200)
+        if (!traditional) return list
+        return list.map { t -> runCatching { android.icu.text.Transliterator.getInstance("Hans-Hant").transliterate(t) }.getOrDefault(t) }
+    }
+
     @JvmStatic fun biasing(c: Context): ArrayList<String> {
         val out = ArrayList<String>(200)
         val seen = HashSet<String>()

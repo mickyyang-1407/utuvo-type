@@ -22,14 +22,20 @@ packages:
   swift-collections:
     url: https://github.com/apple/swift-collections.git
     exactVersion: 1.2.1
+  # 2026-10-11：沒有 Apple Intelligence 的 iPhone 用的手機上整理（Gemma 4 E2B）。Apache 2.0；只給主 app。
+  # 只取 Swift 包裝層＋官方 xcframework（整個 repo 的 git 歷史好幾 GB），見 Packages/UTUVOLiteRTLM/NOTICE.md。
+  UTUVOLiteRTLM:
+    path: Packages/UTUVOLiteRTLM
 
 settings:
   base:
     SWIFT_VERSION: "6.0"
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "0.2.7"
-    CURRENT_PROJECT_VERSION: "27"
+    MARKETING_VERSION: "0.3.1"
+    CURRENT_PROJECT_VERSION: "34"
+    # LiteRT-LM 官方 xcframework 的模擬器只有 arm64（2026-10-11）；generic 模擬器建置不要再連 x86_64。
+    "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
 
 targets:
   "UTUVOTypeiOS":
@@ -51,6 +57,8 @@ targets:
       # 只給主 app：鍵盤 extension 有記憶體上限，錄音與辨識本來就在主 app（VoiceBridge）。
       - package: UTUVOQwenASR
         product: Qwen3ASR
+      - package: UTUVOLiteRTLM
+        product: LiteRTLM
       - target: "UTUVOKeyboard"
     entitlements:
       path: App/UTUVOTypeiOS.entitlements

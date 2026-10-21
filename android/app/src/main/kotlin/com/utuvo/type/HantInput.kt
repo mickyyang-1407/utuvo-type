@@ -13,5 +13,11 @@ object HantInput {
     fun usesPinyin(c: Context) = prefs(c).getBoolean(KEY, false)
     fun setUsesPinyin(c: Context, value: Boolean) = prefs(c).edit().putBoolean(KEY, value).apply()
 
+    private const val AI_KEY = "zhuyinAiRerank"
+
+    /** 注音整句候選的 0c 上下文重排（AI 選字；目前只有 Android 有）。預設開。 */
+    fun aiRerank(c: Context) = prefs(c).getBoolean(AI_KEY, true)
+    fun setAiRerank(c: Context, value: Boolean) = prefs(c).edit().putBoolean(AI_KEY, value).apply()
+
     private fun prefs(c: Context) = c.getSharedPreferences(PREF, Context.MODE_PRIVATE)
 }

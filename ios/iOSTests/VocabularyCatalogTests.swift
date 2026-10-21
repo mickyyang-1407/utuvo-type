@@ -475,4 +475,85 @@ final class VocabularyCatalogTests: XCTestCase {
         XCTAssertEqual(flooded.count, 200)
         XCTAssertTrue(flooded.allSatisfy { $0.hasPrefix("字典詞") }, "個人詞吃滿額度時不得混入其他來源")
     }
+
+    /// 10-10：0.2.8 起 App 有一份只有 5 句的 en.lproj，英文介面的手機會選它；
+    /// 詞庫名稱不能露出「vocab.pack.computing.name」這種代碼，要退回繁中原文。
+    func testCatalogPackNamesNeverShowKeysInAnyLocalization() throws {
+        VocabularyPacks.loadCatalog()
+        let packs = VocabularyPacks.catalog.packs
+        XCTAssertEqual(packs.count, 6)
+        func bundle(_ lang: String) throws -> Bundle {
+            let path = try XCTUnwrap(Bundle.main.path(forResource: lang, ofType: "lproj"), "App 裡沒有 \(lang).lproj")
+            return try XCTUnwrap(Bundle(path: path))
+        }
+        let en = try bundle("en"), hans = try bundle("zh-Hans"), hant = try bundle("zh-Hant")
+        for pack in packs {
+            for b in [en, hans, hant] {
+                let name = VocabularyCatalog.Pack.localized("vocab.pack.\(pack.id).name", fallback: pack.name, bundle: b)
+                let summary = VocabularyCatalog.Pack.localized("vocab.pack.\(pack.id).summary", fallback: pack.summary, bundle: b)
+                XCTAssertFalse(name.hasPrefix("vocab."), "\(pack.id) 名稱露出代碼：\(name)")
+                XCTAssertFalse(summary.hasPrefix("vocab."), "\(pack.id) 摘要露出代碼：\(summary)")
+            }
+        }
+        // 原本這裡只有一句 `!isEmpty`，是空心的：localized() 拿不到值會退回 `fallback: pack.name`，
+        // 而 pack.name 是 catalog.json 的繁中原文，永遠非空——英文整包被刪掉它也不會紅。
+        // 真的條件是「英文表裡查得到、而且跟繁中原文不同」：查不到就會拿到 fallback（純中文）。
+        let expectedEnglish: [String: String] = [
+            "computing": "Computing", "medicine": "Medicine", "finance": "Finance",
+            "law": "Law", "engineering": "Engineering", "music": "Music & Audio",
+        ]
+        for pack in packs {
+            let englishName = VocabularyCatalog.Pack.localized("vocab.pack.\(pack.id).name",
+                                                                 fallback: pack.name, bundle: en)
+            let englishSummary = VocabularyCatalog.Pack.localized("vocab.pack.\(pack.id).summary",
+                                                                   fallback: pack.summary, bundle: en)
+            let cjk: (String) -> Bool = { $0.unicodeScalars.contains { (0x4E00...0x9FFF).contains($0.value) } }
+            XCTAssertFalse(cjk(englishName),
+                           "\(pack.id) 的英文名稱查不到、退回繁中原文了：\(englishName)")
+            XCTAssertFalse(cjk(englishSummary),
+                           "\(pack.id) 的英文摘要查不到、退回繁中原文了：\(englishSummary)")
+            XCTAssertNotEqual(englishName, pack.name, "\(pack.id) 的英文名跟繁中原文一樣，等於沒翻")
+            // 實際英文字面值也要釘住（值一改就紅，避免只靠 CJK 檢查放行任何亂翻）。
+            if let expected = expectedEnglish[pack.id] {
+                XCTAssertEqual(englishName, expected, "\(pack.id) 的英文名不對")
+            }
+        }
+        XCTAssertEqual(Set(packs.map(\.id)), Set(expectedEnglish.keys),
+                       "catalog 的詞庫 id 跟測試裡釘住的英文表對不上，補上英文或更新這張表")
+        // 這條規則自己得有會讓它變紅的輸入：不存在的 id 會退回 fallback（繁中原文）。
+        let bogus = VocabularyCatalog.Pack.localized("vocab.pack.no-such-pack.name",
+                                                     fallback: "查無此包", bundle: en)
+        XCTAssertTrue(bogus.unicodeScalars.contains { (0x4E00...0x9FFF).contains($0.value) },
+                      "查不到 key 時應該退回繁中原文；這條前提不成立，上面那些斷言就形同虛設")
+        // 實際畫面走的路徑（Bundle.main，跟著測試機語言選表）也不能露出代碼。
+        for pack in packs {
+            XCTAssertFalse(pack.displayName.hasPrefix("vocab."), "畫面上的 \(pack.id) 名稱露出代碼：\(pack.displayName)")
+            XCTAssertFalse(pack.displaySummary.hasPrefix("vocab."), "畫面上的 \(pack.id) 摘要露出代碼")
+        }
+        let computing = try XCTUnwrap(packs.first { $0.id == "computing" })
+        XCTAssertEqual(VocabularyCatalog.Pack.localized("vocab.pack.computing.name", fallback: computing.name, bundle: hans), "信息与计算机")
+        XCTAssertEqual(VocabularyCatalog.Pack.localized("vocab.pack.computing.name", fallback: computing.name, bundle: hant), "資訊與電腦")
+        XCTAssertEqual(VocabularyCatalog.Pack.localized("vocab.pack.computing.name", fallback: computing.name, bundle: en), "Computing")
+    }
+}
+
+/// 10-10：同一次點擊碰到兩個會震的東西（列手勢＋列裡的按鈕）只震一下。
+@MainActor
+final class TapPulseTests: XCTestCase {
+    func testTapsWithin150msCountOnce() {
+        let saved = UIFeedback.enabled
+        defer { UIFeedback.enabled = saved }
+        UIFeedback.enabled = true
+        let pulse = TapPulse.shared
+        let t0 = Date().addingTimeInterval(10)   // 跟其他測試留下的時間錯開
+        let start = pulse.n
+        pulse.fire(now: t0)
+        pulse.fire(now: t0.addingTimeInterval(0.05))
+        XCTAssertEqual(pulse.n, start + 1, "同一下點擊只震一次")
+        pulse.fire(now: t0.addingTimeInterval(0.4))
+        XCTAssertEqual(pulse.n, start + 2, "分開的兩下各震一次")
+        UIFeedback.enabled = false
+        pulse.fire(now: t0.addingTimeInterval(1))
+        XCTAssertEqual(pulse.n, start + 2, "介面震動關掉不震")
+    }
 }

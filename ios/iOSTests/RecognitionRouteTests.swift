@@ -57,8 +57,9 @@ final class RecognitionRouteTests: XCTestCase {
     }
 
     func testBadgeTextDistinguishesTheTwoRoutes() {
+        // 驗的是「兩條路徑給不同的徽章」，不是徽章的字面。
         XCTAssertNotEqual(RecognitionRoute.onDevice.badgeText, RecognitionRoute.server.badgeText)
-        XCTAssertTrue(RecognitionRoute.server.badgeText.contains("雲端"))
-        XCTAssertTrue(RecognitionRoute.onDevice.badgeText.contains("不離機"))
+        assertLocalizedEquals("允許雲端辨識・音訊可能送到 Apple", RecognitionRoute.server.badgeText)
+        assertLocalizedEquals("裝置端辨識・音訊不離機", RecognitionRoute.onDevice.badgeText)
     }
 }

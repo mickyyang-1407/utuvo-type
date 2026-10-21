@@ -19,6 +19,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import com.utuvo.type.core.DictionarySync
+import com.utuvo.type.core.HistoryRetention
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
@@ -39,7 +41,12 @@ class MainSections(private val a: Activity) {
 
     private lateinit var dictList: LinearLayout
     private lateinit var dictFooter: TextView
+    private lateinit var dictCount: TextView
     private var vocabulary = true
+    /** 字典頁分頁：全部／自動學到／自己加的。 */
+    private enum class DictTab(val res: Int) { ALL(R.string.dict_tab_all), AUTO(R.string.dict_tab_auto), MANUAL(R.string.dict_tab_manual) }
+    private var dictTab = DictTab.ALL
+    private var dictQuery: String = ""
 
     fun buildDictionary(col: LinearLayout) {
         header(col, R.string.dict_title)
@@ -59,6 +66,35 @@ class MainSections(private val a: Activity) {
         row.addView(arrow); row.addView(output, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
         row.addView(add)
         col.addView(row)
+        // 分頁（全部／自動／手動）＋搜尋框：詞多的時候才找得到東西。
+        val tabs = RadioGroup(a).apply { orientation = RadioGroup.HORIZONTAL }
+        val tabButtons = DictTab.entries.associateWith { tab ->
+            RadioButton(a).apply {
+                id = View.generateViewId(); text = a.getString(tab.res); textSize = 13f
+                contentDescription = "dictTab:${tab.name}"
+            }.also { tabs.addView(it) }
+        }
+        tabs.check(tabButtons.getValue(DictTab.ALL).id)
+        col.addView(tabs)
+        col.addView(EditText(a).apply {
+            hint = a.getString(R.string.dict_search_hint); isSingleLine = true
+            contentDescription = "dictionarySearch"
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
+            addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    dictQuery = s?.toString().orEmpty().trim(); refreshDictionary()
+                }
+                override fun afterTextChanged(s: Editable?) {}
+            })
+        })
+        tabs.setOnCheckedChangeListener { _, id ->
+            dictTab = tabButtons.entries.firstOrNull { it.value.id == id }?.key ?: DictTab.ALL
+            refreshDictionary()
+        }
+        dictCount = TextView(a).apply { textSize = 12f; setTextColor(0xFF8A8A8A.toInt()); contentDescription = "dictCount" }
+        col.addView(dictCount)
         dictList = LinearLayout(a).apply { orientation = LinearLayout.VERTICAL }
         col.addView(dictList)
         dictFooter = TextView(a).apply { textSize = 13f; setPadding(0, dp(4), 0, 0) }
@@ -142,18 +178,48 @@ class MainSections(private val a: Activity) {
     }
 
     private fun refreshDictionary() {
+        if (!::dictList.isInitialized) return
         dictList.removeAllViews()
-        for ((source, output) in DictionaryStore.sorted(a)) {
+        val sources = DictionaryStore.sources(a)
+        val all = DictionaryStore.sorted(a)
+        val visible = all.filter { (source, output) ->
+            val origin = sources[source] ?: DictionarySync.Source.MANUAL
+            val tabHit = when (dictTab) {
+                DictTab.ALL -> true
+                DictTab.AUTO -> origin == DictionarySync.Source.AUTO
+                DictTab.MANUAL -> origin == DictionarySync.Source.MANUAL
+            }
+            tabHit && (dictQuery.isEmpty() || source.contains(dictQuery, ignoreCase = true) || output.contains(dictQuery, ignoreCase = true))
+        }
+        dictCount.text = a.getString(R.string.dict_count, visible.size, all.size)
+        if (visible.isEmpty()) {
+            dictList.addView(TextView(a).apply {
+                text = a.getString(if (all.isEmpty()) R.string.dict_empty else R.string.dict_no_match)
+                textSize = 14f; setPadding(0, dp(8), 0, dp(8))
+            })
+            return
+        }
+        for ((source, output) in visible) {
+            val auto = sources[source] == DictionarySync.Source.AUTO
             val line = LinearLayout(a).apply { gravity = Gravity.CENTER_VERTICAL; setPadding(0, dp(4), 0, dp(4)) }
+            val label = when {
+                auto -> "$source → $output　${a.getString(R.string.dict_badge_auto)}"
+                source == output -> "$source　${a.getString(R.string.dict_badge_vocab)}"
+                else -> "$source → $output"
+            }
             line.addView(TextView(a).apply {
-                textSize = 16f
-                text = if (source == output) "$source　${a.getString(R.string.dict_badge_vocab)}" else "$source → $output"
+                textSize = 16f; text = label
                 contentDescription = "dictEntry:$source"
             }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
             line.addView(TextView(a).apply {
                 text = a.getString(R.string.dict_delete); setTextColor(0xFFD32F2F.toInt()); textSize = 15f
                 setPadding(dp(12), dp(8), dp(4), dp(8)); contentDescription = "dictDelete:$source"
-                setOnClickListener { DictionaryStore.remove(a, source); refreshDictionary() }
+                setOnClickListener {
+                    // 自動學到的：刪掉之後記進「已忽略」，同一組修正不會馬上又被學回來。
+                    if (auto) DictionaryStore.ignore(a, source, output)
+                    DictionaryStore.remove(a, source)
+                    refreshDictionary()
+                }
             })
             dictList.addView(line)
         }
@@ -163,11 +229,19 @@ class MainSections(private val a: Activity) {
 
     private lateinit var historyList: LinearLayout
     private lateinit var clearHistory: Button
+    private lateinit var retentionRow: TextView
     private var historyQuery: String = ""
 
     fun buildHistory(col: LinearLayout) {
         header(col, R.string.history_title)
         col.addView(TextView(a).apply { text = a.getString(R.string.history_explain); textSize = 13f })
+        // 保留期限：只砍歷史紀錄，**每日使用計數不受影響**（首頁數字不會跟著消失）。
+        retentionRow = TextView(a).apply {
+            textSize = 16f; setPadding(0, dp(12), 0, dp(12))
+            contentDescription = "historyRetention"
+        }
+        col.addView(retentionRow)
+        retentionRow.setOnClickListener { pickRetention() }
         val search = EditText(a).apply {
             hint = a.getString(R.string.history_search_hint); isSingleLine = true
             contentDescription = "historySearch"
@@ -179,25 +253,104 @@ class MainSections(private val a: Activity) {
         col.addView(historyList)
         clearHistory = Button(a).apply {
             text = a.getString(R.string.history_clear)
-            setOnClickListener { HistoryStore.clear(a); refreshHistory() }
+            setOnClickListener { confirmClearHistory() }
         }
         col.addView(clearHistory)
         search.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                historyQuery = s?.toString().orEmpty(); refreshHistory()
+                historyQuery = s?.toString().orEmpty(); renderHistory(historyCache)   // 搜尋只過濾記憶體裡那份
             }
             override fun afterTextChanged(s: Editable?) {}
         })
-        refreshHistory()
+        refreshHistoryAsync()
     }
 
-    fun refreshHistory() {
+    /** 保留期限選單；選比現在短的會先確認會少幾筆（「不保留」＝連新紀錄都不寫，但使用數據照算）。 */
+    private fun pickRetention() {
+        val options = HistoryRetention.entries
+        val current = HistoryRetentionSetting.setting(a)
+        AlertDialog.Builder(a)
+            .setTitle(R.string.history_retention_title)
+            .setSingleChoiceItems(options.map { a.getString(retentionLabel(it)) }.toTypedArray(), options.indexOf(current)) { dialog, which ->
+                dialog.dismiss()
+                val picked = options[which]
+                if (picked == current) return@setSingleChoiceItems
+                // 用「剛選的那個期限」算會少幾筆——用舊設定的話，換成較短的期限時確認框不會出現。
+                val expired = HistoryStore.expiredCount(a, picked)
+                if (expired == 0) { applyRetention(picked); return@setSingleChoiceItems }
+                AlertDialog.Builder(a)
+                    .setTitle(R.string.history_retention_title)
+                    .setMessage(a.getString(R.string.history_retention_confirm, expired))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(R.string.history_retention_apply) { _, _ -> applyRetention(picked) }
+                    .show()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun applyRetention(picked: HistoryRetention) {
+        HistoryRetentionSetting.set(a, picked)
+        // 砍檔案是 IO，不在主執行緒做；回來再重畫並提示。
+        Thread {
+            val removed = HistoryStore.applyRetention(a, picked)
+            val records = HistoryStore.load(a)
+            a.runOnUiThread {
+                if (a.isFinishing || a.isDestroyed) return@runOnUiThread
+                renderHistory(records)
+                Toast.makeText(a, a.getString(R.string.history_retention_applied, removed), Toast.LENGTH_SHORT).show()
+            }
+        }.start()
+    }
+
+    private fun retentionLabel(r: HistoryRetention) = when (r) {
+        HistoryRetention.DAY -> R.string.history_retention_day
+        HistoryRetention.WEEK -> R.string.history_retention_week
+        HistoryRetention.MONTH -> R.string.history_retention_month
+        HistoryRetention.YEAR -> R.string.history_retention_year
+        HistoryRetention.FOREVER -> R.string.history_retention_forever
+        HistoryRetention.NONE -> R.string.history_retention_none
+    }
+
+    /** 全部刪除要確認：不可逆；使用數據不受影響這件事要講清楚。 */
+    private fun confirmClearHistory() {
+        AlertDialog.Builder(a)
+            .setTitle(R.string.history_clear)
+            .setMessage(R.string.history_clear_confirm)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.history_clear) { _, _ ->
+                HistoryStore.clear(a)
+                refreshHistory()
+                Toast.makeText(a, a.getString(R.string.history_cleared), Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    /** 同 refreshHistory，但讀檔在背景執行緒（onResume 呼叫用，避免卡主執行緒）。 */
+    fun refreshHistoryAsync() {
+        if (!::historyList.isInitialized) return
+        Thread {
+            val records = HistoryStore.load(a)
+            a.runOnUiThread {
+                if (a.isFinishing || a.isDestroyed) return@runOnUiThread
+                renderHistory(records)
+            }
+        }.start()
+    }
+
+    /** 同步重讀（刪除／清空這類使用者剛改過的動作後用；檔案最多 500 筆）。 */
+    fun refreshHistory() = renderHistory(HistoryStore.load(a))
+
+    /** 最近一次讀到的歷史；搜尋與重畫用它，不必每打一個字就讀一次檔。 */
+    private var historyCache: List<HistoryStore.Record> = emptyList()
+
+    private fun renderHistory(all: List<HistoryStore.Record>) {
+        historyCache = all
         if (!::historyList.isInitialized) return
         historyList.removeAllViews()
-        val all = HistoryStore.load(a)
         // 純邏輯在 HistoryGrouping（可 JVM 測）；資料層的紀錄在這裡換成它的 Item。
-        val items = all.map { HistoryGrouping.Item(it.time, it.raw, it.cleaned) }
+        val items = all.map { HistoryGrouping.Item(it.time, it.raw, it.cleaned, it.durationSec) }
         val hits = HistoryGrouping.filter(items, historyQuery)
         if (hits.isEmpty()) {
             historyList.addView(TextView(a).apply {
@@ -211,14 +364,17 @@ class MainSections(private val a: Activity) {
                 setTextColor(accent); setPadding(0, dp(14), 0, dp(2))
                 contentDescription = "historyDay:${section.title}"
             })
-            for (r in section.records.take(HISTORY_DAY_LIMIT)) historyList.addView(historyRow(r.time, r.cleaned))
+            for (r in section.records.take(HISTORY_DAY_LIMIT)) historyList.addView(historyRow(r.time, r.cleaned, r.durationSec))
         }
         clearHistory.visibility = if (all.isEmpty()) View.GONE else View.VISIBLE
         clearHistory.setTextColor(accent)
+        if (::retentionRow.isInitialized) {
+            retentionRow.text = a.getString(R.string.history_retention_row, a.getString(retentionLabel(HistoryRetentionSetting.setting(a))))
+        }
     }
 
     /** 一筆歷史：點一下複製；往左滑超過門檻刪除（滑不滿就彈回來，不誤刪）。 */
-    private fun historyRow(time: Long, cleaned: String): View {
+    private fun historyRow(time: Long, cleaned: String, durationSec: Int = 0): View {
         // 刪掉之後這一次觸控的 performClick 還是會送到本來被移除的 view：那一次不能再複製。
         var deleted = false
         val row = LinearLayout(a).apply {
@@ -227,7 +383,9 @@ class MainSections(private val a: Activity) {
         }
         row.addView(TextView(a).apply { text = cleaned; textSize = 16f })
         row.addView(TextView(a).apply {
-            text = DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+            // 舊紀錄沒有時長 → 不顯示秒數，不要假裝是 0 秒。
+            val ago = DateUtils.getRelativeTimeSpanString(time, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS)
+            text = if (durationSec > 0) "$ago　${a.getString(R.string.history_duration, durationSec)}" else "$ago"
             textSize = 12f; setTextColor(0xFF8A8A8A.toInt())
         })
         row.setOnClickListener { if (!deleted) copyHistory(cleaned) }
@@ -314,7 +472,14 @@ class MainSections(private val a: Activity) {
             setOnCheckedChangeListener { _, on -> KeyFeedback.setSoundEnabled(a, on) }
         })
         col.addView(TextView(a).apply { text = a.getString(R.string.feel_explain); textSize = 13f; setPadding(0, dp(2), 0, 0) })
+        col.addView(Switch(a).apply {
+            text = a.getString(R.string.quiet_mode_title); textSize = 16f; contentDescription = "quietMode"
+            isChecked = QuietMode.isEnabled(a)
+            setOnCheckedChangeListener { _, on -> QuietMode.setEnabled(a, on) }
+        })
+        col.addView(TextView(a).apply { text = a.getString(R.string.quiet_mode_explain); textSize = 13f; setPadding(0, dp(2), 0, 0) })
     }
+
 
     // ── 「繁」鍵盤輸入法（注音／拼音，同 iOS SettingsScreen）──
 
@@ -339,6 +504,13 @@ class MainSections(private val a: Activity) {
         group.setOnCheckedChangeListener { _, id -> HantInput.setUsesPinyin(a, id == pinyin.id) }
         col.addView(group)
         col.addView(TextView(a).apply { text = a.getString(R.string.hant_input_explain); textSize = 13f })
+        // 注音整句候選的 AI 上下文重排（0c，模型在手機上跑、不上網；關掉就永遠用引擎預設）。
+        col.addView(Switch(a).apply {
+            text = a.getString(R.string.zc_ai_title); textSize = 16f; contentDescription = "zhuyinAiRerank"
+            isChecked = HantInput.aiRerank(a)
+            setOnCheckedChangeListener { _, on -> HantInput.setAiRerank(a, on) }
+        })
+        col.addView(TextView(a).apply { text = a.getString(R.string.zc_ai_explain); textSize = 13f })
     }
 
     /** 鍵盤上按「拼／注」也會換輸入法：回到設定頁時把選擇同步回來。 */
@@ -347,9 +519,10 @@ class MainSections(private val a: Activity) {
         group.check(if (HantInput.usesPinyin(a)) hantPinyinId else group.getChildAt(0).id)
     }
 
-    // ── 語言：聽寫語言 ＋ 鍵盤翻譯弧（對齊 iOS DictationLanguage / TranslationLanguagesView）──
+    // ── 語言：聽寫語言 ＋ 語言變體 ＋ 鍵盤翻譯弧（對齊 iOS DictationLanguage / TranslationLanguagesView）──
 
     private var dictationRow: TextView? = null
+    private var variantRow: TextView? = null
     private var quickPickRow: LinearLayout? = null
     private var quickPickSource: TextView? = null
     private val langRows = mutableMapOf<String, TextView>()
@@ -360,12 +533,22 @@ class MainSections(private val a: Activity) {
         // 聽寫語言：與鍵盤右上徽章同一份設定，兩邊改都一樣。
         val dictation = TextView(a).apply {
             textSize = 16f
-            setPadding(0, dp(12), 0, dp(12))
+            setPadding(0, dp(12), 0, dp(6))
             contentDescription = "dictationLanguage"
         }
         col.addView(dictation)
         dictationRow = dictation
         dictation.setOnClickListener { pickDictationLanguage() }
+
+        // 語言變體：影響提示詞與拼字習慣
+        val variant = TextView(a).apply {
+            textSize = 16f
+            setPadding(0, 0, 0, dp(12))
+            contentDescription = "dictationVariant"
+            setOnClickListener { pickLanguageVariant() }
+        }
+        col.addView(variant)
+        variantRow = variant
 
         col.addView(TextView(a).apply {
             text = a.getString(R.string.translate_langs_order); textSize = 14f
@@ -407,6 +590,23 @@ class MainSections(private val a: Activity) {
             .show()
     }
 
+    private fun pickLanguageVariant() {
+        val language = DictationLanguage.current(a)
+        val variants = language.variants
+        if (variants.isEmpty()) return
+        val current = DictationLanguage.currentVariant(a, language)
+        AlertDialog.Builder(a)
+            .setTitle(R.string.variant_title)
+            .setSingleChoiceItems(variants.map { a.getString(it.labelRes) }.toTypedArray(), variants.indexOf(current)) { dialog, which ->
+                DictationLanguage.setVariant(a, language, variants[which])
+                dialog.dismiss()
+                refreshLanguages()
+                Toast.makeText(a, a.getString(R.string.hint_variant_changed, a.getString(variants[which].labelRes)), Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun toggleTranslationLanguage(target: Translation.Target) {
         Translation.setQuickPickCodes(a, Translation.toggled(target.code, Translation.quickPickCodes(a)))
         refreshLanguages()
@@ -418,6 +618,17 @@ class MainSections(private val a: Activity) {
         dictationRow?.apply {
             text = a.getString(R.string.key_dictation_language) + "：" + a.getString(language.labelRes) + "  ▾"
             contentDescription = "dictationLanguage:" + language.code
+        }
+        val variants = language.variants
+        if (variants.isNotEmpty()) {
+            val variant = DictationLanguage.currentVariant(a, language)
+            variantRow?.visibility = View.VISIBLE
+            variantRow?.apply {
+                text = a.getString(R.string.variant_title) + "：" + a.getString(variant.labelRes) + "  ▾"
+                contentDescription = "dictationVariant:" + variant.id
+            }
+        } else {
+            variantRow?.visibility = View.GONE
         }
         val source = Translation.sourceMlKit(language.code)
         val codes = Translation.quickPickCodes(a)
@@ -447,6 +658,77 @@ class MainSections(private val a: Activity) {
         }
     }
 
+    // ── 介面語言與外觀（對齊工單 android-C）──
+
+    private var interfaceLocaleRow: TextView? = null
+    private var appearanceRow: TextView? = null
+
+    fun buildInterfaceAndAppearance(col: LinearLayout) {
+        header(col, R.string.interface_section_title)
+
+        val localeView = TextView(a).apply {
+            textSize = 16f
+            setPadding(0, dp(12), 0, dp(6))
+            contentDescription = "interfaceLocale"
+            setOnClickListener { pickInterfaceLocale() }
+        }
+        col.addView(localeView)
+        interfaceLocaleRow = localeView
+
+        val themeView = TextView(a).apply {
+            textSize = 16f
+            setPadding(0, 0, 0, dp(12))
+            contentDescription = "appearanceTheme"
+            setOnClickListener { pickAppearanceTheme() }
+        }
+        col.addView(themeView)
+        appearanceRow = themeView
+
+        refreshInterfaceAndAppearance()
+    }
+
+    private fun pickInterfaceLocale() {
+        val all = AppTheme.InterfaceLocale.all
+        val current = AppTheme.currentInterfaceLocale(a)
+        AlertDialog.Builder(a)
+            .setTitle(R.string.interface_language_title)
+            .setSingleChoiceItems(all.map { a.getString(it.labelRes) }.toTypedArray(), all.indexOf(current)) { dialog, which ->
+                AppTheme.setInterfaceLocale(a, all[which])
+                dialog.dismiss()
+                refreshInterfaceAndAppearance()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    private fun pickAppearanceTheme() {
+        val all = AppTheme.Theme.all
+        val current = AppTheme.currentTheme(a)
+        AlertDialog.Builder(a)
+            .setTitle(R.string.appearance_title)
+            .setSingleChoiceItems(all.map { a.getString(it.labelRes) }.toTypedArray(), all.indexOf(current)) { dialog, which ->
+                AppTheme.setTheme(a, all[which])
+                dialog.dismiss()
+                refreshInterfaceAndAppearance()
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    fun refreshInterfaceAndAppearance() {
+        val currentLocale = AppTheme.currentInterfaceLocale(a)
+        interfaceLocaleRow?.apply {
+            text = a.getString(R.string.interface_language_title) + "：" + a.getString(currentLocale.labelRes) + "  ▾"
+            contentDescription = "interfaceLocale:" + currentLocale.id
+        }
+        val currentTheme = AppTheme.currentTheme(a)
+        appearanceRow?.apply {
+            text = a.getString(R.string.appearance_title) + "：" + a.getString(currentTheme.labelRes) + "  ▾"
+            contentDescription = "appearanceTheme:" + currentTheme.id
+        }
+    }
+
+
     private fun rounded(color: Int) = android.graphics.drawable.GradientDrawable().apply {
         shape = android.graphics.drawable.GradientDrawable.RECTANGLE
         cornerRadius = dp(14).toFloat(); setColor(color)
@@ -470,6 +752,7 @@ class MainSections(private val a: Activity) {
         }
         col.addView(smartSwitch)
         col.addView(TextView(a).apply { text = a.getString(R.string.smart_explain); textSize = 13f; setPadding(0, dp(2), 0, dp(10)) })
+        buildOnDevice(col)
         col.addView(Switch(a).apply {
             text = a.getString(R.string.smart_cloud_speech_toggle); textSize = 15f
             contentDescription = "smartCloudSpeech"
@@ -478,6 +761,17 @@ class MainSections(private val a: Activity) {
         })
         col.addView(TextView(a).apply {
             text = a.getString(R.string.smart_cloud_speech_explain); textSize = 12f
+            setTextColor(0xFF8A8A8A.toInt()); setPadding(0, dp(2), 0, dp(8))
+        })
+        // 自動條列（同 iOS／Mac，預設開）。
+        col.addView(Switch(a).apply {
+            text = a.getString(R.string.smart_auto_list); textSize = 15f
+            contentDescription = "smartAutoList"
+            isChecked = SmartCleanup.autoList(a)
+            setOnCheckedChangeListener { _, on -> SmartCleanup.setAutoList(a, on) }
+        })
+        col.addView(TextView(a).apply {
+            text = a.getString(R.string.smart_auto_list_explain); textSize = 12f
             setTextColor(0xFF8A8A8A.toInt()); setPadding(0, dp(2), 0, dp(8))
         })
         // 雲端辨識：用戶自己的 key 送去辨識（跟上面那個「讓系統服務走網路」是兩件事，音訊的提供者不同）。
@@ -497,8 +791,7 @@ class MainSections(private val a: Activity) {
         col.addView(cloudAsrTest)
         var cloudTestRecorder: CloudRecorder? = null
         fun setCloudAsrReady() {
-            val p = SmartCleanup.provider(a)
-            val ready = CloudASR.supports(p) && !SmartCleanup.key(a, p).isNullOrEmpty()
+            val ready = CloudASR.route(a) != null   // 選 Claude 時用另存的 Groq／Gemini／百鍊 key
             cloudAsrSwitch.isEnabled = ready
             cloudAsrTest.isEnabled = ready
         }
@@ -508,9 +801,8 @@ class MainSections(private val a: Activity) {
             cloudTestRecorder = null
             cloudAsrTest.text = a.getString(R.string.smart_cloud_asr_test)
             val samples = recorder.stop()
-            val p = SmartCleanup.provider(a)
-            val key = SmartCleanup.key(a, p).orEmpty()
-            val hotwords = VocabularyPacks.biasing(a)
+            val (p, key) = CloudASR.route(a) ?: return
+            val hotwords = VocabularyPacks.cloudHints(a)
             cloudAsrTest.isEnabled = false
             smartMessage.setTextColor(0xFF8A8A8A.toInt()); smartMessage.text = a.getString(R.string.smart_cloud_asr_running)
             Thread {
@@ -564,6 +856,7 @@ class MainSections(private val a: Activity) {
 
         val providers = listOf(
             SmartCleanup.Provider.GROQ to R.string.smart_provider_groq,
+            SmartCleanup.Provider.CLAUDE to R.string.smart_provider_claude,
             SmartCleanup.Provider.GEMINI to R.string.smart_provider_gemini,
             SmartCleanup.Provider.DASHSCOPE to R.string.smart_provider_dashscope,
             SmartCleanup.Provider.CUSTOM to R.string.smart_provider_custom)
@@ -622,12 +915,14 @@ class MainSections(private val a: Activity) {
                 SmartCleanup.Provider.GEMINI -> R.string.smart_steps_gemini
                 SmartCleanup.Provider.GROQ -> R.string.smart_steps_groq
                 SmartCleanup.Provider.DASHSCOPE -> R.string.smart_steps_dashscope
+                SmartCleanup.Provider.CLAUDE -> R.string.smart_steps_claude
                 SmartCleanup.Provider.CUSTOM -> R.string.smart_steps_custom
             })
             privacy.text = a.getString(when (p) {
                 SmartCleanup.Provider.GEMINI -> R.string.smart_privacy_gemini
                 SmartCleanup.Provider.GROQ -> R.string.smart_privacy_groq
                 SmartCleanup.Provider.DASHSCOPE -> R.string.smart_privacy_dashscope
+                SmartCleanup.Provider.CLAUDE -> R.string.smart_privacy_claude
                 SmartCleanup.Provider.CUSTOM -> R.string.smart_privacy_custom
             })
             signup.visibility = if (p.signupUrl == null) View.GONE else View.VISIBLE
@@ -682,6 +977,117 @@ class MainSections(private val a: Activity) {
         }
         applyProvider()
         refreshSmartLog()   // 引擎標示第一次就要看得到（沒有整理紀錄時也顯示）
+    }
+
+    // ── 手機上整理（Gemma 4，選配下載；沒 key 時用）──
+
+    private val onDevicePoll = android.os.Handler(android.os.Looper.getMainLooper())
+
+    private fun buildOnDevice(col: LinearLayout) {
+        col.addView(TextView(a).apply {
+            text = a.getString(R.string.ondevice_title); textSize = 15f; typeface = Typeface.DEFAULT_BOLD
+            setPadding(0, dp(4), 0, dp(2))
+        })
+        col.addView(TextView(a).apply {
+            text = a.getString(R.string.ondevice_explain, OnDeviceModel.DOWNLOAD_MB, OnDeviceModel.TOTAL_GB); textSize = 12f
+            setTextColor(0xFF8A8A8A.toInt()); setPadding(0, 0, 0, dp(6))
+        })
+        val status = TextView(a).apply { textSize = 13f; contentDescription = "onDeviceStatus" }
+        col.addView(status)
+        val row = LinearLayout(a)
+        val action = Button(a).apply { contentDescription = "onDeviceAction" }
+        val test = Button(a).apply { text = a.getString(R.string.ondevice_test); contentDescription = "onDeviceTest" }
+        row.addView(action, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        row.addView(test, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        col.addView(row)
+        val message = TextView(a).apply { textSize = 13f; contentDescription = "onDeviceMessage"; setPadding(0, 0, 0, dp(10)) }
+        col.addView(message)
+
+        fun refresh() {
+            onDevicePoll.removeCallbacksAndMessages(null)
+            val state = OnDeviceModel.state(a)
+            test.visibility = if (state == OnDeviceModel.State.Ready) View.VISIBLE else View.GONE
+            action.visibility = if (state == OnDeviceModel.State.Unsupported || state == OnDeviceModel.State.Verifying) View.GONE else View.VISIBLE
+            when (state) {
+                OnDeviceModel.State.Unsupported -> status.text = a.getString(R.string.ondevice_status_unsupported)
+                OnDeviceModel.State.Absent -> {
+                    status.text = a.getString(R.string.ondevice_status_absent)
+                    action.text = a.getString(R.string.ondevice_download, OnDeviceModel.DOWNLOAD_MB)
+                }
+                is OnDeviceModel.State.Failed -> {
+                    status.text = when {
+                        state.reason == "space" -> a.getString(R.string.ondevice_status_no_space, OnDeviceModel.TOTAL_GB)
+                        state.reason == "checksum" -> a.getString(R.string.ondevice_status_checksum)
+                        else -> a.getString(R.string.ondevice_status_failed, state.reason)
+                    }
+                    action.text = a.getString(R.string.ondevice_download, OnDeviceModel.DOWNLOAD_MB)
+                }
+                is OnDeviceModel.State.Downloading -> {
+                    val pct = (state.bytes * 100 / state.total).toInt().coerceIn(0, 100)
+                    status.text = if (state.paused) a.getString(R.string.ondevice_status_paused, pct)
+                        else a.getString(R.string.ondevice_status_downloading, pct,
+                            (state.bytes / 1_048_576L).toInt(), (state.total / 1_048_576L).toInt())
+                    action.text = a.getString(R.string.ondevice_cancel)
+                }
+                OnDeviceModel.State.Verifying -> status.text = a.getString(R.string.ondevice_status_verifying)
+                OnDeviceModel.State.Ready -> {
+                    val error = OnDeviceLlm.lastPrepareError
+                    status.text = when {
+                        OnDeviceLlm.prepared(a) -> a.getString(if (SmartCleanup.usesOnDevice(a)) R.string.ondevice_status_ready
+                            else R.string.ondevice_status_ready_cloud)
+                        // 準備失敗不自動一直重試：講原因，按「測試」再試一次。
+                        error is OnDeviceModel.NotEnoughSpace -> a.getString(R.string.ondevice_status_prepare_no_space,
+                            (OnDeviceModel.CACHE_BYTES / 1_048_576L).toInt())
+                        error != null -> a.getString(R.string.ondevice_status_prepare_failed, error.message ?: error.javaClass.simpleName)
+                        else -> a.getString(R.string.ondevice_status_preparing)
+                    }
+                    action.text = a.getString(R.string.ondevice_delete)
+                    // 第一次準備（GPU 編譯）在背景做；App 被收掉過就從這裡補。
+                    if (!OnDeviceLlm.prepared(a) && error == null) OnDeviceLlm.warm(a)
+                }
+            }
+            // 下載／檢查／準備中：設定頁開著就每秒更新進度；畫面關掉就停。
+            val preparing = state == OnDeviceModel.State.Ready && !OnDeviceLlm.prepared(a) && OnDeviceLlm.lastPrepareError == null
+            if (state is OnDeviceModel.State.Downloading || state == OnDeviceModel.State.Verifying || preparing) {
+                onDevicePoll.postDelayed({ if (!a.isFinishing && !a.isDestroyed) refresh() }, 1000)
+            }
+        }
+        action.setOnClickListener {
+            when (OnDeviceModel.state(a)) {
+                OnDeviceModel.State.Absent, is OnDeviceModel.State.Failed -> {
+                    OnDeviceModel.startDownload(a)
+                    // 下載就是要用：跟存 key 一樣順手打開智慧整理。
+                    SmartCleanup.setEnabled(a, true); smartSwitch.isChecked = true
+                }
+                else -> OnDeviceModel.delete(a)
+            }
+            message.text = ""
+            refresh()
+        }
+        test.setOnClickListener {
+            test.isEnabled = false
+            message.setTextColor(0xFF8A8A8A.toInt()); message.text = a.getString(R.string.ondevice_testing)
+            Thread {
+                val start = System.currentTimeMillis()
+                val r = runCatching { SmartCleanup.runOnDevice(a, a.getString(R.string.smart_sample), 180_000L) }
+                val ms = (System.currentTimeMillis() - start).toInt()
+                a.runOnUiThread {
+                    test.isEnabled = true
+                    val e = r.exceptionOrNull()
+                    if (e == null) OnDeviceLlm.lastPrepareError = null
+                    refresh()
+                    message.setTextColor(if (e == null) 0xFF2E7D32.toInt() else 0xFFD32F2F.toInt())
+                    message.text = when {
+                        e == null -> a.getString(R.string.ondevice_test_ok, ms, OnDeviceLlm.backend.uppercase(), r.getOrThrow())
+                        e is SmartCleanup.Rejected -> a.getString(R.string.smart_test_rejected)
+                        e is java.net.SocketTimeoutException -> a.getString(R.string.smart_test_timeout)
+                        e is OnDeviceModel.NotEnoughSpace -> a.getString(R.string.ondevice_status_no_space, OnDeviceModel.TOTAL_GB)
+                        else -> a.getString(R.string.smart_test_failed, e.message ?: e.javaClass.simpleName)
+                    }
+                }
+            }.start()
+        }
+        refresh()
     }
 
     private fun showAppToneProfiles() {

@@ -47,6 +47,35 @@
     <string name="assistant_translate_failed">翻譯失敗：%1$s（已貼上原文）</string>
     <string name="assistant_engine_label">改寫／翻譯引擎：%1$s</string>
     <string name="assistant_provider_none">沒有雲端 key（只走裝置端翻譯）</string>
+
+    <!-- 鍵盤語音模式：聽寫／Help me write／Speak to edit／Ask anything -->
+    <string name="voice_mode_dictate">聽寫</string>
+    <string name="voice_mode_help_write">幫我寫</string>
+    <string name="voice_mode_speak_to_edit">改寫</string>
+    <string name="voice_mode_ask_anything">問問題</string>
+    <string name="hint_help_write_idle">說你要寫什麼，我來打</string>
+    <string name="hint_help_write_recording">再點一下完成・寫好會插在游標處</string>
+    <string name="hint_writing">寫作中…（%1$s）</string>
+    <string name="hint_ask_idle">說出你的問題</string>
+    <string name="hint_ask_recording">再點一下完成・回答會出現在上方卡片</string>
+    <string name="hint_asking">回答中…（%1$s）</string>
+    <string name="hint_scope_pick">先選要改哪一段</string>
+    <string name="edit_scope_paragraph">這一段</string>
+    <string name="edit_scope_all">全部文字</string>
+    <string name="hint_editing_scope">改寫中…（%1$s）</string>
+    <string name="assistant_selection_gone_paragraph">這一段的位置變了，沒有改動文字</string>
+    <string name="assistant_text_changed">文字已變動，沒有自動取代，改好的內容放在回答卡</string>
+    <string name="assistant_selection_too_long">選取太長，請改用「這一段」或「全部文字」</string>
+    <string name="assistant_all_unavailable">拿不到完整文字，只能改「這一段」</string>
+    <string name="answer_card">回答</string>
+    <string name="answer_insert">插入</string>
+    <string name="answer_copy">複製</string>
+    <string name="answer_undo">復原</string>
+    <string name="answer_close">關閉</string>
+    <string name="answer_copied">已複製回答</string>
+    <string name="hint_undone">已復原</string>
+    <string name="hint_undo_unavailable">文字動過了，已無法復原</string>
+
     <string name="translate_to">翻成%1$s</string>
     <string name="lang_ja">日文</string>
     <string name="lang_ko">韓文</string>
@@ -175,18 +204,45 @@
     <string name="smart_app_profile_saved">已儲存</string>
     <string name="smart_provider_gemini">Google Gemini</string>
     <string name="smart_provider_groq">Groq（推薦）</string>
+    <string name="smart_provider_claude">Claude（整理最準）</string>
     <string name="smart_provider_dashscope">阿里雲百鍊</string>
     <string name="smart_provider_custom">自訂（OpenAI 相容）</string>
+    <string name="smart_provider_ondevice">手機上（Gemma 4）</string>
+    <string name="ondevice_title">手機上整理（不用 key）</string>
+    <string name="ondevice_explain">下載 Google 的 Gemma 4 小模型（約 %1$d MB，只在 Wi-Fi 下載；連同第一次載入的快取共需約 %2$s GB 空間）後，沒填雲端 key 時改在手機上整理改口和贅詞，文字不離開手機。有填 key 時仍用下面選的雲端服務。手機上整理比雲端慢幾秒，專有名詞與錯字修得較少。</string>
+    <string name="ondevice_download">下載模型（約 %1$d MB）</string>
+    <string name="ondevice_cancel">取消下載</string>
+    <string name="ondevice_delete">刪除模型</string>
+    <string name="ondevice_test">測試手機上整理</string>
+    <string name="ondevice_status_absent">尚未下載</string>
+    <string name="ondevice_status_downloading">下載中 %1$d%%（%2$d／%3$d MB）</string>
+    <string name="ondevice_status_paused">等待 Wi-Fi 後繼續下載（%1$d%%）</string>
+    <string name="ondevice_status_verifying">下載完成，正在檢查檔案…</string>
+    <string name="ondevice_status_preparing">已下載・第一次準備模型中（約 1–2 分鐘，好了就會開始整理）</string>
+    <string name="ondevice_status_prepare_failed">已下載・模型準備失敗（%1$s），按「測試手機上整理」再試一次</string>
+    <string name="ondevice_status_prepare_no_space">已下載・第一次準備還需要約 %1$d MB 空間，清出空間後按「測試手機上整理」</string>
+    <string name="ondevice_status_ready">已下載・沒有雲端 key 時在手機上整理</string>
+    <string name="ondevice_status_ready_cloud">已下載・目前有雲端 key，先用雲端整理</string>
+    <string name="ondevice_status_failed">下載沒有完成（%1$s），可以再按一次下載</string>
+    <string name="ondevice_status_no_space">手機空間不夠：需要約 %1$s GB（模型＋快取），清出空間後再按一次</string>
+    <string name="ondevice_status_checksum">下載的檔案檢查不符，已刪除，可以再按一次下載</string>
+    <string name="ondevice_status_unsupported">這支手機的記憶體不夠，無法在手機上整理</string>
+    <string name="ondevice_download_title">UTUVO Type 手機上整理模型</string>
+    <string name="ondevice_download_desc">Gemma 4（約 %1$d MB）</string>
+    <string name="ondevice_testing">手機上整理中（第一次要準備模型，可能要 1–2 分鐘）…</string>
+    <string name="ondevice_test_ok">可以用（%1$d 毫秒，%2$s）：%3$s</string>
     <string name="smart_custom_endpoint">端點網址（…/chat/completions）</string>
     <string name="smart_custom_model">模型名稱</string>
     <string name="smart_signup_title">申請免費 key</string>
     <string name="smart_open_signup">打開申請頁面</string>
     <string name="smart_steps_gemini">1. 按下面「打開申請頁面」，用你的 Google 帳號登入 Google AI Studio。\n2. 按「Create API key」（建立 API 金鑰）。\n3. 複製產生的 key，回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
     <string name="smart_steps_groq">1. 按下面「打開申請頁面」，用 Email 或 Google 帳號登入 GroqCloud。\n2. 按「Create API Key」，取個名字。\n3. 複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
+    <string name="smart_steps_claude">1. 按下面「打開申請頁面」，登入 Anthropic Console（Claude 的開發者後台）。\n2. 在「API Keys」按「Create Key」，取個名字。\n3. 複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
     <string name="smart_steps_dashscope">1. 打開阿里雲百鍊主控台，開通模型服務（需要實名認證）。\n2. 在「API-KEY」頁建立 key。\n3. 複製 key，回到這裡貼上、按「儲存」，再按「測試」。（跟下面雲端翻譯共用同一把 key）</string>
     <string name="smart_steps_custom">1. 填入任何 OpenAI 相容服務的端點網址與模型名稱（例如自己架的伺服器）。\n2. 貼上 key、按「儲存」，再按「測試」。</string>
     <string name="smart_privacy_gemini">免費，每天約上千次。免費版送出的文字 Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶（不一定會被收費）就不會。</string>
     <string name="smart_privacy_groq">免費，每天約上千次，速度很快；預設不保留送出的資料。</string>
+    <string name="smart_privacy_claude">依用量計費，要在 Anthropic Console 加值或有 API 額度；Claude Pro／Max 訂閱本身不能直接用。Anthropic 預設不拿 API 送出的資料訓練模型。Claude 不能辨識語音：雲端辨識會改用你存的 Groq／Gemini key。</string>
     <string name="smart_privacy_dashscope">新用戶有免費額度，之後依用量計費。</string>
     <string name="smart_privacy_custom">文字會送到你填的端點。</string>
     <string name="smart_log_summary">最近整理：成功 %1$d 次、失敗 %2$d 次</string>
@@ -265,6 +321,8 @@
     <string name="hant_input_title">「繁」鍵盤輸入法</string>
     <string name="hant_input_zhuyin">注音</string>
     <string name="hant_input_pinyin">拼音</string>
+    <string name="zc_ai_title">AI 選字（上下文重排）</string>
+    <string name="zc_ai_explain">依前後文重新排序注音整句的候選；模型在手機上執行，不上網。</string>
     <string name="hant_input_explain">「繁」用注音還是拼音；鍵盤上按「繁」就會用這個。鍵盤內也能直接切換。</string>
 
     <string name="guide_title">使用說明</string>
@@ -311,4 +369,73 @@
     <string name="guide_problem_3">鍵盤找不到／換不到</string>
     <string name="guide_problem_3_detail">重新啟用一次鍵盤；有時改完設定要重開 App 才會換到。</string>
 
+    <!-- 使用數據（首頁；只存數字，不存文字） -->
+    <string name="usage_title">使用數據</string>
+    <string name="usage_words">聽寫：%1$d 字</string>
+    <string name="usage_saved">省下時間：%1$s</string>
+    <string name="usage_wpm">平均說話速度：%1$d 字／分</string>
+    <string name="usage_total_time">總聽寫時間：%1$s</string>
+    <string name="usage_sessions">聽寫 %1$d 次</string>
+    <string name="usage_streaks">目前連續 %1$d 天　最長連續 %2$d 天　活躍 %3$d 天</string>
+    <string name="usage_minutes">%1$d 分鐘</string>
+    <string name="usage_seconds_short">%1$d 秒</string>
+
+    <!-- 歷史保留期限 -->
+    <string name="history_retention_title">保留期限</string>
+    <string name="history_retention_row">保留期限：%1$s</string>
+    <string name="history_retention_day">24 小時</string>
+    <string name="history_retention_week">1 週</string>
+    <string name="history_retention_month">1 個月</string>
+    <string name="history_retention_year">1 年</string>
+    <string name="history_retention_forever">永遠</string>
+    <string name="history_retention_none">不保留</string>
+    <string name="history_retention_confirm">會刪掉 %1$d 筆超過期限的聽寫紀錄。首頁的使用數據不會受影響。</string>
+    <string name="history_retention_apply">刪除</string>
+    <string name="history_retention_applied">清掉 %1$d 筆過期紀錄</string>
+    <string name="history_clear_confirm">確定要刪掉全部聽寫紀錄嗎？刪掉之後救不回來。首頁的使用數據不會受影響。</string>
+    <string name="history_cleared">已刪除全部紀錄</string>
+    <string name="history_duration">說了 %1$d 秒</string>
+
+    <!-- 字典分頁 -->
+    <string name="dict_tab_all">全部</string>
+    <string name="dict_tab_auto">自動加入</string>
+    <string name="dict_tab_manual">手動加入</string>
+    <string name="dict_search_hint">搜尋字典</string>
+    <string name="dict_count">顯示 %1$d／%2$d 筆</string>
+    <string name="dict_no_match">沒有符合的詞</string>
+    <string name="dict_empty">還沒有任何詞</string>
+    <string name="dict_badge_auto">自動</string>
+
+    <!-- 語言變體 -->
+    <string name="variant_title">語言變體</string>
+    <string name="variant_default">預設</string>
+    <string name="variant_zh_tw">繁體中文（台灣）</string>
+    <string name="variant_zh_hk">繁體中文（香港用字）</string>
+    <string name="variant_zh_cn">簡體中文</string>
+    <string name="variant_en_us">美式英文 (US)</string>
+    <string name="variant_en_gb">英式英文 (UK)</string>
+    <string name="hint_variant_changed">已切換變體為%1$s</string>
+
+    <!-- 介面語言與外觀 -->
+    <string name="interface_section_title">介面與外觀</string>
+    <string name="interface_language_title">介面語言</string>
+    <string name="appearance_title">外觀</string>
+    <string name="option_follow_system">跟隨系統</string>
+    <string name="option_zh_tw">繁體中文</string>
+    <string name="option_zh_cn">簡體中文</string>
+    <string name="option_en">English</string>
+    <string name="option_light">淺色</string>
+    <string name="option_dark">深色</string>
+
+    <!-- 小聲說話模式 -->
+    <string name="quiet_mode_title">小聲說話</string>
+    <string name="quiet_mode_explain">提高前級增益並延長靜音等待時間，輕聲講也能辨識。增益只作用在雲端辨識的錄音；系統辨識器（裝置端）只能調靜音門檻。</string>
+
+    <!-- 翻譯手勢新增語言 -->
+    <string name="translate_add_language">＋新增語言</string>
+    <string name="translate_add_language_short">＋</string>
+    <string name="translate_choose_language">選擇翻譯語言</string>
+    <string name="smart_auto_list">自動條列</string>
+    <string name="smart_auto_list_explain">講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。</string>
 </resources>
+

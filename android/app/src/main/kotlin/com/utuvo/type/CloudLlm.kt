@@ -2,14 +2,63 @@ package com.utuvo.type
 
 import android.os.Handler
 import android.os.Looper
+import com.utuvo.type.core.CleanupRetryAfter
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
 import java.net.URL
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executors
+import java.util.concurrent.Future
 import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+
+/** Cancels queued work and disconnects an active HTTP request; late callbacks are suppressed by its owner. */
+class CleanupCancellation {
+    private val cancelled = AtomicBoolean(false)
+    private val connection = AtomicReference<HttpURLConnection?>(null)
+    private val future = AtomicReference<Future<*>?>(null)
+    private val cancelListener = AtomicReference<(() -> Unit)?>(null)
+
+    val isCancelled: Boolean get() = cancelled.get()
+
+    fun cancel() {
+        if (!cancelled.compareAndSet(false, true)) return
+        connection.getAndSet(null)?.disconnect()
+        future.getAndSet(null)?.cancel(true)
+        cancelListener.getAndSet(null)?.invoke()
+    }
+
+    fun setFuture(value: Future<*>) {
+        future.set(value)
+        if (cancelled.get()) future.getAndSet(null)?.cancel(true)
+    }
+
+    fun onCancel(listener: () -> Unit) {
+        if (cancelled.get()) {
+            listener()
+            return
+        }
+        cancelListener.set(listener)
+        if (cancelled.get()) cancelListener.getAndSet(null)?.invoke()
+    }
+
+    fun attach(value: HttpURLConnection) {
+        connection.set(value)
+        if (cancelled.get()) connection.getAndSet(null)?.disconnect()
+    }
+
+    fun detach(value: HttpURLConnection) {
+        connection.compareAndSet(value, null)
+    }
+
+    fun throwIfCancelled() {
+        if (cancelled.get() || Thread.currentThread().isInterrupted) throw CancellationException("cleanup cancelled")
+    }
+}
 
 /**
  * 雲端 chat completion（對應 iOS TranslationService.complete）：DashScope 相容模式、qwen3.7-flash。
@@ -19,7 +68,8 @@ object CloudLlm {
     const val ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     const val MODEL = "qwen3.7-flash"
 
-    class HttpError(val code: Int) : Exception("HTTP $code")
+    /** `detail`＝服務回的錯誤本體前 300 字（不含 key；查 400 的原因用，只進 logcat）。 */
+    class HttpError(val code: Int, val retryAfterMillis: Long? = null, val detail: String? = null) : Exception("HTTP $code")
 
     private val io = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
@@ -46,10 +96,13 @@ object CloudLlm {
 
     /** 同步送出（呼叫端自己放背景執行緒）；智慧整理也走這裡（不同端點、模型、逾時）。 */
     fun post(endpoint: String, apiKey: String, body: String, connectMs: Int, readMs: Int,
-             deadlineNanos: Long? = null): String {
+             deadlineNanos: Long? = null, cancellation: CleanupCancellation? = null): String {
+        cancellation?.throwIfCancelled()
         val conn = URL(endpoint).openConnection() as HttpURLConnection
+        cancellation?.attach(conn)
         var abort: ScheduledFuture<*>? = null
         try {
+            cancellation?.throwIfCancelled()
             val initialRemaining = deadlineNanos?.let(::remainingMillis)
             conn.connectTimeout = initialRemaining?.let { minOf(connectMs, it) } ?: connectMs
             conn.readTimeout = initialRemaining?.let { minOf(readMs, it) } ?: readMs
@@ -63,17 +116,24 @@ object CloudLlm {
             conn.setRequestProperty("Content-Type", "application/json")
             conn.setRequestProperty("Authorization", "Bearer $apiKey")
             conn.outputStream.use { it.write(body.toByteArray()) }
+            cancellation?.throwIfCancelled()
             deadlineNanos?.let { conn.readTimeout = minOf(readMs, remainingMillis(it)) }
-            if (conn.responseCode != 200) {
-                runCatching { conn.errorStream?.use { it.readBytes() } }   // 讀完才能放回連線池
-                throw HttpError(conn.responseCode)
+            val status = conn.responseCode
+            if (status != 200) {
+                val retryAfter = if (status == 429) CleanupRetryAfter.milliseconds(conn.getHeaderField("Retry-After")) else null
+                val detail = runCatching { conn.errorStream?.use { String(it.readBytes()).take(300) } }.getOrNull()   // 讀完才能放回連線池
+                android.util.Log.w("UTUVOCloudLlm", "HTTP $status from ${URL(endpoint).host}: $detail")
+                throw HttpError(status, retryAfter, detail)
             }
-            return parse(conn.inputStream.use { it.bufferedReader().readText() })
+            val response = parse(conn.inputStream.use { it.bufferedReader().readText() })
+            cancellation?.throwIfCancelled()
+            return response
         } catch (e: java.io.IOException) {
             conn.disconnect()   // 連線壞了才丟掉；正常結束不 disconnect，連線留在池裡給下一次（省 TLS 握手）
             throw e
         } finally {
             abort?.cancel(false)
+            cancellation?.detach(conn)
         }
     }
 

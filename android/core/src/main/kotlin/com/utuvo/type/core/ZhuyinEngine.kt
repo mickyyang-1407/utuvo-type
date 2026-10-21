@@ -73,6 +73,17 @@ class ZhuyinEngine(val lexicon: ZhuyinLexicon) {
     /** 正在組的音節符號（尚未收尾）。 */
     val composing: String get() = composer.composing
 
+    /**
+     * 整句可完整送出的讀音（例 `["ㄋㄧˇ","ㄏㄠˇ"]`）：每段都已收尾且正在組的音節是空的。
+     * 有沒收尾的段（簡拼）或還在組符號時回 null——那時候的讀音還會變，重排沒有意義。
+     */
+    fun completeReadings(): List<String>? {
+        if (!composer.isEmpty) return null
+        if (segments.any { !it.isComplete }) return null
+        if (segments.isEmpty()) return null
+        return segments.map { it.node.raw }
+    }
+
     val isEmpty: Boolean get() = segments.isEmpty() && composer.isEmpty
 
     /** 緩衝區裡有沒收尾的音節段（簡拼或沒打聲調）。這時空白鍵不當一聲，而是送出整句。 */
@@ -302,6 +313,59 @@ class ZhuyinEngine(val lexicon: ZhuyinLexicon) {
         if (partialCache.size > 256) partialCache.clear()
         partialCache[raw] = node
         return node
+    }
+
+    /**
+     * 讀音網格上的 K-best（文字去重）：與 `conversion` 的 Viterbi 同一張網格，但每個節點保留前 `k` 條路徑。
+     * 第 1 名與 `conversion` 相同（每把鍵用第一個詞條、路徑分數相加）。只在整句讀音已定（`completeReadings()`）時有意義。
+     *
+     * 剪枝：每處理完一個起點，把每個終點的候選收斂到前 `k * 4` 條（同文字留最高分），避免最壞情況下爆掉。
+     */
+    fun kBest(k: Int = 16, perKey: Int = 8): List<Pair<String, Double>> =
+        kBest(completeReadings() ?: return emptyList(), k, perKey)
+
+    /**
+     * [kBest] 的無狀態版本：直接吃讀音，只用 [lexicon]。
+     * [ZhuyinLexicon.lookup] 只用 ByteBuffer 的絕對位置讀取、沒有共用可變快取，所以可以在背景執行緒呼叫。
+     * 不要在背景呼叫會讀引擎可變狀態（`composing`、`walkCache`…）的方法。
+     */
+    fun kBest(readings: List<String>, k: Int = 16, perKey: Int = 8): List<Pair<String, Double>> {
+        val n = readings.size
+        if (n == 0 || k <= 0) return emptyList()
+        val ids = IntArray(n)
+        for ((i, r) in readings.withIndex()) ids[i] = lexicon.syllableId(r) ?: return emptyList()
+        // beams[j]：走到 j 的 (分數, 文字)，每個位置最多 K*4 條
+        val beams: MutableList<ArrayList<Pair<Double, String>>> = (0..n).mapTo(ArrayList()) { ArrayList() }
+        beams[0].add(0.0 to "")
+        val cap = k * 4
+        for (i in 0 until n) {
+            val from = beams[i]
+            if (from.isEmpty()) continue
+            for (len in 1..minOf(ZhuyinLexicon.MAXIMUM_PHRASE_LENGTH, n - i)) {
+                val entries = lexicon.lookup(ids, i, i + len, perKey)
+                if (entries.isEmpty()) continue
+                for (e in entries) {
+                    for (prev in from) beams[i + len].add((prev.first + e.score) to (prev.second + e.text))
+                }
+            }
+            for (j in i + 1..n) {
+                if (beams[j].size > cap) beams[j] = ArrayList(top(beams[j], cap))
+            }
+        }
+        return top(beams[n], k).map { it.second to it.first }
+    }
+
+    /**
+     * 同文字只留最高分（以第一次出現的順序記錄），再依分數由高到低穩定排序（同分保持第一次出現的順序），取前 `k`。
+     */
+    private fun top(items: List<Pair<Double, String>>, k: Int): List<Pair<Double, String>> {
+        val seen = LinkedHashMap<String, Double>()
+        for ((s, t) in items) {
+            val old = seen[t]
+            if (old == null || s > old) seen[t] = s
+        }
+        return seen.entries.sortedWith(compareByDescending<Map.Entry<String, Double>> { it.value }).take(k)
+            .map { it.value to it.key }
     }
 
     // ── Viterbi ──

@@ -4,6 +4,7 @@ import UTUVOTypeCore
 
 enum SettingsSection: String, CaseIterable, Identifiable {
     case general
+    case insights
     case history
     case models
     case advanced
@@ -19,6 +20,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     func title(zh: Bool) -> String {
         switch self {
         case .general: return zh ? "一般" : "General"
+        case .insights: return zh ? "使用數據" : "Insights"
         case .history: return zh ? "歷史紀錄" : "History"
         case .models: return zh ? "模型" : "Models"
         case .advanced: return zh ? "進階" : "Advanced"
@@ -34,6 +36,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     var icon: String {
         switch self {
         case .general: return "hand.tap"
+        case .insights: return "chart.bar.xaxis"
         case .history: return "clock.arrow.circlepath"
         case .models: return "cpu"
         case .advanced: return "gearshape.2"
@@ -48,7 +51,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 
     var isProductSection: Bool {
         switch self {
-        case .general, .history, .models, .advanced, .about: return true
+        case .general, .insights, .history, .models, .advanced, .about: return true
         case .quick, .localRuntime, .dictionary, .shortcuts, .cloud: return false
         }
     }
@@ -63,6 +66,9 @@ struct SettingsView: View {
     @State private var dictionaryOutput = ""
     @State private var dictionaryIOMessage: String?
     @State private var isCapturingPostProcessingShortcut = false
+    @State private var isCapturingAskShortcut = false
+    @State private var isCapturingExplainShortcut = false
+    @State private var isCapturingTranslateSelectionShortcut = false
     @State private var presetBundleIdentifier = ""
     @State private var presetDisplayName = ""
     @State private var presetPromptHint = ""
@@ -219,6 +225,7 @@ struct SettingsView: View {
     private var selectedContent: some View {
         switch selectedSection {
         case .general: generalTab
+        case .insights: InsightsView(preferences: preferences)
         case .history: historyTab
         case .models: modelsTab
         case .advanced: advancedTab
@@ -1003,6 +1010,20 @@ struct SettingsView: View {
                             .labelsHidden()
                             .toggleStyle(.switch)
                     }
+                    if preferences.includeSurroundingContext {
+                        Text(preferences.tr("開啟時一起送給整理服務：游標前後各最多 1,000 字、視窗標題、網頁的網域＋路徑（不含查詢參數）、欄位提示文字。下面這些網站完全不送（只留 App 名稱）；密碼欄永遠不讀。",
+                                            "When on, cleanup also gets up to 1,000 characters around the cursor, the window title, the page's domain + path (no query), and the field placeholder. The sites below send nothing (app name only); password fields are never read."))
+                            .font(AppBrand.ui(10))
+                            .foregroundStyle(AppBrand.retroMuted)
+                        settingsRow(preferences.tr("不讀脈絡的網站", "Sites that never share context")) {
+                            TextField("", text: Binding(
+                                get: { preferences.contextBlockedSites.joined(separator: ", ") },
+                                set: { preferences.contextBlockedSites = $0.split(whereSeparator: { $0 == "," || $0 == "\n" })
+                                    .map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty } }))
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 320)
+                        }
+                    }
                     settingsRow(preferences.tr("後處理", "Post-processing")) {
                         Toggle("", isOn: $preferences.postProcessingEnabled)
                             .labelsHidden()
@@ -1095,6 +1116,68 @@ struct SettingsView: View {
                             Button(preferences.tr("清除", "Clear")) {
                                 isCapturingPostProcessingShortcut = false
                                 preferences.postProcessingShortcut = ""
+                            }
+                            .glassButton()
+                        }
+                    }
+                }
+
+                settingsCard(
+                    title: "Ask anything",
+                    subtitle: preferences.tr(
+                        "按一下說問題、再按一下送出：答案出現在右上角的回答卡（可複製或插入）。先選取一段文字再說「改正式一點」「翻成英文」就直接改寫；說「這段在講什麼」就回答關於它的問題。用你在「雲端（選配）」填的整理服務 key。",
+                        "Press, ask, press again: the answer appears in a card (copy or insert). Select text first and say “make it formal” or “translate to English” to rewrite it, or ask about it. Uses your cleanup key from Cloud settings."
+                    ),
+                    icon: "sparkles"
+                ) {
+                    settingsRow(preferences.tr("快捷鍵", "Shortcut"),
+                                caption: preferences.tr("預設 ⌘⌥A；清除＝不使用。", "Defaults to ⌘⌥A; clear to turn off.")) {
+                        HStack(spacing: 8) {
+                            HotkeyRecorder(
+                                shortcut: $preferences.askShortcut,
+                                isCapturing: $isCapturingAskShortcut,
+                                localize: preferences.tr
+                            )
+                            .frame(maxWidth: .infinity, minHeight: 34)
+                            Button(preferences.tr("清除", "Clear")) {
+                                isCapturingAskShortcut = false
+                                preferences.askShortcut = ""
+                            }
+                            .glassButton()
+                        }
+                    }
+                }
+
+                settingsCard(
+                    title: preferences.tr("選字白話解釋／翻譯", "Explain / translate selection"),
+                    subtitle: preferences.tr(
+                        "選好一段文字按快捷鍵，不用講話：白話解釋用台灣繁體中文說明在講什麼；翻譯把外文翻成中文、中文翻成英文，可插回原處取代選取。結果出現在回答卡。用你的整理服務 key。",
+                        "Select text and press the shortcut, no speaking: Explain says what it means in plain Traditional Chinese; Translate turns other languages into Chinese and Chinese into English, and can replace the selection. Uses your cleanup key."
+                    ),
+                    icon: "text.bubble"
+                ) {
+                    settingsRow(preferences.tr("白話解釋", "Explain"),
+                                caption: preferences.tr("預設 ⌃⌥E；清除＝不使用。", "Defaults to ⌃⌥E; clear to turn off.")) {
+                        HStack(spacing: 8) {
+                            HotkeyRecorder(shortcut: $preferences.explainShortcut, isCapturing: $isCapturingExplainShortcut,
+                                           localize: preferences.tr)
+                                .frame(maxWidth: .infinity, minHeight: 34)
+                            Button(preferences.tr("清除", "Clear")) {
+                                isCapturingExplainShortcut = false
+                                preferences.explainShortcut = ""
+                            }
+                            .glassButton()
+                        }
+                    }
+                    settingsRow(preferences.tr("翻譯選取文字", "Translate selection"),
+                                caption: preferences.tr("預設 ⌃⌥T；清除＝不使用。", "Defaults to ⌃⌥T; clear to turn off.")) {
+                        HStack(spacing: 8) {
+                            HotkeyRecorder(shortcut: $preferences.translateSelectionShortcut,
+                                           isCapturing: $isCapturingTranslateSelectionShortcut, localize: preferences.tr)
+                                .frame(maxWidth: .infinity, minHeight: 34)
+                            Button(preferences.tr("清除", "Clear")) {
+                                isCapturingTranslateSelectionShortcut = false
+                                preferences.translateSelectionShortcut = ""
                             }
                             .glassButton()
                         }
@@ -1331,6 +1414,22 @@ struct SettingsView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
+
+                    if preferences.backend == .local {
+                        settingsRow(
+                            preferences.tr("雲端辨識（Groq）", "Cloud recognition (Groq)"),
+                            caption: preferences.tr(
+                                "把錄音送到 Groq Whisper 辨識（用你自己的 Groq key），英文專名較準、出字較快；講完停頓時就先送，按停止時多半已經辨識並整理好。失敗自動改用本機 Qwen3-ASR。錄音會上傳到 Groq。",
+                                "Sends the recording to Groq Whisper (your own Groq key): better with English names and faster. It starts as soon as you pause, so text is usually ready when you stop. Falls back to local Qwen3-ASR on failure. Audio is uploaded to Groq.")
+                        ) {
+                            Toggle("", isOn: $preferences.cloudASREnabled)
+                                .labelsHidden()
+                                .toggleStyle(.switch)
+                        }
+                        if preferences.cloudASREnabled && preferences.cleanupProvider != .groq {
+                            cleanupKeyCard(for: .groq).disabled(preferences.isolation != nil)
+                        }
+                    }
                 }
 
                 settingsCard(
@@ -1427,6 +1526,29 @@ struct SettingsView: View {
     private var dictionaryTab: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                settingsCard(
+                    title: preferences.tr("從你的修改學字典", "Learn from your edits"),
+                    subtitle: preferences.tr(
+                        "貼上後你若只改了幾個詞（例如「元山」改成「圓山」），這裡會建議加進字典。只在這台 Mac 比對，欄位文字不保存、不送出；大幅改寫不會學。",
+                        "If you fix a few words after a paste (e.g. a misheard name), they show up here as dictionary suggestions. Compared only on this Mac; field text is never stored or sent; big rewrites are ignored."
+                    ),
+                    icon: "lightbulb"
+                ) {
+                    settingsRow(preferences.tr("開啟", "On")) {
+                        Toggle("", isOn: $preferences.learnFromEdits).labelsHidden().toggleStyle(.switch)
+                    }
+                    ForEach(preferences.dictionarySuggestions, id: \.self) { suggestion in
+                        HStack(spacing: 8) {
+                            Text("\(suggestion.from) → \(suggestion.to)").font(.callout)
+                            Spacer()
+                            Button(preferences.tr("加入字典", "Add")) { preferences.acceptSuggestion(suggestion) }
+                                .glassProminentButton()
+                            Button(preferences.tr("忽略", "Ignore")) { preferences.ignoreSuggestion(suggestion) }
+                                .buttonStyle(.borderless)
+                        }
+                    }
+                }
+
                 vocabularyPacksCard
 
                 settingsCard(
@@ -1728,6 +1850,17 @@ struct SettingsView: View {
                 }
                 .toggleStyle(.switch)
 
+                Toggle(isOn: $preferences.cleanupAutoList) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(preferences.tr("自動條列", "Auto lists"))
+                        Text(preferences.tr("講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。",
+                                            "When you talk through steps or key points, format them as 1. 2. 3.; off keeps paragraphs. Works best with Claude."))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+                .toggleStyle(.switch)
+                .disabled(!preferences.cleanupEnabled)
+
                 Picker(preferences.tr("服務", "Provider"), selection: $preferences.cleanupProvider) {
                     ForEach(SmartCleanupProvider.allCases) { provider in
                         Text(provider.displayName).tag(provider)
@@ -1737,8 +1870,14 @@ struct SettingsView: View {
                 .disabled(!preferences.cleanupEnabled)
 
                 switch preferences.cleanupProvider {
-                case .gemini, .groq:
+                case .gemini, .groq, .claude:
                     cleanupKeyCard(for: preferences.cleanupProvider).disabled(preferences.isolation != nil)
+                    if preferences.cleanupProvider == .claude {
+                        Text(preferences.tr("用 Anthropic Console 的 API key（依用量計費，可用 API 額度）；Claude Pro／Max 訂閱本身不能直接用。",
+                                            "Use an Anthropic Console API key (usage-based; API credits work). A Claude Pro/Max subscription can't be used directly."))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                     if let url = preferences.cleanupProvider.signupURL {
                         Link(destination: url) {
                             Text(preferences.tr("取得 key", "Get a key"))
@@ -1889,14 +2028,25 @@ struct SettingsView: View {
         let config = CleanupConfig(enabled: true, provider: preferences.cleanupProvider,
             customEndpoint: preferences.customCleanupEndpoint, customModel: preferences.customCleanupModel,
             language: "zh-TW", personal: [:], enabledPacks: preferences.enabledVocabularyPackIDs,
-            bailianEndpoint: preferences.bailianFormatterEndpoint)
+            bailianEndpoint: preferences.bailianFormatterEndpoint, autoList: preferences.cleanupAutoList)
+        let outcomes = ProbeOutcomeSink()
         Task { @MainActor in
             defer { isProbingCleanup = false }
             let start = Date()
-            let cleaned = await SmartCleanup.clean("我今天約禮拜三不是禮拜五去開會", config: config)
-            cleanupProbeIsError = cleaned == nil
-            cleanupProbeResult = cleaned.map { "連線完成（\(Int(Date().timeIntervalSince(start) * 1000)) ms）\n\($0)" }
-                ?? "未取得可用結果；請檢查金鑰、端點或網路。"
+            let cleaned = await SmartCleanup.clean("我今天約禮拜三不是禮拜五去開會", config: config, log: outcomes)
+            let ms = Int(Date().timeIntervalSince(start) * 1000)
+            if let cleaned {
+                cleanupProbeIsError = false
+                cleanupProbeResult = "連線完成（\(ms) ms）\n\(cleaned)"
+            } else if outcomes.last == "rejected" {
+                // 連得上、key 也對，只是這一次模型的回答被忠實度把關擋下（實測約三次一次）。
+                // 以前一律顯示「請檢查金鑰」，會讓人以為 key 壞了。
+                cleanupProbeIsError = false
+                cleanupProbeResult = "連線與金鑰正常（\(ms) ms）；這次模型的整理結果被把關擋下，實際使用時會貼上原文。可再按一次測試。"
+            } else {
+                cleanupProbeIsError = true
+                cleanupProbeResult = "未取得可用結果（\(outcomes.last ?? "無回應")）；請檢查金鑰、端點或網路。"
+            }
         }
     }
 
@@ -2465,5 +2615,16 @@ private struct VocabularyPackPreview: View {
             guard !Task.isCancelled else { return }
             results = values
         }
+    }
+}
+
+/// 設定頁「測試 cleanup 連線」用：記下最後一次的結果分類（ok／rejected／http(…)…），只在主執行緒讀。
+private final class ProbeOutcomeSink: CleanupLogSink, @unchecked Sendable {
+    private let lock = NSLock()
+    private var value: String?
+    var last: String? { lock.lock(); defer { lock.unlock() }; return value }
+    func record(outcome: String, start: Date, provider: String, input: String, output: String?) {
+        lock.lock(); value = outcome; lock.unlock()
+        SmartCleanupLog.shared.record(outcome: outcome, start: start, provider: provider, input: input, output: output)
     }
 }

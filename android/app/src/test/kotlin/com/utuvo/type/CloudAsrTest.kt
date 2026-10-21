@@ -395,4 +395,25 @@ class CloudAsrTest {
     private fun dataInt16(bytes: ByteArray): List<Int> = (0 until bytes.size / 2).map {
         ((bytes[it * 2].toInt() and 0xFF) or ((bytes[it * 2 + 1].toInt() and 0xFF) shl 8)).toShort().toInt()
     }
+
+    /** 2026-10-18 Micky 實機：Groq Whisper 在每段尾巴補「謝謝大家收看！」。同 iOS testDropsWhisperOutroHallucination。 */
+    @Test
+    fun dropsWhisperOutroHallucination() {
+        assertEquals("要替換修改的時候，就是紫色光球的時候。", CloudASR.dropOutroHallucination("要替換修改的時候，就是紫色光球的時候。謝謝大家收看！"))
+        assertEquals("把三點改成四點", CloudASR.dropOutroHallucination("把三點改成四點 謝謝收看 字幕由Amara.org社群提供"))
+        assertEquals("", CloudASR.dropOutroHallucination("謝謝大家收看。"))
+        assertEquals("Send it tomorrow.", CloudASR.dropOutroHallucination("Send it tomorrow. Thanks for watching!"))
+        assertEquals("今天的教學到這裡，謝謝大家收看！",
+            CloudASR.dropOutroHallucination("今天的教學到這裡，謝謝大家收看！", reference = "今天的教學到這裡謝謝大家收看"))
+        assertEquals("謝謝大家，明天見", CloudASR.dropOutroHallucination("謝謝大家，明天見"))
+    }
+
+    @Test
+    fun trimSilenceKeepsSpeechAndPadding() {
+        val rate = 16_000
+        val audio = FloatArray(rate * 2) { 0.001f } + FloatArray(rate) { (kotlin.math.sin(it * 0.05) * 0.3).toFloat() } + FloatArray(rate * 2) { 0.002f }
+        assertEquals(1.6, CloudASR.trimSilence(audio).size / rate.toDouble(), 0.05)
+        val quiet = FloatArray(rate) { 0.001f }
+        assertEquals(quiet.size, CloudASR.trimSilence(quiet).size)
+    }
 }

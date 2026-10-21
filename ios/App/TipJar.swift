@@ -156,6 +156,7 @@ struct TipJarScreen: View {
                             }
                             Spacer()
                             Button {
+                                TapPulse.shared.fire()
                                 Task { await model.buy(product) }
                             } label: {
                                 if model.purchasing == product.id { ProgressView() } else { Text(product.displayPrice) }

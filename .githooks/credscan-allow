@@ -11,3 +11,17 @@ c088bc5e693047b4bc51f48c0bbdcea75eb930cf85afbaba8516d1bc1ed294bd  # SmartCleanup
 72a9db9532f8b69d20a50bf8f71ead2fdbb40ff884417e17ec63c9f7f3a98af7  # SmartCleanupTest.kt：句尾語氣改 FieldToneHint 期望後的版本，同一把 sk-utuv…not-a-real-key 假 key（2026-10-02）
 53fccbfc88467781d5c1ac848624f3dc3e8fa0b2f71c80d7c85506d4ecbd643d  # SmartCleanupTest.kt：10-01 加 InterruptedException 註解後的版本，同一把刻意假 key（not-a-real-key）
 1332f615ee8d98d954cfd50bf50da3624de1bdbda234f1ee7a03d7dd81943e13  # SmartCleanupTest.kt：10-02 release 合併版（句尾＋連續聽寫），同一把 sk-utuv…not-a-real-key 假 key
+14b66cb351a6f70d37d2378021a78c3cfbc704f65370d100323952d37b8a3a4e  # SmartCleanupTest.kt：10-14 cleanup-quality 版本，同一把 sk-utuv…not-a-real-key 假 key
+b9df93642feac4a1a2e7ab30f25391f2ba762c082c0863d00a6e5f81a509f893  # SmartCleanupTest.kt：10-14 cleanup-quality 版本，同一把 sk-utuv…not-a-real-key 假 key
+078f5885ecad4be3df567b58c091e7fe081c89b2e423af407a3c8b0e08e551d3  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+3bca6bfd72ac344accb86195e564ab424c66218c4cc0e684dc53ea74825331b1  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+3e658a303aab8a60b851356c3397f8a79e32c90efbe590e68d86c7588bf4d352  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+afae4b00d31005728df93edf90631b367856ad9c9500bdb92b367b43426c2973  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+b63c6bf92b8df286ff783c795afdfec78bbb5c6eb09f61102d340c7082e510fb  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+eadbb88a7aab8ba003693ef87192a6ed2c22e065fa829ef76e6259d77672bc5a  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+f788f14c418f63131195b1c0a85b1da47e6c01c239364a56466425081d1dd004  # OnDeviceLlm.kt 各版本：maxOutputToken = maxOutputTokens 變數名含 Token 的誤判（2026-10-11）
+611c1cf2aab3b1bdb22572f0e4bd40ebeab04206d057154967e07d9ea04639ab  # SmartCleanupTest.kt：SmartLog.record 改傳 .id，同一把刻意假 key（2026-10-11）
+8fd8eb33480e1258965ae4d02ea79cd3c465449714b14cce784dd5ec3f9ee8df  # SmartCleanupTest.kt：10-14 merge android-parity 後版本，同一把 sk-utuv…not-a-real-key 假 key
+8d98edaa63bdf380d2830c8642f2495f9d806e0a78cae153ff4b9cdcfaf3bef4  # android/app/src/main/assets/zc/zc-d512-slim-w4.onnx：0c 選字模型（Funmula/0c-sequence-d512 MIT 衍生，改輸出層＋4-bit），超過掃描上限的二進位權重，非憑證（2026-10-13）
+d32a69e9470760ad889ae92062d58647c1021b27e9060542e97e0b2a84b89991  # android/app/src/main/assets/zc/zc-d512-slim-w4.ort：0c 選字模型的 ORT 格式版（由 android/ort/zc-d512-slim-w4.onnx 經 build-ort.sh 轉出），超過掃描上限的二進位權重；已親查字串只有運算名稱與權重雜訊，非憑證（2026-10-13）
+f852d3a2f3dacf6e48186793559a928ea098cd19be10359c6767358766e2fece  # SmartCleanupTest.kt：10-18 加 liveCleanupThroughClaude 後版本，同一把 sk-utuv…not-a-real-key 假 key

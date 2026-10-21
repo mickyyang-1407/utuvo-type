@@ -2,6 +2,7 @@ package com.utuvo.type
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Typeface
@@ -31,6 +32,7 @@ class MainActivity : Activity() {
     private lateinit var enableStatus: TextView
     private lateinit var switchStatus: TextView
     private val sections = MainSections(this)
+    private val usagePanel = UsagePanel(this)
     private val pages = mutableMapOf<Int, View>()
     private lateinit var host: FrameLayout
     private fun matchParent() =
@@ -40,7 +42,13 @@ class MainActivity : Activity() {
 
     private fun dp(v: Int) = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v.toFloat(), resources.displayMetrics).toInt()
 
+    /** android-D：介面語言不是靠 AppCompat，是自己蓋 configuration（MainActivity 繼承平台 Activity）。 */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(AppTheme.wrapContext(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        AppTheme.applySavedSettings(this)
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)   // 大標題自己畫，不要系統標題列
         val root = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
@@ -57,12 +65,14 @@ class MainActivity : Activity() {
         show(0)
     }
 
+
     private lateinit var tabButtons: List<Button>
 
     private fun tabBar(): View {
         val bar = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
-            setBackgroundColor(0xFFF2F2F2.toInt())
+            // 10-10：深色模式原本是白條＋灰按鈕灰字，「歷史」「設定」幾乎看不到。
+            setBackgroundColor(if (isNight()) 0xFF1C1C1E.toInt() else 0xFFF2F2F2.toInt())
             setPadding(0, dp(4), 0, dp(4))
         }
         tabButtons = listOf(
@@ -77,6 +87,9 @@ class MainActivity : Activity() {
         return bar
     }
 
+    private fun isNight() = AppTheme.isDark(this)
+
+
     /** 切分頁：第一次進來才把那頁組出來（設定頁最重，不在啟動時組）。 */
     private fun show(index: Int) {
         val page = pages.getOrPut(index) {
@@ -88,10 +101,12 @@ class MainActivity : Activity() {
         }
         if (page.parent !== host) host.addView(page, matchParent())
         page.visibility = View.VISIBLE
+        // 切到歷史分頁就重讀：鍵盤剛聽寫的新紀錄要立刻出現（分頁切換不會觸發 onResume；luna-review A r3）。
+        if (index == 1) sections.refreshHistoryAsync()
         pages.forEach { (i, view) -> if (i != index) view.visibility = View.GONE }
         tabButtons.forEachIndexed { i, b ->
             b.isSelected = i == index
-            b.setTextColor(if (i == index) ACCENT else 0xFF444444.toInt())
+            b.setTextColor(if (i == index) ACCENT else if (isNight()) 0xFFE5E5EA.toInt() else 0xFF444444.toInt())
             b.setTypeface(if (i == index) Typeface.DEFAULT_BOLD else Typeface.DEFAULT)
         }
     }
@@ -138,6 +153,7 @@ class MainActivity : Activity() {
         }
         col.addView(TextView(this).apply { text = getString(R.string.try_here); textSize = 17f; typeface = Typeface.DEFAULT_BOLD; setPadding(0, dp(24), 0, dp(6)) })
         col.addView(EditText(this).apply { hint = getString(R.string.try_hint); minLines = 3; gravity = Gravity.TOP; contentDescription = "tryField" })
+        usagePanel.build(col)
         UsageGuide(this).build(col)
     }
 
@@ -152,6 +168,7 @@ class MainActivity : Activity() {
 
     private fun buildSettingsPage(): View = page { col ->
         col.addView(title())
+        sections.buildInterfaceAndAppearance(col)
         sections.buildFeel(col)
         sections.buildHantInput(col)
         sections.buildLanguages(col)
@@ -160,6 +177,7 @@ class MainActivity : Activity() {
         sections.buildPacks(col)
         buildCloudKey(col)
     }
+
 
     // ── 雲端翻譯（選配，同 iOS）：key 只存 Keystore 加密密文、不回顯 ──
 
@@ -220,9 +238,12 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
         refresh()
-        if (pages.containsKey(1)) sections.refreshHistory()
         sections.refreshHantInput()
         sections.refreshLanguages()
+        // 使用數據（usage.json）與歷史（history.json）都要讀檔：丟到背景執行緒，
+        // 各自讀完再回主執行緒更新畫面（2026-10-13 修補：以前在主執行緒直接讀）。
+        usagePanel.refreshAsync()
+        if (pages.containsKey(1)) sections.refreshHistoryAsync()
     }
     override fun onWindowFocusChanged(hasFocus: Boolean) { super.onWindowFocusChanged(hasFocus); if (hasFocus) refresh() }
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

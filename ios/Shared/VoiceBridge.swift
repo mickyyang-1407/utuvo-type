@@ -23,6 +23,20 @@ enum VoiceBridge {
         case update = "com.utuvo.type.voice.update"
         /// 鍵盤仍在使用：延長已開啟工作階段的閒置期限，不覆寫語音指令。
         case keyboardActivity = "com.utuvo.type.voice.keyboardActivity"
+    /// 主 app → 鍵盤：`AppearanceStore` 的值改了。**已開著的鍵盤要即時換外觀**，
+    /// 光靠 `viewWillAppear` 只會在下次叫出鍵盤時才生效（review-agy-ios-C finding 3）。
+    case appearance = "com.utuvo.type.appearance"
+        #if DEBUG
+        /// 模擬器驗證麥克風被拿走（模擬器沒有來電）：`xcrun simctl spawn <udid> notifyutil -p <name>`。
+        case debugInterruptBegan = "com.utuvo.type.debug.interruptBegan"
+        case debugInterruptEnded = "com.utuvo.type.debug.interruptEnded"
+        /// 引擎被停掉、沒有任何通知（別的 app 開語音模式時可能這樣）。
+        case debugEngineStop = "com.utuvo.type.debug.engineStop"
+        /// 切換「系統不讓背景重開麥克風」。
+        case debugDenyReclaim = "com.utuvo.type.debug.denyReclaim"
+        /// 照 command.json 開工作階段（等同鍵盤用 URL 叫起主 app；模擬器 openurl 會多跳一個確認框）。
+        case debugBegin = "com.utuvo.type.debug.begin"
+        #endif
     }
 
     struct Command: Codable, Equatable, Sendable {
@@ -35,6 +49,37 @@ enum VoiceBridge {
         var translateTo: String? = nil
         /// Keyboard extension supplies a bounded, local-only field excerpt only when the user opted in.
         var contextText: String? = nil
+        /// 游標後文字（上限 200；與 contextText 共用同一個使用者的開關）。
+        var contextAfter: String? = nil
+        /// 欄位語意提示（例：輸入欄位是搜尋欄；上限 120）。
+        var contextHint: String? = nil
+        /// 密碼／一次性密碼欄位 → 整份脈絡不送（這裡留 true 是為了稽核；主 app 看到就直接跳過）。
+        var contextBlocked: Bool? = nil
+        /// 欄位長相（`FieldContext.Field` 的三個內部名稱），讓主 app **真的拿到欄位資訊**再自己判一次
+        /// （review-agy-ios-C finding 6）。舊版主 app 端傳的是預設的 `Field()`（`isSecure=false`、
+        /// `contentType=nil`），`allowsContext` 恆為 true，第二道密碼攔截形同虛設；
+        /// 只有 `contextBlocked` 這個旗標在擋。現在兩道都能各自判斷：任一邊判定不安全就整份不送。
+        /// 這三個值是**列舉的內部名稱**，不是使用者文字（不新增任何個資）。
+        var contextFieldKind: FieldKind? = nil
+
+        struct FieldKind: Codable, Equatable, Sendable {
+            var keyboardKind: String = "default"
+            var returnKeyKind: String = "default"
+            var contentType: String? = nil
+            var isSecure: Bool = false
+
+            /// 回到 `FieldContext` 認得的結構（給 `allowsContext` / `isOTPField` 用）。
+            func field() -> FieldContext.Field {
+                FieldContext.Field(keyboardKind: keyboardKind, returnKeyKind: returnKeyKind,
+                                   contentType: contentType, isSecure: isSecure)
+            }
+        }
+
+        /// 從 `FieldContext.Field` 組出可傳給主 app 的欄位描述。
+        static func fieldKind(_ field: FieldContext.Field) -> FieldKind {
+            FieldKind(keyboardKind: field.keyboardKind, returnKeyKind: field.returnKeyKind,
+                      contentType: field.contentType, isSecure: field.isSecure)
+        }
     }
 
     struct State: Codable, Equatable, Sendable {
@@ -199,10 +244,14 @@ enum VoiceBridge {
     static func writeCommand(_ command: Command) { write(command, name: commandFile) }
 
     /// Field text is a one-shot hint. Remove it from the shared command file once the host has copied it to memory.
+    /// 三個欄位一起清：游標前／游標後／欄位提示都是「一次看完就刪」的使用者文字。
     static func clearCommandContext(for id: UUID, in directory: URL? = nil) {
         guard var command = read(Command.self, name: commandFile, in: directory), command.id == id,
-              command.contextText != nil else { return }
+              command.contextText != nil || command.contextAfter != nil || command.contextHint != nil else { return }
         command.contextText = nil
+        command.contextAfter = nil
+        command.contextHint = nil
+        command.contextFieldKind = nil
         write(command, name: commandFile, in: directory)
     }
 
@@ -235,4 +284,29 @@ final class DarwinObserver: @unchecked Sendable {
     deinit {
         CFNotificationCenterRemoveEveryObserver(CFNotificationCenterGetDarwinNotifyCenter(), Unmanaged.passUnretained(self).toOpaque())
     }
+}
+
+/// 麥克風被系統靜音時（別的 App 佔著輸入、手機正被遠端遙控），iOS 照樣送 buffer 進來，但樣本全是 0。
+/// 真的麥克風再安靜也有底噪，不會連續一秒多都是精確的 0——看到這個就不是「沒講話」，是根本收不到聲音。
+struct DigitalSilenceMeter: Equatable, Sendable {
+    static let threshold: TimeInterval = 1.5
+    /// 連續全零要多久才判定麥克風被拿走。小聲說話模式放寬到 `QuietMode.muteHoldSecondsQuiet`
+    /// （輕聲講時麥克風自動增益調整會讓無聲段更容易湊出整批精確的 0）。
+    var holdSeconds: TimeInterval = DigitalSilenceMeter.threshold
+    /// 目前連續全零的秒數。
+    private(set) var zeroRun: TimeInterval = 0
+    /// 這次錄音收到過的非零音訊秒數（診斷用）。
+    private(set) var heard: TimeInterval = 0
+
+    init(holdSeconds: TimeInterval = DigitalSilenceMeter.threshold) {
+        self.holdSeconds = holdSeconds
+    }
+
+    mutating func reset() { zeroRun = 0; heard = 0 }
+
+    mutating func add(peak: Float, duration: TimeInterval) {
+        if peak == 0 { zeroRun += duration } else { zeroRun = 0; heard += duration }
+    }
+
+    var isMuted: Bool { zeroRun >= holdSeconds }
 }

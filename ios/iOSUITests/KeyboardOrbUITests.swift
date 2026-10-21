@@ -638,6 +638,164 @@ final class KeyboardOrbUITests: XCTestCase {
         XCTAssertTrue(explained.label.contains("Groq key"), "補救方法要完整顯示（不能被截掉）：\(explained.label)")
     }
 
+    /// 10-05 Micky 17PMX（iOS 27.0.1）：回到家點光球「聽不到聲音」——鍵盤送出開啟主 app 的要求、系統默默沒開，
+    /// 鍵盤一直停在「正在開啟…」。要在 2.5 秒內改成明確告訴他自己打開一次。
+    func testOrbExplainsWhenSystemIgnoresOpenApp() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["-utuvo.type.debug.swallowOpenApp", "YES"]
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        let orb = app.descendants(matching: .any)["utuvoKeyboardOrb"]
+        XCTAssertTrue(orb.waitForExistence(timeout: 5), "找不到光球")
+        orb.tap()
+        let explained = app.staticTexts.containing(NSPredicate(format: "label CONTAINS '沒能自動開啟 UTUVO Type'")).firstMatch
+        let ok = explained.waitForExistence(timeout: 6)
+        shot("open-app-swallowed")
+        XCTAssertTrue(ok, "系統沒開成主 app 時要明講：\(app.staticTexts.allElementsBoundByIndex.map(\.label))")
+    }
+
+    /// 10-07 Micky：點光球會抖一下很棒，設定頁切換任何東西也要抖一下，而且可以關掉。
+    /// 讀 DEBUG 才有的「uiFeedbackCount」看不見標籤：每震一下加一。
+    /// 10-10 Micky：「切換下面 menu 的時候也要，還有點擊每個選項的時候」——自己點分頁、點按鈕都震；
+    /// 程式切分頁（鍵盤叫起 App、utuvotype://settings）不震。
+    func testTabSwitchAndButtonTapsGiveHaptic() throws {
+        let app = XCUIApplication()
+        app.launchArguments += ["-utuvo.type.ios.seedHistory", "YES"]
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let counter = app.staticTexts["uiFeedbackCount"]
+        XCTAssertTrue(counter.waitForExistence(timeout: 5), "找不到震動計數")
+        func count() -> Int { Int(counter.label) ?? -1 }
+        func expect(_ want: Int, _ why: String) {
+            let deadline = Date().addingTimeInterval(3)
+            while count() != want && Date() < deadline { usleep(100_000) }
+            XCTAssertEqual(count(), want, why)
+        }
+        let ui = app.switches["uiHaptics"]
+        for _ in 0..<4 where !(ui.exists && ui.isHittable) { app.swipeDown() }
+        if (ui.value as? String) == "0" { let inner = ui.switches.firstMatch; (inner.exists ? inner : ui).tap() }
+        let start = count()
+
+        app.tabBars.buttons["歷史"].tap()
+        let star = app.buttons["starredOnly"]
+        XCTAssertTrue(star.waitForExistence(timeout: 5))
+        star.tap()
+        star.tap()
+        app.tabBars.buttons["歷史"].tap()          // 點已經在的分頁：不算切換、不震
+        app.tabBars.buttons["設定"].tap()
+        XCTAssertTrue(counter.waitForExistence(timeout: 5))
+        expect(start + 4, "歷史分頁＋星標兩下＋回設定分頁＝4 下")
+
+        app.tabBars.buttons["聽寫"].tap()
+        expect(start + 5, "切到聽寫分頁要震")
+        XCUIDevice.shared.system.open(URL(string: "utuvotype://settings")!)
+        let springboard = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        if springboard.buttons["打開"].waitForExistence(timeout: 2) { springboard.buttons["打開"].tap() }
+        XCTAssertTrue(counter.waitForExistence(timeout: 8), "網址沒把 App 切到設定分頁")
+        expect(start + 5, "程式切分頁（鍵盤叫起 App）不震")
+    }
+
+    func testSettingsChangesGiveHapticAndCanBeTurnedOff() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let counter = app.staticTexts["uiFeedbackCount"]
+        XCTAssertTrue(counter.waitForExistence(timeout: 5), "找不到震動計數")
+        func count() -> Int { Int(counter.label) ?? -1 }
+        func expect(_ want: Int, _ why: String) {
+            let deadline = Date().addingTimeInterval(3)
+            while count() != want && Date() < deadline { usleep(100_000) }
+            XCTAssertEqual(count(), want, why)
+        }
+        func flip(_ id: String) {
+            let toggle = app.switches[id]
+            XCTAssertTrue(toggle.waitForExistence(timeout: 5), "找不到開關 \(id)")
+            let inner = toggle.switches.firstMatch
+            (inner.exists ? inner : toggle).tap()
+        }
+        // 10-07 Micky：「沒有看到哪裡可以設定震動」→「介面震動」在設定根頁，不在子頁裡。
+        let ui = app.switches["uiHaptics"]
+        for _ in 0..<4 where !(ui.exists && ui.isHittable) { app.swipeDown() }
+        XCTAssertTrue(ui.waitForExistence(timeout: 5), "設定根頁沒有「介面震動」")
+        if (ui.value as? String) == "0" { flip("uiHaptics") }   // 上一輪可能關著
+        let row = app.descendants(matching: .any)["keyFeedbackRow"]
+        func openKeyFeedback() {
+            for _ in 0..<4 where !row.isHittable { app.swipeUp() }
+            row.tap()
+            XCTAssertTrue(app.switches["keySound"].waitForExistence(timeout: 5), "打字手感頁沒出來")
+        }
+        func back() { app.navigationBars.buttons.firstMatch.tap(); XCTAssertTrue(ui.waitForExistence(timeout: 5)) }
+        let start = count()
+
+        openKeyFeedback()
+        expect(start + 1, "點「打字手感」那一列要震一下（10-10：點每個選項都要有感覺）")
+        flip("keySound")
+        expect(start + 2, "切「按鍵聲音」要震一下")
+        app.buttons["強"].tap()
+        expect(start + 3, "選「按鍵震動：強」要震一下")
+        back()
+        flip("uiHaptics")
+        expect(start + 3, "關掉「介面震動」那一下不震")
+        openKeyFeedback()
+        flip("keySound")
+        app.buttons["輕"].tap()
+        expect(start + 3, "關掉之後點列、切任何東西都不震")
+        shot("ui-haptics-off")
+
+        // 還原：按鍵聲音開、強度中、介面震動開
+        back()
+        flip("uiHaptics")
+        expect(start + 4, "重新打開「介面震動」那一下要震")
+        openKeyFeedback()
+        expect(start + 5, "打開後點列進去也會震")
+        app.buttons["中"].tap()
+        expect(start + 6, "打開後又會震")
+        XCTAssertEqual(app.switches["keySound"].value as? String, "1", "按鍵聲音要還原成開")
+    }
+
+    /// 10-07 Micky：「個人字典要做成可開合，現在太長了」「請把咖啡放到最上面、醒目的位置」。
+    func testSettingsCoffeeOnTopAndDictionaryListCollapses() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let coffee = app.descendants(matching: .any)["tipJarRow"]
+        XCTAssertTrue(coffee.waitForExistence(timeout: 5), "找不到幫我加油")
+        let guide = app.buttons.containing(NSPredicate(format: "label CONTAINS '使用教學'")).firstMatch
+        XCTAssertTrue(guide.waitForExistence(timeout: 5))
+        XCTAssertTrue(coffee.isHittable, "幫我加油要一進設定就看得到")
+        XCTAssertLessThan(coffee.frame.minY, guide.frame.minY, "幫我加油要在最上面（使用教學之前）")
+        shot("settings-top-coffee")
+
+        // 先加一個詞（模擬器的字典可能是空的），驗完刪掉。
+        let word = "UTUVO收合測試"
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "找不到新增詞的欄位")
+        field.tap()
+        field.typeText(word)
+        app.buttons["加入"].tap()
+        let list = app.descendants(matching: .any)["dictionaryListToggle"]
+        for _ in 0..<6 where !(list.exists && list.isHittable) { app.swipeUp() }
+        XCTAssertTrue(list.waitForExistence(timeout: 5), "找不到「已加入的詞」")
+        let entry = app.staticTexts[word]
+        if entry.exists { list.tap(); sleep(1) }   // 上一輪留著展開：先收起來
+        XCTAssertFalse(app.staticTexts[word].exists, "清單預設要收起來（不列出每個詞）")
+        XCTAssertTrue(app.textFields["dictionaryTerm"].exists, "收起來時，新增詞的欄位還是要在")
+        list.tap()
+        XCTAssertTrue(entry.waitForExistence(timeout: 3), "點開要看得到剛加的詞")
+        shot("settings-dictionary-expanded")
+        // 刪掉測試詞
+        let row = app.cells.containing(.staticText, identifier: word).firstMatch
+        row.buttons["刪除"].tap()
+        XCTAssertFalse(app.staticTexts[word].waitForExistence(timeout: 2), "測試詞要刪乾淨")
+        list.tap()
+        sleep(1)
+        XCTAssertEqual(app.buttons.matching(identifier: "刪除").count, 0, "再點一次要收起來")
+    }
+
     /// 09-29 Micky：拼音「除了列出來的候選字，無法往下繼續選字」。候選列要能左右捲，
     /// 右端「⌄」要能展開整頁候選（最多 60 個），點了就選、面板收起。用他截圖的情境：繁體拼音打 suoyi。
     func testCandidateBarScrollsAndExpands() throws {
@@ -804,6 +962,47 @@ final class KeyboardOrbUITests: XCTestCase {
         return value == field.placeholderValue ? "" : value
     }
 
+    /// 10-15 Micky：模式鍵點了展開面板——四個模式全部看得到（不用捲）、目前的標出來，選了以後鍵上顯示該模式。
+    func testModeChipOpensPickerShowingCurrentMode() throws {
+        let app = XCUIApplication()
+        app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let field = revealDictionaryField(app)
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "設定頁找不到字典欄")
+        field.tap()
+        XCTAssertTrue(switchToUTUVOKeyboard(app), "切不到 UTUVO Type 鍵盤")
+        let chip = app.buttons["utuvoKeyboardModeChip"]
+        XCTAssertTrue(chip.waitForExistence(timeout: 5), "找不到模式鍵")
+        XCTAssertEqual(chip.value as? String, "聽寫")
+        chip.tap()
+        for mode in ["dictate", "helpWrite", "speakToEdit", "askAnything"] {
+            let row = app.buttons["utuvoKeyboardMode-\(mode)"]
+            XCTAssertTrue(row.waitForExistence(timeout: 3), "面板裡要有 \(mode)")
+            XCTAssertTrue(row.isHittable, "\(mode) 要不用捲就點得到")
+            // isHittable 對被面板切掉一半的列也回 true（10-15 直排第四列只露出上緣仍是綠的）：要整列在面板裡。
+            let picker = app.otherElements["utuvoKeyboardModePicker"].firstMatch
+            XCTAssertTrue(picker.exists, "找不到模式面板")
+            XCTAssertLessThanOrEqual(row.frame.maxY, picker.frame.maxY - 4, "\(mode) 整列要在面板裡、不能被切掉")
+        }
+        XCTAssertTrue(app.buttons["utuvoKeyboardMode-dictate"].isSelected, "目前的模式要標出來")
+        shot("mode-picker")
+        app.buttons["utuvoKeyboardMode-helpWrite"].tap()
+        XCTAssertTrue(chip.waitForValue("幫我寫"), "選了幫我寫，鍵上要顯示幫我寫")
+        XCTAssertFalse(app.buttons["utuvoKeyboardMode-dictate"].exists, "選完面板要收起來")
+        shot("mode-helpwrite")
+        chip.tap()
+        XCTAssertTrue(app.buttons["utuvoKeyboardMode-helpWrite"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["utuvoKeyboardMode-helpWrite"].isSelected, "再打開時幫我寫要是選取狀態")
+        app.buttons["utuvoKeyboardMode-dictate"].tap()
+        XCTAssertTrue(chip.waitForValue("聽寫"), "選回聽寫")
+        // 面板開著時再點模式鈕＝收起來（面板蓋住其他鍵，這是唯一的關法，一定要能用）。
+        chip.tap()
+        XCTAssertTrue(app.buttons["utuvoKeyboardMode-askAnything"].waitForExistence(timeout: 3))
+        chip.tap()
+        XCTAssertFalse(app.buttons["utuvoKeyboardMode-askAnything"].waitForExistence(timeout: 1), "再點模式鈕面板要收掉")
+        XCTAssertTrue(app.buttons["英文鍵盤"].isHittable, "收掉後左邊的鍵要點得到")
+    }
+
     private func shot(_ name: String) {
         let screenshot = XCUIScreen.main.screenshot()
         // 除錯用：UTUVO_SHOT_DIR 有設就另存一份到主機資料夾（xcresult 收不完整時也拿得到）。
@@ -918,5 +1117,12 @@ private extension XCUIElement {
     func waitForHittable(timeout: TimeInterval) -> Bool {
         let p = NSPredicate(format: "exists == true AND hittable == true")
         return XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: p, object: self)], timeout: timeout) == .completed
+    }
+}
+
+private extension XCUIElement {
+    func waitForValue(_ value: String, timeout: TimeInterval = 3) -> Bool {
+        let expectation = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", value), object: self)
+        return XCTWaiter.wait(for: [expectation], timeout: timeout) == .completed
     }
 }

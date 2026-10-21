@@ -1,4 +1,7 @@
 import Foundation
+#if DEBUG
+import Observation
+#endif
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -84,3 +87,52 @@ public enum KeyFeedback {
     }
 #endif
 }
+
+/// 介面震動（2026-10-07 Micky：「點光球會抖一下很棒，切換語言、設定頁切換任何東西也都要能抖一下，可以關掉或打開」）。
+/// 涵蓋光球開始／停止、鍵盤切語言與版面、App 裡每個開關與選項；打字按鍵另有「按鍵震動」強度，不受這個開關影響。
+public enum UIFeedback {
+    public static let enabledKey = "utuvo.type.uiHaptics"
+
+    /// 預設開（鍵盤沒有完整取用、讀不到 App Group 時也當作開——反正那時系統本來就不讓鍵盤震）。
+    public static var enabled: Bool {
+        get { KeyFeedback.defaults.object(forKey: enabledKey) as? Bool ?? true }
+        set { KeyFeedback.defaults.set(newValue, forKey: enabledKey) }
+    }
+
+    /// 跟光球開始錄音同一種（medium），稍輕一點。10-07 第一版用 light 0.8，Micky 實機說「都沒有震動」。
+    public static let intensity: CGFloat = 0.85
+
+#if canImport(UIKit)
+    @MainActor private static let tapGenerator = UIImpactFeedbackGenerator(style: .medium)
+
+    /// 不是 SwiftUI 控制項的地方（自訂 Binding、選單按鈕、鍵盤）用這個。
+    @MainActor public static func tap() {
+        guard enabled else { return }
+        tapGenerator.impactOccurred(intensity: intensity)
+        tapGenerator.prepare()
+        record(source: "generator")
+    }
+
+    /// 開發版：計數（UI 測試讀）＋交給 App 記診斷。SwiftUI 控制項的震動由 `.sensoryFeedback` 出，這裡只記。
+    @MainActor public static func record(source: String) {
+        guard enabled else { return }
+        #if DEBUG
+        UIFeedbackProbe.shared.count += 1
+        onRecord?(source)
+        #endif
+    }
+
+    #if DEBUG
+    /// App 設這個，把每一下寫進診斷紀錄（鍵盤不設）。
+    @MainActor public static var onRecord: ((String) -> Void)?
+    #endif
+#endif
+}
+
+#if DEBUG
+/// UI 測試讀：這次啟動以來介面震了幾下（設定頁有一個看不見的計數標籤）。
+@MainActor @Observable public final class UIFeedbackProbe {
+    public static let shared = UIFeedbackProbe()
+    public var count = 0
+}
+#endif

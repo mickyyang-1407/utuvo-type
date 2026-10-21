@@ -78,7 +78,27 @@ private final class IsolatedDelegate: NSObject, NSApplicationDelegate, NSWindowD
             window.center(); window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true)
             emit("preview-orb", details: "Synthetic levels only; no microphone/keychain/cloud/hotkeys/network")
         } else {
-            let section: SettingsSection = value("--preview-settings") == "cleanup" ? .cloud : .dictionary
+            let requested = value("--preview-settings")
+            let section: SettingsSection = requested == "cleanup" ? .cloud
+                : SettingsSection(rawValue: requested ?? "") ?? .dictionary
+            if requested == "insights" {
+                // 隔離預覽填一點假的使用數據，畫面才看得出熱圖與數字（只寫隔離 suite）。
+                let cal = Calendar.current
+                for offset in stride(from: 0, to: 120, by: 1) where offset % 3 != 1 {
+                    guard let day = cal.date(byAdding: .day, value: -offset, to: Date()) else { continue }
+                    model.preferences.appendHistory(HistoryRecord(date: day, rawTranscript: "",
+                        output: String(repeating: "字", count: 40 + (offset * 37) % 260), duration: Double(10 + offset % 50), mode: .smart))
+                }
+            }
+            if requested == "dictionary" {
+                model.preferences.addSuggestions([.init(from: "元山", to: "圓山"), .init(from: "Atmus", to: "Atmos")])
+            }
+            if requested == "answer" {
+                AnswerCardController.shared.show(.init(question: "台北到高雄高鐵大概要多久？",
+                    answer: "直達車約 1 小時 30 分；停站較多的班次約 2 小時。", zh: true, onInsert: {}))
+                emit("preview", details: "answer card")
+                return
+            }
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1100, height: 800),
                                   styleMask: [.titled, .closable, .resizable], backing: .buffered, defer: false)
             window.title = "UTUVO Type — Isolated Settings Preview"

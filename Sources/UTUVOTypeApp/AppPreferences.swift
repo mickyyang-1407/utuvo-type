@@ -256,6 +256,10 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(autoSubmit.rawValue, forKey: Keys.autoSubmit) }
     }
 
+    /// 雲端辨識（Groq Whisper，用智慧整理頁存的 Groq key）：本機優先模式下取代本機 Qwen3-ASR，失敗退回本機。預設關。
+    @Published var cloudASREnabled: Bool {
+        didSet { defaults.set(cloudASREnabled, forKey: Keys.cloudASREnabled) }
+    }
     @Published var appendTrailingSpace: Bool {
         didSet { defaults.set(appendTrailingSpace, forKey: Keys.appendTrailingSpace) }
     }
@@ -266,6 +270,50 @@ final class AppPreferences: ObservableObject {
 
     @Published var includeSurroundingContext: Bool {
         didSet { defaults.set(includeSurroundingContext, forKey: Keys.includeSurroundingContext) }
+    }
+
+    /// 2026-10-13：這些網站（含子網域）不抓任何脈絡，只留 App 名稱。
+    @Published var contextBlockedSites: [String] {
+        didSet { defaults.set(contextBlockedSites, forKey: Keys.contextBlockedSites) }
+    }
+
+    /// 插入後追蹤修改（2026-10-13）：只在本機比對，留下「原字→改後」短詞當字典建議。
+    @Published var learnFromEdits: Bool {
+        didSet { defaults.set(learnFromEdits, forKey: Keys.learnFromEdits) }
+    }
+    @Published private(set) var dictionarySuggestions: [EditTracker.Correction] {
+        didSet { if let data = try? JSONEncoder().encode(dictionarySuggestions) { defaults.set(data, forKey: Keys.dictionarySuggestions) } }
+    }
+    private var ignoredSuggestions: Set<String> {
+        didSet { defaults.set(Array(ignoredSuggestions), forKey: Keys.ignoredSuggestions) }
+    }
+
+    /// 新建議：已在字典、已忽略、已在清單的不加；清單最多 20 筆（新的在前）。
+    func addSuggestions(_ found: [EditTracker.Correction]) {
+        guard learnFromEdits else { return }
+        var list = dictionarySuggestions
+        for c in found where dictionary[c.from] != c.to && !ignoredSuggestions.contains("\(c.from)→\(c.to)")
+            && !list.contains(c) {
+            list.insert(c, at: 0)
+        }
+        dictionarySuggestions = Array(list.prefix(20))
+    }
+
+    func acceptSuggestion(_ c: EditTracker.Correction) {
+        addDictionaryTerm(source: c.from, output: c.to)
+        dictionarySuggestions.removeAll { $0 == c }
+    }
+
+    func ignoreSuggestion(_ c: EditTracker.Correction) {
+        ignoredSuggestions.insert("\(c.from)→\(c.to)")
+        dictionarySuggestions.removeAll { $0 == c }
+    }
+
+    /// 使用數據（只存每天的字數／秒數／次數，不存文字）。
+    @Published private(set) var usageStats: UsageStats {
+        didSet {
+            if let data = try? JSONEncoder().encode(usageStats) { defaults.set(data, forKey: Keys.usageStats) }
+        }
     }
 
     @Published var postProcessingEnabled: Bool {
@@ -377,6 +425,13 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    /// 自動條列：講步驟／重點的長段落整理成 1. 2. 3.（CleanupPromptRules）；預設開。
+    @Published var cleanupAutoList: Bool {
+        didSet {
+            defaults.set(cleanupAutoList, forKey: Keys.cleanupAutoList)
+        }
+    }
+
     @Published var customCleanupEndpoint: String {
         didSet {
             defaults.set(customCleanupEndpoint, forKey: Keys.customCleanupEndpoint)
@@ -406,6 +461,29 @@ final class AppPreferences: ObservableObject {
     /// 本次啟動已被搶走、自動取回的次數。純記憶體，給衝突卡顯示用。
     /// 重開 app 重新計數。
     @Published var hotkeyStealCount: Int = 0
+
+    /// 選字後「白話解釋」／「翻譯」快捷鍵（2026-10-19，帶進 UTUVO Explain 的兩個動作）。空字串＝不註冊。
+    /// 預設刻意避開 UTUVO Explain 的 ⌥D／⌥⇧D，兩個 App 同時裝不打架。
+    @Published var explainShortcut: String {
+        didSet {
+            defaults.set(explainShortcut, forKey: Keys.explainShortcut)
+            onPostProcessingShortcutChange?()
+        }
+    }
+    @Published var translateSelectionShortcut: String {
+        didSet {
+            defaults.set(translateSelectionShortcut, forKey: Keys.translateSelectionShortcut)
+            onPostProcessingShortcutChange?()
+        }
+    }
+
+    /// Ask anything 快捷鍵（2026-10-13）。空字串＝不註冊。
+    @Published var askShortcut: String {
+        didSet {
+            defaults.set(askShortcut, forKey: Keys.askShortcut)
+            onPostProcessingShortcutChange?()   // 同一個重新註冊鉤子（兩個附屬快捷鍵一起重裝）
+        }
+    }
 
     @Published var postProcessingShortcut: String {
         didSet {
@@ -479,10 +557,17 @@ final class AppPreferences: ObservableObject {
             rawValue: defaults.string(forKey: Keys.autoSubmit) ?? AutoSubmit.off.rawValue
         ) ?? .off
         self.appendTrailingSpace = defaults.object(forKey: Keys.appendTrailingSpace) as? Bool ?? false
+        self.cloudASREnabled = defaults.object(forKey: Keys.cloudASREnabled) as? Bool ?? false
         // 2026-09-24 實機（苑涵）：講長句時停下來想下一句，0.9 秒靜音就被切斷。預設改關（對齊 Typeless：再按一次才結束）；
         // 沒動過設定的 0.1.5 使用者升級後也會套用新預設，自己開過的保留。
         self.voiceActivityDetection = defaults.object(forKey: Keys.voiceActivityDetection) as? Bool ?? false
         self.includeSurroundingContext = defaults.object(forKey: Keys.includeSurroundingContext) as? Bool ?? false
+        self.contextBlockedSites = defaults.stringArray(forKey: Keys.contextBlockedSites) ?? ContextBounds.defaultBlockedSites
+        self.learnFromEdits = defaults.object(forKey: Keys.learnFromEdits) as? Bool ?? true
+        self.dictionarySuggestions = defaults.data(forKey: Keys.dictionarySuggestions)
+            .flatMap { try? JSONDecoder().decode([EditTracker.Correction].self, from: $0) } ?? []
+        self.ignoredSuggestions = Set(defaults.stringArray(forKey: Keys.ignoredSuggestions) ?? [])
+        self.usageStats = (defaults.data(forKey: Keys.usageStats)).flatMap { try? JSONDecoder().decode(UsageStats.self, from: $0) } ?? UsageStats()
         self.postProcessingEnabled = defaults.object(forKey: Keys.postProcessingEnabled) as? Bool ?? true
         self.experimentalFeatures = defaults.object(forKey: Keys.experimentalFeatures) as? Bool ?? false
         self.appLanguage = AppLanguageChoice(
@@ -521,6 +606,7 @@ final class AppPreferences: ObservableObject {
         self.enabledVocabularyPackIDs = Set(storedPacks)
         // 智慧整理服務預設關閉，使用者須明確開啟。
         self.cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? false
+        self.cleanupAutoList = defaults.object(forKey: Keys.cleanupAutoList) as? Bool ?? true
         self.cleanupProvider = SmartCleanupProvider(
             rawValue: defaults.string(forKey: Keys.cleanupProvider) ?? SmartCleanupProvider.gemini.rawValue
         ) ?? .gemini
@@ -533,6 +619,9 @@ final class AppPreferences: ObservableObject {
         self.activeFallbackShortcut = nil
         self.hotkeyConflict = nil
         self.postProcessingShortcut = defaults.string(forKey: Keys.postProcessingShortcut) ?? "⌘⌥P"
+        self.askShortcut = defaults.string(forKey: Keys.askShortcut) ?? "⌘⌥A"
+        self.explainShortcut = defaults.string(forKey: Keys.explainShortcut) ?? "⌃⌥E"
+        self.translateSelectionShortcut = defaults.string(forKey: Keys.translateSelectionShortcut) ?? "⌃⌥T"
         self.deepMinCharacters = defaults.object(forKey: Keys.deepMinCharacters) as? Int ?? 400
         self.deepMinAudioSeconds = defaults.object(forKey: Keys.deepMinAudioSeconds) as? Int ?? 90
         self.historyRecords = Self.decode([HistoryRecord].self, from: defaults.string(forKey: Keys.historyJSON))
@@ -637,7 +726,12 @@ final class AppPreferences: ObservableObject {
         }
     }
 
-    func appendHistory(_ record: HistoryRecord) {
+    func appendHistory(_ record: HistoryRecord, countsTowardStats: Bool = true) {
+        // 使用數據：同一筆（背景整理換字也是同一個 id）只算一次；歷史會被刪，數據另外累計。
+        // Ask anything 的回答不是使用者說的字，不算。
+        if countsTowardStats, !historyRecords.contains(where: { $0.id == record.id }) {
+            usageStats.record(text: record.output, seconds: record.duration, on: record.date)
+        }
         historyRecords.insert(record, at: 0)
         trimHistoryIfNeeded()
         saveHistory()
@@ -830,8 +924,14 @@ final class AppPreferences: ObservableObject {
         static let pasteMethod = "utuvo.type.output.pasteMethod"
         static let autoSubmit = "utuvo.type.output.autoSubmit"
         static let appendTrailingSpace = "utuvo.type.output.appendTrailingSpace"
+        static let cloudASREnabled = "utuvo.type.cloudASR.enabled"
         static let voiceActivityDetection = "utuvo.type.transcription.voiceActivityDetection"
         static let includeSurroundingContext = "utuvo.type.context.includeSurrounding"
+        static let contextBlockedSites = "utuvo.type.context.blockedSites"
+        static let usageStats = "utuvo.type.usageStats"
+        static let learnFromEdits = "utuvo.type.learnFromEdits"
+        static let dictionarySuggestions = "utuvo.type.dictionarySuggestions"
+        static let ignoredSuggestions = "utuvo.type.ignoredSuggestions"
         static let postProcessingEnabled = "utuvo.type.postProcessing.enabled"
         static let experimentalFeatures = "utuvo.type.experimentalFeatures"
         static let appLanguage = "utuvo.type.app.language"
@@ -853,11 +953,15 @@ final class AppPreferences: ObservableObject {
         static let dictionarySync = "utuvo.type.dictionarySync"
         static let enabledVocabularyPackIDs = "utuvo.type.vocabularyPacks.enabled"
         static let cleanupEnabled = "utuvo.type.smart.enabled"
+        static let cleanupAutoList = "utuvo.type.smart.autoList"
         static let cleanupProvider = "utuvo.type.smart.provider"
         static let customCleanupEndpoint = "utuvo.type.smart.customEndpoint"
         static let customCleanupModel = "utuvo.type.smart.customModel"
         static let globalShortcut = "utuvo.type.globalShortcut"
         static let postProcessingShortcut = "utuvo.type.postProcessingShortcut"
+        static let askShortcut = "utuvo.type.askShortcut"
+        static let explainShortcut = "utuvo.type.explainShortcut"
+        static let translateSelectionShortcut = "utuvo.type.translateSelectionShortcut"
         static let deepMinCharacters = "utuvo.type.deepMinCharacters"
         static let deepMinAudioSeconds = "utuvo.type.deepMinAudioSeconds"
         static let historyJSON = "utuvo.type.history.json"

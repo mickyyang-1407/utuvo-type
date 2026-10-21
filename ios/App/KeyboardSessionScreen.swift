@@ -28,6 +28,7 @@ struct KeyboardSessionScreen: View {
 
                 if host.returnTarget != nil && host.lastError == nil {
                     Button {
+                        TapPulse.shared.fire()
                         host.returnNow()
                     } label: {
                         Label("回到剛剛的 app", systemImage: "arrow.uturn.backward")
@@ -58,11 +59,11 @@ struct KeyboardSessionScreen: View {
                             .foregroundStyle(.secondary)
                     }
                     if host.idleTimeout < VoiceBridge.extendedIdleTimeout && host.isActive {
-                        Button("這次延長至 10 分鐘") { host.extendIdleSession() }
+                        Button("這次延長至 10 分鐘") { TapPulse.shared.fire(); host.extendIdleSession() }
                             .font(.subheadline.weight(.medium))
                             .auroraGlassButton()
                     }
-                    Button("結束鍵盤語音") { host.endSession() }
+                    Button("結束鍵盤語音") { TapPulse.shared.fire(); host.endSession() }
                         .font(.subheadline.weight(.medium))
                         .auroraGlassButton()
                 }

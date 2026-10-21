@@ -82,7 +82,25 @@ class LanguageBadgeArcTest {
         assertEquals(listOf("zh-TW", "zh-CN", "en-US", "ja-JP", "ko-KR"), DictationLanguage.all.map { it.code })
     }
 
+    @Test
+    fun speechIntentQuietModeSetsSilenceThresholds() {
+        val quietIntent = SpeechRequest.build("zh-TW", quietMode = true)
+        assertEquals(
+            QuietMode.MIN_SPEECH_QUIET_MS,
+            quietIntent.getLongExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, -1L)
+        )
+        assertEquals(
+            QuietMode.SILENCE_COMPLETE_QUIET_MS,
+            quietIntent.getLongExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, -1L)
+        )
+        assertEquals(
+            QuietMode.SILENCE_POSSIBLY_COMPLETE_QUIET_MS,
+            quietIntent.getLongExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, -1L)
+        )
+    }
+
     // ── 翻譯弧 ──
+
 
     @Test
     fun arcOrderFollowsTheSelectedOrder() {

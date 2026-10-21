@@ -12,7 +12,25 @@ final class AppModel: ObservableObject {
     /// 投遞／整理結果（`log show --predicate 'subsystem == "com.utuvo.type"'` 查得到；不含逐字稿內容）。
     private let deliveryLog = Logger(subsystem: "com.utuvo.type", category: "delivery")
     @Published private(set) var isRecording = false
-    @Published private(set) var isProcessing = false
+    @Published private(set) var isProcessing = false {
+        didSet {
+            // 上一句還在轉錄時按的「開始」先記著，貼出（isProcessing 變 false）就立刻開錄。
+            guard oldValue, !isProcessing, let pending = pendingStart else { return }
+            pendingStart = nil
+            DispatchQueue.main.async { [weak self] in
+                guard let self, !self.isRecording, !self.isProcessing else { return }
+                self.activeTranslationTarget = pending
+                self.startRecording(mode: self.preferences.mode)
+            }
+        }
+    }
+    /// 2026-10-19 Typeless 對打：上一句還在轉錄時按熱鍵會被 `guard !isProcessing` 靜默吃掉，
+    /// 連續講話時下一句就沒錄到（Typeless 不會）。改成排隊：處理完自動開始，期間再按一次＝取消排隊。
+    private(set) var pendingStart: TranslationTarget?
+    #if DEBUG
+    /// 測試用：模擬「上一句還在轉錄」。
+    func setProcessingForTesting(_ value: Bool) { isProcessing = value }
+    #endif
     @Published private(set) var statusMessage = "準備就緒"
     @Published private(set) var partialTranscript = ""
     @Published private(set) var lastRawTranscript = ""
@@ -31,6 +49,19 @@ final class AppModel: ObservableObject {
     private var capture: AudioCaptureSession?
     private let feedbackTonePlayer = FeedbackTonePlayer()
     private var cloudASRTask: Task<String, Error>?
+    /// 錄音中收齊 16 kHz PCM（本機 Qwen／Groq 雲端辨識都用）：停頓時先辨識，Groq 模式停下來整段送。
+    private var pcmTask: Task<Data, Never>?
+    private var pcmEngineIsGroq = false
+    /// 出字時間拆解（停止 → 錄音收尾 → 辨識 → 整理 → 送達），寫 delivery log。
+    private var stopPressedAt: Date?
+    /// 停頓預先處理（Groq 模式）：講完一段停下來時先辨識、先整理；按停止時錄音沒有新聲音就直接沿用。
+    private struct Speculation {
+        let token: UUID
+        let pcmBytes: Int
+        let asr: Task<String?, Never>
+        var cleanup: (raw: String, config: CleanupConfig, task: Task<String?, Never>)?
+    }
+    private var speculation: Speculation?
     private var activeMode: FormatterMode = .fast
     private var selectedContext: LimitedAppContext?
     private var operationToken = UUID()
@@ -49,6 +80,35 @@ final class AppModel: ObservableObject {
     private var pendingCleanupTask: Task<Void, Never>?
     private var destination: (any DictationDestination)?
     private var capturedPID: Int32?
+    /// Ask anything（2026-10-13）：這次錄音是問問題／對選取文字下指令，不是聽寫。
+    private var askActive = false
+    private var askSelection: String?
+    private var askPID: Int32?
+    /// 問問題當下的焦點欄位：回答要貼回去時必須還是同一個欄位（luna-review r2：同 App 換欄位會貼錯地方）。
+    private var askElement: AXUIElement?
+    /// 問問題當下的選取範圍／游標位置；貼回去前要一模一樣（luna-review r3：同欄位改選別段或移動游標會貼錯位置）。
+    private var askRange: CFRange?
+
+    private func stillAtAskField(expectSelection: String? = nil) -> Bool {
+        guard let askPID, NSWorkspace.shared.frontmostApplication?.processIdentifier == askPID else { return false }
+        guard let askElement, let askRange else { return false }
+        guard let now = AccessibilitySupport.focusedElement(), CFEqual(now, askElement),
+              let range = AccessibilitySupport.selectedRange(of: now),
+              range.location == askRange.location, range.length == askRange.length else { return false }
+        if let expectSelection {
+            let current = AccessibilitySupport.selectedText(of: now)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return current == expectSelection
+        }
+        return true
+    }
+    /// 插入後追蹤修改 → 字典建議（2026-10-13）。
+    let editWatcher = EditWatcher()
+
+    private func watchEdits(_ inserted: String) {
+        guard preferences.learnFromEdits, preferences.isolation == nil else { return }
+        editWatcher.onSuggestions = { [weak self] found in self?.preferences.addSuggestions(found) }
+        editWatcher.watch(inserted: inserted)
+    }
     var captureDestination: (Int32?) -> (any DictationDestination)?
     var cleanupRunner: @Sendable (String, CleanupConfig) async -> String?
     /// Isolated tests can verify local Smart output is inserted before its slower formatter completes.
@@ -103,6 +163,7 @@ final class AppModel: ObservableObject {
     }
 
     func shortcutPressed(translation: TranslationTarget = .off) {
+        if !isRecording && !isProcessing { askActive = false; askSelection = nil }   // 一般聽寫開始：清掉殘留的 Ask
         if preferences.pushToTalkEnabled {
             guard !isProcessing else { return }
             if isRecording {
@@ -120,7 +181,17 @@ final class AppModel: ObservableObject {
         } else {
             // toggle：停止那一下按的修飾鍵決定翻譯語言（先講後選語言）；
             // 處理中按變體不改目標（F6）。
-            guard !isProcessing else { return }
+            if isProcessing {
+                if pendingStart != nil {
+                    pendingStart = nil
+                    statusMessage = preferences.tr("已取消排隊的錄音", "Queued recording cancelled")
+                } else {
+                    pendingStart = translation
+                    statusMessage = preferences.tr("上一句處理完就開始錄…", "Recording starts as soon as the last one is done…")
+                }
+                notify()
+                return
+            }
             activeTranslationTarget = translation
             toggleRecording()
         }
@@ -276,7 +347,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func startRecording(mode: FormatterMode) {
+    func startRecording(mode: FormatterMode, persistMode: Bool = true) {
         guard !isProcessing else { return }
         prepareDictation(mode: mode)
         guard preferences.isolation == nil else { return }
@@ -291,7 +362,7 @@ final class AppModel: ObservableObject {
         unloadTask?.cancel()
         unloadTask = nil
         activeMode = mode
-        preferences.mode = mode
+        if persistMode { preferences.mode = mode }
         if mode == .smart, preferences.postProcessingEnabled, preferences.cleanupEnabled {
             let provider = SmartCleanup.Provider(rawValue: preferences.cleanupProvider.rawValue) ?? .gemini
             SmartCleanup.warmUp(provider: provider,
@@ -309,9 +380,12 @@ final class AppModel: ObservableObject {
     func cancelProcessing() {
         invalidateBackground()
         activeTranslationTarget = .off
+        askActive = false
+        askSelection = nil
         guard isProcessing else { return }
         operationToken = UUID()
         cloudASRTask?.cancel()
+        pcmTask?.cancel(); pcmTask = nil
         capture?.cancel()
         capture = nil
         pushToTalkActive = false
@@ -330,9 +404,12 @@ final class AppModel: ObservableObject {
     func cancelRecording() {
         invalidateBackground()
         activeTranslationTarget = .off
+        askActive = false
+        askSelection = nil
         if isRecording {
             operationToken = UUID()
             cloudASRTask?.cancel()
+            pcmTask?.cancel(); pcmTask = nil
             capture?.cancel()
             capture = nil
             pushToTalkActive = false
@@ -535,6 +612,7 @@ final class AppModel: ObservableObject {
     }
 
     private func beginRecording() async {
+        editWatcher.checkNow()   // 上一段已經改完了：先比對，再開始這一段
         lastErrorMessage = nil
         partialTranscript = ""
         selectedContext = nil
@@ -558,8 +636,16 @@ final class AppModel: ObservableObject {
                 return
             }
             let context = AccessibilitySupport.readCurrentContext(
-                includeSurrounding: preferences.includeSurroundingContext
+                includeSurrounding: preferences.includeSurroundingContext,
+                blockedSites: preferences.contextBlockedSites
             )
+            if context.contextBlocked {
+                fail(preferences.tr(
+                    "這個網站在「不讀脈絡的網站」清單裡；沒有讀取選取文字",
+                    "This site is on your “never share context” list; the selection was not read"
+                ))
+                return
+            }
             guard let selected = context.selectedText?.trimmingCharacters(in: .whitespacesAndNewlines),
                   !selected.isEmpty else {
                 fail(preferences.tr(
@@ -662,7 +748,8 @@ final class AppModel: ObservableObject {
                     workspaceID: preferences.bailianWorkspaceID
                 )
                 let appContext = selectedContext ?? AccessibilitySupport.readCurrentContext(
-                    includeSurrounding: preferences.includeSurroundingContext
+                    includeSurrounding: preferences.includeSurroundingContext,
+                blockedSites: preferences.contextBlockedSites
                 )
                 let asrContext = ASRContext(
                     languageIdentifier: preferences.transcriptionLanguage.speechLocaleIdentifier,
@@ -696,7 +783,105 @@ final class AppModel: ObservableObject {
                 )
                 notify()
             }
+        } else if groqASRActive || localASRConfigured {
+            pcmEngineIsGroq = groqASRActive
+            if pcmEngineIsGroq { MacCloudASR.warmUp() }
+            let token = operationToken
+            pcmTask = Task.detached(priority: .userInitiated) { [weak self] in
+                var pcm = Data()
+                var pauses = MacCloudASR.PauseDetector()
+                do {
+                    for try await chunk in audioStream {
+                        pcm.append(chunk)
+                        if pauses.feed(chunk) {
+                            let snapshot = pcm
+                            Task { @MainActor [weak self] in self?.speculate(pcm: snapshot, token: token) }
+                        }
+                    }
+                } catch { }
+                return pcm
+            }
         }
+    }
+
+    private var localASRConfigured: Bool {
+        preferences.backend == .local && !preferences.localASRCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// 本機優先模式＋開了雲端辨識＋有 Groq key＋語言是中／英。
+    private var groqASRActive: Bool {
+        preferences.backend == .local && preferences.cloudASREnabled
+            && MacCloudASR.supports(language: preferences.transcriptionLanguage.rawValue)
+            && !MacCloudASR.key().isEmpty
+    }
+
+    /// 停頓點：把目前為止的錄音先辨識；這次會走雲端背景整理的話，拿到文字就用跟停止後**完全相同的輸入**先整理。
+    private func speculate(pcm: Data, token: UUID) {
+        guard token == operationToken, isRecording, !askActive else { return }
+        speculation?.asr.cancel(); speculation?.cleanup?.task.cancel()
+        let language = preferences.transcriptionLanguage.rawValue
+        let hotwords = VocabularyPacks.contextualHints(personal: preferences.dictionary,
+                                                       enabled: preferences.enabledVocabularyPackIDs, limit: 80)
+        let script = preferences.outputScript
+        let asr: Task<String?, Never>
+        if pcmEngineIsGroq {
+            let key = MacCloudASR.key()
+            asr = Task {
+                if case .ok(let text) = await MacCloudASR.transcribe(pcm16: pcm, language: language, hotwords: hotwords,
+                                                                     outputScript: script, key: key) { return text }
+                return nil
+            }
+        } else {
+            // 本機 Qwen：停頓前的錄音寫成暫存 WAV 先辨識（不上傳）。
+            let client = localASRClient()
+            asr = Task.detached(priority: .userInitiated) {
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("utuvo-type-pause-\(UUID().uuidString).wav")
+                defer { try? FileManager.default.removeItem(at: url) }
+                guard (try? WhisperAudio.wav(MacCloudASR.samples(fromPCM16: pcm)).write(to: url)) != nil,
+                      let text = try? await client.transcribe(audioURL: url),
+                      !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+                return text
+            }
+        }
+        speculation = Speculation(token: token, pcmBytes: pcm.count, asr: asr)
+        deliveryLog.info("pause: speculating on \(pcm.count / 32, privacy: .public) ms of audio")
+        Task { [weak self] in
+            guard let text = await asr.value, let self, token == self.operationToken,
+                  self.speculation?.asr == asr, !self.askActive,
+                  self.preferences.cleanupEnabled, self.preferences.postProcessingEnabled,
+                  Self.backgroundEligible(mode: self.activeMode, translation: self.activeTranslationTarget,
+                                          autoSubmit: self.preferences.autoSubmit, enabled: true,
+                                          language: self.preferences.transcriptionLanguage.rawValue) else { return }
+            let context = self.deliveryContext()
+            let dictionary = self.preferences.dictionary
+            let original = self.deliveryOriginal(self.normalizedForDelivery(text, dictionary: dictionary))
+            let config = self.cleanupConfig(original: original, context: context, dictionary: dictionary)
+            let run = self.cleanupRunner
+            self.speculation?.cleanup = (text, config, Task { await run(text, config) })
+        }
+    }
+
+    private func localASRClient() -> LocalASRProcessClient {
+        LocalASRProcessClient(
+            command: preferences.localASRCommand,
+            argumentsTemplate: preferences.localASRArguments,
+            outputScript: preferences.outputScript.rawValue,
+            asrLanguage: preferences.transcriptionLanguage.asrLanguageName,
+            hotwords: VocabularyPacks.contextualHints(personal: preferences.dictionary,
+                                                      enabled: preferences.enabledVocabularyPackIDs, limit: 80))
+    }
+
+    /// 停止後的整理：停頓時已經用同一份（逐字稿＋設定）先跑了就沿用，否則現在跑。
+    private func cleanupWork(raw: String, config: CleanupConfig) -> @Sendable () async -> String? {
+        if let pending = speculation?.cleanup, pending.raw == raw, pending.config == config {
+            speculation = nil
+            deliveryLog.info("pause: cleanup reused from pause")
+            let task = pending.task
+            return { await task.value }
+        }
+        let run = cleanupRunner
+        return { await run(raw, config) }
     }
 
     private func stopRecording() {
@@ -707,12 +892,20 @@ final class AppModel: ObservableObject {
         notify()
 
         let cloudTask = cloudASRTask
+        let pcmTask = pcmTask
+        self.pcmTask = nil
+        let groqTask = pcmEngineIsGroq ? pcmTask : nil
         let token = operationToken
         self.capture = nil
+        stopPressedAt = Date()
+        // 有正式辨識（Groq／本機 Qwen）時，Apple 語音預覽只是最後的退路，不必再等它 350 ms 收尾。
+        let speechGrace = groqTask == nil && cloudTask == nil
+            && preferences.localASRCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         Task { [weak self] in
-            let result = await capture.stop()
+            let result = await capture.stop(speechGrace: speechGrace)
             self?.playAudioFeedbackIfEnabled()
-            await self?.finishCapture(result, cloudTask: cloudTask, capture: capture, token: token)
+            await self?.finishCapture(result, cloudTask: cloudTask, pcmTask: pcmTask, groqTask: groqTask,
+                                      capture: capture, token: token)
         }
     }
 
@@ -728,6 +921,8 @@ final class AppModel: ObservableObject {
     private func finishCapture(
         _ result: AudioCaptureResult?,
         cloudTask: Task<String, Error>?,
+        pcmTask: Task<Data, Never>? = nil,
+        groqTask: Task<Data, Never>? = nil,
         capture: AudioCaptureSession,
         token: UUID
     ) async {
@@ -757,8 +952,30 @@ final class AppModel: ObservableObject {
             return
         }
 
+        let captureMs = stopPressedAt.map { Int(Date().timeIntervalSince($0) * 1000) } ?? -1
+        let asrStarted = Date()
+        var asrEngine = "speech"
         var transcript = ""
         var asrError: Error?
+        if let pcmTask {
+            let pcm = await pcmTask.value
+            if let pending = speculation, pending.token == token, MacCloudASR.isQuiet(pcm, from: pending.pcmBytes),
+               let text = await pending.asr.value {
+                transcript = text; asrEngine = groqTask == nil ? "local-pause" : "groq-pause"
+            }
+        }
+        if let groqTask, transcript.isEmpty {
+            let pcm = await groqTask.value
+            let outcome = await MacCloudASR.transcribe(
+                pcm16: pcm,
+                language: preferences.transcriptionLanguage.rawValue,
+                hotwords: VocabularyPacks.contextualHints(personal: preferences.dictionary,
+                                                          enabled: preferences.enabledVocabularyPackIDs, limit: 80),
+                outputScript: preferences.outputScript,
+                key: MacCloudASR.key())
+            if case .ok(let text) = outcome { transcript = text; asrEngine = "groq" }
+            else { asrEngine = "groq-failed" }
+        }
         if let cloudTask {
             do {
                 transcript = try await cloudTask.value
@@ -773,14 +990,8 @@ final class AppModel: ObservableObject {
         if transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
            !preferences.localASRCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             do {
-                transcript = try await LocalASRProcessClient(
-                    command: preferences.localASRCommand,
-                    argumentsTemplate: preferences.localASRArguments,
-                    outputScript: preferences.outputScript.rawValue,
-                    asrLanguage: preferences.transcriptionLanguage.asrLanguageName,
-                    hotwords: VocabularyPacks.contextualHints(personal: preferences.dictionary,
-                                                              enabled: preferences.enabledVocabularyPackIDs, limit: 80)
-                ).transcribe(audioURL: result.audioURL)
+                transcript = try await localASRClient().transcribe(audioURL: result.audioURL)
+                asrEngine = asrEngine == "groq-failed" ? "groq-failed>local" : "local"
             } catch {
                 asrError = asrError ?? error
             }
@@ -789,6 +1000,8 @@ final class AppModel: ObservableObject {
         if transcript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             transcript = result.speechTranscript
         }
+        let asrMs = Int(Date().timeIntervalSince(asrStarted) * 1000)
+        deliveryLog.info("timing: capture \(captureMs, privacy: .public) ms, asr[\(asrEngine, privacy: .public)] \(asrMs, privacy: .public) ms")
         let historyID = UUID()
         let historyAudioPath = preferences.storeRecording(from: result.audioURL, id: historyID)
         capture.deleteTemporaryAudio(at: result.audioURL)
@@ -806,6 +1019,12 @@ final class AppModel: ObservableObject {
             return
         }
         guard token == operationToken else { return }
+        if askActive {
+            askActive = false
+            await handleAsk(transcript: transcript, duration: result.duration, historyID: historyID,
+                            audioPath: historyAudioPath, token: token)
+            return
+        }
         await formatAndPaste(
             transcript: transcript,
             audioDuration: result.duration,
@@ -817,12 +1036,233 @@ final class AppModel: ObservableObject {
         )
     }
 
+    // MARK: - 選字白話解釋／翻譯（2026-10-19，帶進 UTUVO Explain）
+
+    /// 選好文字按快捷鍵：不錄音，直接把選取文字送整理服務，答案出現在回答卡（翻譯可插回原處取代選取）。
+    func explainSelectionPressed(_ action: ExplainSelection) {
+        guard !isRecording, !isProcessing else { return }
+        guard AccessibilitySupport.isTrusted() else {
+            fail(preferences.tr("要先在「系統設定 → 隱私權與安全性 → 輔助使用」允許 UTUVO Type，才讀得到選取的文字",
+                                "Allow UTUVO Type in System Settings → Privacy & Security → Accessibility to read the selection"))
+            return
+        }
+        let selected = AccessibilitySupport.readCurrentContext(blockedSites: preferences.contextBlockedSites)
+            .selectedText?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !selected.isEmpty else {
+            fail(preferences.tr("先選取一段文字，再按\(action.cardTitle(zh: true))快捷鍵", "Select some text first, then press the \(action.cardTitle(zh: false)) shortcut"))
+            return
+        }
+        let provider = SmartCleanup.Provider(rawValue: preferences.cleanupProvider.rawValue) ?? .groq
+        let key = SmartCleanup.key(for: provider)
+        guard !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            fail(preferences.tr("白話解釋／翻譯要用你的整理服務 key：到設定 → 智慧整理填一把 key",
+                                "Explain / Translate uses your cleanup key: add one in Settings → Smart Cleanup"))
+            return
+        }
+        let truncated = selected.count > ExplainSelection.maxCharacters
+        let text = truncated ? String(selected.prefix(ExplainSelection.maxCharacters)) : selected
+        let pid = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        let element = AccessibilitySupport.focusedElement()
+        let range = element.flatMap(AccessibilitySupport.selectedRange(of:))
+        AnswerCardController.shared.close()
+        statusMessage = preferences.tr("\(action.cardTitle(zh: true))中…", "\(action.cardTitle(zh: false))…")
+        notify()
+        let zh = preferences.isChineseUI
+        Task { [weak self] in
+            guard let self else { return }
+            let answer: String
+            do {
+                answer = try await SmartCleanup.ask(
+                    system: action.systemPrompt(for: text), user: ExplainSelection.userMessage(text), provider: provider, key: key,
+                    customEndpoint: provider == .dashscope ? self.preferences.bailianFormatterEndpoint : self.preferences.customCleanupEndpoint,
+                    customModel: self.preferences.customCleanupModel,
+                    transport: StrictCleanupSession.shared).trimmingCharacters(in: .whitespacesAndNewlines)
+            } catch {
+                self.fail(self.preferences.tr("\(action.cardTitle(zh: true))沒有完成：\(error.localizedDescription)",
+                                              "\(action.cardTitle(zh: false)) didn't finish: \(error.localizedDescription)"))
+                return
+            }
+            guard !answer.isEmpty else { self.fail(self.preferences.tr("服務沒有回傳內容", "The service returned nothing")); return }
+            self.lastOutput = answer
+            self.statusMessage = self.preferences.tr("已顯示\(action.cardTitle(zh: true))", "\(action.cardTitle(zh: false)) shown")
+            self.notify()
+            let preview = String(text.prefix(80)) + (text.count > 80 || truncated ? "…" : "")
+            // 翻譯可以「插入」＝回原 App、選取還在就取代它；解釋只提供複製。
+            let insert: (() -> Void)? = action == .translate ? { [weak self] in
+                guard let self, let pid, let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
+                    NSPasteboard.general.clearContents(); NSPasteboard.general.setString(answer, forType: .string); return
+                }
+                app.activate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    let current = AccessibilitySupport.focusedElement()
+                    guard let element, let current, CFEqual(element, current),
+                          let range, let now = AccessibilitySupport.selectedRange(of: current),
+                          now.location == range.location, now.length == range.length else {
+                        NSPasteboard.general.clearContents(); NSPasteboard.general.setString(answer, forType: .string)
+                        self.statusMessage = self.preferences.tr("選取已改變；譯文已複製", "Selection changed; translation copied")
+                        self.notify()
+                        return
+                    }
+                    try? ClipboardPaster.paste(answer, method: self.preferences.pasteMethod, handling: self.preferences.clipboardHandling)
+                }
+            } : nil
+            AnswerCardController.shared.show(.init(
+                question: "\(action.cardTitle(zh: zh))：\(preview)", answer: answer, zh: zh, onInsert: insert))
+        }
+    }
+
+    // MARK: - Ask anything（2026-10-13，對齊 Typeless）
+
+    /// Ask anything 快捷鍵：按一下開始講、再按一下送出。有選取文字＝對它下指令（改寫或問問題）。
+    func askShortcutPressed() {
+        if isRecording {
+            if askActive { stopRecording() }
+            return
+        }
+        guard !isProcessing else { return }
+        AnswerCardController.shared.close()
+        askActive = true
+        askPID = NSWorkspace.shared.frontmostApplication?.processIdentifier
+        let selected = AccessibilitySupport.isTrusted()
+            ? AccessibilitySupport.readCurrentContext(blockedSites: preferences.contextBlockedSites)
+                .selectedText?.trimmingCharacters(in: .whitespacesAndNewlines)
+            : nil
+        askElement = AccessibilitySupport.focusedElement()
+        askRange = askElement.flatMap(AccessibilitySupport.selectedRange(of:))
+        askSelection = (selected?.isEmpty ?? true) ? nil : selected
+        activeTranslationTarget = .off
+        // 按住說話模式下 Ask 仍是「按一下開始、再按一下送出」：標成 active，beginRecording 才不會立刻停。
+        if preferences.pushToTalkEnabled { pushToTalkActive = true }
+        // 錄音本身照一般聽寫；不改使用者的預設模式。改選取模式要求先有選取，這裡不需要。
+        startRecording(mode: preferences.mode == .editSelection ? .fast : preferences.mode, persistMode: false)
+        if !isRecording && !isProcessing && lastErrorMessage != nil { askActive = false }
+    }
+
+    private func handleAsk(transcript: String, duration: TimeInterval, historyID: UUID,
+                           audioPath: String?, token: UUID) async {
+        let selection = askSelection
+        askSelection = nil
+        let provider = SmartCleanup.Provider(rawValue: preferences.cleanupProvider.rawValue) ?? .groq
+        let key = SmartCleanup.key(for: provider)
+        guard !key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            fail(preferences.tr("Ask anything 要用你的整理服務 key：到設定 → 雲端（選配）填一把 Groq／Gemini／百鍊 key",
+                                "Ask anything uses your cleanup key: add a Groq / Gemini / Bailian key in Settings → Cloud"))
+            return
+        }
+        statusMessage = preferences.tr("思考中…", "Thinking…")
+        notify()
+        let hasSelection = selection != nil
+        let system = AskAnything.systemPrompt(hasSelection: hasSelection,
+                                              languageHint: preferences.transcriptionLanguage.rawValue)
+        let user = AskAnything.userMessage(instruction: transcript, selection: selection)
+        let reply: AskAnything.Reply
+        do {
+            let raw = try await SmartCleanup.ask(
+                system: system, user: user, provider: provider, key: key,
+                customEndpoint: provider == .dashscope ? preferences.bailianFormatterEndpoint : preferences.customCleanupEndpoint,
+                customModel: preferences.customCleanupModel,
+                transport: StrictCleanupSession.shared)
+            guard let parsed = AskAnything.parse(raw, hasSelection: hasSelection) else {
+                throw SmartCleanup.Failure.malformed
+            }
+            reply = parsed
+        } catch {
+            guard token == operationToken else { return }
+            fail(preferences.tr("Ask anything 沒有完成：\(error.localizedDescription)",
+                                "Ask anything didn't finish: \(error.localizedDescription)"))
+            return
+        }
+        guard token == operationToken else { return }
+        lastOutput = reply.text
+        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: transcript, output: reply.text,
+            duration: duration, mode: activeMode, appName: NSWorkspace.shared.frontmostApplication?.localizedName,
+            bundleIdentifier: NSWorkspace.shared.frontmostApplication?.bundleIdentifier, audioPath: audioPath,
+            note: preferences.tr("Ask anything", "Ask anything")), countsTowardStats: false)
+        if reply.action == .replace, let selection, stillAtAskField(expectSelection: selection) {
+            do {
+                try ClipboardPaster.paste(reply.text, method: preferences.pasteMethod, handling: preferences.clipboardHandling)
+                statusMessage = preferences.tr("已改寫選取文字", "Rewrote the selection")
+            } catch {
+                statusMessage = preferences.tr("改寫好了但貼不回去；可從選單複製", "Rewritten, but couldn't paste; copy it from the menu")
+            }
+            notify()
+            return
+        }
+        let pid = askPID
+        AnswerCardController.shared.show(.init(
+            question: transcript, answer: reply.text, zh: preferences.isChineseUI,
+            onInsert: { [weak self] in
+                guard let self else { return }
+                // 只插回原本問問題的那個 App；它關掉了或切不回去，就改成複製（luna-review r1：答案曾可能貼進別的 App）。
+                guard let pid, let app = NSRunningApplication(processIdentifier: pid), !app.isTerminated else {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(reply.text, forType: .string)
+                    self.statusMessage = self.preferences.tr("原本的 App 已關閉；答案已複製", "The original app is gone; the answer was copied")
+                    self.notify()
+                    return
+                }
+                app.activate()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    guard self.askPID == pid, self.stillAtAskField() else {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(reply.text, forType: .string)
+                        self.statusMessage = self.preferences.tr("切不回原本的輸入欄位；答案已複製", "Couldn't return to the original field; the answer was copied")
+                        self.notify()
+                        return
+                    }
+                    try? ClipboardPaster.paste(reply.text, method: self.preferences.pasteMethod,
+                                               handling: self.preferences.clipboardHandling)
+                }
+            }))
+        statusMessage = preferences.tr("已回答（回答卡）", "Answered (see the card)")
+        notify()
+    }
+
     /// 讀走並歸零本次翻譯目標：只有「這一次錄音」消費得到，
     /// reprocess／retry 永遠拿 .off（F1：殘留目標會把重跑結果偷翻譯）。
     private func consumeTranslationTarget() -> TranslationTarget {
         let target = activeTranslationTarget
         activeTranslationTarget = .off
         return target
+    }
+
+    private func deliveryContext() -> LimitedAppContext {
+        preferences.isolation != nil ? LimitedAppContext() : (selectedContext ?? AccessibilitySupport.readCurrentContext(
+            includeSurrounding: preferences.includeSurroundingContext,
+            blockedSites: preferences.contextBlockedSites
+        ))
+    }
+
+    private func normalizedForDelivery(_ transcript: String, dictionary: [String: String]) -> String {
+        // 詞庫包：個人字典的寫法 + 已開啟 catalog 包的拉丁字母 seeds（給 LatinNameFixer 比對用）。
+        let latinTerms = VocabularyPacks.latinTermsForFixer(
+            personalValues: Array(dictionary.values),
+            enabled: preferences.enabledVocabularyPackIDs
+        )
+        return Normalizer(options: NormalizerOptions(dictionary: dictionary, latinTerms: latinTerms)).normalize(transcript).cleaned
+    }
+
+    /// 先貼的本機版也照句尾語氣。
+    private func deliveryOriginal(_ normalized: String) -> String {
+        moodApplies ? SentenceMood.finish(normalized) : normalized
+    }
+
+    private func cleanupConfig(original: String, context: LimitedAppContext, dictionary: [String: String]) -> CleanupConfig {
+        let promptContext = preferences.includeSurroundingContext
+            ? CleanupPromptContext(
+                appName: context.appName ?? "",
+                styleHint: preferences.preset(for: context.foregroundBundleIdentifier)?.promptHint ?? "",
+                surroundingText: context.surroundingText ?? "",
+                windowTitle: context.windowTitle ?? "",
+                pageLocation: context.pageLocation ?? "",
+                fieldPlaceholder: context.fieldPlaceholder ?? ""
+            )
+            : .init()
+        return CleanupConfig(enabled: true, provider: preferences.cleanupProvider,
+            customEndpoint: preferences.customCleanupEndpoint, customModel: preferences.customCleanupModel,
+            language: preferences.transcriptionLanguage.rawValue, personal: dictionary,
+            enabledPacks: preferences.enabledVocabularyPackIDs, bailianEndpoint: preferences.bailianFormatterEndpoint,
+            context: promptContext, validationSource: original, autoList: preferences.cleanupAutoList)
     }
 
     private func formatAndPaste(
@@ -836,16 +1276,9 @@ final class AppModel: ObservableObject {
     ) async {
         guard token == operationToken else { return }
         lastRawTranscript = transcript
-        let context = preferences.isolation != nil ? LimitedAppContext() : (selectedContext ?? AccessibilitySupport.readCurrentContext(
-            includeSurrounding: preferences.includeSurroundingContext
-        ))
+        let context = deliveryContext()
         let dictionary = preferences.dictionary
-        // 詞庫包：個人字典的寫法 + 已開啟 catalog 包的拉丁字母 seeds（給 LatinNameFixer 比對用）。
-        let latinTerms = VocabularyPacks.latinTermsForFixer(
-            personalValues: Array(dictionary.values),
-            enabled: preferences.enabledVocabularyPackIDs
-        )
-        let normalized = Normalizer(options: NormalizerOptions(dictionary: dictionary, latinTerms: latinTerms)).normalize(transcript)
+        let normalizedText = normalizedForDelivery(transcript, dictionary: dictionary)
         let combinedForFeatures = [transcript, context.selectedText ?? ""].joined(separator: "\n")
         let longTextThresholdReached = transcript.count >= max(1, preferences.deepMinCharacters)
             || audioDuration >= TimeInterval(max(1, preferences.deepMinAudioSeconds))
@@ -880,7 +1313,7 @@ final class AppModel: ObservableObject {
         if Self.backgroundEligible(mode: activeMode, translation: translation, autoSubmit: preferences.autoSubmit,
                                    enabled: cloudBackgroundCleanup || localBackgroundCleanup,
                                    language: preferences.transcriptionLanguage.rawValue) {
-            await deliverImmediate(normalized.cleaned, raw: transcript, duration: audioDuration,
+            await deliverImmediate(normalizedText, raw: transcript, duration: audioDuration,
                                    historyID: historyID, audioPath: audioPath, token: token, context: context,
                                    dictionary: dictionary, useLocalFormatter: localBackgroundCleanup)
             return
@@ -891,7 +1324,7 @@ final class AppModel: ObservableObject {
         let localEditorAllowed = activeMode == .editSelection
             || !Router.isShortSentence(editorInput)
 
-        var output = normalized.cleaned
+        var output = normalizedText
         var formatterSucceeded = false
         var notice = asrError.map {
             preferences.tr("ASR fallback：\($0.localizedDescription)", "ASR fallback: \($0.localizedDescription)")
@@ -1042,6 +1475,7 @@ final class AppModel: ObservableObject {
                 handling: preferences.clipboardHandling
             )
             ClipboardPaster.submit(preferences.autoSubmit)
+            if activeMode != .editSelection, preferences.autoSubmit == .off { watchEdits(output) }
             statusMessage = notice.map {
                 preferences.tr("已貼上 deterministic 結果（\($0)）", "Pasted deterministic result (\($0))")
             } ?? preferences.tr("已整理並貼上", "Formatted and pasted")
@@ -1070,6 +1504,7 @@ final class AppModel: ObservableObject {
 
     private func invalidateBackground() {
         operationToken = UUID()
+        speculation?.asr.cancel(); speculation?.cleanup?.task.cancel(); speculation = nil
         pendingCleanupTask?.cancel(); pendingCleanupTask = nil
         destination?.invalidate(); destination = nil
     }
@@ -1092,28 +1527,19 @@ final class AppModel: ObservableObject {
     private func deliverImmediate(_ original: String, raw: String, duration: TimeInterval,
                                   historyID: UUID, audioPath: String?, token: UUID, context: LimitedAppContext,
                                   dictionary: [String: String], useLocalFormatter: Bool) async {
-        let original = moodApplies ? SentenceMood.finish(original) : original   // 先貼的本機版也照句尾語氣
+        let original = deliveryOriginal(original)
         let trailing = preferences.appendTrailingSpace ? " " : ""
-        let promptContext = preferences.includeSurroundingContext
-            ? CleanupPromptContext(
-                appName: context.appName ?? "",
-                styleHint: preferences.preset(for: context.foregroundBundleIdentifier)?.promptHint ?? "",
-                surroundingText: context.surroundingText ?? ""
-            )
-            : .init()
-        let config = CleanupConfig(enabled: true, provider: preferences.cleanupProvider,
-            customEndpoint: preferences.customCleanupEndpoint, customModel: preferences.customCleanupModel,
-            language: preferences.transcriptionLanguage.rawValue, personal: dictionary,
-            enabledPacks: preferences.enabledVocabularyPackIDs, bailianEndpoint: preferences.bailianFormatterEndpoint,
-            context: promptContext, validationSource: original)
+        let config = cleanupConfig(original: original, context: context, dictionary: dictionary)
         guard token == operationToken else { return }
+        let lateCheck = destination
         guard let target = destination, await target.insert(original + trailing) else {
             // 2026-09-24 實機（苑涵 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
             // 這裡原本直接 return——不貼字、不寫歷史。改成跟 Fast 一樣走剪貼簿貼上（仍檢查前景 App 沒換）；
             // 貼之前先在同一個時限內整理，能整理就貼整理版，否則貼本機整理版。
             await pasteWithoutCapture(original: original, raw: raw, duration: duration, historyID: historyID,
                                       audioPath: audioPath, token: token, context: context, dictionary: dictionary,
-                                      config: config, useLocalFormatter: useLocalFormatter)
+                                      config: config, useLocalFormatter: useLocalFormatter,
+                                      alreadyDelivered: { lateCheck?.textPresent(original + trailing) ?? false })
             return
         }
         guard token == operationToken else { return }
@@ -1123,26 +1549,30 @@ final class AppModel: ObservableObject {
             bundleIdentifier: context.foregroundBundleIdentifier, audioPath: audioPath))
         isProcessing = false
         statusMessage = preferences.tr("已貼上", "Inserted")
+        logDeliveryTiming("ax-insert")
+        watchEdits(original)
         onDeliveryEvent?("inserted")
         notify()
         guard target.supportsCorrection else { onDeliveryEvent?("refused"); target.invalidate(); return }
-        let run = cleanupRunner
+        let run = useLocalFormatter ? nil : cleanupWork(raw: raw, config: config)
         let localRun = localBackgroundRunner
         pendingCleanupTask = Task { [weak self] in
             let cleaned: String?
             if useLocalFormatter {
-                cleaned = await SmartCleanup.localCorrectionWithinDeadline { [weak self] in
+                cleaned = await SmartCleanup.withinDeadline { [weak self] in
                     if let localRun { return await localRun(raw, context, dictionary) }
                     guard let self else { return nil }
                     return await self.localBackgroundCleanup(raw, context: context, dictionary: dictionary)
                 }
             } else {
-                cleaned = await run(raw, config)
+                cleaned = await run?()
             }
             guard let self else { target.invalidate(); return }
             // 整理模型讀的是原始逐字稿（「三點」），先貼出的版本已轉成「3點」：數字格式先對齊，否則把關會把整段擋掉。
             guard !Task.isCancelled, token == self.operationToken, !self.isRecording,
-                  let checked = cleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: checked),
+                  let checked = cleaned.map(Normalizer.normalizeNumbers),
+                  SmartCleanup.accepts(original: original, cleaned: checked,
+                                       relaxed: !useLocalFormatter && config.provider == .claude),
                   case let cleaned = self.moodApplies ? SentenceMood.finish(checked) : checked,
                   target.replaceInsertedText(with: cleaned + trailing) else {
                 target.invalidate()
@@ -1150,6 +1580,7 @@ final class AppModel: ObservableObject {
                 return
             }
             self.lastOutput = cleaned
+            self.watchEdits(cleaned)   // 背景整理換字後，追蹤的是換過的版本
             self.preferences.replaceHistoryOutput(id: historyID, with: cleaned)
             self.statusMessage = self.preferences.tr("背景整理已套用", "Background cleanup applied")
             self.onDeliveryEvent?("applied")
@@ -1157,29 +1588,41 @@ final class AppModel: ObservableObject {
         }
     }
 
+    private func logDeliveryTiming(_ path: String) {
+        guard let stopPressedAt else { return }
+        let total = Int(Date().timeIntervalSince(stopPressedAt) * 1000)
+        deliveryLog.info("timing: delivered[\(path, privacy: .public)] \(total, privacy: .public) ms after stop")
+    }
+
     /// Smart 模式的目的地不能安全插入／事後替換時的退路：整理（有時限）→ 寫歷史 → 剪貼簿貼一次。
     private func pasteWithoutCapture(original: String, raw: String, duration: TimeInterval, historyID: UUID,
                                      audioPath: String?, token: UUID, context: LimitedAppContext,
-                                     dictionary: [String: String], config: CleanupConfig, useLocalFormatter: Bool) async {
+                                     dictionary: [String: String], config: CleanupConfig, useLocalFormatter: Bool,
+                                     alreadyDelivered: () -> Bool = { false }) async {
         destination?.invalidate(); destination = nil
         statusMessage = preferences.tr("整理中…", "Cleaning up…")
         let started = Date()
         let rawCleaned: String?
         if useLocalFormatter {
             let localRun = localBackgroundRunner
-            rawCleaned = await SmartCleanup.localCorrectionWithinDeadline { [weak self] in
+            rawCleaned = await SmartCleanup.withinDeadline { [weak self] in
                 if let localRun { return await localRun(raw, context, dictionary) }
                 guard let self else { return nil }
                 return await self.localBackgroundCleanup(raw, context: context, dictionary: dictionary)
             }
         } else {
-            rawCleaned = await cleanupRunner(raw, config)
+            // This destination cannot safely replace already inserted text, so the user waits for
+            // this one paste. Fixed budget even for long transcripts (SmartCleanup.clipboardPasteTimeout).
+            let work = cleanupWork(raw: raw, config: config)
+            rawCleaned = await SmartCleanup.withinDeadline(seconds: SmartCleanup.clipboardPasteTimeout) { await work() }
         }
         guard token == operationToken else { return }
         let elapsed = Int(Date().timeIntervalSince(started) * 1000)
         var output = original
         var note: String? = preferences.tr("此欄位不支援背景替換，已用剪貼簿貼上", "Field doesn't support background replacement; pasted via clipboard")
-        if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers), SmartCleanup.accepts(original: original, cleaned: cleaned) {
+        // 2026-10-19 Typeless 對打：這裡再跑一次嚴格把關，會把 Claude 已經用寬鬆把關收下的修正丟掉 → 同一個 provider 規則。
+        if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers),
+           SmartCleanup.accepts(original: original, cleaned: cleaned, relaxed: !useLocalFormatter && config.provider == .claude) {
             output = moodApplies ? SentenceMood.finish(cleaned) : cleaned
             deliveryLog.info("smart fallback paste: cleanup applied in \(elapsed, privacy: .public) ms")
         } else {
@@ -1194,6 +1637,17 @@ final class AppModel: ObservableObject {
         isProcessing = false
         onDeliveryEvent?("fallback")
         let pasteOutput = preferences.appendTrailingSpace ? output + " " : output
+        // AX 寫入回報失敗、但字其實晚到了（整理等待的那幾秒內才出現）：不能再貼第二份。
+        if alreadyDelivered() {
+            // 欄位裡是先送出的原句，不是整理版：歷史與「最後結果」要記實際送達的那份。
+            lastOutput = original
+            preferences.replaceHistoryOutput(id: historyID, with: original)
+            watchEdits(original)
+            statusMessage = preferences.tr("已貼上", "Inserted")
+            deliveryLog.info("smart fallback paste: AX text landed late; skipped clipboard paste")
+            onDeliveryEvent?("delivered-late")
+            return
+        }
         guard preferences.isolation == nil,
               capturedPID == nil || NSWorkspace.shared.frontmostApplication?.processIdentifier == capturedPID else {
             statusMessage = preferences.tr("目的地已變更；可複製最後結果", "Destination changed; copy the last result")
@@ -1202,6 +1656,8 @@ final class AppModel: ObservableObject {
         }
         do {
             try ClipboardPaster.paste(pasteOutput, method: preferences.pasteMethod, handling: preferences.clipboardHandling)
+            logDeliveryTiming("clipboard, cleanup \(elapsed) ms")
+            watchEdits(output)
             statusMessage = output == original
                 ? preferences.tr("已貼上（智慧整理未完成）", "Pasted (Smart cleanup didn't finish)")
                 : preferences.tr("已整理並貼上", "Formatted and pasted")
@@ -1287,12 +1743,21 @@ final class AppModel: ObservableObject {
             prompt += "\n\n目前輸入欄位的有限周邊文字（僅供格式判斷）：\n"
             prompt += String(surrounding.prefix(2_000))
         }
+        if preferences.includeSurroundingContext {
+            let where_ = [context.pageLocation.map { "網頁：\($0)" }, context.windowTitle.map { "視窗：\($0)" },
+                          context.fieldPlaceholder.map { "欄位提示：\($0)" }].compactMap { $0 }
+            if !where_.isEmpty {
+                prompt += "\n\n目前輸入位置（僅供判斷語氣與格式，不可照抄進結果）：\n" + where_.joined(separator: "\n")
+            }
+        }
         return prompt
     }
 
     private func fail(_ message: String) {
         isRecording = false
         isProcessing = false
+        askActive = false        // luna-review r1：失敗後不能讓下一次一般聽寫被當成 Ask
+        askSelection = nil
         statusMessage = message
         lastErrorMessage = message
         notify()

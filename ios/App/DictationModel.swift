@@ -110,6 +110,10 @@ final class DictationModel: NSObject, ObservableObject {
     /// 主畫面光球讀：目前麥克風音量（dBFS），沒在錄回 nil。
     func liveLevel() -> Float? { levels.latest() }
 
+    /// 這一輪錄音的秒數計時。**在錄音結束（按停）那一刻凍結**，交付時讀凍結值——
+    /// 不要在交付當下才去算，那會把等待雲端辨識／整理的時間算進「說了幾秒」。
+    private var recordingClock = DictationClock()
+
     override init() {
         let saved = UserDefaults.standard.string(forKey: "utuvo.type.ios.language")
         self.language = saved.flatMap(DictationLanguage.init(rawValue:)) ?? .traditionalChinese
@@ -263,6 +267,7 @@ final class DictationModel: NSObject, ObservableObject {
             AIPunctuator.shared.prewarm()
             SmartCleanup.warmUp()
             isRecording = true
+            recordingClock.begin(at: Date())
         } catch {
             errorMessage = String(localized: "無法啟動錄音：\(error.localizedDescription)")
             cleanupAfterStop()
@@ -277,6 +282,8 @@ final class DictationModel: NSObject, ObservableObject {
         let hadStream = stream != nil
         stream?.endAudio()
         isRecording = false
+        // 就在使用者按停的這一刻把秒數凍結；之後的 Apple 定稿等待不算進「說了幾秒」。
+        recordingClock.freeze(at: Date())
         if hadStream { awaitingAppleFinal = true }
     }
 
@@ -322,7 +329,7 @@ final class DictationModel: NSObject, ObservableObject {
             liveTranscript = text
             if isFinal {
                 awaitingAppleFinal = false
-                let silences = SilenceDetector.intervals(levels.snapshot)
+                let silences = SilenceDetector.intervals(levels.snapshot, quiet: QuietMode.isEnabled)
                 let paused = tokens.isEmpty ? text : PausePunctuator.punctuate(tokens, silences: silences)
                 let appleBase = PunctuationGuard.preservesText(original: text, candidate: paused) ? paused : text
                 let samples = pcm.snapshot
@@ -334,7 +341,7 @@ final class DictationModel: NSObject, ObservableObject {
                     // 與鍵盤同一條路：最後文字用本機 Qwen3-ASR 或雲端重辨識，失敗或逾時用 Apple 的。
                     pcm.reset(enabled: false)
                     let lang = language.rawValue
-                    let hotwords = Array(SpeechEngine.unifiedHints(personal: KeyboardVoiceHost.contextualStrings()).prefix(80))
+                    let hotwords = Array(SpeechEngine.cloudHints(personal: KeyboardVoiceHost.contextualStrings(), language: lang).prefix(80))
                     // R2-1 → R3（luna-review 2026-09-25）：用可測的 `RerecognitionGate` 取代 R2 的 tuple，
                     // 多帶 isEdit 讓編輯意圖在新一輪 flush 時作廢。
                     let pendingID = gate.begin(text: text, base: appleBase, isEdit: intent.isEdit)
@@ -344,14 +351,20 @@ final class DictationModel: NSObject, ObservableObject {
                         case .localQwen:
                             refined = await LocalQwenASR.shared.transcribe(samples, language: lang, hotwords: hotwords)
                         case .cloud:
-                            let provider = SmartCleanup.provider
-                            refined = await CloudASR.transcribe(samples, language: lang, hotwords: hotwords,
-                                                                 provider: provider, key: SmartCleanup.key(for: provider))
+                            if let route = CloudASR.route() {
+                                refined = await CloudASR.transcribe(samples, language: lang, hotwords: hotwords,
+                                                                     provider: route.provider, key: route.key)
+                            } else {
+                                refined = nil
+                            }
                         case .none:
                             refined = nil
                         }
                         guard let self, let p = self.gate.finish(id: pendingID) else { return }
-                        self.ingestFinal(text: refined ?? p.text, base: refined ?? p.base)
+                        // Whisper／Qwen 補的「謝謝大家收看」：Apple 逐字稿沒有這句才去掉。
+                        let kept = refined.map { TranscriptGuard.dropOutroHallucination($0, reference: p.base) }
+                            .flatMap { $0.isEmpty ? nil : $0 }
+                        self.ingestFinal(text: kept ?? p.text, base: kept ?? p.base)
                     }
                     return
                 }
@@ -386,10 +399,15 @@ final class DictationModel: NSObject, ObservableObject {
             commit(base)
             let shown = finalText
             isCorrecting = true
-            let budget = CleanupBudget(seconds: SmartCleanup.backgroundTimeout)
-            cleanupTasks.start(id: UUID(), work: {
-                await SmartCleanup.refine(text, fallbackText: base, language: lang, smart: smart,
-                                          budget: budget, validationSource: shown)
+            let budget = CleanupBudget(seconds: SmartCleanup.backgroundBudgetSeconds(for: text))
+            cleanupTasks.start(id: UUID(), work: { [weak self] in
+                // App 內聽寫沒有輸入欄位脈絡可送（沒有 textDocumentProxy），但**語言變體**照送——
+                // 變體是使用者對輸出的設定，兩條錄音路徑都要兌現。
+                guard let self else { return nil }
+                let context = SmartCleanup.PromptContext(
+                    variant: LanguageVariantStore.currentVariant(language: lang))
+                return await SmartCleanup.refine(text, fallbackText: base, language: lang, smart: smart,
+                                                  budget: budget, validationSource: shown, context: context)
             }, apply: { [weak self] fixed in
                 guard let self else { return }
                 self.isCorrecting = self.cleanupTasks.pendingCount > 0
@@ -428,9 +446,11 @@ final class DictationModel: NSObject, ObservableObject {
     nonisolated private static func installTap(on node: AVAudioInputNode, format: AVAudioFormat,
                                                feed: SpeechFeed, levels: LevelLog, pcm: PCMAccumulator) {
         node.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            feed.feed(buffer)
-            levels.record(buffer)
-            pcm.append(buffer)
+            // 小聲說話模式的增益 + 限幅在這裡套（與鍵盤語音工作階段同一個入口函式，兩條路徑行為一致）。
+            let processed = QuietMode.processed(buffer)
+            feed.feed(processed)
+            levels.record(processed)
+            pcm.append(processed)
         }
     }
 
@@ -446,7 +466,14 @@ final class DictationModel: NSObject, ObservableObject {
             let (output, steps) = pipeline.clean(trimmed)
             finalText = output
             appliedSteps = steps
-            HistoryStore.shared.append(DictationRecord(raw: trimmed, cleaned: output, source: .app))
+            // 讀**凍結值**：按停到這裡即使過了雲端等待，秒數也不變。
+            let seconds = recordingClock.take()
+            // 檔案寫入丟到背景序列佇列，不卡主執行緒（鍵盤 extension 也走同一條）。
+            StorageIO.write {
+                HistoryStore.shared.append(DictationRecord(raw: trimmed, cleaned: output, source: .app, duration: seconds))
+                // 每日計數獨立於歷史：刪歷史、清歷史、改期限都不影響它（工單要求）。
+                DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(output), seconds: seconds ?? 0)
+            }
         case .edit(let original):
             let instruction = pipeline.clean(trimmed).output
             rewrite(original, instruction: instruction)
@@ -468,7 +495,9 @@ final class DictationModel: NSObject, ObservableObject {
                 self.previousText = original
                 self.finalText = result
                 self.liveTranscript = ""
-                HistoryStore.shared.append(DictationRecord.edit(instruction: instruction, result: result, source: .app))
+                StorageIO.write {
+                    HistoryStore.shared.append(DictationRecord.edit(instruction: instruction, result: result, source: .app))
+                }
             } catch {
                 self.errorMessage = error.localizedDescription
             }
@@ -488,6 +517,8 @@ final class DictationModel: NSObject, ObservableObject {
 
     private func cleanupAfterStop() {
         isRecording = false
+        // 出錯救援也是一段結束：把秒數凍結（否則這段長度會被漏掉，之後的下一段還會被算歪）。
+        recordingClock.freeze(at: Date())
         intent = .dictate
         feed.disarm()
         stream = nil

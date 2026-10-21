@@ -5,11 +5,39 @@ import SwiftUI
 struct UsageGuideScreen: View {
     var body: some View {
         List {
+            // 10-15：一步一步、手指指著點的教學（GuidedTutorial.swift）。
+            Section {
+                ForEach(TutorialKind.allCases) { kind in
+                    NavigationLink {
+                        GuidedTutorialView(kind: kind)
+                            .pushHaptic()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: kind.symbol)
+                                .font(.title3)
+                                .foregroundStyle(Aurora.orange)
+                                .frame(width: 32)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(kind.title).font(.body.weight(.semibold))
+                                Text(kind.subtitle).font(.footnote).foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .accessibilityIdentifier("tutorial-\(kind.rawValue)")
+                }
+            } header: {
+                Text("一步一步教學")
+            } footer: {
+                Text("每一步都有示意圖，手指指著要點的地方。")
+            }
+
             Section {
                 step(1, "加入鍵盤", "設定 → 一般 → 鍵盤 → 鍵盤 → 新增鍵盤 → UTUVO Type。")
                 step(2, "打開「允許完整取用」", "點進剛加入的 UTUVO Type，打開「允許完整取用」。沒有它，鍵盤沒辦法把你講的話交給 UTUVO Type 辨識。")
                 step(3, "允許麥克風與語音辨識", "打開 UTUVO Type App 一次，系統問麥克風和語音辨識時都按「允許」。")
                 Button {
+                    TapPulse.shared.fire()
                     if let url = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(url) }
                 } label: {
                     Label("打開設定", systemImage: "arrow.up.forward.app")

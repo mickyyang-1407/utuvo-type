@@ -19,6 +19,33 @@ sealed interface KeyboardMode {
             if (selection.isNotEmpty()) return Edit(selection)
             return Dictate
         }
+
+        /**
+         * 使用者**明確選了鍵盤語音模式**時的決策：使用者選的模式優先。
+         *
+         * 有選取文字時，[decide] 會判成 [Edit]（「說出要怎麼改」），把選取搶走——
+         * 但那只在聽寫模式下才對。使用者切到「幫我寫／問問題／改寫」就是要走那條路：
+         *  - 有選取＋問問題 → 走 Ask（模型自己判斷回答還是改寫，取代前還要確認選取沒變）
+         *  - 有選取＋幫我寫 → 產出插在選取**之後**，不取代
+         *  - 有選取＋改寫 → 走「這一段／全部文字」那條路，選取只是其中一種情境
+         *
+         * 只有 [com.utuvo.type.core.VoiceMode.DICTATE] 才沿用「有選取＝說出要怎麼改」。
+         */
+        fun decide(
+            selectedText: String?,
+            translateTarget: Translation.Target?,
+            voiceMode: com.utuvo.type.core.VoiceMode
+        ): KeyboardMode {
+            if (translateTarget != null) return Translate(translateTarget)
+            val selection = selectedText?.trim().orEmpty()
+            // 改寫模式下「有選取」就是在改那一段 → 跟聽寫模式一樣走「說出要怎麼改」，
+            // 不要跳去問他「這一段／全部文字」。
+            if (voiceMode == com.utuvo.type.core.VoiceMode.SPEAK_TO_EDIT && selection.isNotEmpty())
+                return Edit(selection)
+            // 使用者明確選了鍵盤語音模式時，選取不該把它搶走。
+            if (voiceMode != com.utuvo.type.core.VoiceMode.DICTATE) return Dictate
+            return if (selection.isNotEmpty()) Edit(selection) else Dictate
+        }
     }
 
     /** 錄音前的提示（點一下說）。 */

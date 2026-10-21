@@ -34,12 +34,19 @@ final class OnDeviceAssistantTests: XCTestCase {
             XCTFail("應該丟錯")
         } catch {
             let msg = error.localizedDescription
-            XCTAssertTrue(msg.contains("Apple Intelligence 暫時不能用"), "要說出是 Apple Intelligence 壞了：\(msg)")
+            let detail = LocalizationTestSupport.localized("Apple Intelligence 暫時不能用")
+            let remedy = LocalizationTestSupport.localized("%@：到設定→智慧整理加 Groq key")
+                .replacingOccurrences(of: "%@", with: detail)
+            // 句型是「detail：怎麼補」——驗映射，不驗字面（英文介面下這句是英文）。
+            XCTAssertTrue(msg.contains(detail), "要說出是 Apple Intelligence 壞了：\(msg)")
             XCTAssertTrue(msg.contains("Groq"), "要告訴使用者怎麼補：\(msg)")
             XCTAssertFalse(msg.contains("無法完成作業"), "不能再是空泛的系統訊息：\(msg)")
             // 顯示寬度：中文算 1、英數算 0.5。鍵盤提示兩行約 30 個中文字寬（模擬器截圖實測這句剛好兩行放完）。
+            // 英文比中文長得多（英數只算半寬但字數多），所以這條同時是英文翻譯的長度上限。
             let width = msg.reduce(0.0) { $0 + ($1.isASCII ? 0.5 : 1.0) }
             XCTAssertLessThanOrEqual(width, 30, "鍵盤提示只有兩行，太長會把補救方法截掉（寬 \(width)）：\(msg)")
+            XCTAssertTrue(msg.hasSuffix(remedy) || msg.contains(remedy),
+                          "後半段要是「到設定加 key」那一句：\(msg)")
         }
     }
 
@@ -52,7 +59,7 @@ final class OnDeviceAssistantTests: XCTestCase {
             XCTFail("應該丟錯")
         } catch {
             let msg = error.localizedDescription
-            XCTAssertTrue(msg.contains("和雲端都失敗") && msg.contains("429"), msg)
+            XCTAssertTrue(msg.contains(LocalizationTestSupport.localized("Apple Intelligence 和雲端都失敗：%@").replacingOccurrences(of: "%@", with: "").trimmingCharacters(in: .whitespaces)) && msg.contains("429"), msg)
         }
     }
 
@@ -61,7 +68,7 @@ final class OnDeviceAssistantTests: XCTestCase {
             _ = try await OnDeviceAssistant.run(system: "s", user: "u", onDevice: nil, cloud: nil)
             XCTFail("應該丟錯")
         } catch {
-            XCTAssertTrue(error.localizedDescription.contains("智慧整理"), error.localizedDescription)
+            XCTAssertTrue(error.localizedDescription.contains(LocalizationTestSupport.localized("沒有 Apple Intelligence：到設定→智慧整理加 Groq key").components(separatedBy: "：").last ?? "智慧整理"), error.localizedDescription)
         }
     }
 

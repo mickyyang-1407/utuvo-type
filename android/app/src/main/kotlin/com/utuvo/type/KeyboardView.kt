@@ -56,6 +56,14 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         fun onToggleCandidatePanel()
         fun onToggleHantInput()
         fun onSwitchKeyboard()
+        // ── 語音模式（聽寫／Help me write／Speak to edit／Ask anything）──
+        fun onVoiceModeSelected(mode: com.utuvo.type.core.VoiceMode) {}
+        /** 沒有選取文字時進改寫模式：這一段 or 全部文字。 */
+        fun onEditScopePicked(scope: com.utuvo.type.core.EditScope) {}
+        // ── 回答卡（Ask anything）──
+        fun onAnswerInsert(text: String) {}
+        fun onAnswerCopy(text: String) {}
+        fun onAnswerDismiss() {}
         // ── 收回（手指滑開超過 20dp、或系統取消觸控時）──
         fun onUndoInsert(text: String)
         fun onUndoCompose()
@@ -63,8 +71,9 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         fun onUndoSpace()
     }
 
-    private val dark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    private val dark = AppTheme.isDark(context)
     private val bg = if (dark) 0xFF1C1C1E.toInt() else 0xFFD3D5DB.toInt()
+
     private val keyBg = if (dark) 0xFF4A4A4E.toInt() else Color.WHITE
     private val specialBg = if (dark) 0xFF323235.toInt() else 0xFFAEB2BA.toInt()
     private val ink = if (dark) Color.WHITE else 0xFF111111.toInt()
@@ -93,6 +102,18 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     private val switchKey = TextView(context)
     /** 語音區右上的聽寫語言徽章（同 iOS `languageButton`）。 */
     private val langBadge = TextView(context)
+    /** 四個語音模式的切換列（聽寫／Help me write／Speak to edit／Ask anything）。 */
+    private val modeRow = LinearLayout(context)
+    private val modeChips = LinkedHashMap<com.utuvo.type.core.VoiceMode, TextView>()
+    /** 改寫範圍選擇（這一段／全部文字）；只有「沒有選取文字的 Speak to edit」才出現。 */
+    private val scopeRow = LinearLayout(context)
+    /** 回答卡（Ask anything 的結果）：可捲動的文字 ＋ 插入／複製／關閉。 */
+    private val answerCard = LinearLayout(context)
+    private val answerText = TextView(context)
+    private var answerContent = ""
+    private var answerInsertBtn: TextView? = null
+    private var answerCopyBtn: TextView? = null
+    private var answerCloseBtn: TextView? = null
 
     // 長按翻譯的語言弧（要宣告在 init 之前：init 會呼叫 buildArc）
     private var topBand: View? = null
@@ -140,7 +161,7 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         setBackgroundColor(bg)
         buildVoice()
         buildTyping()
-        addView(voice, LayoutParams(LayoutParams.MATCH_PARENT, dpi(236)))
+        addView(voice, LayoutParams(LayoutParams.MATCH_PARENT, dpi(260)))
         typingHost.addView(typing, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
         typingHost.addView(panel, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         addView(typingHost, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT))
@@ -348,6 +369,7 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     fun setListening(on: Boolean) {
         orb.listening = on
         if (!on) orb.level = 0f
+        applyModeRowVisibility()
     }
 
     /** 說出要怎麼改：光球轉薰衣草（同 iOS `micButton.setTint(edit:)`）。 */
@@ -361,6 +383,231 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         transcript.visibility = if (text.isEmpty()) GONE else VISIBLE
         brand.visibility = if (text.isEmpty()) VISIBLE else GONE
     }
+
+    // ── 語音模式切換列 ──
+
+    private fun modeChip(mode: com.utuvo.type.core.VoiceMode): TextView {
+        val label = when (mode) {
+            com.utuvo.type.core.VoiceMode.DICTATE -> context.getString(R.string.voice_mode_dictate)
+            com.utuvo.type.core.VoiceMode.HELP_WRITE -> context.getString(R.string.voice_mode_help_write)
+            com.utuvo.type.core.VoiceMode.SPEAK_TO_EDIT -> context.getString(R.string.voice_mode_speak_to_edit)
+            com.utuvo.type.core.VoiceMode.ASK_ANYTHING -> context.getString(R.string.voice_mode_ask_anything)
+        }
+        return TextView(context).apply {
+            text = label
+            textSize = 12f
+            gravity = Gravity.CENTER
+            maxLines = 1
+            isSingleLine = true
+            typeface = Typeface.DEFAULT_BOLD
+            val pad = dpi(8)
+            setPadding(pad, 0, pad, 0)
+            contentDescription = label
+            setOnClickListener {
+                KeyFeedback.attach(this, KeyFeedback.Kind.SPECIAL)
+                listener.onVoiceModeSelected(mode)
+            }
+        }
+    }
+
+    private fun buildModeRow() {
+        modeRow.gravity = Gravity.CENTER
+        for (mode in com.utuvo.type.core.VoiceMode.entries) {
+            val chip = modeChip(mode)
+            modeChips[mode] = chip
+            val lp = LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply {
+                leftMargin = dpi(3); rightMargin = dpi(3)
+            }
+            modeRow.addView(chip, lp)
+        }
+        modeRow.visibility = VISIBLE
+        setVoiceMode(com.utuvo.type.core.VoiceMode.DICTATE)
+    }
+
+    /**
+     * 目前選的語音模式（決定光球顏色、提示、接下來送到模型的是哪一種）。
+     * 鍵盤只是畫出來，選取邏輯在 [com.utuvo.type.core.VoiceMode]。
+     */
+    fun setVoiceMode(mode: com.utuvo.type.core.VoiceMode) {
+        for ((m, chip) in modeChips) {
+            val on = m == mode
+            chip.background = roundedRect(
+                if (on) accent else (if (dark) 0xFF323235.toInt() else 0xFFEBEDF2.toInt()),
+                dpi(15)
+            )
+            chip.setTextColor(if (on) Color.WHITE else ink2)
+        }
+        orb.editPalette = mode != com.utuvo.type.core.VoiceMode.DICTATE
+    }
+
+    /** 模式列「應該」顯示嗎（不含錄音中暫時藏起來）。 */
+    private var modeRowWanted = true
+
+    fun showModeRow(show: Boolean) {
+        modeRowWanted = show
+        if (show) { answerCard.visibility = GONE; scopeRow.visibility = GONE }
+        applyModeRowVisibility()
+    }
+
+    /**
+     * 錄音中藏起模式列（講到一半不會換模式），提示文字可以用兩行（例如雲端辨識的隱私說明）；
+     * 閒置時模式列在，提示只留一行，不然第二行會被模式列蓋住。
+     */
+    private fun applyModeRowVisibility() {
+        val show = modeRowWanted && !orb.listening
+        modeRow.visibility = if (show) VISIBLE else GONE
+        hint.maxLines = if (show) 1 else 2
+        hint.ellipsize = if (show) android.text.TextUtils.TruncateAt.END else null
+    }
+
+    // ── 改寫範圍選擇（這一段／全部文字）──
+
+    private fun scopeButton(label: String, scope: com.utuvo.type.core.EditScope): TextView =
+        TextView(context).apply {
+            text = label
+            textSize = 13f
+            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ink)
+            background = roundedRect(if (dark) 0xFF4A4A4E.toInt() else Color.WHITE, dpi(10))
+            contentDescription = label
+            val pad = dpi(10)
+            setPadding(pad, 0, pad, 0)
+            setOnClickListener { listener.onEditScopePicked(scope) }
+        }
+
+    private fun buildScopeRow() {
+        scopeRow.gravity = Gravity.CENTER_VERTICAL
+        val inner = LinearLayout(context).apply { gravity = Gravity.CENTER }
+        inner.addView(scopeButton(context.getString(R.string.edit_scope_paragraph), com.utuvo.type.core.EditScope.PARAGRAPH),
+            LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f).apply { rightMargin = dpi(6) })
+        inner.addView(scopeButton(context.getString(R.string.edit_scope_all), com.utuvo.type.core.EditScope.ALL),
+            LinearLayout.LayoutParams(0, LayoutParams.MATCH_PARENT, 1f))
+        scopeRow.addView(inner, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
+        scopeRow.visibility = GONE
+    }
+
+    /**
+     * 顯示範圍選擇。[allAvailable] 為 false 代表拿不到完整文字
+     * （[android.view.inputmethod.ExtractedText] 為 null 或被截斷），「全部文字」就不給。
+     */
+    fun showScopePicker(allAvailable: Boolean) {
+        answerCard.visibility = GONE
+        modeRow.visibility = GONE; hint.maxLines = 1; hint.ellipsize = android.text.TextUtils.TruncateAt.END
+        val inner = scopeRow.getChildAt(0) as? LinearLayout ?: return
+        val paragraph = inner.getChildAt(0) ?: return
+        val all = inner.getChildAt(1) ?: return
+        all.visibility = if (allAvailable) VISIBLE else GONE
+        // 拿不到完整文字就只剩一個選擇，讓它佔滿整列（不要留半列空白）
+        paragraph.layoutParams = LinearLayout.LayoutParams(
+            0, LayoutParams.MATCH_PARENT, 1f
+        ).apply { if (allAvailable) rightMargin = dpi(6) }
+        scopeRow.visibility = VISIBLE
+    }
+
+    fun hideScopePicker() { scopeRow.visibility = GONE }
+
+    /** 範圍選擇是不是正顯示（光球在這個狀態下是「取消」，不是「開始錄音」）。 */
+    fun isScopePickerVisible(): Boolean = scopeRow.visibility == VISIBLE
+
+    // ── 回答卡（Ask anything）──
+
+    private fun answerButton(label: String, desc: String, onClick: () -> Unit): TextView =
+        TextView(context).apply {
+            text = label
+            textSize = 13f
+            gravity = Gravity.CENTER
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ink)
+            background = roundedRect(if (dark) 0xFF4A4A4E.toInt() else Color.WHITE, dpi(10))
+            contentDescription = desc
+            val pad = dpi(10)
+            setPadding(pad, 0, pad, 0)
+            setOnClickListener { onClick() }
+        }
+
+    private fun buildAnswerCard() {
+        answerCard.orientation = VERTICAL
+        answerCard.setBackgroundColor(if (dark) 0xFF2C2C2E.toInt() else 0xFFF7F8FA.toInt())
+        answerText.apply {
+            setTextColor(ink)
+            textSize = 14f
+            maxLines = 3
+            ellipsize = android.text.TextUtils.TruncateAt.END
+            contentDescription = context.getString(R.string.answer_card)
+        }
+        answerCard.addView(answerText, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, 0, 1f).apply {
+            setMargins(dpi(10), dpi(8), dpi(10), 0)
+        })
+        val buttons = LinearLayout(context).apply { gravity = Gravity.CENTER_VERTICAL }
+        answerInsertBtn = answerButton(context.getString(R.string.answer_insert), context.getString(R.string.answer_insert)) {
+            listener.onAnswerInsert(answerContent)
+        }.also { buttons.addView(it, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)) }
+        answerCopyBtn = answerButton(context.getString(R.string.answer_copy), context.getString(R.string.answer_copy)) {
+            listener.onAnswerCopy(answerContent)
+        }.also { buttons.addView(it, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)) }
+        answerCloseBtn = answerButton(context.getString(R.string.answer_close), context.getString(R.string.answer_close)) {
+            listener.onAnswerDismiss()
+        }.also { buttons.addView(it, LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1f)) }
+        answerCard.addView(buttons, LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
+            setMargins(dpi(10), dpi(6), dpi(10), dpi(8))
+        })
+        answerCard.visibility = GONE
+    }
+
+    /**
+     * 顯示回答卡（Ask anything 的結果）。回答比三行長時中間省略——要看全文就插入或複製。
+     * 顯示回答卡時把模式切換列收起來，兩個面板不會疊在一起。
+     */
+    fun showAnswerCard(text: String) {
+        answerContent = text
+        answerText.text = text
+        resetAnswerButtons()
+        modeRow.visibility = GONE; hint.maxLines = 1; hint.ellipsize = android.text.TextUtils.TruncateAt.END
+        scopeRow.visibility = GONE
+        answerCard.visibility = VISIBLE
+    }
+
+    /**
+     * 顯示「已寫好／已改好」的卡片，只留「復原」與「關閉」。
+     * 幫我寫與改寫都已經把文字插進欄位了，這裡唯一的用途就是讓使用者收回去。
+     */
+    fun showUndoCard(text: String) {
+        answerContent = text
+        answerText.text = text
+        answerInsertBtn?.visibility = GONE
+        // 「複製」這個位置改成「復原」：空字串代表復原，不是插入
+        labelAnswerButton(answerCopyBtn, R.string.answer_undo) { listener.onAnswerInsert("") }
+        labelAnswerButton(answerCloseBtn, R.string.answer_close) { listener.onAnswerDismiss() }
+        modeRow.visibility = GONE; hint.maxLines = 1; hint.ellipsize = android.text.TextUtils.TruncateAt.END
+        scopeRow.visibility = GONE
+        answerCard.visibility = VISIBLE
+    }
+
+    /** 從「復原卡」回到一般回答卡的按鈕設定（同一組元件會被重複使用）。 */
+    private fun resetAnswerButtons() {
+        answerInsertBtn?.visibility = VISIBLE
+        labelAnswerButton(answerInsertBtn, R.string.answer_insert) { listener.onAnswerInsert(answerContent) }
+        labelAnswerButton(answerCopyBtn, R.string.answer_copy) { listener.onAnswerCopy(answerContent) }
+        labelAnswerButton(answerCloseBtn, R.string.answer_close) { listener.onAnswerDismiss() }
+    }
+
+    private fun labelAnswerButton(button: TextView?, labelRes: Int, onClick: () -> Unit) {
+        button ?: return
+        button.visibility = VISIBLE
+        val label = context.getString(labelRes)
+        button.text = label
+        button.contentDescription = label
+        button.setOnClickListener { onClick() }
+    }
+
+    fun hideAnswerCard() {
+        answerCard.visibility = GONE
+        answerContent = ""
+        resetAnswerButtons()
+    }
+
+    fun isAnswerCardVisible(): Boolean = answerCard.visibility == VISIBLE
 
     // ── 語音區 ──
 
@@ -438,13 +685,26 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             when (e.actionMasked) {
                 MotionEvent.ACTION_MOVE -> highlight(nearestDot(e.rawX, e.rawY))
                 MotionEvent.ACTION_UP -> {
-                    val picked = nearestDot(e.rawX, e.rawY)?.let { arcTargets.getOrNull(it) }
+                    val nearest = nearestDot(e.rawX, e.rawY)
                     endArc(v)
-                    if (picked != null) { v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY); listener.onTranslatePick(picked) }
-                    else listener.onTranslateCancel()
+                    when {
+                        nearest == null -> listener.onTranslateCancel()
+                        nearest == arcTargets.size -> {
+                            v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            showAddLanguageMenu()
+                        }
+                        else -> {
+                            val picked = arcTargets.getOrNull(nearest)
+                            if (picked != null) {
+                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                listener.onTranslatePick(picked)
+                            } else listener.onTranslateCancel()
+                        }
+                    }
                 }
                 MotionEvent.ACTION_CANCEL -> { endArc(v); listener.onTranslateCancel() }
             }
+
             true
         }
         orb.contentDescription = context.getString(R.string.orb)
@@ -456,6 +716,23 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             text = context.getString(R.string.hint_idle); textSize = 13f; setTextColor(ink2); gravity = Gravity.CENTER
         }
         voice.addView(hint, FrameLayout.LayoutParams(dpi(200), LayoutParams.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL).apply { topMargin = dpi(184) })
+
+        // 三個面板共用同一個位置（206dp 起），任一時間只有一個可見：模式列／範圍選擇／回答卡。
+        buildModeRow()
+        voice.addView(modeRow, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, dpi(34)).apply {
+            leftMargin = dpi(16); rightMargin = dpi(16); topMargin = dpi(206)
+        })
+
+        buildScopeRow()
+        voice.addView(scopeRow, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, dpi(34)).apply {
+            leftMargin = dpi(16); rightMargin = dpi(16); topMargin = dpi(206)
+        })
+
+        // 回答卡蓋住光球那一塊：結果比光球重要，看得到回答才需要再按一次光球。
+        buildAnswerCard()
+        voice.addView(answerCard, FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, dpi(128)).apply {
+            leftMargin = dpi(12); rightMargin = dpi(12); topMargin = dpi(52)
+        })
 
         // 兩側對稱圓鈕：44dp、邊距 16dp、上下間距 50dp（同 iOS）
         val step = 50
@@ -522,7 +799,17 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         val labels = DictationLanguage.all.map { context.getString(it.labelRes) }.toTypedArray()
         val checked = DictationLanguage.all.indexOf(current)
         val list = ListView(context).apply {
-            adapter = ArrayAdapter(context, android.R.layout.simple_list_item_single_choice, labels)
+            // 10-10 Micky：深色模式這個選單幾乎看不到字——系統樣式在鍵盤服務裡是深色字，背景卻是深灰。
+            // 文字跟著鍵盤的 ink、勾選記號用橘色，深淺色都看得清楚。
+            adapter = object : ArrayAdapter<String>(context, android.R.layout.simple_list_item_single_choice, labels) {
+                override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                    super.getView(position, convertView, parent).also { row ->
+                        (row as? android.widget.CheckedTextView)?.apply {
+                            setTextColor(ink)
+                            checkMarkTintList = android.content.res.ColorStateList.valueOf(accent)
+                        }
+                    }
+            }
             choiceMode = ListView.CHOICE_MODE_SINGLE
             setItemChecked(checked, true)
             divider = null
@@ -555,21 +842,29 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     }
 
 
-    /** 五顆語言點排在光球上方的半圓弧（半徑 86dp、左右各 70°；96dp 時最上面那顆會被鍵盤頂邊切掉，Pixel 7 實測），跟 iOS 一樣弧頂會蓋到字幕帶，所以出現時字幕帶先退場。 */
+    /** 語言點＋最後一顆「＋新增語言」排在光球上方的半圓弧（半徑 86dp、左右各 70°）。 */
     private fun buildArc() {
-        val n = arcTargets.size
+        val n = arcTargets.size + 1
         if (n < 2) { highlight(null); return }
         val radius = 86.0
         val orbCenterY = 58 + 60
-        arcTargets.forEachIndexed { i, t ->
+        for (i in 0 until n) {
             val deg = -160.0 + 140.0 * i / (n - 1)          // -160°（左下）→ -20°（右下），往上拱
             val rad = Math.toRadians(deg)
             val dx = (radius * Math.cos(rad)).toFloat()
             val dy = (radius * Math.sin(rad)).toFloat()
+            val isAdd = (i == arcTargets.size)
             val dot = TextView(context).apply {
-                text = context.getString(t.shortRes); textSize = 15f; gravity = Gravity.CENTER
+                if (isAdd) {
+                    text = context.getString(R.string.translate_add_language_short)
+                    contentDescription = context.getString(R.string.translate_add_language)
+                } else {
+                    val t = arcTargets[i]
+                    text = context.getString(t.shortRes)
+                    contentDescription = context.getString(R.string.translate_to, context.getString(t.labelRes))
+                }
+                textSize = 15f; gravity = Gravity.CENTER
                 typeface = Typeface.DEFAULT_BOLD
-                contentDescription = context.getString(R.string.translate_to, context.getString(t.labelRes))
                 visibility = GONE
                 translationX = dp(dx)
             }
@@ -604,7 +899,56 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             d.setTextColor(if (on) Color.WHITE else ink)
             d.scaleX = if (on) 1.15f else 1f; d.scaleY = d.scaleX
         }
+        if (index != null && arcVisible) {
+            if (index == arcTargets.size) {
+                setHint(context.getString(R.string.translate_add_language), error = false)
+            } else {
+                val t = arcTargets.getOrNull(index)
+                if (t != null) {
+                    setHint(context.getString(R.string.hint_listening_translate, context.getString(t.labelRes)), error = false)
+                }
+            }
+        }
     }
+
+    private fun showAddLanguageMenu() {
+        val currentSource = Translation.sourceMlKit(DictationLanguage.current(context).code)
+        val available = Translation.all.filter { it.code != currentSource }
+        val labels = available.map { context.getString(it.labelRes) }
+        val list = android.widget.ListView(context).apply {
+            adapter = object : android.widget.ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, labels) {
+                override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View =
+                    super.getView(position, convertView, parent).also { row ->
+                        (row as? TextView)?.apply {
+                            setTextColor(ink)
+                            textSize = 15f
+                            setPadding(dpi(16), dpi(12), dpi(16), dpi(12))
+                        }
+                    }
+            }
+            divider = null
+            setOnItemClickListener { _, _, index, _ ->
+                languageMenu?.dismiss()
+                val picked = available[index]
+                Translation.addQuickPick(context, picked.code)
+                arcTargets = Translation.quickPick(context)
+                rebuildArc()
+                performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+
+                listener.onTranslatePick(picked)
+            }
+        }
+        val popup = android.widget.PopupWindow(context).apply {
+            contentView = list
+            width = dpi(220)
+            height = minOf(labels.size * dpi(48), dpi(280))
+            isOutsideTouchable = true
+            setBackgroundDrawable(roundedRect(if (dark) 0xFF2A2A2E.toInt() else Color.WHITE, dpi(12)))
+        }
+        languageMenu = popup
+        popup.showAtLocation(this, Gravity.CENTER, 0, 0)
+    }
+
 
     /** 手指離哪顆最近；離所有點都超過 56dp（大約在弧外）就是 null＝放開取消。 */
     private fun nearestDot(rawX: Float, rawY: Float): Int? {

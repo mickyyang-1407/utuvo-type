@@ -15,10 +15,28 @@ final class KeyboardViewController: UIInputViewController {
     /// 這個鍵盤發出、還在等結果的指令 id。
     private var activeCommandID: UUID?
     private var bridgeObserver: DarwinObserver?
+    private var appearanceObserver: DarwinObserver?
     private var lastKeyboardActivityPost = Date.distantPast
-    private static let pendingIDKey = "utuvo.type.voice.pendingID"
-    private static let pendingTranslateKey = "utuvo.type.voice.pendingTranslate"
+    private static let pendingIDKey = VoicePending.idKey
+    private static let pendingTranslateKey = VoicePending.translateKey
     private var mode: KeyboardMode = .dictate
+    /// 使用者在模式鍵上選的模式（nil＝沒動過，走原本「有選取就改寫、其餘聽寫」的行為）。
+    private var preferredMode: VoiceModeKind?
+    /// Speak to edit 沒有選取文字時：使用者選好範圍、還沒講指令的這段時間。
+    private struct PendingScope {
+        var range: VoiceModes.TextRange
+        var original: String
+        var start: Int
+    }
+    private var pendingScope: PendingScope?
+    /// 每個模式保留一次復原：插入／取代完成後記住，回來時確認游標與前文都沒動過才准撤。
+    private struct UndoAction {
+        var inserted: String
+        var replacedOriginal: String?
+        /// 插入（或取代）完成當下，游標在整份文件裡的 UTF-16 絕對位置。
+        var insertEnd: Int
+    }
+    private var undoAction: UndoAction?
     private var pendingTranslateTarget: TranslationTarget?
     /// 目前由本鍵盤插進文件、還沒定稿的那段文字。
     private var insertedText = ""
@@ -56,6 +74,17 @@ final class KeyboardViewController: UIInputViewController {
     /// 主 app 錄音時寫的即時音量（App Group 小檔案），光球每幀讀。
     private lazy var levelChannel = VoiceLevelChannel(writable: false)
     private let languageButton = UIButton(type: .system)
+    /// 頂列右邊的模式鍵：點一下循環 聽寫 → 幫我寫 → 改寫 → 問問題（翻譯是長按光球，不在這裡）。
+    private let modeChip = UIButton(type: .system)
+    /// 復原鍵：上一次幫我寫／改寫完成後才出現，用掉或換模式就消失。
+    private let undoChip = UIButton(type: .system)
+    /// Speak to edit 的範圍選擇：這一段／全部文字（跟模式鍵同一個位置，兩者不同時出現）。
+    private let paragraphChip = UIButton(type: .system)
+    private let allChip = UIButton(type: .system)
+    private let topBar = UIStackView()
+    private var answerCardHeight: NSLayoutConstraint?
+    /// Ask anything 的回答卡（鍵盤下方浮出，鍵盤整個變高）。
+    private let answerCard = AnswerCardView()
     private let deleteButton = UIButton(type: .custom)
     private let atButton = UIButton(type: .custom)
     private let returnButton = UIButton(type: .custom)
@@ -103,6 +132,9 @@ final class KeyboardViewController: UIInputViewController {
     /// `UITextDocumentProxy` 會在我們自己插字後回呼 delegate；那些回呼若再讀一次宿主 context，
     /// 每個按鍵都會多一次跨行程 IPC。記住目前這一輪由鍵盤發出的變更，讓回呼只處理外部變更。
     private var ownMutationCallbacks = 0
+    /// 這一段聽寫開始時的欄位識別（`textDocumentProxy.documentIdentifier`）：
+    /// `handle(.final)` 回來時比對，不同才當換欄位、丟棄結果（2026-10-14 Q3-repair2 ⑤，同 Android `inputGeneration`）。
+    private var commandFieldSnapshot: FieldGeneration?
     private var ownMutationResetScheduled = false
 
     static let brandOrange = UIColor(red: 0.976, green: 0.451, blue: 0.086, alpha: 1)
@@ -120,6 +152,15 @@ final class KeyboardViewController: UIInputViewController {
     private static let zhuyinHeight: CGFloat = 296
     private static let pinyinHeight: CGFloat = 262
 
+    /// documentIdentifier 在 Swift 是非 optional 的 UUID，但系統有時回 nil（剛 attach 時）——直接讀會 trap 讓整個鍵盤 crash
+    /// （2026-09-20 真機回報）。一律走 Objective-C 取值，nil 就回 nil（換欄位判斷遇 nil 一律照貼）。
+    private var safeDocumentIdentifier: UUID? {
+        guard let proxy = textDocumentProxy as? NSObject else { return nil }
+        let selector = NSSelectorFromString("documentIdentifier")
+        guard proxy.responds(to: selector), let value = proxy.perform(selector)?.takeUnretainedValue() else { return nil }
+        return (value as? NSUUID) as UUID?
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         KeyboardPresence.seen = true
@@ -131,6 +172,8 @@ final class KeyboardViewController: UIInputViewController {
         // iPhone 文字替換的展開詞＋聯絡人姓名（系統給鍵盤的 UILexicon）→ 只當語音辨識提示，人名更容易聽對；資料不離開手機。
         requestSupplementaryLexicon(completion: Self.lexiconHandler())
         bridgeObserver = DarwinObserver(.update) { [weak self] in self?.bridgeUpdated() }
+        // 主 app 改了外觀 → 這把已經開著的鍵盤立刻套用（不必等下次 viewWillAppear）。
+        appearanceObserver = DarwinObserver(.appearance) { [weak self] in self?.applyAppearancePreference() }
         // 打字手感：沒開「允許完整取用」就震不了（系統靜默忽略），先記下來；Taptic 引擎先預熱。
         KeyButton.hasFullAccess = hasFullAccess
         Haptics.prepare()
@@ -140,6 +183,7 @@ final class KeyboardViewController: UIInputViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // 換 app 會讓鍵盤重新出現：先讓舊宿主的證據退役，再讀這次的。
+        applyAppearancePreference()
         rebuildArc()
         // A new appearance may belong to another host field; never commit the previous IME here.
         abandonComposition()
@@ -152,9 +196,40 @@ final class KeyboardViewController: UIInputViewController {
         HostAppResolver.harvest()
         // 新的 extension process 第一次出現時 arbiter 約 200 ms 後才有資料，補讀一次。
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { HostAppResolver.harvest() }
+        noteKeyboardActivity()
+    }
+
+    /// 鍵盤跟著 App 的外觀設定走（工單 ios-C 第 2 點）。
+    /// extension 沒有 SwiftUI Scene、不能用 `preferredColorScheme`，改用同一個 App Group 值
+    /// 設 `overrideUserInterfaceStyle`（`system` = `.unspecified`，交回系統）。
+    /// **介面語言不在這裡**：extension 是另一個 process、另一個 Bundle，iOS 的每 App 語言覆寫
+    /// 不會套到鍵盤，鍵盤介面語言跟著**系統**走——這點在 App 的設定頁有誠實寫出來。
+    private func applyAppearancePreference() {
+        let style = AppearanceStore.current.interfaceStyle
+        guard overrideUserInterfaceStyle != style else { return }
+        overrideUserInterfaceStyle = style
+    }
+
+    /// 系統深淺色切換（控制中心、太陽符號、自動排程）→ 現在就換，不用等鍵盤收起來再叫出來。
+    /// extension 拿得到 `traitCollectionDidChange`，這是 Apple 對鍵盤這類 view controller 唯一的
+    /// trait 變化通知（review-agy-ios-C finding 3）。
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        guard previousTraitCollection?.hasDifferentColorAppearance(comparedTo: traitCollection) == true else { return }
+        // `.system` 時交回系統；使用者選了淺／深色則維持他的選擇。
+        let style = AppearanceStore.current.interfaceStyle
+        guard style != .unspecified, overrideUserInterfaceStyle != style else { return }
+        overrideUserInterfaceStyle = style
+    }
+
+    /// 讀 textDocumentProxy（return 鍵、選取文字）一律等鍵盤真的出現之後：
+    /// iOS 27.0.1 在 viewWillAppear 時 proxy 可能還掛著上一個輸入框已釋放的狀態，
+    /// 一讀 returnKeyType 就 SIGSEGV／doesNotRecognizeSelector（10-04、10-05 Micky 17PMX 0.2.7 兩次閃退，
+    /// 都在 refreshContext ← viewWillAppear）。
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         refreshContext()
         adoptPendingCommand()
-        noteKeyboardActivity()
     }
 
     override func viewDidLayoutSubviews() {
@@ -195,7 +270,8 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     /// 在呼叫文字代理前先記下預期的 delegate 回呼數。同步回呼會立即消耗，若宿主沒有回呼，
-    /// 下一個主執行緒迴圈會清掉預算，不會誤吞掉之後真正來自宿主的選取變更。
+    /// 下一個主執行緒迴圈會清掉計數，不會誤吞掉之後真正來自宿主的選取變更。
+    /// 這個預算只服務於「要不要重讀宿主 context」，不再參與換欄位判斷。
     private func noteOwnTextMutation(callbacks: Int = 4) {
         noteKeyboardActivity()
         ownMutationCallbacks += callbacks
@@ -215,6 +291,10 @@ final class KeyboardViewController: UIInputViewController {
         VoiceBridge.post(.keyboardActivity)
     }
 
+    /// 回呼是不是我們自己造成的文字變更。是→呼叫端可以略過重讀宿主的昂貴路徑。
+    /// 否→照常走外部變更處理。
+    /// 注意：這裡**不再**判斷換欄位。換欄位改由 `documentIdentifier` 在定稿時比對（Q3-repair2 ⑤），
+    /// 回呼次數猜不出來（整理中連按光球、同欄位移動游標都會誤判）。
     private func consumeOwnMutationCallback() -> Bool {
         guard ownMutationCallbacks > 0 else { return false }
         ownMutationCallbacks -= 1
@@ -244,11 +324,12 @@ final class KeyboardViewController: UIInputViewController {
 
     /// 宿主 app 的 return 鍵與選取狀態一變，送出鍵文案與提示跟著變。
     private func refreshContext() {
-        returnButton.configuration?.title = ReturnKeyLabel.text(for: textDocumentProxy.returnKeyType)
+        setReturnTitle(ReturnKeyLabel.text(for: textDocumentProxy.returnKeyType))
         typingView.returnTitle = ReturnKeyLabel.text(for: textDocumentProxy.returnKeyType)
         typingView.updateAutoCapitalization(contextBefore: textDocumentProxy.documentContextBeforeInput)
         guard !isRecording else { return }
-        let preview = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: nil)
+        let preview = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
+                                          translateTarget: nil, preferred: preferredMode)
         setHint(preview.idleHint, error: false)
         if case .edit = preview {
             micButton.setTint(edit: true)
@@ -259,6 +340,13 @@ final class KeyboardViewController: UIInputViewController {
     }
 
     // MARK: - Layout
+
+    /// 回答卡的高度約束（建立一次，之後只改 constant——反覆 activate 新的 equal-constant 會互相衝突）。
+    private func answerCardHeightAnchor() -> NSLayoutConstraint {
+        let constraint = answerCard.heightAnchor.constraint(equalToConstant: 0)
+        answerCardHeight = constraint
+        return constraint
+    }
 
     private func setupUI() {
         let height = view.heightAnchor.constraint(equalToConstant: Self.voiceHeight)
@@ -343,6 +431,51 @@ final class KeyboardViewController: UIInputViewController {
         applyGlass(to: languageButton, radius: 17)
         updateLanguageButton()
 
+        // 模式鍵／復原鍵／範圍鍵：頂列右邊同一個位置（見 NSLayoutConstraint.activate）。
+        for (button, title, identifier) in [(modeChip, VoiceModeKind.dictate.shortName, "utuvoKeyboardModeChip"),
+                                            (undoChip, String(localized: "復原"), "utuvoKeyboardUndo"),
+                                            (paragraphChip, String(localized: "這一段"), "utuvoKeyboardScopeParagraph"),
+                                            (allChip, String(localized: "全部文字"), "utuvoKeyboardScopeAll")] {
+            var config = UIButton.Configuration.plain()
+            config.title = title
+            config.cornerStyle = .capsule
+            config.baseForegroundColor = .label
+            config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 10)
+            // 頂列按鈕都不能被字幕帶擠成兩行（語言徽章曾折成直排，09-29 真機）。
+            config.titleLineBreakMode = .byClipping
+            config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+                var a = attrs
+                a.font = .systemFont(ofSize: 13, weight: .semibold)
+                return a
+            }
+            button.configuration = config
+            button.setContentCompressionResistancePriority(.required, for: .horizontal)
+            button.setContentHuggingPriority(.required, for: .horizontal)
+            button.accessibilityIdentifier = identifier
+            applyGlass(to: button, radius: 17)
+        }
+        modeChip.accessibilityLabel = String(localized: "語音模式")
+        undoChip.accessibilityLabel = String(localized: "復原剛剛的改動")
+        // 點了展開模式面板（不是點一下循環）：四個模式一次列出、目前的標出來（10-15 Micky：「根本不知道我現在在哪個模式」）。
+        // 不用 UIMenu：鍵盤高度只放得下兩項，其餘要捲動才看得到。
+        modeChip.addAction(UIAction { [weak self] _ in self?.toggleModePicker() }, for: .touchUpInside)
+        updateModeChip()
+        undoChip.addTarget(self, action: #selector(undoLastEdit), for: .touchUpInside)
+        paragraphChip.addAction(UIAction { [weak self] _ in self?.chooseEditScope(.paragraph) }, for: .touchUpInside)
+        allChip.addAction(UIAction { [weak self] _ in self?.chooseEditScope(.all) }, for: .touchUpInside)
+
+        topBar.axis = .horizontal
+        topBar.spacing = 6
+        topBar.alignment = .center
+        topBar.translatesAutoresizingMaskIntoConstraints = false
+        for v in [modeChip, undoChip, paragraphChip, allChip] { topBar.addArrangedSubview(v) }
+
+        answerCard.isHidden = true
+        answerCard.translatesAutoresizingMaskIntoConstraints = false
+        answerCard.onInsert = { [weak self] in self?.insertAnswer() }
+        answerCard.onCopy = { [weak self] in self?.copyAnswer() }
+        answerCard.onClose = { [weak self] in self?.hideAnswerCard() }
+
         // 左側直排：切打字版面（跟右側對稱）
         for (button, title, label, mode) in [(englishButton, "EN", String(localized: "英文鍵盤"), ModeSwitchView.Mode.english),
                                              (hantButton, "繁", String(localized: "注音鍵盤"), .zhuyin),
@@ -375,12 +508,8 @@ final class KeyboardViewController: UIInputViewController {
         returnConfig.title = String(localized: "換行")
         returnConfig.contentInsets = .zero
         returnConfig.titleLineBreakMode = .byClipping
-        returnConfig.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
-            var a = attrs
-            a.font = .systemFont(ofSize: 13, weight: .semibold)
-            return a
-        }
         returnButton.configuration = returnConfig
+        setReturnTitle(String(localized: "換行"))
         applyGlass(to: returnButton, radius: Self.sideKey / 2)
         returnButton.addTarget(self, action: #selector(insertNewline), for: .touchUpInside)
 
@@ -401,7 +530,7 @@ final class KeyboardViewController: UIInputViewController {
 
         voiceContainer.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(voiceContainer)
-        for v in [transcriptPill, micButton, hintLabel, languageButton, englishButton, hantButton, hansButton,
+        for v in [transcriptPill, micButton, hintLabel, languageButton, topBar, answerCard, englishButton, hantButton, hansButton,
                   deleteButton, atButton, returnButton, globeButton] {
             v.translatesAutoresizingMaskIntoConstraints = false
             voiceContainer.addSubview(v)
@@ -410,7 +539,7 @@ final class KeyboardViewController: UIInputViewController {
 
         NSLayoutConstraint.activate([
             transcriptPill.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
-            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: languageButton.leadingAnchor, constant: -8),
+            transcriptPill.trailingAnchor.constraint(lessThanOrEqualTo: topBar.leadingAnchor, constant: -8),
             voiceContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             voiceContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             voiceContainer.topAnchor.constraint(equalTo: view.topAnchor),
@@ -432,6 +561,15 @@ final class KeyboardViewController: UIInputViewController {
             languageButton.centerYAnchor.constraint(equalTo: transcriptPill.centerYAnchor),
             languageButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 56),
             languageButton.heightAnchor.constraint(equalToConstant: 34),
+
+            topBar.trailingAnchor.constraint(equalTo: languageButton.leadingAnchor, constant: -8),
+            topBar.centerYAnchor.constraint(equalTo: transcriptPill.centerYAnchor),
+            topBar.heightAnchor.constraint(equalToConstant: 34),
+
+            answerCard.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
+            answerCard.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.sideInset),
+            answerCard.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -8),
+            answerCardHeightAnchor(),
 
             hantButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
             hantButton.centerYAnchor.constraint(equalTo: micButton.centerYAnchor),
@@ -457,6 +595,7 @@ final class KeyboardViewController: UIInputViewController {
             globeButton.heightAnchor.constraint(equalToConstant: 40)
         ])
         setHint(KeyboardMode.dictate.idleHint, error: false)
+        updateTopBar()
         #if DEBUG
         // 截圖用（模擬器沒麥克風、按住時截不到）：App Group 旗標 utuvo.type.keyboard.debugPose
         //   = "recording" 擺出錄音中＋字幕帶；= "arc" 擺出長按弧形語言點。不會真的錄音。
@@ -501,28 +640,40 @@ final class KeyboardViewController: UIInputViewController {
 
     /// 長按翻譯弧上的語言點：照使用者在主 app 選的語言（1–5 個）重建。frame 在 layoutArc() 算。
     private var arcCodes: [String] = []
+    /// 弧上「＋語言」展開的鍵盤內語言清單。
+    private var languageChooser: UIView?
 
     private func rebuildArc() {
-        let targets = TranslationTarget.quickPick
-        let codes = targets.map(\.code)
+        // 最後一格永遠是「＋語言」（工單 ios-C 第 5 點）：鍵盤無法直接開 App 頁面，
+        // 所以放開這一格時在鍵盤內顯示語言清單，選完直接用它翻譯並加入快選（上限仍是 5）。
+        //
+        // 上限的實作位置在 `QuickPickStore.resolve`（`prefix(maxCount)`）與 `QuickPickStore.adding`，
+        // 不是在這裡：**語言點恆為 ≤ 5 個**，這裡 append 的是第 6 格但它是功能鍵（＋語言）不是語言點。
+        // （review-agy-ios-C finding 2 說弧上會有 6 個語言點——查證不成立：`quickPick` 本身
+        // 就已經過 `resolve` 的 5 個上限。真正成立的是同一條 finding 的下一段：`zh-Hant` 寫死。）
+        var codes = TranslationTarget.quickPick.map(\.code)
+        codes.append(Self.addLanguageArcCode)
         guard codes != arcCodes else { return }
         arcCodes = codes
         pickerDots.forEach { $0.removeFromSuperview() }
         pickerDots.removeAll()
         pickerLabels.removeAll()
-        for (index, target) in targets.enumerated() {
+        for (index, code) in codes.enumerated() {
+            let isAdd = code == Self.addLanguageArcCode
             let dot = UIView()
             dot.layer.cornerRadius = 22
             applyGlass(to: dot, radius: 22, fallback: .secondarySystemFill)
             dot.isHidden = true
             dot.tag = index
             let label = UILabel()
-            label.text = target.displayName
-            label.font = .systemFont(ofSize: 11, weight: .semibold)
-            label.textColor = .label
+            label.text = isAdd ? String(localized: "＋語言")
+                               : (TranslationTarget.all.first { $0.code == code }?.displayName ?? code)
+            label.font = .systemFont(ofSize: isAdd ? 13 : 11, weight: .semibold)
+            label.textColor = isAdd ? Self.brandOrange : .label
             label.textAlignment = .center
             label.adjustsFontSizeToFitWidth = true
             label.minimumScaleFactor = 0.6
+            dot.accessibilityIdentifier = isAdd ? "translateArcAddLanguage" : "translateArcTarget\(index)"
             dot.addSubview(label)
             label.translatesAutoresizingMaskIntoConstraints = false
             NSLayoutConstraint.activate([
@@ -536,6 +687,9 @@ final class KeyboardViewController: UIInputViewController {
         }
         view.setNeedsLayout()
     }
+
+    /// 弧上「＋語言」那一格的假代碼（不是真的語言代碼，不會跟 `TranslationTarget.code` 撞）。
+    static let addLanguageArcCode = "__add__"
 
     /// 語言點沿光球上方弧線排列：從 158° 到 22°（左上到右上），半徑 arcRadius。
     private func layoutArc() {
@@ -607,6 +761,7 @@ final class KeyboardViewController: UIInputViewController {
         languageButton.menu = UIMenu(children: DictationLanguage.allCases.map { lang in
             UIAction(title: lang.localizedName(zh: true), state: lang == current ? .on : .off) { [weak self] _ in
                 guard let self else { return }
+                if lang != current { UIFeedback.tap() }
                 self.language = lang
                 self.updateLanguageButton()
             }
@@ -718,6 +873,8 @@ final class KeyboardViewController: UIInputViewController {
     private var surface: ModeSwitchView.Mode = .voice
 
     private func setSurface(_ mode: ModeSwitchView.Mode, animated: Bool) {
+        // 模式面板掛在 view 上：換到打字面時不收，會蓋住鍵、模式鈕又被藏起來關不掉（ccm3f 審查 10-15 ③）。
+        dismissModePicker()
         // 換模式前把還在選字的中文送出（不丟使用者打的字）。
         if let ime, !ime.isEmpty { commitComposition() }
         hideCandidatePanel()
@@ -1012,8 +1169,15 @@ final class KeyboardViewController: UIInputViewController {
 
     private func learnTyped(_ text: String) {
         guard let pair = learner.didType(text) else { return }
+        // 使用者刪掉過的自動詞不要馬上又被學回來（已忽略清單）。
+        guard LearnedVocabulary.shouldLearn(wrong: pair.wrong, right: pair.right) else { return }
+        let inDictionary = DictionaryStore.shared.dictionary[pair.wrong] != nil
+        // 使用者**手動**加過的詞維持手動：不要因為這次自動學到就被搬到「自動」分頁。
+        let markAuto = LearnedVocabulary.shouldMarkAutoLearned(source: pair.wrong,
+                                                               inDictionary: inDictionary,
+                                                               autoLearned: LearnedVocabulary.autoLearned)
         DictionaryStore.shared.addTerm(source: pair.wrong, output: pair.right)
-        LearnedVocabulary.markAutoLearned(pair.wrong)
+        if markAuto { LearnedVocabulary.markAutoLearned(pair.wrong) }
         setHint(String(localized: "已記住：\(pair.wrong) → \(pair.right)"), error: false)
     }
 
@@ -1053,8 +1217,16 @@ final class KeyboardViewController: UIInputViewController {
                                                  sharedPartial: shared?.partial ?? "",
                                                  sharedFinal: shared?.final) {
                 let pending = activeCommandID
+                let snapshot = commandFieldSnapshot
+                commandFieldSnapshot = nil
                 clearPending()
-                finish(raw: text, commandID: pending)
+                finish(raw: text, commandID: pending, fieldSnapshot: snapshot)
+            }
+            // Speak to edit 且沒有選取文字：先讓他選「這一段／全部文字」，不要直接開錄音。
+            if preferredMode == .speakToEdit, isPickingScope {
+                setHint(String(localized: "先選範圍：這一段或全部文字"), error: false)
+                updateTopBar()
+                return
             }
             Task { await startRecognition() }
         }
@@ -1066,6 +1238,7 @@ final class KeyboardViewController: UIInputViewController {
         let point = gesture.location(in: view)
         switch gesture.state {
         case .began:
+            updateTopBar()
             let sourceRaw = language.rawValue
             Task { @MainActor in
                 for target in TranslationTarget.quickPick { await FastTranslator.shared.prewarm(sourceRaw: sourceRaw, targetCode: target.code) }
@@ -1077,16 +1250,24 @@ final class KeyboardViewController: UIInputViewController {
             highlightPick(nearest(to: point))
         case .ended:
             setArcVisible(false)
+            updateTopBar()
             if let index = highlightedPick {
                 Haptics.start()
-                pendingTranslateTarget = arcCodes.indices.contains(index) ? TranslationTarget.all.first { $0.code == arcCodes[index] } : nil
-                Task { await startRecognition() }
+                let code = arcCodes.indices.contains(index) ? arcCodes[index] : nil
+                if code == Self.addLanguageArcCode {
+                    // 放開在「＋語言」：不清掉 pendingTranslateTarget，直接在鍵盤內開語言清單。
+                    presentLanguageChooser()
+                } else {
+                    pendingTranslateTarget = code.flatMap { c in TranslationTarget.all.first { $0.code == c } }
+                    Task { await startRecognition() }
+                }
             } else {
                 setHint(KeyboardMode.dictate.idleHint, error: false)
             }
             highlightPick(nil)
         case .cancelled, .failed:
             setArcVisible(false)
+            updateTopBar()
             highlightPick(nil)
             setHint(KeyboardMode.dictate.idleHint, error: false)
         default: break
@@ -1116,6 +1297,67 @@ final class KeyboardViewController: UIInputViewController {
         return best?.0
     }
 
+    /// 放開在「＋語言」時的鍵盤內語言清單。
+    /// 鍵盤 extension 不能直接開主 app 頁面，所以清單長在鍵盤自己的 view 上（工單 ios-C 第 5 點）。
+    /// 選完：加入快選（上限 5，滿了擠掉最舊的一個）→ 直接用它翻譯。
+    private func presentLanguageChooser() {
+        languageChooser?.removeFromSuperview()
+        let panel = UIVisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
+        panel.layer.cornerRadius = 18
+        panel.clipsToBounds = true
+        panel.accessibilityIdentifier = "languageChooser"
+        panel.translatesAutoresizingMaskIntoConstraints = false
+
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 2
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        // 已選的語言就不再列一次（這裡是「新增」用的清單）。
+        //
+        // 「繁體中文」這個候選只排除**當下的輸入語言**（譯成自己的語言沒意義），
+        // 不是把 `zh-Hant` 從清單裡永久拿掉——舊版寫死 `target.code != "zh-Hant"`，
+        // 使用者在主 app 把繁中移出快選後，就再也無法從鍵盤加回來。
+        let identityCode = QuickPickStore.identityTargetCode(for: language)
+        let picked = Set(QuickPickStore.codes())
+        for target in TranslationTarget.all where !picked.contains(target.code) && target.code != identityCode {
+            let button = UIButton(type: .system)
+            var config = UIButton.Configuration.plain()
+            config.title = target.displayName
+            config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16)
+            button.configuration = config
+            button.contentHorizontalAlignment = .leading
+            button.accessibilityIdentifier = "languageChooser\(target.code)"
+            button.addAction(UIAction { [weak self] _ in
+                guard let self else { return }
+                QuickPickStore.setCodes(QuickPickStore.adding(target.code, to: QuickPickStore.codes()))
+                self.rebuildArc()
+                self.dismissLanguageChooser()
+                self.pendingTranslateTarget = target
+                Task { await self.startRecognition() }
+            }, for: .touchUpInside)
+            stack.addArrangedSubview(button)
+        }
+        panel.contentView.addSubview(stack)
+        view.addSubview(panel)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: panel.contentView.topAnchor, constant: 8),
+            stack.bottomAnchor.constraint(equalTo: panel.contentView.bottomAnchor, constant: -8),
+            stack.leadingAnchor.constraint(equalTo: panel.contentView.leadingAnchor, constant: 4),
+            stack.trailingAnchor.constraint(equalTo: panel.contentView.trailingAnchor, constant: -4),
+            panel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            panel.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -12),
+            panel.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, constant: -24),
+        ])
+        languageChooser = panel
+        setHint(String(localized: "選一個語言，說完放開就翻譯"), error: false)
+    }
+
+    private func dismissLanguageChooser() {
+        languageChooser?.removeFromSuperview()
+        languageChooser = nil
+        setHint(KeyboardMode.dictate.idleHint, error: false)
+    }
+
     private func highlightPick(_ index: Int?) {
         if let index, index != highlightedPick { Haptics.selection() }
         highlightedPick = index
@@ -1138,7 +1380,22 @@ final class KeyboardViewController: UIInputViewController {
         }
     }
 
+    /// 錄音秒數計時。**在錄音結束那一刻凍結**（`setRecordingAppearance(false)` 或失敗分支），
+    /// 交付時讀凍結值——鍵盤的定稿常常晚好幾秒才回來（雲端重辨識、翻譯），
+    /// 那時才去算會把等待時間算成「使用者講了幾秒」。
+    private var recordingClock = DictationClock()
+
     private func setRecordingAppearance(_ recording: Bool) {
+        if recording { dismissModePicker() }
+        // 錄音起點。這是「isRecording 變 true」的唯一入口，所以放這裡不會漏。
+        // 只在第一次記，之後重複呼叫不會把計時歸零。
+        // 收尾時在 `freezeRecordingSeconds()` 凍結，不在這裡清——
+        // `handle(.final)` 會先 setRecordingAppearance(false) 再呼叫 finish()。
+        if recording {
+            if recordingClock.startedAt == nil { recordingClock.begin(at: Date()) }
+        } else {
+            freezeRecordingSeconds()
+        }
         micButton.setRecording(recording)
         // 字幕帶：錄音中品牌退場、橘點＋逐字稿進場
         brandLabel.isHidden = recording
@@ -1162,6 +1419,20 @@ final class KeyboardViewController: UIInputViewController {
 
     // MARK: - Speech（經主 app）
 
+    /// 目前輸入欄位的長相（只從 `textDocumentProxy` 拿得到；鍵盤拿不到宿主 App 名稱，所以不填 appName）。
+    /// UIKit 列舉 → 內部名稱的轉換全部在 `UIKitFieldMapping`（可用真 UIKit 值單元測試）；
+    /// 這裡只負責把 proxy 的屬性讀出來。**不要**用 `String(describing:)`——
+    /// 它印出 `Optional(__C.UIKeyboardType)`／`UIKeyboardType(rawValue: 7)`，`FieldContext` 永遠對不上。
+    private func currentField() -> FieldContext.Field {
+        let proxy = textDocumentProxy
+        return UIKitFieldMapping.field(keyboardType: proxy.keyboardType,
+                                       returnKeyType: proxy.returnKeyType,
+                                       contentType: proxy.textContentType,
+                                       // isSecureTextEntry 在 textDocumentProxy 上是 null_unspecified（拿不到＝nil），
+                                       // 拿不到不代表安全，所以映射函式只在**明確為真**時才當密碼欄位。
+                                       isSecure: proxy.isSecureTextEntry)
+    }
+
     private var hasAccess: Bool {
         #if DEBUG && targetEnvironment(simulator)
         // 模擬器「設定」裡的完整存取開關點不動；模擬器沒有 App Group 沙盒限制，Debug 直接放行好驗橋接。
@@ -1177,17 +1448,32 @@ final class KeyboardViewController: UIInputViewController {
             setHint(String(localized: "請到 設定 → 一般 → 鍵盤 → UTUVO Type 開啟「允許完整取用」"), error: true)
             return
         }
-        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: pendingTranslateTarget)
+        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
+                                   translateTarget: pendingTranslateTarget, preferred: preferredMode)
         let id = UUID()
         var command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
-        if SmartCleanup.includeAppContext {
-            command.contextText = String((textDocumentProxy.documentContextBeforeInput ?? "").suffix(500))
-        }
+        // 欄位脈絡：游標前 500 字、游標後 200 字、欄位語意提示。**與游標前共用同一個開關**。
+        // 密碼／一次性密碼欄位（textContentType 或 isSecureTextEntry）整份不送，只留 contextBlocked 給稽核。
+        // 欄位提示拿不到 placeholder 就留 nil（`textDocumentProxy` 沒有這項 API），不要湊。
+        let field = currentField()
+        let assembled = FieldContext.assemble(
+            enabled: SmartCleanup.includeAppContext, field: field,
+            before: textDocumentProxy.documentContextBeforeInput,
+            after: textDocumentProxy.documentContextAfterInput,
+            hintText: FieldContext.fieldHint(field))
+        command.contextText = assembled.surroundingText.isEmpty ? nil : assembled.surroundingText
+        command.contextAfter = assembled.textAfterCursor.isEmpty ? nil : assembled.textAfterCursor
+        command.contextHint = assembled.hint.isEmpty ? nil : assembled.hint
+        command.contextBlocked = (SmartCleanup.includeAppContext && !FieldContext.allowsContext(field))
+        // 欄位長相也送過去（只有列舉名稱、不是使用者文字），讓主 app 端能**自己再判一次**
+        // 而不是只靠這個旗標（review-agy-ios-C finding 6）。
+        command.contextFieldKind = VoiceBridge.Command.fieldKind(field)
         if case .translate(let target) = mode { command.translateTo = target.code }
         VoiceBridge.writeCommand(command)
         activeCommandID = id
         insertedText = ""
         lastRawTranscript = ""
+        commandFieldSnapshot = FieldGeneration(documentIdentifier: safeDocumentIdentifier)
         // 記住這個指令：跳去主 app 再回來時，鍵盤可能是新的 process，要靠這兩個值接回來。
         KeyboardPresence.defaults.set(id.uuidString, forKey: Self.pendingIDKey)
         if case .translate(let target) = mode {
@@ -1195,12 +1481,14 @@ final class KeyboardViewController: UIInputViewController {
         } else {
             KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
         }
+        VoicePending.setMode(preferredMode)
 
         switch VoiceBridge.startPlan(state: VoiceBridge.readState()) {
         case .sendCommand:
             VoiceBridge.post(.command)
             isRecording = true
             setRecordingAppearance(true)
+            updateTopBar()
             setHint(mode.recordingHint, error: false)
         case .openApp:
             let host = HostAppResolver.currentHost(for: self)
@@ -1212,8 +1500,20 @@ final class KeyboardViewController: UIInputViewController {
             try? await Task.sleep(for: .milliseconds(90))
             if openContainingApp(url) {
                 setHint(String(localized: "正在開啟 UTUVO Type 啟動麥克風…回來就在錄了"), error: false)
+                // 系統可能默默不理這個開啟要求（10-05 Micky 17PMX、iOS 27.0.1：點光球沒跳 app、沒橘點、也沒任何提示）。
+                // 2.5 秒後鍵盤還在畫面上、主 app 也沒心跳＝沒開成，明講要他自己開一次，不要停在「正在開啟」。
+                let sentID = id
+                Task { @MainActor [weak self] in
+                    try? await Task.sleep(for: .milliseconds(2500))
+                    guard let self, self.activeCommandID == sentID, self.view.window != nil,
+                          !VoiceBridge.isAlive(VoiceBridge.readState()) else { return }
+                    // 這條離開路徑也要清：pendingMode 留在 Defaults 裡，下一個 process 會撈到
+                    // 上一次（根本沒錄成）的模式，普通聽寫被當成問問題。
+                    self.clearPending()
+                    self.setHint(String(localized: "沒能自動開啟 UTUVO Type：請從主畫面打開它一次，回來再點光球"), error: true)
+                }
             } else {
-                activeCommandID = nil
+                clearPending()
                 setHint(String(localized: "請先打開 UTUVO Type app 一次，再回來點光球"), error: true)
             }
         }
@@ -1225,6 +1525,7 @@ final class KeyboardViewController: UIInputViewController {
         VoiceBridge.post(.command)
         isRecording = false
         setRecordingAppearance(false)
+        updateTopBar()
         micButton.orb.phase = .processing
         setHint(String(localized: "整理中…"), error: false)
     }
@@ -1238,8 +1539,13 @@ final class KeyboardViewController: UIInputViewController {
         let target = KeyboardPresence.defaults.string(forKey: Self.pendingTranslateKey)
             .flatMap { code in TranslationTarget.all.first { $0.code == code } }
         pendingTranslateTarget = target
-        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText, translateTarget: target)
+        // 這次的模式是跳出鍵盤前選的：新的 process 沒有 preferredMode，不撈回來就會被 decide()
+        // 判成「有選取就改寫」，askAnything 的選取被搶走。
+        if let restored = VoicePending.mode { preferredMode = restored }
+        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
+                                   translateTarget: target, preferred: preferredMode)
         activeCommandID = id
+        commandFieldSnapshot = FieldGeneration(documentIdentifier: safeDocumentIdentifier)
         bridgeUpdated()
     }
 
@@ -1265,24 +1571,56 @@ final class KeyboardViewController: UIInputViewController {
             if mode.insertsPartials { applyEdit(to: text) }
         case .final(let text, let translated):
             let finishedID = activeCommandID
+            let snapshot = commandFieldSnapshot
+            commandFieldSnapshot = nil
             clearPending()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
             micButton.orb.phase = .idle
-            finish(raw: text, appTranslation: translated, commandID: finishedID)
+            updateTopBar()
+            finish(raw: text, appTranslation: translated, commandID: finishedID, fieldSnapshot: snapshot)
         case .failed(let message):
             clearPending()
+            // 出錯救援也是一段結束：先凍結（沒東西要交付，但計時不能漏）再收掉外觀。
+            freezeRecordingSeconds()
             if isRecording { isRecording = false; setRecordingAppearance(false) }
             micButton.orb.phase = .error
             mode = .dictate
-            pendingTranslateTarget = nil
+            resetVoiceModeState()
+            updateTopBar()
             setHint(message, error: true)
         }
     }
 
     private func clearPending() {
         activeCommandID = nil
-        KeyboardPresence.defaults.removeObject(forKey: Self.pendingIDKey)
-        KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
+        VoicePending.clear()
+    }
+
+    /// 這一段語音結束（**完成、取消、失敗都算**）後把語音模式收回聽寫。
+    ///
+    /// 少了這一步，上一次挑的模式會被**下一次**普通聽寫繼承：使用者在「問問題」裡講完一句，
+    /// 下一句只是要打字，又被送去問問題，`preferredMode` 還會跨 process 從 `VoicePending`
+    /// 撈回來，愈用愈難擺脫。同 Android `resetVoiceModeState()`（清 pendingScope、
+    /// 模式切換列回來、voiceMode 回 DICTATE）——那邊也是**所有**結束路徑都呼叫它。
+    ///
+    /// 復原鈕不受影響：那一次插入／取代還在 `undoAction` 裡，要不要復原是使用者的事。
+    private func resetVoiceModeState() {
+        // 三種結局同一個收尾；收成什麼樣子是純邏輯，寫在 VoiceModes.stateAfterSegment()。
+        preferredMode = VoiceModes.stateAfterSegment().preferredMode
+        pendingScope = nil
+        pendingTranslateTarget = nil
+        updateTopBar()
+    }
+
+    /// 語音面右側圓鍵的送出字：放不下就縮字（英文「Continue」「Search」在 44 pt 圓鍵裡會被切成「New lin」）。
+    private func setReturnTitle(_ title: String) {
+        let size = ReturnKeyLabel.fittingFontSize(for: title, width: Self.sideKey - 4)
+        returnButton.configuration?.title = title
+        returnButton.configuration?.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+            var a = attrs
+            a.font = .systemFont(ofSize: size, weight: .semibold)
+            return a
+        }
     }
 
     /// 點左上品牌區：打開主 app 的「設定」分頁。錄音中不動作（那時品牌區是即時字幕）。
@@ -1297,6 +1635,10 @@ final class KeyboardViewController: UIInputViewController {
     /// 鍵盤 extension 不能用 UIApplication.shared.open；沿 responder chain 找到 UIApplication 再呼叫
     /// `open(_:options:completionHandler:)`（iOS 18 起舊的 openURL: 已失效）。找不到就回 false。
     private func openContainingApp(_ url: URL) -> Bool {
+        #if DEBUG
+        // UI 測試：當作系統收下了開啟要求、卻什麼都沒做。
+        if KeyboardPresence.defaults.bool(forKey: "utuvo.type.debug.swallowOpenApp") { return true }
+        #endif
         let selector = NSSelectorFromString("openURL:options:completionHandler:")
         var responder: UIResponder? = self
         while let current = responder {
@@ -1311,12 +1653,51 @@ final class KeyboardViewController: UIInputViewController {
         return false
     }
 
+    /// 錄音結束（手動停、自動停、出錯救援都經過這裡）：把這一段的秒數凍結。
+    /// 重複呼叫安全。
+    private func freezeRecordingSeconds() {
+        recordingClock.freeze(at: Date())
+    }
+
+    /// 交付時讀凍結值並清空。沒凍結過或不到 0.5 秒＝nil（＝未知，不是 0 秒）。
+    private func takeRecordingSeconds() -> Double? {
+        recordingClock.take()
+    }
+
+    /// 這一段語音結束、但**沒有**交付任何文字時的收尾（推論報錯、guard 擋下、使用者動過手）。
+    /// 所有失敗路徑都走這一個出口，別再各自記得收——漏一次就是字幕帶卡在逐字稿、光球卡在處理中。
+    private func endSegmentWithoutDelivery(message: String, error: Bool) {
+        resetVoiceModeState()
+        resetBand()
+        refreshContext()
+        setHint(message, error: error)
+    }
+
     /// 定稿：依模式決定文件怎麼變。
-    private func finish(raw rawText: String, appTranslation: String? = nil, commandID: UUID? = nil) {
+    private func finish(raw rawText: String, appTranslation: String? = nil, commandID: UUID? = nil,
+                    fieldSnapshot: FieldGeneration? = nil) {
         let raw = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
+        // 使用者在等雲端的期間換了欄位（同一個 App 內換欄位不會重開鍵盤，只會有 textDidChange）：
+        // 不能把這句貼進新欄位。判斷只看系統的 documentIdentifier，跟中間幾次 delegate 回呼無關——
+        // 回呼預算會在整理中連按光球、同欄位移動游標時誤判（Q3-repair2 ⑤，同 Android 的 inputGeneration 比對）。
+        if let fieldSnapshot, !fieldSnapshot.isSameField(currentIdentifier: safeDocumentIdentifier) {
+            clearPending()
+            // 沒交付也要走同一個收尾：模式回聽寫、範圍與翻譯目標清掉、計時清掉，
+            // 否則「問問題」會留到新欄位的下一句普通聽寫（B 票 resetVoiceModeState 的同一條規則）。
+            _ = takeRecordingSeconds()
+            mode = .dictate
+            endSegmentWithoutDelivery(message: KeyboardMode.dictate.idleHint, error: false)
+            return
+        }
         let finishedMode = mode
+        // 讀掉計時（dictate 用；edit／translate 這段秒數不計入聽寫統計，但要清掉免得汙下一段）。
+        let recordingSeconds = takeRecordingSeconds()
         pendingTranslateTarget = nil
         mode = .dictate
+        let scope = pendingScope
+        pendingScope = nil
+        // 這一段結束就收回聽寫：不定稿的話「問問題」「幫我寫」會留到下一次普通聽寫。
+        resetVoiceModeState()
         switch finishedMode {
         case .dictate:
             let returnKey = textDocumentProxy.returnKeyType
@@ -1332,7 +1713,14 @@ final class KeyboardViewController: UIInputViewController {
             applyEdit(to: cleaned)
             if !cleaned.isEmpty { lastDictationOutput = cleaned }
             if !raw.isEmpty {
-                HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: cleaned, source: .keyboard))
+                let seconds = recordingSeconds
+                let spoken = cleaned   // let 快照：背景 closure 不能捕捉 var
+                // 檔案寫入丟到背景序列佇列：鍵盤 extension 的主執行緒不能等磁碟。
+                StorageIO.write {
+                    HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: spoken, source: .keyboard, duration: seconds))
+                    // 每日計數獨立於歷史（App Group，跨 process 用檔案鎖合併；刪歷史不影響它）。
+                    DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(spoken), seconds: seconds ?? 0)
+                }
             }
             if let commandID, !cleaned.isEmpty {
                 if Date().timeIntervalSince(chainUpdatedAt) > 30 { correctionChain = []; chainReturnKeys = [:] }   // 太久以前的不接
@@ -1348,46 +1736,167 @@ final class KeyboardViewController: UIInputViewController {
         case .edit(let selection):
             guard !raw.isEmpty else { refreshContext(); return }
             setHint(String(localized: "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）"), error: false)
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 do {
                     let result = try await OnDeviceAssistant.editSelection(selection, instruction: raw)
                     guard let still = textDocumentProxy.selectedText, !still.isEmpty else {
-                        setHint(String(localized: "選取已取消，沒有改動文字"), error: true)
+                        endSegmentWithoutDelivery(message: String(localized: "選取已取消，沒有改動文字"), error: true)
                         return
                     }
                     deleteBackward() // 有選取時刪掉的是整段選取
                     insertText(result)
-                    HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
+                    StorageIO.write {
+                        HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
+                    }
                     resetBand()
                     refreshContext()
                 } catch {
-                    setHint(error.localizedDescription, error: true)
+                    endSegmentWithoutDelivery(message: error.localizedDescription, error: true)
+                }
+            }
+
+        case .helpWrite:
+            guard !raw.isEmpty else { refreshContext(); return }
+            setHint(String(localized: "幫你寫…（\(OnDeviceAssistant.currentEngine().badge)）"), error: false)
+            let context = SmartCleanup.includeAppContext ? (textDocumentProxy.documentContextBeforeInput ?? "") : ""
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                do {
+                    let result = try await OnDeviceAssistant.helpWrite(instruction: raw, before: context)
+                    let start = (textDocumentProxy.documentContextBeforeInput ?? "").utf16.count
+                    insertText(result)
+                    setUndo(inserted: result, replacedOriginal: nil, insertEnd: start + result.utf16.count)
+                    StorageIO.write {
+                        HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
+                    }
+                    resetBand()
+                    refreshContext()
+                    // refreshContext 會把提示換成閒置提示，成果訊息要壓在它後面。
+                    setHint(String(localized: "寫好了，要復原就點「復原」"), error: false)
+                } catch {
+                    endSegmentWithoutDelivery(message: error.localizedDescription, error: true)
+                }
+            }
+
+        case .speakToEdit:
+            guard !raw.isEmpty, let scope else {
+                resetVoiceModeState()
+                setHint(String(localized: "先選要改寫的範圍"), error: true)
+                return
+            }
+            setHint(String(localized: "改寫中…（\(OnDeviceAssistant.currentEngine().badge)）"), error: false)
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                do {
+                    let result = try await OnDeviceAssistant.speakToEdit(original: scope.original, instruction: raw)
+                    let before = textDocumentProxy.documentContextBeforeInput ?? ""
+                    let after = textDocumentProxy.documentContextAfterInput ?? ""
+                    // 送去改寫到回來之間使用者動過手（那一段不在原處／不一樣）→ 不刪，改成提示。
+                    guard VoiceModes.targetStillThere(before: before, after: after,
+                                                      range: scope.range, original: scope.original) else {
+                        endSegmentWithoutDelivery(message: String(localized: "那段文字在你說話時被改過，沒有動它"), error: true)
+                        return
+                    }
+                    guard replaceText(in: scope.range, with: result) else {
+                        // 兩種單位都移不到（或連移回起點都失敗）：一個字都不能刪，
+                        // 改請他直接選取那一段再說一次——有選取走的是另一條不會動游標的路徑。
+                        endSegmentWithoutDelivery(message: String(localized: "游標沒辦法移到那一段，文字沒動；請先選取那段再說一次"), error: true)
+                        return
+                    }
+                    setUndo(inserted: result, replacedOriginal: scope.original, insertEnd: scope.start + result.utf16.count)
+                    StorageIO.write {
+                        HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
+                    }
+                    resetBand()
+                    refreshContext()
+                    setHint(String(localized: "改好了，要復原就點「復原」"), error: false)
+                } catch {
+                    endSegmentWithoutDelivery(message: error.localizedDescription, error: true)
+                }
+            }
+
+        case .askAnything(let selection):
+            guard !raw.isEmpty else { refreshContext(); return }
+            setHint(String(localized: "想一下…（\(OnDeviceAssistant.currentEngine().badge)）"), error: false)
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                do {
+                    if let selection, !selection.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        guard VoiceModes.selectionWithinLimit(selection) else {
+                            endSegmentWithoutDelivery(message: String(localized: "選取的文字太長，請縮小範圍再問"), error: true)
+                            return
+                        }
+                        // 有選取：模型自己判斷「改寫選取」還是「回答關於它的問題」。
+                        let replyRaw = try await OnDeviceAssistant.askAboutSelection(selection: selection, question: raw)
+                        let reply = VoiceModes.parseAskReply(replyRaw, hasSelection: true)
+                        if reply.isReplace {
+                            // 等待期間選取變了就不取代，改成回答卡讓使用者自己決定。
+                            guard VoiceModes.canReplace(originalSelection: selection,
+                                                        currentSelection: textDocumentProxy.selectedText) else {
+                                showAnswerCard(reply.text)
+                                resetBand()
+                                return
+                            }
+                            let before = textDocumentProxy.documentContextBeforeInput ?? ""
+                            let cursor = before.utf16.count
+                            deleteBackward()   // 有選取時刪掉的是整段選取
+                            insertText(reply.text)
+                            setUndo(inserted: reply.text, replacedOriginal: selection,
+                                    insertEnd: cursor + reply.text.utf16.count)
+                            StorageIO.write {
+                                HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: reply.text, source: .keyboard))
+                            }
+                            resetBand()
+                            refreshContext()
+                            setHint(String(localized: "改好了，要復原就點「復原」"), error: false)
+                            return
+                        }
+                        showAnswerCard(reply.text)
+                    } else {
+                        let replyRaw = try await OnDeviceAssistant.askAnything(question: raw)
+                        showAnswerCard(VoiceModes.parseAskReply(replyRaw, hasSelection: false).text)
+                    }
+                    resetBand()
+                } catch {
+                    endSegmentWithoutDelivery(message: error.localizedDescription, error: true)
                 }
             }
 
         case .translate(let target):
             guard !raw.isEmpty else { refreshContext(); return }
             let (cleaned, _) = TextPipeline().clean(raw)
+            // 翻譯是**使用者講的話**（講中文、翻成英文），要計入每日字數與秒數；
+            // 字數用**翻譯前**的原文（`cleaned`），不是譯文的長度。
+            let seconds = recordingSeconds
+            let spoken = cleaned
             if let appTranslation, !appTranslation.isEmpty {
                 releaseOwnership()
                 insertText(appTranslation)
-                HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: appTranslation, source: .keyboard))
+                StorageIO.write {
+                    HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: appTranslation, source: .keyboard))
+                    DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(spoken), seconds: seconds ?? 0)
+                }
                 resetBand()
                 refreshContext()
                 return
             }
             setHint(String(localized: "翻成\(target.displayName)中…"), error: false)
             let sourceRaw = language.rawValue
-            Task { @MainActor in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
                 do {
                     let result = try await OnDeviceAssistant.translate(cleaned, to: target, sourceRaw: sourceRaw)
                     releaseOwnership()
                     insertText(result)
-                    HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: result, source: .keyboard))
+                    StorageIO.write {
+                        HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: result, source: .keyboard))
+                        DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(spoken), seconds: seconds ?? 0)
+                    }
                     resetBand()
                     refreshContext()
                 } catch {
-                    setHint(error.localizedDescription, error: true)
+                    endSegmentWithoutDelivery(message: error.localizedDescription, error: true)
                 }
             }
         }
@@ -1432,6 +1941,292 @@ final class KeyboardViewController: UIInputViewController {
         for _ in 0..<plan.deleteCount { deleteBackward() }
         if !plan.insert.isEmpty { insertText(plan.insert) }
         insertedText = target
+    }
+
+    // MARK: - 鍵盤三模式（Help me write／Speak to edit／Ask anything）
+
+    /// 頂列右邊那組鍵：模式鍵 + 復原鍵，或（選範圍時）這一段／全部文字。兩者不並存。
+    private func updateTopBar() {
+        let recording = isRecording || !pickerDots.isEmpty && pickerDots.contains { !$0.isHidden }
+        let pickingScope = pendingScope == nil && isPickingScope
+        // 選範圍時模式鍵仍然留著：使用者想放棄就再點一下換模式，不必卡在選單裡。
+        modeChip.isHidden = recording
+        undoChip.isHidden = recording || pickingScope || undoAction == nil
+        paragraphChip.isHidden = !pickingScope || recording
+        allChip.isHidden = !pickingScope || recording
+        updateModeChip()
+    }
+
+    /// 正在等使用者選「這一段／全部文字」嗎？（Speak to edit、沒有選取文字時）
+    private var isPickingScope: Bool {
+        preferredMode == .speakToEdit && !isRecording
+            && (textDocumentProxy.selectedText ?? "").isEmpty
+            && pendingScope == nil
+    }
+
+    /// 模式鍵：顯示目前模式（圖示＋名稱＋⌄），聽寫以外的模式用品牌橘，一眼看得出不是普通聽寫。
+    private func updateModeChip() {
+        let current = preferredMode ?? .dictate
+        modeChip.configuration?.title = current.shortName
+        modeChip.configuration?.image = UIImage(systemName: current.symbol,
+                                                withConfiguration: UIImage.SymbolConfiguration(pointSize: 11, weight: .semibold))
+        modeChip.configuration?.imagePadding = 4
+        modeChip.configuration?.baseForegroundColor = current == .dictate ? .label : Self.brandOrange
+        modeChip.accessibilityValue = current.shortName
+        if var config = modeChip.configuration {
+            config.indicator = .none
+            config.imagePlacement = .leading
+            modeChip.configuration = config
+        }
+    }
+
+    private var modePicker: UIView?
+
+    private func toggleModePicker() {
+        if modePicker != nil { dismissModePicker(); return }
+        Haptics.selection()
+        let current = preferredMode ?? .dictate
+        let panel = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+        panel.layer.cornerRadius = 18
+        panel.layer.cornerCurve = .continuous
+        panel.clipsToBounds = true
+        panel.accessibilityIdentifier = "utuvoKeyboardModePicker"
+        panel.translatesAutoresizingMaskIntoConstraints = false
+        // 2×2 格：四個都一次看得到，不靠捲動（直排四列在鍵盤高度裡最後一列會被切掉）。
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 6
+        stack.distribution = .fillEqually
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        var row: UIStackView?
+        for (index, mode) in VoiceModeKind.allCases.enumerated() {
+            let selected = mode == current
+            var config = UIButton.Configuration.plain()
+            config.title = mode.shortName
+            config.subtitle = mode.detail
+            config.image = UIImage(systemName: selected ? "checkmark.circle.fill" : mode.symbol)
+            config.imagePlacement = .leading
+            config.imagePadding = 8
+            config.titleAlignment = .leading
+            config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
+            config.titleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+                var a = attrs; a.font = .systemFont(ofSize: 15, weight: .semibold); return a
+            }
+            config.subtitleTextAttributesTransformer = UIConfigurationTextAttributesTransformer { attrs in
+                var a = attrs; a.font = .systemFont(ofSize: 11); a.foregroundColor = .secondaryLabel; return a
+            }
+            config.subtitleLineBreakMode = .byWordWrapping
+            config.baseForegroundColor = selected ? Self.brandOrange : .label
+            config.background.backgroundColor = selected ? Self.brandOrange.withAlphaComponent(0.14) : UIColor.label.withAlphaComponent(0.05)
+            config.background.cornerRadius = 12
+            config.contentInsets = NSDirectionalEdgeInsets(top: 6, leading: 10, bottom: 6, trailing: 8)
+            let button = UIButton(configuration: config)
+            button.contentHorizontalAlignment = .leading
+            button.contentVerticalAlignment = .center
+            button.accessibilityIdentifier = "utuvoKeyboardMode-\(mode.rawValue)"
+            if selected { button.accessibilityTraits.insert(.selected) }
+            button.addAction(UIAction { [weak self] _ in
+                self?.selectMode(mode)
+                self?.dismissModePicker()
+            }, for: .touchUpInside)
+            if index % 2 == 0 {
+                let r = UIStackView()
+                r.axis = .horizontal
+                r.spacing = 6
+                r.distribution = .fillEqually
+                stack.addArrangedSubview(r)
+                row = r
+            }
+            row?.addArrangedSubview(button)
+        }
+        panel.contentView.addSubview(stack)
+        view.addSubview(panel)
+        NSLayoutConstraint.activate([
+            stack.topAnchor.constraint(equalTo: panel.contentView.topAnchor, constant: 8),
+            stack.bottomAnchor.constraint(equalTo: panel.contentView.bottomAnchor, constant: -8),
+            stack.leadingAnchor.constraint(equalTo: panel.contentView.leadingAnchor, constant: 6),
+            stack.trailingAnchor.constraint(equalTo: panel.contentView.trailingAnchor, constant: -6),
+            panel.topAnchor.constraint(equalTo: transcriptPill.bottomAnchor, constant: 6),
+            panel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.sideInset),
+            panel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.sideInset),
+            panel.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: -8)
+        ])
+        modePicker = panel
+    }
+
+    private func dismissModePicker() {
+        modePicker?.removeFromSuperview()
+        modePicker = nil
+    }
+
+    private func selectMode(_ mode: VoiceModeKind) {
+        Haptics.selection()
+        preferredMode = mode == .dictate ? nil : mode
+        pendingScope = nil
+        undoAction = nil
+        setHint(KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
+                                    translateTarget: nil, preferred: preferredMode).idleHint, error: false)
+        updateTopBar()
+        refreshContext()
+    }
+
+    /// 送出改寫前把範圍與原文記下來（回來時要確認它們沒變）。
+    private func makePendingScope(_ scope: EditScope) -> Bool {
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        let after = textDocumentProxy.documentContextAfterInput ?? ""
+        noteObservedWindow(before: before, after: after)
+        let range: VoiceModes.TextRange
+        switch scope {
+        case .paragraph: range = VoiceModes.paragraphAt(before: before, after: after)
+        case .all: range = VoiceModes.allRange(before: before, after: after)
+        }
+        let allowed = scope == .paragraph
+            ? VoiceModes.canUseParagraph(range: range, before: before, after: after, observedLimit: observedWindowLimit)
+            : VoiceModes.canUseAll(range: range, before: before, after: after, observedLimit: observedWindowLimit)
+        guard allowed else {
+            setHint(String(localized: "這裡讀不到完整的範圍，請先選取要改寫的文字"), error: true)
+            return false
+        }
+        let original = range.slice(before: before, after: after)
+        guard !original.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            setHint(String(localized: "這一段沒有文字"), error: true)
+            return false
+        }
+        pendingScope = PendingScope(range: range, original: original, start: range.start)
+        setHint(String(localized: "說出要怎麼改\(scope == .paragraph ? "這一段" : "全部文字")"), error: false)
+        updateTopBar()
+        return true
+    }
+
+    private enum EditScope { case paragraph, all }
+
+    private func chooseEditScope(_ scope: EditScope) {
+        guard !isRecording else { return }
+        dismissModePicker()
+        Haptics.start()
+        pendingTranslateTarget = nil
+        guard makePendingScope(scope) else { updateTopBar(); return }
+        Task { await startRecognition() }
+    }
+
+    /// 範圍改寫的共用流程：重新讀前後文 → 確認那一段還在原處 → 游標移到**範圍結尾** → 往回刪 → 插。
+    ///
+    /// 游標要停在**結尾**不是起點：`deleteBackward()` 刪的是游標**前面**的字。
+    /// 停在起點往回刪，刪掉的是目標的前文、目標本身還在（B 票審查抓到的真 bug）。
+    private func replaceText(in range: VoiceModes.TextRange, with newText: String) -> Bool {
+        // 模型回來到動文件之間使用者可能又打了一截：一定要**現在**才重讀並確認。
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        let after = textDocumentProxy.documentContextAfterInput ?? ""
+        noteObservedWindow(before: before, after: after)
+        let cursor = before.utf16.count
+        guard range.start <= cursor, range.end <= cursor + after.utf16.count else { return false }
+        guard range.length > 0 else { insertText(newText); return true }
+        guard moveCursor(toRangeEnd: range, before: before, after: after) else { return false }
+        // deleteBackward 一次刪一個 Character，用 grapheme 數不是 UTF-16 長度（emoji 會重複刪）。
+        for _ in 0..<VoiceModes.deleteSteps(before: before, after: after, range: range) { deleteBackward() }
+        insertText(newText)
+        return true
+    }
+
+    /// 把游標移到範圍結尾。`adjustTextPosition(byCharacterOffset:)` 的單位 Apple 沒寫明
+    /// （grapheme？UTF-16？），所以先試 UTF-16、移完**回頭驗證**游標真的落在 range.end，
+    /// 沒落在就**先移回起點**再換 Character 單位試一次。
+    ///
+    /// 不移回去就直接疊加第二輪位移，會在錯位處「湊巧通過」驗證然後刪錯字。
+    /// 兩輪都不對（連移回起點都失敗也算）就回 false，一個字都不刪。
+    private func moveCursor(toRangeEnd range: VoiceModes.TextRange, before: String, after: String) -> Bool {
+        VoiceModes.moveCursorToRangeEnd(before: before, after: after, range: range) { offset in
+            textDocumentProxy.adjustTextPosition(byCharacterOffset: offset)
+            return textDocumentProxy.documentContextBeforeInput ?? ""
+        } == .landed
+    }
+
+    /// 記住曾經讀到過的最大視窗（`isWindowTruncated` 的量測依據）。跨 process 存 App Group。
+    private static let observedWindowKey = "utuvo.type.voice.observedWindow"
+    private func noteObservedWindow(before: String?, after: String?) {
+        let previous = KeyboardPresence.defaults.integer(forKey: Self.observedWindowKey)
+        let next = VoiceModes.observedWindowLimit(previous: previous, before: before, after: after)
+        guard next != previous else { return }
+        KeyboardPresence.defaults.set(next, forKey: Self.observedWindowKey)
+    }
+
+    private var observedWindowLimit: Int {
+        VoiceModes.effectiveWindowLimit(
+            observedLimit: KeyboardPresence.defaults.integer(forKey: Self.observedWindowKey))
+    }
+
+    private func setUndo(inserted: String, replacedOriginal: String?, insertEnd: Int) {
+        undoAction = UndoAction(inserted: inserted, replacedOriginal: replacedOriginal, insertEnd: insertEnd)
+        updateTopBar()
+    }
+
+    @objc private func undoLastEdit() {
+        guard let undo = undoAction else { return }
+        Haptics.selection()
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        // 游標還停在插入的結尾、前文的結尾還是那段字——兩個條件缺一就不動他的文件。
+        guard VoiceModes.undoStillApplies(beforeText: before, cursor: before.utf16.count,
+                                          insertEnd: undo.insertEnd, inserted: undo.inserted) else {
+            undoAction = nil
+            setHint(String(localized: "位置或文字已經變了，不能復原"), error: true)
+            updateTopBar()
+            return
+        }
+        // 取代的復原要刪掉的是「插進去的那段」（結果），不是被取代掉的原文——
+        // 用原文長度會在兩者長度不同時多刪少刪。insert-only 的情況兩者一樣。
+        let steps = undo.replacedOriginal == nil
+            ? VoiceModes.undoInsertSteps(before: before, insertedLength: undo.inserted.count)
+            : VoiceModes.undoReplaceSteps(before: before, inserted: undo.inserted)
+        for _ in 0..<steps { deleteBackward() }
+        if let original = undo.replacedOriginal { insertText(original) }
+        undoAction = nil
+        setHint(String(localized: "已復原"), error: false)
+        updateTopBar()
+        refreshContext()
+    }
+
+    // MARK: Ask anything 回答卡
+
+    private func showAnswerCard(_ text: String) {
+        let shown = text.isEmpty ? String(localized: "模型沒有回傳內容") : text
+        answerCard.answer = shown
+        answerCard.isHidden = false
+        let width = view.bounds.width - Self.sideInset * 2
+        let extra = min(answerCard.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height, 168)
+        answerCardHeight?.constant = extra
+        UIView.animate(withDuration: 0.2) {
+            self.heightConstraint?.constant = Self.voiceHeight + extra
+            self.view.layoutIfNeeded()
+        }
+        setHint(String(localized: "答案在上面：插入、複製，或關掉"), error: false)
+    }
+
+    private func hideAnswerCard() {
+        answerCard.isHidden = true
+        UIView.animate(withDuration: 0.2) {
+            self.heightConstraint?.constant = Self.voiceHeight
+            self.view.layoutIfNeeded()
+        }
+        refreshContext()
+    }
+
+    private func insertAnswer() {
+        let text = answerCard.answer
+        guard !text.isEmpty else { return }
+        Haptics.selection()
+        let start = (textDocumentProxy.documentContextBeforeInput ?? "").utf16.count
+        insertText(text)
+        setUndo(inserted: text, replacedOriginal: nil, insertEnd: start + text.utf16.count)
+        hideAnswerCard()
+        setHint(String(localized: "已插入"), error: false)
+    }
+
+    private func copyAnswer() {
+        let text = answerCard.answer
+        guard !text.isEmpty else { return }
+        Haptics.selection()
+        UIPasteboard.general.string = text
+        setHint(String(localized: "已複製"), error: false)
     }
 
     // MARK: - Hints
@@ -1684,7 +2479,8 @@ enum Haptics {
         startGenerator.prepare()
         stopGenerator.prepare()
     }
-    static func start() { startGenerator.impactOccurred(intensity: 1.0); startGenerator.prepare() }
-    static func stop() { stopGenerator.impactOccurred(intensity: 0.9); stopGenerator.prepare() }
-    static func selection() { selectionGenerator.selectionChanged() }
+    // 「介面震動」關掉時全部不震（設定 → 打字手感）；打字按鍵另由 KeyFeedback 強度控制。
+    static func start() { guard UIFeedback.enabled else { return }; startGenerator.impactOccurred(intensity: 1.0); startGenerator.prepare() }
+    static func stop() { guard UIFeedback.enabled else { return }; stopGenerator.impactOccurred(intensity: 0.9); stopGenerator.prepare() }
+    static func selection() { guard UIFeedback.enabled else { return }; selectionGenerator.selectionChanged() }
 }

@@ -33,7 +33,11 @@ final class HistoryGroupingTests: XCTestCase {
             record("今天晚", daysAgo: 0, hour: 20),
         ]
         let sections = HistoryGrouping.sections(records, now: now, calendar: calendar, locale: locale)
-        XCTAssertEqual(sections.map(\.title), ["今天", "昨天", "9月14日 週一"])
+        // 標題字串是當地化的：驗「今天／昨天／具體日期」三段的**結構**與順序，不是中文字面。
+        let titles = sections.map(\.title)
+        XCTAssertEqual(titles.count, 3)
+        assertLocalizedEquals("今天", titles[0])
+        assertLocalizedEquals("昨天", titles[1])
         XCTAssertEqual(sections[0].records.map(\.cleaned), ["今天晚", "今天早"], "同一天內最新的在前")
     }
 
@@ -50,8 +54,8 @@ final class HistoryGroupingTests: XCTestCase {
         let earlyToday = record("今早", daysAgo: 0, hour: 0)
         let sections = HistoryGrouping.sections([lateYesterday, earlyToday], now: now, calendar: calendar, locale: locale)
         XCTAssertEqual(sections.count, 2)
-        XCTAssertEqual(sections[0].title, "今天")
-        XCTAssertEqual(sections[1].title, "昨天")
+        assertLocalizedEquals("今天", sections[0].title)
+        assertLocalizedEquals("昨天", sections[1].title)
     }
 
     func testEmptyInputGivesNoSections() {

@@ -12,13 +12,19 @@ import android.speech.RecognizerIntent
  */
 object SpeechRequest {
     /** biasing：個人字典的詞（Android 13+ EXTRA_BIASING_STRINGS），讓人名、術語比較容易聽對。 */
-    fun build(language: String, biasing: List<String> = emptyList()): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+    fun build(language: String, biasing: List<String> = emptyList(), quietMode: Boolean = false): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
         putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
         putExtra(RecognizerIntent.EXTRA_LANGUAGE, language)
         putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        if (quietMode) {
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_MINIMUM_LENGTH_MILLIS, QuietMode.MIN_SPEECH_QUIET_MS)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, QuietMode.SILENCE_COMPLETE_QUIET_MS)
+            putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, QuietMode.SILENCE_POSSIBLY_COMPLETE_QUIET_MS)
+        }
         if (Build.VERSION.SDK_INT >= 33) {
             putExtra(RecognizerIntent.EXTRA_ENABLE_FORMATTING, RecognizerIntent.FORMATTING_OPTIMIZE_QUALITY)
             if (biasing.isNotEmpty()) putStringArrayListExtra(RecognizerIntent.EXTRA_BIASING_STRINGS, ArrayList(biasing))
         }
     }
 }
+

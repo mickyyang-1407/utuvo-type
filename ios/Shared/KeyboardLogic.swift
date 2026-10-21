@@ -2,20 +2,97 @@ import Foundation
 import UIKit
 import UTUVOTypeCore
 
+/// 鍵盤模式鍵的四個檔位（照 Android `VoiceModes.VoiceMode` 的同一組）。
+/// `dictate` 是預設；使用者點模式鍵才會換到別的三個。
+enum VoiceModeKind: String, CaseIterable, Equatable, Sendable {
+    case dictate, helpWrite, speakToEdit, askAnything
+
+    /// 模式鍵上顯示的短名。
+    var shortName: String {
+        switch self {
+        case .dictate: return String(localized: "聽寫")
+        case .helpWrite: return String(localized: "幫我寫")
+        case .speakToEdit: return String(localized: "改寫")
+        case .askAnything: return String(localized: "問問題")
+        }
+    }
+
+    /// 下拉選單裡每個模式底下的一行說明（10-15 Micky：循環切換看不出現在在哪個模式）。
+    var detail: String {
+        switch self {
+        case .dictate: return String(localized: "講什麼就打什麼")
+        case .helpWrite: return String(localized: "說主題，幫你寫好")
+        case .speakToEdit: return String(localized: "說要怎麼改")
+        case .askAnything: return String(localized: "答案可以直接插入")
+        }
+    }
+
+    /// 模式鍵與選單的圖示（SF Symbols）。
+    var symbol: String {
+        switch self {
+        case .dictate: return "mic"
+        case .helpWrite: return "pencil.and.scribble"
+        case .speakToEdit: return "wand.and.stars"
+        case .askAnything: return "questionmark.bubble"
+        }
+    }
+
+    /// 點一下模式鍵換到哪一個（循環）。翻譯不在這裡——長按光球才是翻譯。
+    var next: VoiceModeKind {
+        let all = VoiceModeKind.allCases
+        let i = all.firstIndex(of: self) ?? 0
+        return all[(i + 1) % all.count]
+    }
+}
+
 /// 鍵盤的純邏輯（無 UI、可測）：模式判定、送出鍵文案、用量統計。
 /// 對齊 Typeless：有選取文字＝「說出要怎麼改」；長按麥克風選語言＝「放開就翻譯」；其餘＝聽寫。
 enum KeyboardMode: Equatable, Sendable {
     case dictate
     case edit(selection: String)
     case translate(target: TranslationTarget)
+    /// Help me write：替使用者寫一段可送出的文字（沒有選取文字時才走這條）。
+    case helpWrite
+    /// Speak to edit：沒有選取文字時先選「這一段／全部文字」，再講指令。
+    case speakToEdit
+    /// Ask anything：講問題得到回答卡。帶著送出當下的選取文字（沒選就是 nil），
+    /// 回來時要確認它沒變，變了就不取代（Android 審查抓到的坑）。
+    case askAnything(selection: String?)
 
-    /// 決策順序：翻譯（使用者剛剛長按選了語言）> 編輯（有選取）> 聽寫。
-    static func decide(selectedText: String?, translateTarget: TranslationTarget?) -> KeyboardMode {
+    /// 決策順序：翻譯（使用者剛剛長按選了語言）> 使用者選的模式 > 編輯（有選取）> 聽寫。
+    /// - `preferred`：鍵盤上那顆模式鍵選的模式。nil＝使用者沒動過模式鍵，走原本的行為。
+    ///   Ask anything 即使有選取也照自己走（有選取時由模型判斷改寫或回答）；
+    ///   Help me write／Speak to edit 有選取時還是改寫選取（那是它們本來就有的行為）。
+    static func decide(selectedText: String?, translateTarget: TranslationTarget?,
+                       preferred: VoiceModeKind? = nil) -> KeyboardMode {
         if let translateTarget { return .translate(target: translateTarget) }
-        if let selectedText, !selectedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        let hasSelection = selectedText?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false
+        switch preferred {
+        case .askAnything:
+            return .askAnything(selection: hasSelection ? selectedText : nil)
+        case .helpWrite where !hasSelection:
+            return .helpWrite
+        case .speakToEdit where !hasSelection:
+            return .speakToEdit
+        case .dictate, .none, .helpWrite, .speakToEdit:
+            break
+        }
+        if let selectedText, hasSelection {
             return .edit(selection: selectedText)
         }
         return .dictate
+    }
+
+    /// 這段語音結束後，這個模式要做的事（鍵盤模式鍵顯示用的短名）。
+    var modeKind: VoiceModeKind {
+        switch self {
+        case .dictate: return .dictate
+        case .edit: return .dictate
+        case .translate: return .dictate
+        case .helpWrite: return .helpWrite
+        case .speakToEdit: return .speakToEdit
+        case .askAnything: return .askAnything
+        }
     }
 
     /// 鍵盤光球停止錄音後會進入「整理中…」（等主 app 重辨識回來）。這時如果再按一次光球開新一段，
@@ -70,6 +147,9 @@ enum KeyboardMode: Equatable, Sendable {
         case .dictate: return String(localized: "點一下開始說")
         case .edit: return String(localized: "說出要怎麼改")
         case .translate(let target): return String(localized: "說中文，貼上\(target.displayName)")
+        case .helpWrite: return String(localized: "說你要寫什麼，我幫你寫")
+        case .speakToEdit: return String(localized: "點一下先選範圍，再說出要怎麼改")
+        case .askAnything: return String(localized: "說出你的問題")
         }
     }
 
@@ -78,6 +158,11 @@ enum KeyboardMode: Equatable, Sendable {
         case .dictate: return String(localized: "再點一下完成")
         case .edit: return String(localized: "說完再點一下，改寫會取代選取")
         case .translate(let target): return String(localized: "再點一下完成，翻成\(target.displayName)")
+        case .helpWrite: return String(localized: "說完再點一下，寫好的文字插在游標處")
+        case .speakToEdit: return String(localized: "說完再點一下，會改寫選好的範圍")
+        case .askAnything(let selection):
+            return selection.map { _ in String(localized: "說完再點一下，問問題或說要怎麼改") }
+                ?? String(localized: "說完再點一下，答案會出成回答卡")
         }
     }
 
@@ -168,6 +253,31 @@ enum QuickPickStore {
         guard current.count < maxCount else { return current }
         return current + [code]
     }
+
+    /// 從鍵盤長按弧的「＋語言」加一個語言（工單 ios-C 第 5 點）。
+    /// 與 `toggled` 不同：這個是**新增**語意，已經有就不動；滿 5 個時擠掉**最舊的一個**（弧上選的
+    /// 語言要真的能用，不能因為清單滿了就不加）。
+    static func adding(_ code: String, to current: [String]) -> [String] {
+        guard !current.contains(code) else { return current }
+        guard current.count < maxCount else { return Array(current.dropFirst()) + [code] }
+        return current + [code]
+    }
+
+    /// 鍵盤語言選擇器裡要**排除**的那一個目標：譯成自己正在講的語言沒意義。
+    ///
+    /// 舊版在選擇器裡寫死 `target.code != "zh-Hant"`，等於繁中**永遠**不能從鍵盤加入，
+    /// 使用者在主 app 把它移出快選之後就再也加不回來（review-agy-ios-C finding 2）。
+    /// 正確做法是只排除「當下的輸入語言」——換了聽寫語言，繁中就重新可選。
+    ///
+    /// 回 nil 表示沒有可排除的目標（未知語言 → 什麼都顯示，不要藏掉任何語言）。
+    static func identityTargetCode(for language: DictationLanguage) -> String? {
+        switch language {
+        case .traditionalChinese, .simplifiedChinese: return "zh-Hant"
+        case .englishUS: return "en"
+        case .japanese: return "ja"
+        case .korean: return "ko"
+        }
+    }
 }
 
 enum ReturnKeyLabel {
@@ -178,13 +288,24 @@ enum ReturnKeyLabel {
         case .search, .google, .yahoo: return String(localized: "搜尋")
         case .go: return String(localized: "前往")
         case .done: return String(localized: "完成")
-        case .join: return String(localized: "加入")
+        case .join: return String(localized: "加入鍵")
         case .next: return String(localized: "下一個")
         case .continue: return String(localized: "繼續")
         case .route: return String(localized: "路線")
         case .emergencyCall: return String(localized: "撥打")
         default: return String(localized: "換行")
         }
+    }
+
+    /// 在 `width` 內放得下 `title` 的字級：預設 13 pt，放不下等比縮，最小 8 pt。
+    static func fittingFontSize(for title: String, width: CGFloat, preferred: CGFloat = 13) -> CGFloat {
+        let measured = (title as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: preferred, weight: .semibold)]).width
+        guard measured > width, measured > 0 else { return preferred }
+        var size = (preferred * width / measured).rounded(.down)
+        while size > 8, (title as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: size, weight: .semibold)]).width > width {
+            size -= 0.5
+        }
+        return max(8, size)
     }
 }
 
@@ -214,7 +335,9 @@ enum ToneHint: Equatable, Sendable {
 }
 
 /// 主 app 首頁的用量統計（Typeless 2.6 的 Home insights）。
-/// 字數：CJK 每字算一，其他以空白切詞；省下時間＝打字 36 wpm 與口說 150 wpm 的差。
+/// 字數：CJK 每字算一，其他以空白切詞（口徑的單一正本在 `UsageText.wordCount`）。
+/// 這是**從歷史紀錄現算**的舊版；首頁現在改讀每日計數（`UsageStats`），歷史被刪掉數字也不掉。
+/// 保留這份是給「只有歷史、還沒累積每日計數」的舊安裝與測試。
 struct UsageInsights: Equatable, Sendable {
     var totalWords: Int
     var weekWords: Int
@@ -222,22 +345,7 @@ struct UsageInsights: Equatable, Sendable {
     var minutesSaved: Double
 
     static func wordCount(_ text: String) -> Int {
-        var cjk = 0
-        var latinWords = 0
-        var inWord = false
-        for scalar in text.unicodeScalars {
-            let v = scalar.value
-            let isCJK = (0x3400...0x9FFF).contains(v) || (0xF900...0xFAFF).contains(v) || (0x3040...0x30FF).contains(v) || (0xAC00...0xD7AF).contains(v)
-            if isCJK {
-                cjk += 1
-                inWord = false
-            } else if scalar.properties.isAlphabetic || scalar.properties.numericType != nil {
-                if !inWord { latinWords += 1; inWord = true }
-            } else {
-                inWord = false
-            }
-        }
-        return cjk + latinWords
+        UsageText.wordCount(text)
     }
 
     static func compute(records: [DictationRecord], now: Date = Date()) -> UsageInsights {
@@ -252,6 +360,36 @@ struct UsageInsights: Equatable, Sendable {
         let minutes = Double(total) * (1.0 / 36.0 - 1.0 / 150.0)
         return UsageInsights(totalWords: total, weekWords: week, sessions: records.count, minutesSaved: max(0, minutes))
     }
+}
+
+/// 跳主 app 錄音期間要跨 process 帶著的東西（鍵盤被系統回收後回來是新的 process）。
+enum VoicePending {
+    /// 這次的指令 id（主 app 回來時要對上）。
+    static let idKey = "utuvo.type.voice.pendingID"
+    /// 翻譯目標語言。
+    static let translateKey = "utuvo.type.voice.pendingTranslate"
+    /// **這次用哪個語音模式**。少了這個，跳主 app 錄音再回來時 `preferred` 會是 nil，
+    /// `KeyboardMode.decide` 就會把 askAnything 的選取判成「有選取＝改寫」，
+    /// 使用者在模式鍵上選的模式被舊行為搶走（B 票審查點 2）。
+    static let modeKey = "utuvo.type.voice.pendingMode"
+
+    static func setMode(_ mode: VoiceModeKind?) {
+        if let mode { defaults.set(mode.rawValue, forKey: modeKey) }
+        else { defaults.removeObject(forKey: modeKey) }
+    }
+
+    /// 讀回上次那個模式；沒有（或值認不出）回 nil，呼叫端就照「沒選過模式」走。
+    static var mode: VoiceModeKind? {
+        defaults.string(forKey: modeKey).flatMap(VoiceModeKind.init(rawValue:))
+    }
+
+    static func clear() {
+        defaults.removeObject(forKey: idKey)
+        defaults.removeObject(forKey: translateKey)
+        defaults.removeObject(forKey: modeKey)
+    }
+
+    private static var defaults: UserDefaults { KeyboardPresence.defaults }
 }
 
 /// 鍵盤是否已經被開啟過（鍵盤第一次載入時寫進 App Group）；主 app 用它決定要不要顯示啟用教學。

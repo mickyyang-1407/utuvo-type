@@ -16,7 +16,7 @@ import java.time.temporal.ChronoUnit
 object HistoryGrouping {
 
     /** 歷史頁的一筆紀錄（與 `HistoryStore.Record` 同形；不綁 Android 型別，保持可測）。 */
-    data class Item(val time: Long, val raw: String, val cleaned: String)
+    data class Item(val time: Long, val raw: String, val cleaned: String, val durationSec: Int = 0)
 
     /** 歷史頁的一個「日」區段。 */
     data class Section(val day: LocalDate, val title: String, val records: List<Item>)

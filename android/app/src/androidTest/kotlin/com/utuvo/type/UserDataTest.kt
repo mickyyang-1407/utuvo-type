@@ -28,6 +28,21 @@ class UserDataTest {
         HistoryStore.restore(app, savedHistory)   // 原樣含時間寫回（append 會把時間全改成現在）
     }
 
+    /** 10-18 Micky：Pixel 選簡體聽寫，出來還是繁體。整理要照語言／變體決定用字。 */
+    @Test
+    fun simplifiedDictationStaysSimplified() {
+        val zhCN = DictationLanguage.SIMPLIFIED_CHINESE
+        val out = Dictation.clean(app, "我们今天去软件公司开会", zhCN, zhCN.defaultVariant)
+        assertTrue("簡體要留簡體：$out", out.contains("们") && out.contains("软件") && out.contains("开会"))
+        val fromHant = Dictation.clean(app, "我們今天去開會", zhCN, zhCN.defaultVariant)
+        assertTrue("辨識器回繁體也要轉成簡體：$fromHant", fromHant.contains("们") && fromHant.contains("开会"))
+        val zhTW = DictationLanguage.TRADITIONAL_CHINESE
+        val tw = Dictation.clean(app, "我们今天去开会", zhTW, zhTW.defaultVariant)
+        assertTrue("繁中照舊轉台灣繁體：$tw", tw.contains("們") && tw.contains("開會"))
+        val en = Dictation.clean(app, "hello 软件", DictationLanguage.ENGLISH, LanguageVariant.EN_US)
+        assertTrue("英文不碰中文字形：$en", en.contains("软件"))
+    }
+
     @Test
     fun replacementChangesTextVocabularyDoesNot() {
         DictionaryStore.add(app, " pik ", "Pik")

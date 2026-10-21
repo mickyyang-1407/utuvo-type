@@ -247,8 +247,30 @@ final class TutorialTourUITests: XCTestCase {
 
         case "switchkb":
             let messages = messagesWithOurKeyboard()
-            sleep(1)
-            pickOurKeyboard(messages)
+            sleep(2)
+            // 前面幾場已經切到 UTUVO Type：先點一下地球換回系統鍵盤，才拍得到「長按地球選鍵盤」。
+            let globe = messages.buttons.matching(NSPredicate(format: "label IN {'Next keyboard', '下一個鍵盤', '下一个键盘'}")).firstMatch
+            let badge = messages.buttons.matching(NSPredicate(format: "label IN {'繁中', '简中'}")).firstMatch
+            // 系統第一次切鍵盤會跳「Quickly Change Keyboards」說明，按 Continue 收掉（影片剪掉這段）。
+            func dismissKeyboardTip() {
+                let cont = messages.buttons.matching(NSPredicate(format: "label IN {'Continue', '繼續', '继续'}")).firstMatch
+                if cont.waitForExistence(timeout: 2) { cont.tap(); sleep(1) }
+            }
+            if badge.exists, globe.exists { globe.tap(); sleep(2); dismissKeyboardTip() }
+            dismissKeyboardTip()
+            for attempt in 0..<3 {
+                XCTAssertTrue(globe.waitForExistence(timeout: 5), "找不到地球鍵")
+                globe.press(forDuration: 1.6)
+                sleep(1)
+                let ours = any(messages, "label == 'UTUVO Type'")
+                if ours.waitForExistence(timeout: 3) { sleep(1); ours.tap(); break }
+                // 長按被說明頁或輸入框的選單吃掉：收掉再試
+                dismissKeyboardTip()
+                messages.textFields["messageBodyField"].tap()
+                sleep(1)
+                XCTAssertLessThan(attempt, 2, "長按地球三次都沒出現鍵盤清單")
+            }
+            XCTAssertTrue(badge.waitForExistence(timeout: 6), "沒切到 UTUVO Type")
             sleep(3)
 
         case "jump":
@@ -333,6 +355,104 @@ final class TutorialTourUITests: XCTestCase {
             sleep(1)
             app.buttons["加入"].firstMatch.tap()
             sleep(2)
+
+        // ── v3 影片（10-15）：App 內一步一步教學 → 真設定路徑 → 模式面板 → Groq key ──
+        case "guide":
+            let app = launchApp()
+            openSettingsTab(app)
+            let guide = any(app, "label BEGINSWITH '使用教學'")
+            scrollTo(guide, in: app)
+            sleep(1)
+            guide.tap()
+            XCTAssertTrue(app.buttons["tutorial-keyboard"].waitForExistence(timeout: 5))
+            sleep(4)
+            app.buttons["tutorial-keyboard"].tap()
+            sleep(3)
+            for _ in 0..<5 { app.buttons["tutorialNext"].tap(); sleep(2) }
+            sleep(1)
+
+        case "settingspath":
+            // 教學第 1 頁按「打開設定」→ 設定首頁 → App → UTUVO Type → 鍵盤 → 兩個開關＋允許。
+            let app = launchApp()
+            openSettingsTab(app)
+            let guide = any(app, "label BEGINSWITH '使用教學'")
+            scrollTo(guide, in: app)
+            guide.tap()
+            tapWhenReady(app.buttons["tutorial-keyboard"], "加入鍵盤教學", in: app)
+            sleep(2)
+            let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+            settings.terminate()
+            tapWhenReady(app.buttons["tutorialOpenSettings"], "打開設定", in: app)
+            _ = settings.wait(for: .runningForeground, timeout: 10)
+            sleep(2)
+            let keyboards = settings.staticTexts["鍵盤"].firstMatch
+            if !keyboards.waitForExistence(timeout: 2) {
+                let apps = settings.staticTexts["App"].firstMatch
+                scrollTo(apps, in: settings)
+                sleep(1)
+                tapWhenReady(apps, "App", in: settings)
+                sleep(2)
+                let ours = settings.staticTexts["UTUVO Type"].firstMatch
+                scrollTo(ours, in: settings, maxSwipes: 14)
+                sleep(1)
+                tapWhenReady(ours, "UTUVO Type", in: settings)
+                sleep(2)
+            }
+            tapWhenReady(keyboards, "鍵盤", in: settings)
+            sleep(2)
+            let kb = settings.switches["UTUVO Type"]
+            XCTAssertTrue(kb.waitForExistence(timeout: 5))
+            if kb.value as? String != "1" { kb.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap() }
+            sleep(2)
+            let full = settings.switches["允許完整取用"]
+            XCTAssertTrue(full.waitForExistence(timeout: 5))
+            if full.value as? String != "1" {
+                full.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+                let allow = settings.alerts.buttons.matching(NSPredicate(format: "label IN {'允許', 'Allow'}")).firstMatch
+                if allow.waitForExistence(timeout: 4) { sleep(2); allow.tap() }
+            }
+            sleep(2)
+            XCTAssertEqual(full.value as? String, "1", "允許完整取用沒有打開")
+
+        case "modes":
+            let messages = messagesWithOurKeyboard()
+            pickOurKeyboard(messages)
+            sleep(2)
+            tapWhenReady(messages.buttons["utuvoKeyboardModeChip"], "模式鈕", in: messages)
+            sleep(4)
+            tapWhenReady(messages.buttons["utuvoKeyboardMode-helpWrite"], "幫我寫", in: messages)
+            sleep(4)
+
+        case "guidegroq":
+            let app = launchApp()
+            openSettingsTab(app)
+            let guide = any(app, "label BEGINSWITH '使用教學'")
+            scrollTo(guide, in: app)
+            guide.tap()
+            tapWhenReady(app.buttons["tutorial-groqKey"], "Groq 教學", in: app)
+            sleep(3)
+            // 每按一次都等「第 n 步」真的換頁（連按太快會被翻頁動畫吃掉一頁）。
+            for n in 2...6 {
+                app.buttons["tutorialNext"].tap()
+                let progress = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "第 \(n) 步")).firstMatch
+                XCTAssertTrue(progress.waitForExistence(timeout: 4), "沒有翻到第 \(n) 步")
+                sleep(3)
+            }
+
+        case "groqpaste":
+            let app = launchApp()
+            openSettingsTab(app)
+            let guide = any(app, "label BEGINSWITH '使用教學'")
+            scrollTo(guide, in: app)
+            guide.tap()
+            tapWhenReady(app.buttons["tutorial-groqKey"], "Groq 教學", in: app)
+            for _ in 0..<6 { app.buttons["tutorialNext"].tap(); usleep(400_000) }
+            sleep(2)
+            if let key = ProcessInfo.processInfo.environment["UTUVO_GROQ_TEST_KEY"] { UIPasteboard.general.string = key }
+            tapWhenReady(app.buttons["tutorialPasteKey"], "貼上", in: app)
+            XCTAssertTrue(app.staticTexts["存好了，也測試過可以用！"].waitForExistence(timeout: 20), "貼上沒有存好")
+            UIPasteboard.general.string = ""
+            sleep(4)
 
         case "tipjar":
             // 幫我加油（0.2.4）：本機 StoreKit 設定，真的走一次購買；兩張截圖（清單＋謝謝）也是 IAP 送審截圖。

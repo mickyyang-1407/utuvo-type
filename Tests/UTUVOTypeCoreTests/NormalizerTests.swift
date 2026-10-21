@@ -119,10 +119,10 @@ final class NormalizerTests: XCTestCase {
         XCTAssertEqual(n.normalize("明天不是週一，是週二開會").cleaned, "明天週二開會", "時間詞後面不用補是")
     }
 
-    func testSelfCorrectionGaiCheng() {
+    func testGaiChengRemainsInOrdinaryPhrase() {
         let n = Normalizer()
         let out = n.normalize("改成下週三開會")
-        XCTAssertEqual(out.cleaned, "下週三開會")
+        XCTAssertEqual(out.cleaned, "改成下週三開會")
     }
 
     // MARK: - 數字 / 日期 / 時間 / 金額

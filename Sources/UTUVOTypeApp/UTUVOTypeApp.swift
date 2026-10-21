@@ -43,6 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var globalShortcut: GlobalShortcut?
     private var translationShortcuts: [GlobalShortcut] = []
     private var postProcessingShortcut: GlobalShortcut?
+    private var askShortcut: GlobalShortcut?
+    private var explainShortcuts: [GlobalShortcut] = []
     private var escapeGlobalMonitor: Any?
     private var escapeLocalMonitor: Any?
     private var appearanceObservation: NSKeyValueObservation?
@@ -72,6 +74,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         model.preferences.onPostProcessingShortcutChange = { [weak self] in
             self?.installPostProcessingShortcut()
+            self?.installAskShortcut()
+            self?.installExplainShortcuts()
         }
         model.preferences.onAppBehaviorChange = { [weak self] in
             self?.applyAppBehaviorPreferences()
@@ -124,6 +128,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self.globalShortcut = nil
                 self.translationShortcuts = []
                 self.postProcessingShortcut = nil
+                self.askShortcut = nil
+                self.explainShortcuts = []
             }
         }
         NotificationCenter.default.addObserver(
@@ -133,6 +139,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 guard let self else { return }
                 if self.globalShortcut == nil { self.installGlobalShortcut() }
                 if self.postProcessingShortcut == nil { self.installPostProcessingShortcut() }
+                if self.askShortcut == nil { self.installAskShortcut() }
+                if self.explainShortcuts.isEmpty { self.installExplainShortcuts() }
             }
         }
 
@@ -149,6 +157,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         rebuildMenu()
         installGlobalShortcut()
         installPostProcessingShortcut()
+        installAskShortcut()
+        installExplainShortcuts()
     }
 
     private func makePopover() -> NSPopover {
@@ -503,6 +513,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// 主鍵此刻是否仍被壓著（硬體狀態）；PTT 靠它分辨「換修飾鍵」與「真的放開」。
     private static func isKeyDown(_ keyCode: UInt32) -> Bool {
         CGEventSource.keyState(.combinedSessionState, key: CGKeyCode(keyCode))
+    }
+
+    private func installAskShortcut() {
+        askShortcut = nil
+        guard let spec = ShortcutSpec.parse(model.preferences.askShortcut) else { return }
+        do {
+            askShortcut = try GlobalShortcut(
+                spec: spec,
+                onPress: { [weak self] in self?.model.askShortcutPressed() },
+                identifier: 9
+            )
+        } catch {
+            model.reportShortcutStatus(model.preferences.tr(
+                "Ask anything 快捷鍵無法註冊：\(error.localizedDescription)",
+                "Ask anything shortcut could not be registered: \(error.localizedDescription)"
+            ))
+        }
+    }
+
+    /// 選字白話解釋／翻譯（identifier 10／11；其他快捷鍵用 1–9）。
+    private func installExplainShortcuts() {
+        explainShortcuts = []
+        let pairs: [(String, ExplainSelection, UInt32)] = [
+            (model.preferences.explainShortcut, .explain, 10),
+            (model.preferences.translateSelectionShortcut, .translate, 11),
+        ]
+        for (raw, action, identifier) in pairs {
+            guard let spec = ShortcutSpec.parse(raw) else { continue }
+            do {
+                explainShortcuts.append(try GlobalShortcut(
+                    spec: spec,
+                    onPress: { [weak self] in self?.model.explainSelectionPressed(action) },
+                    identifier: identifier))
+            } catch {
+                model.reportShortcutStatus(model.preferences.tr(
+                    "\(action.cardTitle(zh: true))快捷鍵無法註冊：\(error.localizedDescription)",
+                    "\(action.cardTitle(zh: false)) shortcut could not be registered: \(error.localizedDescription)"))
+            }
+        }
     }
 
     private func installPostProcessingShortcut() {

@@ -7,8 +7,16 @@ import org.json.JSONObject
  * 合併時同一個詞「最後改的贏」。匯出檔格式三平台互通。
  */
 data class DictionarySync(val entries: Map<String, Entry> = emptyMap()) {
-    /** at：秒（Unix epoch）；output null＝已刪除。 */
-    data class Entry(val output: String?, val at: Double)
+    /** 詞是使用者自己打上去的，還是鍵盤聽寫後學到的（決定字典頁分頁與能不能一鍵忽略）。 */
+    enum class Source { MANUAL, AUTO;
+        companion object {
+            /** 舊檔案沒有這個欄位 → 算手動（使用者自己加的）。 */
+            fun parse(raw: String?) = if (raw == AUTO.name) AUTO else MANUAL
+        }
+    }
+
+    /** at：秒（Unix epoch）；output null＝已刪除；source 舊檔會缺（當手動）。 */
+    data class Entry(val output: String?, val at: Double, val source: Source = Source.MANUAL)
 
     companion object {
         const val FORMAT = "utuvo-type-dictionary"
@@ -39,7 +47,11 @@ data class DictionarySync(val entries: Map<String, Entry> = emptyMap()) {
                 val e = o.optJSONObject("entries") ?: throw NotDictionaryFile()
                 return DictionarySync(e.keys().asSequence().associateWith { k ->
                     val x = e.getJSONObject(k)
-                    Entry(if (x.has("output") && !x.isNull("output")) x.getString("output") else null, x.getDouble("at"))
+                    Entry(
+                        if (x.has("output") && !x.isNull("output")) x.getString("output") else null,
+                        x.getDouble("at"),
+                        Source.parse(x.optString("source")),
+                    )
                 })
             }
             val plain = o.keys().asSequence().associateWith { k -> o.opt(k) as? String ?: throw NotDictionaryFile() }
@@ -50,11 +62,20 @@ data class DictionarySync(val entries: Map<String, Entry> = emptyMap()) {
     /** 目前有效的字典。 */
     val live: Map<String, String> get() = entries.mapNotNull { (k, v) -> v.output?.let { k to it } }.toMap()
 
-    fun set(source: String, output: String, at: Double): DictionarySync {
+    fun set(source: String, output: String, at: Double, origin: Source = Source.MANUAL): DictionarySync {
         val s = source.trim()
         if (s.isEmpty()) return this
         val o = output.trim()
-        return DictionarySync(entries + (s to Entry(o.ifEmpty { s }, at)))
+        val out = o.ifEmpty { s }
+        val prev = entries[s]
+        // 2026-10-13 修補：來源判斷原本寫反了——手動的詞被自動學到時會變成 AUTO。
+        // 規則：使用者手動加入一律手動；已存在的詞維持原來源；新詞（或刪掉後重新學到）才標自動。
+        val mark = when {
+            origin == Source.MANUAL -> Source.MANUAL
+            prev == null || prev.output == null -> Source.AUTO
+            else -> prev.source
+        }
+        return DictionarySync(entries + (s to Entry(out, at, mark)))
     }
 
     fun remove(source: String, at: Double): DictionarySync =
@@ -81,7 +102,10 @@ data class DictionarySync(val entries: Map<String, Entry> = emptyMap()) {
 
     fun encode(): String {
         val e = JSONObject()
-        for ((k, v) in entries.toSortedMap()) e.put(k, JSONObject().put("at", v.at).apply { v.output?.let { put("output", it) } })
+        for ((k, v) in entries.toSortedMap()) e.put(k, JSONObject().put("at", v.at).apply {
+            v.output?.let { put("output", it) }
+            put("source", v.source.name)
+        })
         return JSONObject().put("format", FORMAT).put("version", VERSION).put("entries", e).toString(2)
     }
 }
