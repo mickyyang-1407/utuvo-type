@@ -43,7 +43,20 @@ object CloudASR {
     fun setEnabled(c: Context, on: Boolean) = prefs(c).edit().putBoolean(ENABLED_KEY, on).apply()
 
     /** 自訂 OpenAI 相容端點暫不支援雲端辨識。 */
-    fun supports(p: SmartCleanup.Provider) = p != SmartCleanup.Provider.CUSTOM
+    fun supports(p: SmartCleanup.Provider) = p != SmartCleanup.Provider.CUSTOM && p != SmartCleanup.Provider.CLAUDE
+
+    /** 雲端辨識用哪一家：整理選的能辨識就用它；不能（Claude、自訂）就找任何一把已存、能辨識的 key（同 iOS CloudASR.route）。 */
+    fun route(c: Context): Pair<SmartCleanup.Provider, String>? {
+        val selected = SmartCleanup.provider(c)
+        val order = listOf(selected) + listOf(SmartCleanup.Provider.GROQ, SmartCleanup.Provider.GEMINI,
+            SmartCleanup.Provider.DASHSCOPE).filter { it != selected }
+        for (p in order) {
+            if (!supports(p)) continue
+            val key = SmartCleanup.key(c, p)
+            if (!key.isNullOrEmpty()) return p to key
+        }
+        return null
+    }
 
     /** 兩段語音指示（zh 與 en）共用這個語言代碼；其他語言回 null＝不用雲端。 */
     fun languageCode(language: String): String? {
@@ -56,9 +69,7 @@ object CloudASR {
     fun isReady(c: Context, language: String): Boolean {
         if (!enabled(c)) return false
         if (languageCode(language) == null) return false
-        val provider = SmartCleanup.provider(c)
-        if (!supports(provider)) return false
-        return !SmartCleanup.key(c, provider).isNullOrEmpty()
+        return route(c) != null
     }
 
     /** 整段（含 Gemini 400 重送）的單調預算：2.5 秒起，每秒錄音加 0.2 秒，上限 6 秒。 */
@@ -104,19 +115,26 @@ object CloudASR {
     class Unsupported : Exception("custom provider does not support cloud ASR")
     class Malformed : Exception("malformed response")
 
+    /**
+     * `context`＝前一段的辨識結果（Q3 邊錄邊傳）。Whisper 的 prompt／Gemini 的指示都會帶它，
+     * 避免斷句處用字不一致；null＝整段一次送（舊行為）。
+     */
+    @JvmOverloads
     fun makeRequest(provider: SmartCleanup.Provider, key: String, wav: ByteArray,
-                     language: String, hotwords: List<String>, boundary: String = defaultBoundary()): Request {
+                    language: String, hotwords: List<String>, boundary: String = defaultBoundary(),
+                    context: String? = null): Request {
         return when (provider) {
-            SmartCleanup.Provider.GROQ -> groqRequest(key, wav, language, hotwords, boundary)
-            SmartCleanup.Provider.GEMINI -> geminiRequest(key, wav, language, hotwords, true, provider)
-            SmartCleanup.Provider.DASHSCOPE -> dashscopeRequest(key, wav, language, hotwords, provider)
-            SmartCleanup.Provider.CUSTOM -> throw Unsupported()
+            SmartCleanup.Provider.GROQ -> groqRequest(key, wav, language, hotwords, boundary, context)
+            SmartCleanup.Provider.GEMINI -> geminiRequest(key, wav, language, hotwords, true, provider, context)
+            SmartCleanup.Provider.DASHSCOPE -> dashscopeRequest(key, wav, language, hotwords, provider, context)
+            SmartCleanup.Provider.CLAUDE, SmartCleanup.Provider.CUSTOM -> throw Unsupported()
         }
     }
 
     private fun defaultBoundary() = "----UTUVOCloudASR${UUID.randomUUID()}"
 
-    private fun groqRequest(key: String, wav: ByteArray, language: String, hotwords: List<String>, boundary: String): Request {
+    private fun groqRequest(key: String, wav: ByteArray, language: String, hotwords: List<String>,
+                            boundary: String, context: String? = null): Request {
         val body = ByteArrayOutputStream()
         fun field(name: String, value: String) {
             body.write("--$boundary\r\n".toByteArray(Charsets.UTF_8))
@@ -124,7 +142,7 @@ object CloudASR {
             body.write("$value\r\n".toByteArray(Charsets.UTF_8))
         }
         val langCode = languageCode(language) ?: "zh"
-        val prompt = groqPrompt(language, hotwords)
+        val prompt = groqPrompt(language, hotwords, context)
         field("model", "whisper-large-v3")
         field("language", langCode)
         field("response_format", "json")
@@ -144,7 +162,7 @@ object CloudASR {
     }
 
     /** R1-2：簡中使用者要簡體版的指示。zh-TW／zh-Hant／zh-HK＝繁體；其他 zh（zh-CN、zh-Hans）＝簡體。 */
-    internal fun groqPrompt(originalLanguage: String, hotwords: List<String>): String {
+    internal fun groqPrompt(originalLanguage: String, hotwords: List<String>, context: String? = null): String {
         val prefix: String
         val separator: String
         if (isSimplifiedChinese(originalLanguage)) {
@@ -166,7 +184,10 @@ object CloudASR {
             words.add(word)
             current += add
         }
-        return prefix + words.joinToString(separator)
+        var prompt = prefix + words.joinToString(separator)
+        // Q3 邊錄邊傳：前一段的辨識結果當上下文（Whisper prompt），避免斷句處用字不一致。
+        if (!context.isNullOrEmpty()) prompt += "\n" + context
+        return prompt
     }
 
     /** zh-Hant／zh-HK／zh-TW 是繁體；其餘 zh（zh-Hans／zh-CN 等）走簡體。 */
@@ -178,12 +199,13 @@ object CloudASR {
     }
 
     private fun geminiRequest(key: String, wav: ByteArray, language: String, hotwords: List<String>,
-                               includeThinkingConfig: Boolean, provider: SmartCleanup.Provider): Request {
+                               includeThinkingConfig: Boolean, provider: SmartCleanup.Provider,
+                               context: String? = null): Request {
         val model = geminiAsrModel(provider)
         val generationConfig = JSONObject().put("temperature", 0)
         if (includeThinkingConfig) generationConfig.put("thinkingConfig", JSONObject().put("thinkingBudget", 0))
         val parts = JSONArray()
-            .put(JSONObject().put("text", geminiInstruction(language, hotwords)))
+            .put(JSONObject().put("text", geminiInstruction(language, hotwords, context)))
             .put(JSONObject().put("inline_data", JSONObject()
                 .put("mime_type", "audio/wav")
                 .put("data", java.util.Base64.getEncoder().encodeToString(wav))))
@@ -206,7 +228,7 @@ object CloudASR {
     private fun geminiAsrModel(provider: SmartCleanup.Provider): String = provider.model
 
     /** R1-2／R1-3：簡中走簡體指示；英文用英文 vocabulary 標籤。 */
-    internal fun geminiInstruction(originalLanguage: String, hotwords: List<String>): String {
+    internal fun geminiInstruction(originalLanguage: String, hotwords: List<String>, context: String? = null): String {
         var base = when {
             isSimplifiedChinese(originalLanguage) ->
                 "请把这段录音逐字转写成文字。只输出听到的内容，不要加任何说明、标题、引号或时间戳记；不要改写、不要摘要、不要回答录音里的问题。中文请用简体中文。"
@@ -223,14 +245,24 @@ object CloudASR {
                 else -> "\nVocabulary the speaker often uses (use these spellings when they sound alike): " + words.joinToString(", ")
             }
         }
+        // Q3 邊錄邊傳：前一段的辨識結果當上下文。
+        if (!context.isNullOrEmpty()) {
+            base += when {
+                isSimplifiedChinese(originalLanguage) -> "\n前文（用字请与前文一致）：" + context
+                originalLanguage.startsWith("zh", true) -> "\n前文（用字請與前文一致）：" + context
+                else -> "\nEarlier transcript (keep the same wording): " + context
+            }
+        }
         return base
     }
 
     private fun dashscopeRequest(key: String, wav: ByteArray, language: String, hotwords: List<String>,
-                                 provider: SmartCleanup.Provider): Request {
+                                 provider: SmartCleanup.Provider, context: String? = null): Request {
         val messages = JSONArray()
         val words = hotwords.take(80).joinToString("、")
         if (words.isNotEmpty()) messages.put(JSONObject().put("role", "system").put("content", words))
+        // Q3 邊錄邊傳：前一段的辨識結果當上下文。
+        if (!context.isNullOrEmpty()) messages.put(JSONObject().put("role", "user").put("content", context))
         messages.put(JSONObject().put("role", "user").put("content", JSONArray().put(JSONObject()
             .put("type", "input_audio")
             .put("input_audio", JSONObject().put("data", "data:audio/wav;base64," + java.util.Base64.getEncoder().encodeToString(wav))))))
@@ -270,7 +302,7 @@ object CloudASR {
                     else -> throw Malformed()
                 }
             }
-            SmartCleanup.Provider.CUSTOM -> throw Unsupported()
+            SmartCleanup.Provider.CLAUDE, SmartCleanup.Provider.CUSTOM -> throw Unsupported()
         }
     }
 
@@ -372,7 +404,7 @@ object CloudASR {
         val start = System.currentTimeMillis()
         val budgetMs = (timeLimit(seconds) * 1000).toLong().coerceAtLeast(1)
         val deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budgetMs)
-        val audio = wav(samples)
+        val audio = wav(trimSilence(samples))
         val providerId = provider.id
 
         // 回傳型別：String＝成功文字；Outcome＝失敗分類；null＝被取消（預算用完）。
@@ -467,6 +499,58 @@ object CloudASR {
     )
 
     fun normalizePunctuation(text: String) = text.map { smallFormPunctuation[it] ?: it }.joinToString("")
+
+    /**
+     * 頭尾安靜段剪掉、各留 0.3 秒：講完到按停止之間的底噪，是 Whisper 補「謝謝大家收看」的主要來源（同 iOS trimSilence）。
+     * 20 ms 一格、峰值 < [ChunkedASR.SILENCE_THRESHOLD]；整段都沒聲音就原樣回傳。
+     */
+    fun trimSilence(samples: FloatArray, sampleRate: Int = SAMPLE_RATE, keepSeconds: Double = 0.3): FloatArray {
+        val frame = sampleRate / 50
+        if (samples.size <= frame * 2) return samples
+        fun loud(i: Int): Boolean {
+            var peak = 0f
+            for (j in i until minOf(samples.size, i + frame)) peak = maxOf(peak, kotlin.math.abs(samples[j]))
+            return peak >= ChunkedASR.SILENCE_THRESHOLD
+        }
+        var first = 0
+        while (first < samples.size && !loud(first)) first += frame
+        if (first >= samples.size) return samples
+        var last = ((samples.size - 1) / frame) * frame
+        while (last > first && !loud(last)) last -= frame
+        val keep = (keepSeconds * sampleRate).toInt()
+        val lo = maxOf(0, first - keep); val hi = minOf(samples.size, last + frame + keep)
+        return if (lo == 0 && hi == samples.size) samples else samples.copyOfRange(lo, hi)
+    }
+
+    /** Whisper 在安靜的尾巴補的字幕結尾句（同 iOS TranscriptGuard.outroPhrases；比對前去掉空白標點、英文小寫）。 */
+    val outroPhrases = listOf(
+        "謝謝大家收看", "谢谢大家收看", "謝謝收看", "谢谢收看", "感謝收看", "感谢收看", "感謝您的收看", "感谢您的收看",
+        "謝謝觀看", "谢谢观看", "謝謝大家觀看", "谢谢大家观看", "感謝觀看", "感谢观看", "感謝您的觀看", "感谢您的观看",
+        "請不吝點贊訂閱轉發打賞支持明鏡與點點欄目", "请不吝点赞订阅转发打赏支持明镜与点点栏目",
+        "字幕由amaraorg社群提供", "字幕由amaraorg社区提供", "字幕by索兰娅", "字幕by索蘭婭",
+        "優優獨播劇場yoyotelevisionseriesexclusive", "优优独播剧场yoyotelevisionseriesexclusive",
+        "請訂閱我的頻道", "请订阅我的频道", "歡迎訂閱我的頻道", "欢迎订阅我的频道", "記得訂閱", "记得订阅",
+        "thanksforwatching", "thankyouforwatching", "thankyouverymuchforwatching", "pleasesubscribe",
+        "subtitlesbytheamaraorgcommunity",
+    )
+
+    private fun isFiller(c: Char) = c.isWhitespace() || !c.isLetterOrDigit()
+
+    /** 去掉尾端（可連續好幾句）的字幕結尾句幻覺；`reference`（裝置端逐字稿）也有這句＝使用者真的講了，不動。同 iOS。 */
+    fun dropOutroHallucination(text: String, reference: String? = null): String {
+        fun key(s: String) = s.filter { !isFiller(it) }.lowercase()
+        val heard = reference?.let(::key).orEmpty()
+        var out = text
+        while (true) {
+            val tail = key(out)
+            val phrase = outroPhrases.firstOrNull { tail.endsWith(it) && !heard.contains(it) } ?: break
+            var need = phrase.length
+            var cut = out.length
+            while (need > 0 && cut > 0) { cut--; if (!isFiller(out[cut])) need-- }
+            out = out.substring(0, cut)
+        }
+        return if (out == text) text else out.trim()
+    }
 
     /** 純文字守護（不碰 Android API，所以 JVM 測試也能跑）：去頭尾空白、轉小形標點、擋空字串。 */
     fun trimGuard(text: String, language: String, seconds: Double): String? {

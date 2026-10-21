@@ -33,9 +33,14 @@ enum OnDeviceAssistant {
     /// Debug 版限定：UI 測試用來模擬「沒有 Apple Intelligence」（主 app 收 launch arg 後寫進 App Group）。
     static let debugDisableKey = "utuvo.type.debug.noOnDeviceAI"
 
+    /// 開發版設定頁的手動開關（10-11：讓有 Apple Intelligence 的 17PMX 也能試 Gemma 手機上整理）。
+    /// 跟 UI 測試的 launch arg 分開存：launch arg 那個每次開 App 都會被重設。
+    static let debugManualDisableKey = "utuvo.type.debug.manualNoOnDeviceAI"
+
     static var onDeviceAvailable: Bool {
         #if DEBUG
         if KeyboardPresence.defaults.bool(forKey: debugDisableKey) { return false }
+        if KeyboardPresence.defaults.bool(forKey: debugManualDisableKey) { return false }
         #endif
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
@@ -69,6 +74,33 @@ enum OnDeviceAssistant {
     static func translate(_ text: String, to target: TranslationTarget) async throws -> String {
         let system = "你是翻譯引擎。把使用者的文字翻成\(target.zh)（\(target.en)），只輸出翻譯本身，不要解釋、不要引號。"
         return try await run(system: system, user: text)
+    }
+
+    // MARK: - 鍵盤三模式（Help me write／Speak to edit／Ask anything）
+
+    /// Help me write：依前文語氣寫一段可送出的文字。`before` 是游標前文字（呼叫端已照設定截 500 字）。
+    static func helpWrite(instruction: String, before: String, reference: String = "") async throws -> String {
+        let user = VoiceModes.helpWriteUser(before: before, instruction: instruction, reference: reference)
+        return try await run(system: VoiceModes.helpWriteSystem, user: user)
+    }
+
+    /// Speak to edit：改寫一段或全部文字（與既有 `editSelection` 同一條引擎路線）。
+    static func speakToEdit(original: String, instruction: String) async throws -> String {
+        let user = VoiceModes.speakToEditUser(original: original, instruction: instruction)
+        return try await run(system: VoiceModes.speakToEditSystem, user: user)
+    }
+
+    /// Ask anything（沒有選取文字）：純粹回答，呼叫端把回應餵進 `VoiceModes.parseAskReply`。
+    static func askAnything(question: String) async throws -> String {
+        let user = VoiceModes.askAnythingUser(question: question)
+        return try await run(system: VoiceModes.askAnythingSystem, user: user)
+    }
+
+    /// Ask anything（有選取文字）：模型回 JSON 決定「改寫選取」還是「回答關於它的問題」。
+    /// 回應**不要**在這裡解析——`VoiceModes.parseAskReply` 要看原始字串（是否純 JSON）。
+    static func askAboutSelection(selection: String, question: String) async throws -> String {
+        let user = VoiceModes.askWithSelectionUser(selection: selection, question: question)
+        return try await run(system: VoiceModes.askWithSelectionSystem, user: user)
     }
 
     typealias Completion = @Sendable (String, String) async throws -> String

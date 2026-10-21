@@ -406,7 +406,8 @@ public struct Normalizer: Sendable {
                 working.replaceSubrange(whole, with: working[first])
             }
         }
-        working = applyRegex(working, pattern: "([我你他它這那是不就要很請等])(?:[、，,\\s]+\\1)+(?=[\\u4E00-\\u9FFF]|[、，,\\s]|$)") { $0[1] }
+        // 「不是,是」是明確改口，不要把「不是」末尾的「是」和後面的「是」當口吃合併。
+        working = applyRegex(working, pattern: "(?<!不)([我你他它這那是不就要很請等])(?:[、，,\\s]+\\1)+(?=[\\u4E00-\\u9FFF]|[、，,\\s]|$)") { $0[1] }
 
         // 兩個以上 CJK 字元組成的重複片段（「這樣這樣」）是高訊號口吃，
         // 用 bounded regex 處理；單字「看看」不符合這個形狀，會保留。
@@ -436,7 +437,8 @@ public struct Normalizer: Sendable {
             // 單字去重，避免把「今天天氣」或「看看」這種正常中文吃掉。
             let repeatableCharacters: Set<Character> = ["我", "你", "他", "它", "這", "那", "是", "不", "就", "要", "很", "請", "等"]
             let repeatable = repeatableCharacters.contains(chars[i])
-            if tokenLen >= 2 && repeatable {
+            let negatedCopula = chars[i] == "是" && i > 0 && chars[i - 1] == "不"
+            if tokenLen >= 2 && repeatable && !negatedCopula {
                 result.append(chars[i])
                 i = j
             } else {
@@ -447,55 +449,216 @@ public struct Normalizer: Sendable {
         return String(result)
     }
 
-    /// 自修正：「不是 A，是 B」→ B；「A 不對，是 B」→ B；「A 不對 B」→ B；
-    /// 「改成 B」→ 保留 B 但去掉前綴。
-    /// 故意只處理最常見的形狀，避免誤殺正常句。
-    /// 「X不是A，是B」刪掉 A 後還需要「是」的主詞／指示詞（長的排前面，regex 交替才會先比長的）。
+    /// 「不是 A，是 B」保留明確主詞；逗號式改口只在片段能可靠對齊時才替換。
     static let copulaSubjects = ["這些", "那些", "這個", "那個", "我們", "你們", "他們", "她們", "它們", "這", "那", "它", "他", "她", "我", "你", "您"]
         .joined(separator: "|")
 
     public static func applySelfCorrection(_ text: String) -> String {
-        var out = repairAfterFiller(correctionMarkers(text))
-        // 順序刻意：較長的 pattern 先匹配，避免短 pattern 把長 pattern 切掉。
-        let patterns: [(NSRegularExpression, String)] = [
-            // 前面是主詞／指示詞：刪掉「不是A」要留下「是」（「這不是我的，是他的」→「這是他的」，不是「這他的」）。
-            (try! NSRegularExpression(pattern: "(\(copulaSubjects))不是([^，。！？,!?\\s]{1,30})[，,。是]?是([^，。！？,!?\\s]{1,30})"), "$1是$3"),
-            (try! NSRegularExpression(pattern: "不是([^，。！？,!?\\s]{1,30})[，,。是]?是([^，。！？,!?\\s]{1,30})"), "$2"),
-            (try! NSRegularExpression(pattern: "([^，。！？,!?\\s]{1,30})不對[，,]?是([^，。！？,!?\\s]{1,30})"), "$2"),
-            (try! NSRegularExpression(pattern: "([^，。！？,!?\\s]{1,30})不對([^，。！？,!?\\s]{1,30})"), "$2"),
-            (try! NSRegularExpression(pattern: "改成([^，。！？,!?\\s]{1,30})"), "$1"),
-            (try! NSRegularExpression(pattern: "應該是([^，。！？,!?\\s]{1,30})"), "$1")
-        ]
-        for (pattern, replacement) in patterns {
-            // 每次重新算 range：上一輪的替換可能縮短字串。
+        let out = repairAfterFiller(correctionMarkers(text))
+        return applyExplicitNotCorrection(out)
+    }
+
+    private static func applyExplicitNotCorrection(_ text: String) -> String {
+        let pattern = try! NSRegularExpression(pattern: "([^，。！？,!?\\s　]{0,30})不是([^，。！？,!?\\s　]{1,30})([，,。]?)是(?!不是|對不對|要不要)([^，。！？,!?\\s　]{1,30})")
+        var out = text
+        for _ in 0..<5 {
             let range = NSRange(out.startIndex..<out.endIndex, in: out)
-            out = pattern.stringByReplacingMatches(in: out, range: range, withTemplate: replacement)
+            guard let match = pattern.firstMatch(in: out, range: range),
+                  let fullRange = Range(match.range, in: out),
+                  let prefixRange = Range(match.range(at: 1), in: out),
+                  let oldRange = Range(match.range(at: 2), in: out),
+                  let separatorRange = Range(match.range(at: 3), in: out),
+                  let newRange = Range(match.range(at: 4), in: out) else { break }
+            let prefix = String(out[prefixRange])
+            let separator = String(out[separatorRange])
+            if separator.isEmpty, prefix.hasSuffix("是") { break }
+            let old = prefix + String(out[oldRange])
+            let replacement = String(out[newRange])
+            let corrected: String
+            if let aligned = alignCorrection(old: old, replacement: replacement) {
+                corrected = aligned
+            } else if copulaSubjects.split(separator: "|").contains(where: { prefix.hasSuffix($0) }) {
+                corrected = prefix + "是" + replacement
+            } else {
+                // No reliable relationship between the old and new phrases: preserve the utterance.
+                break
+            }
+            out.replaceSubrange(fullRange, with: corrected)
         }
         return out
     }
 
-    /// 講到一半改口（2026-09-19 實機「我上次做完，應該說我上次坐車之前」）：
-    /// 停頓（逗號）後接「應該說／我是說／我的意思是」＝前一小句作廢。新說法的開頭如果在舊的一小句裡出現過，
-    /// 就從那裡切（保留前面的「而且你看」）；沒出現過就整個小句拿掉。句中沒停頓的「我應該說實話」不動。
-    static let correctionMarkers = ["我的意思是", "應該說", "我是說", "应该说"]
-    /// 兩個逗號中間單獨講的改口詞（「禮拜三，不是，禮拜四」「剛上去，喔不對，剛出門」）；前後都要有停頓，
-    /// 「但是不是應該」這種句中的「不是」不算。Mac 實測 Apple 裝置端模型這兩種會把方向弄反，所以用規則。
-    static let standaloneCorrections = ["喔不對", "哦不對", "噢不對", "不對不對", "不對", "不是不是", "不是", "說錯了", "講錯了", "说错了"]
+    /// 停頓後的改口只替換可對齊的片段；找不到可靠對應時保留原句。
+    static let correctionMarkerWords = ["我的意思是", "應該說", "我是說", "应该说"]
+    static let standaloneCorrections = ["啊不對", "喔不對", "哦不對", "噢不對", "不對不對", "不對", "不是不是", "不是", "說錯了", "講錯了", "说错了"]
+    private static let weekdayModifiers = [
+        "大後天的", "明天的", "昨天的", "後天的",
+        "大後天", "明天", "昨天", "後天", "下個", "這個", "上個", "下", "這", "上"
+    ]
+
+    private static func isCorrectionWhitespace(_ character: Character) -> Bool {
+        character.unicodeScalars.allSatisfy { scalar in
+            switch scalar.value {
+            case 0x0009...0x000D, 0x0020, 0x0085, 0x00A0, 0x1680,
+                 0x2000...0x200A, 0x2028, 0x2029, 0x202F, 0x205F, 0x3000:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+
+    private static func trimCorrectionWhitespace(_ text: String) -> String {
+        var lower = text.startIndex
+        var upper = text.endIndex
+        while lower < upper, isCorrectionWhitespace(text[lower]) {
+            lower = text.index(after: lower)
+        }
+        while lower < upper {
+            let previous = text.index(before: upper)
+            guard isCorrectionWhitespace(text[previous]) else { break }
+            upper = previous
+        }
+        return String(text[lower..<upper])
+    }
+
     static func correctionMarkers(_ text: String) -> String {
         var out = text
         for _ in 0..<5 {
             guard let (clauseStart, commaIndex, afterMarker) = findCorrection(out) else { break }
             let old = String(out[clauseStart..<commaIndex])
-            let rest = String(out[afterMarker...]).drop(while: { $0 == "，" || $0 == "," || $0 == " " })
-            // 新說法的開頭在舊的一小句裡出現過就從那裡切（先比兩個字、再比一個字），保留前面的「我是」「而且你看」。
-            var keep = ""
-            for n in [2, 1] {
-                let anchor = String(rest.prefix(n))
-                if anchor.count == n, let r = old.range(of: anchor, options: .backwards) { keep = String(old[..<r.lowerBound]); break }
+            let rawRest = String(out[afterMarker...]).drop(while: { $0 == "，" || $0 == "," || isCorrectionWhitespace($0) })
+            let rest = stripCorrectionLead(String(rawRest))
+            guard let (replacement, suffix) = splitCorrectionPayload(rest),
+                  let corrected = alignCorrection(old: old, replacement: replacement) else {
+                // Keep the full utterance when there is no reliable alignment.
+                break
             }
-            out = String(out[..<clauseStart]) + keep + rest
+            out = String(out[..<clauseStart]) + corrected + suffix
         }
         return out
+    }
+
+    private static func stripCorrectionLead(_ text: String) -> String {
+        var value = trimCorrectionWhitespace(text)
+        let leads = ["就是啊", "就是", "是", "啊", "欸", "诶"]
+        for _ in 0..<3 {
+            guard let lead = leads.first(where: { value.hasPrefix($0) }) else { break }
+            value.removeFirst(lead.count)
+        }
+        return trimCorrectionWhitespace(value)
+    }
+
+    private static func splitCorrectionPayload(_ text: String) -> (String, String)? {
+        let boundaries: Set<Character> = ["，", ",", "。", "！", "？", "!", "?", "\r", "\n", "\r\n"]
+        guard let boundary = text.firstIndex(where: { boundaries.contains($0) }) else {
+            let value = trimCorrectionWhitespace(text)
+            return value.isEmpty ? nil : (value, "")
+        }
+        let value = trimCorrectionWhitespace(String(text[..<boundary]))
+        guard !value.isEmpty else { return nil }
+        return (value, String(text[boundary...]))
+    }
+
+    /// Replace only a confidently aligned value in the old clause; keep surrounding words intact.
+    private static func alignCorrection(old: String, replacement: String) -> String? {
+        let oldRange = NSRange(old.startIndex..<old.endIndex, in: old)
+        let newRange = NSRange(replacement.startIndex..<replacement.endIndex, in: replacement)
+
+        // Same-kind relative dates have a stable lexical shape: 今天 → 明天, 昨天 → 後天.
+        let relativeDays = ["大後天", "前天", "後天", "昨天", "今天", "明天"]
+        for newDay in relativeDays where replacement.hasPrefix(newDay) {
+            for oldDay in relativeDays where oldDay != newDay {
+                guard let oldDayRange = old.range(of: oldDay, options: .backwards) else { continue }
+                let newSuffix = String(replacement.dropFirst(newDay.count))
+                if let result = replaceAlignedToken(in: old, range: oldDayRange, with: newDay, suffix: newSuffix) {
+                    return result
+                }
+            }
+        }
+
+        // Stable weekday prefix and one-character value: 星期三 → 星期四, 禮拜三 → 禮拜四.
+        let weekday = try! NSRegularExpression(pattern: "(星期|禮拜|週|周)([一二三四五六日天])")
+        let oldDays = weekday.matches(in: old, range: oldRange)
+        let newDays = weekday.matches(in: replacement, range: newRange)
+        for newDay in newDays {
+            guard let newTokenRange = Range(newDay.range, in: replacement),
+                  let newPrefixRange = Range(newDay.range(at: 1), in: replacement) else { continue }
+            let newLead = String(replacement[..<newTokenRange.lowerBound])
+            let newModifier = weekdayModifiers.first(where: { newLead.hasSuffix($0) }) ?? ""
+            for oldDay in oldDays.reversed() {
+                guard oldDay.range(at: 1).length == newDay.range(at: 1).length,
+                      let oldTokenRange = Range(oldDay.range, in: old),
+                      let oldPrefixRange = Range(oldDay.range(at: 1), in: old),
+                      old[oldPrefixRange] == replacement[newPrefixRange] else { continue }
+                let oldLead = String(old[..<oldTokenRange.lowerBound])
+                let oldModifier = newModifier.isEmpty
+                    ? ""
+                    : weekdayModifiers.first(where: { oldLead.hasSuffix($0) }) ?? ""
+                let oldExpressionStart = old.index(oldTokenRange.lowerBound, offsetBy: -oldModifier.count)
+                let oldExpressionRange = oldExpressionStart..<oldTokenRange.upperBound
+                let newSuffix = String(replacement[newTokenRange.upperBound...])
+                if let result = replaceAlignedToken(in: old, range: oldExpressionRange,
+                                                    with: newModifier + String(replacement[newTokenRange]),
+                                                    suffix: newSuffix) {
+                    return result
+                }
+            }
+        }
+
+        // Numeric and version tokens align when their non-numeric shape matches (48K → 96K, V3 → V4).
+        let token = try! NSRegularExpression(pattern: "(?<![A-Za-z0-9_])(?:[A-Za-z_]*[0-9]+[A-Za-z0-9_]*|[0-9零〇一二三四五六七八九十百千兩两]+(?:點|点|樓|楼|層|层|號|号|塊|块|元|K|k)?)(?![A-Za-z0-9_])")
+        let oldTokens = token.matches(in: old, range: oldRange)
+        let newTokens = token.matches(in: replacement, range: newRange)
+        for newMatch in newTokens {
+            guard let newTokenRange = Range(newMatch.range, in: replacement) else { continue }
+            let newToken = String(replacement[newTokenRange])
+            let newShape = newToken.replacingOccurrences(of: "[0-9零〇一二三四五六七八九十百千兩两]+", with: "#", options: .regularExpression).lowercased()
+            for oldMatch in oldTokens.reversed() {
+                guard let oldTokenRange = Range(oldMatch.range, in: old) else { continue }
+                let oldToken = String(old[oldTokenRange])
+                let oldShape = oldToken.replacingOccurrences(of: "[0-9零〇一二三四五六七八九十百千兩两]+", with: "#", options: .regularExpression).lowercased()
+                let sameNumberWithAddedUnit = newToken.hasPrefix(oldToken) && newToken.count > oldToken.count
+                guard oldShape == newShape || sameNumberWithAddedUnit else { continue }
+                let newSuffix = String(replacement[newTokenRange.upperBound...])
+                if let result = replaceAlignedToken(in: old, range: oldTokenRange, with: newToken, suffix: newSuffix) {
+                    return result
+                }
+            }
+        }
+
+        // Shared opening phrase aligns short edits such as 小雅跟小博 → 小雅跟小潘.
+        let newCharacters = Array(replacement)
+        guard newCharacters.count >= 2 else { return nil }
+        for length in stride(from: newCharacters.count, through: 2, by: -1) {
+            let anchor = String(newCharacters.prefix(length))
+            guard let range = old.range(of: anchor, options: .backwards) else { continue }
+            let oldTail = old[range.upperBound...]
+            let newTail = String(newCharacters.dropFirst(length))
+            // A longer unmatched tail may be context, so decline instead of deleting it.
+            guard oldTail.count <= newTail.count + 1 else { continue }
+            guard !newTail.isEmpty else { continue }
+            return String(old[..<range.lowerBound]) + anchor + newTail
+        }
+        // A one-grapheme shared opening also anchors a correction: 剛上去 → 剛出門.
+        // 單字錨點只認虛詞／副詞（剛、在、去…）：實詞的字可能在別的詞中間（「台南玩」對「南投下雨」會誤接成「台南投」）。
+        let anchor = String(newCharacters[0])
+        guard singleCharAnchors.contains(anchor), let range = old.range(of: anchor, options: .backwards) else { return nil }
+        let oldTail = old[range.upperBound...]
+        let newTail = String(newCharacters.dropFirst())
+        guard oldTail.count <= newTail.count + 1, !newTail.isEmpty else { return nil }
+        return String(old[..<range.lowerBound]) + anchor + newTail
+    }
+
+    static let singleCharAnchors: Set<String> = ["剛", "在", "去", "到", "要", "是", "給", "跟", "把", "從", "往", "用", "叫", "先", "再", "就", "還", "也", "都", "會", "想", "和", "對"]
+
+    /// Keep an existing tail when it agrees with the replacement; decline mismatched tails.
+    private static func replaceAlignedToken(in old: String, range: Range<String.Index>, with token: String, suffix: String) -> String? {
+        let oldSuffix = String(old[range.upperBound...])
+        let prefix = String(old[..<range.lowerBound])
+        if suffix.isEmpty || oldSuffix.contains(suffix) { return prefix + token + oldSuffix }
+        if oldSuffix.isEmpty || suffix.hasSuffix(oldSuffix) { return prefix + token + suffix }
+        return nil
     }
 
     private static func findCorrection(_ s: String) -> (String.Index, String.Index, String.Index)? {
@@ -503,11 +666,19 @@ public struct Normalizer: Sendable {
         for marker in standaloneCorrections {
             var search = s.startIndex..<s.endIndex
             while let r = s.range(of: marker, range: search) {
-                let hasCommaBefore = r.lowerBound > s.startIndex && "，,".contains(s[s.index(before: r.lowerBound)])
-                let hasCommaAfter = r.upperBound < s.endIndex && "，,".contains(s[r.upperBound])
+                var beforeMarker = r.lowerBound
+                while beforeMarker > s.startIndex, isCorrectionWhitespace(s[s.index(before: beforeMarker)]) {
+                    beforeMarker = s.index(before: beforeMarker)
+                }
+                var afterMarker = r.upperBound
+                while afterMarker < s.endIndex, isCorrectionWhitespace(s[afterMarker]) {
+                    afterMarker = s.index(after: afterMarker)
+                }
+                let hasCommaBefore = beforeMarker > s.startIndex && "，,".contains(s[s.index(before: beforeMarker)])
+                let hasCommaAfter = afterMarker < s.endIndex && "，,".contains(s[afterMarker])
                 if hasCommaBefore && hasCommaAfter {
-                    let comma = s.index(before: r.lowerBound)
-                    let breakers: Set<Character> = ["，", ",", "。", "！", "？", "!", "?", "\n"]
+                    let comma = s.index(before: beforeMarker)
+                    let breakers: Set<Character> = ["，", ",", "。", "！", "？", "!", "?", "\r", "\n", "\r\n"]
                     var start = comma
                     while start > s.startIndex, !breakers.contains(s[s.index(before: start)]) { start = s.index(before: start) }
                     if start < comma { return (start, comma, r.upperBound) }
@@ -515,15 +686,17 @@ public struct Normalizer: Sendable {
                 search = r.upperBound..<s.endIndex
             }
         }
-        for marker in correctionMarkers {
+        for marker in correctionMarkerWords {
             var search = s.startIndex..<s.endIndex
             while let r = s.range(of: marker, range: search) {
-                // 前面緊接逗號（容許一個空白）
+                // 前面緊接逗號（容許空白）
                 var p = r.lowerBound
-                if p > s.startIndex, s[s.index(before: p)] == " " { p = s.index(before: p) }
+                while p > s.startIndex, isCorrectionWhitespace(s[s.index(before: p)]) {
+                    p = s.index(before: p)
+                }
                 if p > s.startIndex, "，,".contains(s[s.index(before: p)]) {
                     let comma = s.index(before: p)
-                    let breakers: Set<Character> = ["，", ",", "。", "！", "？", "!", "?", "\n"]
+                    let breakers: Set<Character> = ["，", ",", "。", "！", "？", "!", "?", "\r", "\n", "\r\n"]
                     var start = comma
                     while start > s.startIndex, !breakers.contains(s[s.index(before: start)]) { start = s.index(before: start) }
                     if start < comma { return (start, comma, r.upperBound) }
@@ -610,7 +783,9 @@ public struct Normalizer: Sendable {
 
         // 5. 金額：「一百二十三元」「一百二十萬元」
         // 為了可預期，這裡把所有常見形狀（含 萬/億）都轉成阿拉伯數字 + 千分位。
-        out = applyRegex(out, pattern: "([\\d零〇一二三四五六七八九十百千萬億兩]{1,15})(元|塊|圓| dollars?)") { groups in
+        // 前面已經是數字／千分位逗號／小數點＝在數字中間，不能從那裡開始讀：「12,000塊」原本只抓到「000塊」→ 變「12,0塊」
+        //（2026-10-19 Typeless 對打真人錄音抓到；貼出去的文字也會錯）。
+        out = applyRegex(out, pattern: "(?<![\\d,，.])([\\d零〇一二三四五六七八九十百千萬億兩]{1,15})(元|塊|圓| dollars?)") { groups in
             if let v = Normalizer.chineseToInt(Normalizer.colloquial(groups[1])) {
                 return "\(Normalizer.formatThousands(v))\(groups[2])"
             }
@@ -919,6 +1094,8 @@ public struct Normalizer: Sendable {
         // 全形標點前不留空白（新引擎輸出「老師你好 ，我是」，2026-09-19）。
         var out = applyRegex(text, pattern: "[ \\t]+([，。？！、：；])") { groups in groups[1] }
         out = applyRegex(out, pattern: "([，。？！、：；])[ \\t]+") { groups in groups[1] }
+        // 中文後面的刪節號（... 或 …）→「……」；不先處理的話第一個點會被當句號變成「但是。..」（2026-10-20 Pixel）。
+        out = applyRegex(out, pattern: "([\\u4E00-\\u9FFF])(?:\\.{2,}|…+)") { groups in groups[1] + "……" }
         let pairs: [(String, String)] = [
             (",", "，"),  // 半形逗號
             (".", "。"),  // 半形句號（在中文之間）

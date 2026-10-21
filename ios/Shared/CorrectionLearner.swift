@@ -50,6 +50,32 @@ struct CorrectionLearner {
     }
 }
 
+/// 字典項目的來源分頁（全部／自動加入／手動加入）與搜尋過濾。純函式，可測。
+enum DictionarySource {
+    enum Tab: String, CaseIterable, Sendable {
+        case all, auto, manual
+    }
+
+    /// 分頁＋即時搜尋（來源或輸出含關鍵字，大小寫不敏感）。
+    /// **舊資料沒有「自動」標記的一律算手動**——`autoLearned` 是自動來源的單一正本。
+    static func filter(_ entries: [(source: String, output: String)],
+                       tab: Tab,
+                       autoLearned: Set<String>,
+                       query: String) -> [(source: String, output: String)] {
+        let byTab: [(source: String, output: String)]
+        switch tab {
+        case .all: byTab = entries
+        case .auto: byTab = entries.filter { autoLearned.contains($0.source) }
+        case .manual: byTab = entries.filter { !autoLearned.contains($0.source) }
+        }
+        let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !q.isEmpty else { return byTab }
+        return byTab.filter {
+            $0.source.localizedCaseInsensitiveContains(q) || $0.output.localizedCaseInsensitiveContains(q)
+        }
+    }
+}
+
 /// 自動學到的字典詞（標記用：設定頁顯示「自動」、可刪）＋iPhone 文字替換／聯絡人姓名（只當辨識提示）。
 enum LearnedVocabulary {
     static var defaults: UserDefaults { UserDefaults(suiteName: "group.com.utuvo.type") ?? .standard }
@@ -79,4 +105,54 @@ enum LearnedVocabulary {
     }
 
     static var lexicon: [String] { defaults.stringArray(forKey: lexiconKey) ?? [] }
+
+    // MARK: - 已忽略（使用者手動刪掉自動學到的詞）
+
+    static let ignoredKey = "utuvo.type.dictionary.ignoredAuto"
+
+    /// 使用者按「刪」刪掉的自動詞。同一組修正（錯字→對字）之後不該馬上又被學回來。
+    static var ignored: Set<String> { Set(defaults.stringArray(forKey: ignoredKey) ?? []) }
+
+    static func markIgnored(_ source: String) {
+        var s = ignored; s.insert(source); defaults.set(Array(s), forKey: ignoredKey)
+    }
+
+    static func unignore(_ source: String) {
+        var s = ignored; s.remove(source); defaults.set(Array(s), forKey: ignoredKey)
+    }
+
+    /// 這組修正現在該不該學進字典。
+    static func shouldLearn(wrong: String, right: String) -> Bool {
+        !ignored.contains(key(for: wrong, right: right))
+    }
+
+    /// 這次自動學到的詞，要不要順便標成「自動學到的」。
+    ///
+    /// 2026-10-13 修補：使用者**手動**加過的詞（字典裡有、但不在 autoLearned 名單裡＝
+    /// 字典頁的「手動」分頁），被語音同音字自動學到時會被 `markAutoLearned` 搬到「自動」分頁，
+    /// 使用者加的詞就消失在那裡了。手動的要維持手動。
+    /// 純函式（把兩個集合當參數）所以可以直接測。
+    static func shouldMarkAutoLearned(source: String, inDictionary: Bool, autoLearned: Set<String>) -> Bool {
+        // 已經是自動學到的 → 標記本來就在（回 false＝不必重複寫，結果一樣）。
+        // 字典裡有但不在自動名單 → 手動詞，維持手動。
+        if inDictionary { return autoLearned.contains(source) }
+        return true
+    }
+
+    /// 從字典刪掉一個詞，並把「已忽略」清單同步好。**唯一正本**——
+    /// 字典瀏覽頁與設定頁都走這裡；原本設定頁只做 `removeTerm`，
+    /// 刪掉自動詞不會記進忽略清單，同一組修正一下就被學回來。
+    /// 呼叫端負責 `DictionaryCloud.sync()`。
+    static func removeFromDictionary(_ source: String) {
+        let output = DictionaryStore.shared.dictionary[source] ?? ""
+        let wasAuto = autoLearned.contains(source)
+        DictionaryStore.shared.removeTerm(source: source)
+        unmark(source)
+        if wasAuto { markIgnored(key(for: source, right: output)) }
+    }
+
+    /// 忽略清單用「錯字→對字」當 key：同一個錯字換成別的字是新的修正，不該被連坐。
+    static func key(for wrong: String, right: String) -> String {
+        wrong + "\u{1}" + right
+    }
 }

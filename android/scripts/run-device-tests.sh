@@ -23,6 +23,9 @@ if "$adb" shell run-as com.utuvo.type true 2>/dev/null; then
 fi
 acc=$("$adb" shell settings get system accelerometer_rotation | tr -d '\r')
 urot=$("$adb" shell settings get system user_rotation | tr -d '\r')
+# 使用者在 App 裡選的介面語言（per-app locale）先記下來；測試期間清掉讓 App 跟系統同語言——
+# 測試用 targetContext.getString 取字串，那份永遠是系統語言（2026-10-13：App 設成 zh-TW、系統 en 時 7 條全錯開）。
+applocale=$("$adb" shell cmd locale get-app-locales com.utuvo.type 2>/dev/null | sed -E 's/.*\[(.*)\].*/\1/' | tr -d '\r ')
 restore() {
   if [[ $had_data == 1 ]]; then
     # 先停掉 app，免得記憶體裡的舊狀態寫回去；停掉會讓系統換回預設鍵盤，所以再選一次。
@@ -32,6 +35,7 @@ restore() {
   fi
   [[ $acc == null ]] || "$adb" shell settings put system accelerometer_rotation "$acc"
   [[ $urot == null ]] || "$adb" shell settings put system user_rotation "$urot"
+  "$adb" shell cmd locale set-app-locales com.utuvo.type --locales "${applocale}" >/dev/null 2>&1 && echo "已還原 App 介面語言：${applocale:-跟隨系統}"
   rm -rf "$backup"
 }
 trap restore EXIT
@@ -42,5 +46,6 @@ trap restore EXIT
 # 無視窗模擬器會自己轉橫；測試是以直向寫的。
 "$adb" shell settings put system accelerometer_rotation 0
 "$adb" shell settings put system user_rotation 0
+"$adb" shell cmd locale set-app-locales com.utuvo.type --locales "" >/dev/null 2>&1 || true
 rm -rf app/build/outputs/androidTest-results
 ./gradlew :app:connectedDebugAndroidTest -Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true --console=plain "$@"

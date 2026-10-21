@@ -16,6 +16,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.File
+import com.utuvo.type.core.HistoryRetention
 
 /**
  * 2026-10-01 Micky：「只要稍微停頓一下就會自動結束」（iOS 已經不會，Android 還會）。
@@ -34,6 +35,7 @@ class PauseKeepsDictatingTest {
     private lateinit var savedHistory: List<HistoryStore.Record>
     private var savedLanguage: DictationLanguage = DictationLanguage.TRADITIONAL_CHINESE
     private var savedCloudRecognition = false
+    private var savedRetention: HistoryRetention? = null
 
     @Before fun setUp() {
         assumeTrue("這台沒有裝置端辨識", SpeechRecognizer.isOnDeviceRecognitionAvailable(app))
@@ -55,6 +57,7 @@ class PauseKeepsDictatingTest {
         if (::savedHistory.isInitialized) HistoryStore.restore(app, savedHistory)
         DictationLanguage.set(app, savedLanguage)
         SmartCleanup.setCloudRecognitionPreferred(app, savedCloudRecognition)
+        savedRetention?.let { HistoryRetentionSetting.set(app, it) }   // 斷言失敗也要還原保留期限
     }
 
     /** 繁中（裝置端繁中語音包，Pixel）。 */
@@ -90,6 +93,10 @@ class PauseKeepsDictatingTest {
             runCatching { inst.context.assets.list("speech")?.contains(asset.substringAfterLast('/')) == true }.getOrDefault(false))
         DictationLanguage.set(app, language)
         prefs.edit().putString("debugAudioFile", pcmFromAsset(asset).path).commit()
+        // 「不保留」會讓歷史不寫；測試期間固定成「永遠」，結束還原。秒數用全部日子加總，跨午夜也不會讀錯天。
+        savedRetention = HistoryRetentionSetting.setting(app)
+        HistoryRetentionSetting.set(app, HistoryRetention.FOREVER)
+        val secondsBefore = UsageStore.load(app).days.values.sumOf { it.seconds }
         val field = device.findObject(By.desc("tryField"))
         field.text = ""
         field.click()
@@ -103,6 +110,13 @@ class PauseKeepsDictatingTest {
         val text = device.findObject(By.desc("tryField"))?.text.orEmpty()
         assertTrue("停頓前那句不見了：「$text」", text.contains(before, ignoreCase = true))
         assertTrue("停頓後那句沒進來（停頓就斷了）：「$text」", both && text.contains(after, ignoreCase = true))
+        // 2026-10-13 Typeless 對齊：這次聽寫的秒數要真的記進歷史與每日計數（曾因交付前歸零而恆為 0）。
+        // 點光球前錄了約 12 秒；容許交付延遲但不能是 0、也不能把雲端／整理的等待時間算進去太多。
+        val last = HistoryStore.load(app).maxByOrNull { it.time }
+        assertNotNull("沒有寫入歷史", last)
+        assertTrue("歷史秒數不對：${last!!.durationSec}", last.durationSec in 9..16)
+        val secondsAfter = UsageStore.load(app).days.values.sumOf { it.seconds }
+        assertTrue("每日計數秒數沒增加：$secondsBefore → $secondsAfter", secondsAfter - secondsBefore in 9..16)
     }
 
     /** 測試素材是 WAV：取出 data 區塊（afconvert 會多塞 FLLR 之類的區塊，不能固定跳 44 bytes）。 */

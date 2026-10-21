@@ -149,15 +149,50 @@ final class KeyboardLogicTests: XCTestCase {
     func testQuickPickPersistsThroughDefaults() {
         let suite = UserDefaults(suiteName: "test.quickpick.\(UUID().uuidString)")!
         QuickPickStore.setCodes(["vi", "th", "id"], in: suite)
-        XCTAssertEqual(QuickPickStore.targets(in: suite).map(\.zh), ["越南文", "泰文", "印尼文"])
+        let targets = QuickPickStore.targets(in: suite)
+        XCTAssertEqual(targets.map(\.code), ["vi", "th", "id"], "代碼要原樣回來")
+        XCTAssertEqual(targets.map(\.zh), ["越南文", "泰文", "印尼文"],
+                       "提示詞用的繁中原名不受介面語言影響")
+        XCTAssertEqual(targets.map(\.displayName), ["越南文", "泰文", "印尼文"].map(LocalizationTestSupport.localized),
+                       "介面顯示名跟著介面語言走（跟產品同一條解析路徑，測試主機語言不影響紅綠）")
     }
 
     func testReturnKeyLabels() {
-        XCTAssertEqual(ReturnKeyLabel.text(for: .send), "送出")
-        XCTAssertEqual(ReturnKeyLabel.text(for: .search), "搜尋")
-        XCTAssertEqual(ReturnKeyLabel.text(for: .done), "完成")
-        XCTAssertEqual(ReturnKeyLabel.text(for: .default), "換行")
-        XCTAssertEqual(ReturnKeyLabel.text(for: nil), "換行")
+        // 驗的是「returnKeyType 映射到哪一句」，不是句子長什麼樣——測試主機語言不該決定這條測試的紅綠。
+        assertLocalizedEquals("送出", ReturnKeyLabel.text(for: .send))
+        assertLocalizedEquals("搜尋", ReturnKeyLabel.text(for: .search))
+        assertLocalizedEquals("完成", ReturnKeyLabel.text(for: .done))
+        assertLocalizedEquals("換行", ReturnKeyLabel.text(for: .default))
+        assertLocalizedEquals("換行", ReturnKeyLabel.text(for: nil))
+        // .join 走自己的 key（工單 ios-D-repair1 第 4 點）：以前跟設定頁「新增詞彙」按鈕共用「加入」，
+        // 英文鍵盤的動作鍵就跟著顯示 "Add"；iOS 系統在 .join 顯示的是 "Join"。
+        assertLocalizedEquals("加入鍵", ReturnKeyLabel.text(for: .join))
+        // 「兩個 key 的英文不同」由 testJoinReturnKeyEnglishIsJoinWhileAddButtonStaysAdd 讀目錄釘住；
+        // 這裡不能比解析後的值——中文主機上兩者都是「加入」。
+    }
+
+    /// .join 的英文必須是系統慣用的 "Join"，而設定頁的按鈕維持 "Add"——
+    /// 直接讀字串目錄釘住英文字面值（不靠測試主機語言，所以這條不受語言影響）。
+    func testJoinReturnKeyEnglishIsJoinWhileAddButtonStaysAdd() throws {
+        let catalogURL = URL(fileURLWithPath: #filePath)      // ios/iOSTests/KeyboardLogicTests.swift
+            .deletingLastPathComponent()                       // ios/iOSTests
+            .deletingLastPathComponent()                       // ios/
+            .appendingPathComponent("Shared/Localizable.xcstrings")
+        let data = try Data(contentsOf: catalogURL)
+        let root = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+        let strings = try XCTUnwrap(root["strings"] as? [String: [String: Any]])
+        func english(_ key: String) throws -> String {
+            let node = try XCTUnwrap(strings[key], "字串目錄沒有「\(key)」")
+            let locs = try XCTUnwrap(node["localizations"] as? [String: [String: Any]])
+            let en = try XCTUnwrap(locs["en"]?["stringUnit"] as? [String: Any], "「\(key)」沒有英文")
+            return try XCTUnwrap(en["value"] as? String)
+        }
+        XCTAssertEqual(try english("加入鍵"), "Join", "鍵盤回車鍵 .join 要跟 iOS 系統一樣顯示 Join")
+        XCTAssertEqual(try english("加入"), "Add", "設定頁新增詞彙按鈕維持 Add")
+        // 繁中兩處都顯示「加入」（回車鍵那條的 key 帶「鍵」字，但 zh-Hant 單元把它翻回「加入」）。
+        let joinNode = try XCTUnwrap(strings["加入鍵"]?["localizations"] as? [String: [String: Any]])
+        XCTAssertEqual((joinNode["zh-Hant"]?["stringUnit"] as? [String: Any])?["value"] as? String, "加入")
+        XCTAssertEqual((joinNode["zh-Hans"]?["stringUnit"] as? [String: Any])?["value"] as? String, "加入")
     }
 
     func testToneChatDropsSingleTrailingPeriod() {

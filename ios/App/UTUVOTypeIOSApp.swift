@@ -5,6 +5,8 @@ import UTUVOTypeCore
 struct UTUVOTypeIOSApp: App {
     init() {
         TipJar.startListening()
+        // 沒有 Apple Intelligence 的 iPhone：手機上的 Gemma 整理（下載過才會用）。
+        GemmaCleanup.install()
     }
 
     var body: some Scene {
@@ -15,7 +17,21 @@ struct UTUVOTypeIOSApp: App {
 }
 
 struct RootView: View {
-    @State private var tab = 0
+    /// App 內選的外觀（跟隨系統／淺色／深色；工單 ios-C 第 2 點）。
+    /// 鍵盤 extension 讀同一個 App Group 值，這樣兩邊的外觀一定一致。
+    @AppStorage(AppearanceStore.settingKey, store: AppearanceStore.defaults)
+    private var appearance: AppearancePreference = .system
+    /// 截圖用 DEBUG 開關：`-utuvo.type.ios.debugTab 0|1|2` 直接開在聽寫／歷史／設定分頁
+    ///（模擬器沒麥克風、也沒辦法點觸控時，沒這個就截不到另外兩頁）。
+    @State private var tab = RootView.debugInitialTab()
+    private static func debugInitialTab() -> Int {
+        #if DEBUG
+        if let raw = UserDefaults.standard.string(forKey: "utuvo.type.ios.debugTab"), let n = Int(raw) {
+            return min(max(n, 0), 2)
+        }
+        #endif
+        return 0
+    }
     @ObservedObject private var voiceHost = KeyboardVoiceHost.shared
     @Environment(\.scenePhase) private var scenePhase
 
@@ -33,6 +49,9 @@ struct RootView: View {
         // 09-30 起 macOS／iOS 27.0 的 Apple Intelligence 恢復可用，測試不能再靠「它一定壞」。
         KeyboardPresence.defaults.set(UserDefaults.standard.bool(forKey: OnDeviceAssistant.debugDisableKey),
                                       forKey: OnDeviceAssistant.debugDisableKey)
+        // UI 測試：`-utuvo.type.debug.swallowOpenApp YES` 模擬系統默默不理鍵盤的「開啟主 app」（10-05 17PMX iOS 27.0.1）。
+        KeyboardPresence.defaults.set(UserDefaults.standard.bool(forKey: "utuvo.type.debug.swallowOpenApp"),
+                                      forKey: "utuvo.type.debug.swallowOpenApp")
         // App Store 截圖：`-utuvo.type.keyboard.language zh-CN` 指定鍵盤聽寫語言（徽章顯示「简中」）。
         if let lang = UserDefaults.standard.string(forKey: "utuvo.type.keyboard.language") {
             KeyboardPresence.defaults.set(lang, forKey: "utuvo.type.keyboard.language")
@@ -61,6 +80,36 @@ struct RootView: View {
             }
             HistoryStore.shared.save(records.sorted { $0.date > $1.date })
         }
+        // App Store／工單截圖用：`-utuvo.type.ios.seedUsage YES` 在每日計數是空的時候種幾週的假用量，
+        // 讓首頁的使用數據卡、熱圖與連續天數有東西可以截（模擬器沒麥克風，錄不出真資料）。
+        if UserDefaults.standard.bool(forKey: "utuvo.type.ios.seedUsage"), DailyUsageStore.shared.load().isEmpty {
+            var cal = Calendar(identifier: .gregorian)
+            cal.timeZone = .current
+            var seeded: [DailyUsage] = []
+            for dayOffset in 0..<70 {
+                guard let d = cal.date(byAdding: .day, value: -dayOffset, to: Date()) else { continue }
+                // 最近兩週每天都有用量（看得到連續天數），更早的稀疏一點（看得到熱圖階色）。
+                let dense = dayOffset < 14
+                guard dense || dayOffset % 3 == 0 else { continue }
+                let words = dense ? 180 + (dayOffset * 37) % 900 : 60 + (dayOffset * 53) % 400
+                seeded.append(DailyUsage(day: UsageDay.string(from: d, calendar: cal),
+                                         words: words,
+                                         seconds: Double(words) / 3.4,
+                                         sessions: 3 + dayOffset % 5))
+            }
+            DailyUsageStore.shared.seed(seeded)
+        }
+        // 截圖用：`-utuvo.type.ios.seedDictionary YES` 種幾個詞（含 CorrectionLearner 學來的），
+        // 讓字典分頁看得到「自動」標記。直接在 App Group 外面改 plist 沒用（cfprefsd 不認）。
+        if UserDefaults.standard.bool(forKey: "utuvo.type.ios.seedDictionary") {
+            DictionaryStore.shared.addTerm(source: "Atmos", output: "")
+            DictionaryStore.shared.addTerm(source: "Tonmeister", output: "")
+            DictionaryStore.shared.addTerm(source: "pik", output: "Pik")
+            for (wrong, right) in [("除值", "儲值"), ("及時", "即時")] {
+                DictionaryStore.shared.addTerm(source: wrong, output: right)
+                LearnedVocabulary.markAutoLearned(wrong)
+            }
+        }
         #endif
     }
 
@@ -74,6 +123,10 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: voiceHost.isActive)
+        // App 內選的外觀（nil = 跟隨系統）。這個值放在最外層，鍵盤與主 app 才會一致。
+        .preferredColorScheme(appearance.colorScheme)
+        // 點擊震動：每個按鈕／選項／自己點的分頁都震一下（介面震動開關可關）。
+        .tapPulseFeedback()
         // 個人字典 iPhone↔Mac（iCloud）：每次回到前景同步一次；外部變更有通知。
         .onChange(of: scenePhase, initial: true) { _, phase in
             if phase == .active { DictionaryCloud.start() }
@@ -88,7 +141,11 @@ struct RootView: View {
     }
 
     private var tabs: some View {
-        TabView(selection: $tab) {
+        // 自己點下面的分頁才震；程式切分頁（鍵盤叫起 App、開設定網址）直接改 tab，不經這裡、不震。
+        TabView(selection: Binding(get: { tab }, set: { newTab in
+            if newTab != tab { TapPulse.shared.fire() }
+            tab = newTab
+        })) {
             DictateView()
                 .tabItem { Label("聽寫", image: "OrbGlyph") }
                 .tag(0)
@@ -100,5 +157,6 @@ struct RootView: View {
                 .tag(2)
         }
         .tint(Aurora.orange)
+        .uiFeedbackProbe()
     }
 }

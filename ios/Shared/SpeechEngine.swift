@@ -89,6 +89,20 @@ enum SpeechEngine {
 
     /// 統一提示詞：呼叫端的個人詞（含文字替換／聯絡人）在最前，補產品名與詞庫 hints，去重後上限 200。
     /// 純函式，測試直接打這裡驗證 Legacy／Analyzer 同源。
+    /// 重辨識（雲端 Whisper／本機 Qwen）用的提示詞：個人字典 → 音訊包 → AI 包 → 其他內建包 → 目錄包。
+    /// 2026-10-20 實測（真人 44 句，Groq whisper-large-v3）：[unifiedHints] 的公平輪流把心肌梗塞、憲法、鋼筋混凝土排進
+    /// Whisper 提示詞（約 200 字）前段，專名命中 22/39、27 句回簡體；個人字典＋音訊詞 30/39、0 句簡體。同 Android cloudHints。
+    /// 繁中時詞轉成繁體（字典裡存成簡體的詞會把 Whisper 帶去輸出簡體）。系統辨識器照用 [unifiedHints]。
+    static func cloudHints(personal: [String], language: String) -> [String] {
+        let simplified = language.hasPrefix("zh-CN") || language.hasPrefix("zh-Hans") || language.hasPrefix("zh-SG")
+        var seen = Set<String>()
+        var terms = personal + ["UTUVO Type", "UTUVO"] + VocabularyPacks.prioritizedPackTerms()
+        if language.hasPrefix("zh") && !simplified {
+            terms = terms.map { $0.applyingTransform(StringTransform("Hans-Hant"), reverse: false) ?? $0 }
+        }
+        return Array(terms.filter { seen.insert($0).inserted }.prefix(200))
+    }
+
     static func unifiedHints(personal: [String]) -> [String] {
         var seen = Set<String>()
         return Array((personal + ["UTUVO Type", "UTUVO"] + VocabularyPacks.contextualHints())

@@ -4,3 +4,7 @@
 -keep class com.google.android.gms.internal.mlkit_** { *; }
 -keep class com.google.firebase.components.** { *; }
 -keep class * implements com.google.firebase.components.ComponentRegistrar { *; }
+
+# LiteRT-LM（手機上的智慧整理）：JNI 從原生端回呼 Kotlin 類別與欄位、Gson／kotlin-reflect 轉訊息格式，
+# R8 改名或拿掉就會在載入模型時崩。整包保留。
+-keep class com.google.ai.edge.litertlm.** { *; }

@@ -81,6 +81,21 @@ object Translation {
             .putString(KEY, resolve(codes).joinToString(",")).apply()
     }
 
+    /**
+     * 加入快選清單（上限維持 MAX_QUICK_PICK=5）。
+     * 若已在清單中則移至末尾；若未在清單中且已滿 5 個，則移除最舊的一個，將新語言加入末尾。
+     */
+    fun addQuickPick(c: Context, code: String) {
+        val current = quickPickCodes(c).toMutableList()
+        current.remove(code)
+        if (current.size >= MAX_QUICK_PICK) {
+            current.removeAt(0)
+        }
+        current.add(code)
+        setQuickPickCodes(c, current)
+    }
+
+
     /** 弧上實際要畫的目標：清掉跟來源同一個語言的（不能自己翻自己），全被清掉就回該來源的預設弧。 */
     fun quickPick(c: Context, source: String = sourceMlKit(DictationLanguage.current(c).code)): List<Target> {
         val picked = quickPickCodes(c).filter { it != source }

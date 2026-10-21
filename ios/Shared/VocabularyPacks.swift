@@ -230,6 +230,13 @@ enum VocabularyPacks {
     /// 個人字典先取，剩下額度從【內建三包 seed + 各 catalog pack seed】公平輪流，
     /// 不會讓 ai+tw 預設就吃光 200。
     /// 個人詞的 output 為空時詞本身也算；非空時用 output（語意錯誤映射見 RUNTIME-FINDINGS #5）。
+    /// 已開啟的詞庫依「跟聽寫最常相關」排：音訊包 → AI 包 → 其他內建包 → 目錄包（給 [SpeechEngine.cloudHints]）。
+    static func prioritizedPackTerms() -> [String] {
+        let order = ["audio", "ai"]
+        let builtIns = all.filter(isEnabled).sorted { (order.firstIndex(of: $0.id) ?? order.count) < (order.firstIndex(of: $1.id) ?? order.count) }
+        return builtIns.flatMap(\.terms) + enabledCatalogPacks().flatMap(\.seedTerms)
+    }
+
     static func contextualHints(dictionary: [String: String] = DictionaryStore.shared.dictionary) -> [String] {
         var seen = Set<String>()
         var out: [String] = []
@@ -302,28 +309,16 @@ extension VocabularyCatalog.Pack {
     /// catalog.json 的 name／summary 只有來源語言（繁中）。
     /// 六個固定 id 走在地化字串（繁中＋簡中），未知 id 退回 JSON 原文；
     /// 來源授權（sourceName/licenseName/attribution）保持原文不翻（UI-FINDINGS：source attribution original）。
-    var displayName: String {
-        switch id {
-        case "computing": return String(localized: "vocab.pack.computing.name")
-        case "medicine": return String(localized: "vocab.pack.medicine.name")
-        case "finance": return String(localized: "vocab.pack.finance.name")
-        case "law": return String(localized: "vocab.pack.law.name")
-        case "engineering": return String(localized: "vocab.pack.engineering.name")
-        case "music": return String(localized: "vocab.pack.music.name")
-        default: return name
-        }
-    }
+    var displayName: String { Self.localized("vocab.pack.\(id).name", fallback: name) }
 
-    var displaySummary: String {
-        switch id {
-        case "computing": return String(localized: "vocab.pack.computing.summary")
-        case "medicine": return String(localized: "vocab.pack.medicine.summary")
-        case "finance": return String(localized: "vocab.pack.finance.summary")
-        case "law": return String(localized: "vocab.pack.law.summary")
-        case "engineering": return String(localized: "vocab.pack.engineering.summary")
-        case "music": return String(localized: "vocab.pack.music.summary")
-        default: return summary
-        }
+    var displaySummary: String { Self.localized("vocab.pack.\(id).summary", fallback: summary) }
+
+    /// 在地化表裡沒有這個 key（例如 0.2.8 起 App 多了只有 5 句的 en.lproj，英文介面的手機會選它）就用
+    /// catalog.json 的繁中原文——不能把「vocab.pack.computing.name」這種代碼直接秀給使用者（10-10 修）。
+    static func localized(_ key: String, fallback: String, bundle: Bundle = .main) -> String {
+        let missing = "\u{0}"
+        let value = bundle.localizedString(forKey: key, value: missing, table: nil)
+        return value == missing || value == key ? fallback : value
     }
 
     /// 列表列上的實際詞數（來自 metadata termCount，不是已載入 terms 的長度）。

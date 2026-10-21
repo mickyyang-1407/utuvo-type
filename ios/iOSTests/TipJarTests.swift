@@ -128,4 +128,25 @@ final class TipJarTests: XCTestCase {
         XCTAssertFalse(UserDefaults.standard.bool(forKey: TipJar.pendingThanksKey), "只謝一次")
         XCTAssertFalse(TipJarModel().thanks)
     }
+
+    /// 工單 ios-D-repair1 第 6 點：打賞用語全篇一致。頁面標題是 "Buy me a coffee"，
+    /// 頁尾卻寫成生造的 "Cheer me a coffee"，跟標題脫節。直接讀字串目錄釘住英文字面值。
+    func testTipWordingIsConsistentWithBuyMeACoffee() throws {
+        let catalogURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+            .appendingPathComponent("Shared/Localizable.xcstrings")
+        let root = try XCTUnwrap(try JSONSerialization.jsonObject(with: Data(contentsOf: catalogURL)) as? [String: Any])
+        let strings = try XCTUnwrap(root["strings"] as? [String: [String: Any]])
+        func english(_ key: String) throws -> String {
+            let locs = try XCTUnwrap(strings[key]?["localizations"] as? [String: [String: Any]], "字串目錄沒有「\(key)」")
+            return try XCTUnwrap((locs["en"]?["stringUnit"] as? [String: Any])?["value"] as? String, "「\(key)」沒有英文")
+        }
+        XCTAssertEqual(try english("幫我加油"), "Buy me a coffee", "頁面標題")
+        let footer = try english("加油是一次性的小費，不會解鎖任何功能，也不會自動續訂。")
+        XCTAssertTrue(footer.contains("Buy me a coffee"),
+                      "頁尾要跟標題用同一個說法：\(footer)")
+        XCTAssertTrue(footer.contains("one-time tip"), "要講清楚是一次性小費：\(footer)")
+        XCTAssertFalse(footer.lowercased().contains("cheer"), "不要生造片語 Cheer me：\(footer)")
+    }
 }

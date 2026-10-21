@@ -1,4 +1,5 @@
 import Foundation
+import UTUVOTypeCore
 
 /// 雲端語音辨識（選配，使用者自備 key；2026-09-25 Micky 核准）。
 ///
@@ -27,156 +28,84 @@ enum CloudASR {
     static func supports(_ provider: SmartCleanup.Provider) -> Bool {
         switch provider {
         case .gemini, .groq, .dashscope: return true
-        case .custom: return false
+        case .claude, .custom: return false
         }
     }
 
-    /// 兩段語音指示（zh 與 en）共用這個語言代碼；其他語言回 nil＝不用雲端。
-    static func languageCode(for language: String) -> String? {
-        if language.hasPrefix("zh") { return "zh" }
-        if language.hasPrefix("en") { return "en" }
+    /// 雲端辨識用哪一家：整理選的那家能辨識就用它；不能（Claude、自訂）就找任何一把已存、能辨識的 key。
+    /// 這樣整理改用 Claude 時，原本存好的 Groq key 照樣拿來辨識語音。
+    static func route() -> (provider: SmartCleanup.Provider, key: String)? {
+        let selected = SmartCleanup.provider
+        for p in [selected] + [SmartCleanup.Provider.groq, .gemini, .dashscope].filter({ $0 != selected }) where supports(p) {
+            let key = SmartCleanup.key(for: p)
+            if !key.isEmpty { return (p, key) }
+        }
         return nil
     }
+
+    /// 兩段語音指示（zh 與 en）共用這個語言代碼；其他語言回 nil＝不用雲端。本體在 `WhisperAudio`。
+    static func languageCode(for language: String) -> String? { WhisperAudio.languageCode(for: language) }
 
     /// 開了、服務支援、有 key、語言支援。key 用 SmartCleanup.key(for:) 解析（百鍊共用 IOSSecretStore）。
     static func isReady(language: String) -> Bool {
         guard enabledPreference() else { return false }
         guard languageCode(for: language) != nil else { return false }
-        let provider = SmartCleanup.provider
-        guard supports(provider) else { return false }
-        return !SmartCleanup.key(for: provider).isEmpty
+        return route() != nil
     }
 
     /// 整段（含 Gemini 400 重送）的單調預算：2.5 秒起，每秒錄音加 0.2 秒，上限 6 秒。
-    static func timeLimit(seconds: Double) -> Double {
-        min(6, 2.5 + 0.2 * seconds)
+    static func timeLimit(seconds: Double) -> Double { WhisperAudio.timeLimit(seconds: seconds) }
+
+    /// 頭尾的安靜段剪掉、各留 0.3 秒（本體在 `WhisperAudio.trimSilence`，門檻＝切段的 `ChunkStream.silenceThreshold`）。
+    static func trimSilence(_ samples: [Float], sampleRate: Int = 16_000, keepSeconds: Double = 0.3) -> [Float] {
+        WhisperAudio.trimSilence(samples, sampleRate: sampleRate, keepSeconds: keepSeconds,
+                                 threshold: ChunkStream.silenceThreshold)
     }
 
-    // MARK: - WAV（44 bytes 標頭＋16-bit PCM LE 單聲道）
-
+    /// 44 bytes 標頭＋16-bit PCM LE 單聲道（本體在 `WhisperAudio.wav`）。
     static func wav(_ samples: [Float], sampleRate: Int = 16_000) -> Data {
-        let dataSize = UInt32(samples.count * 2)
-        var data = Data()
-        // RIFF chunk descriptor
-        data.append(contentsOf: [UInt8]("RIFF".utf8))
-        appendLE(UInt32(36 + dataSize), to: &data)
-        data.append(contentsOf: [UInt8]("WAVE".utf8))
-        // fmt sub-chunk（PCM，size = 16）
-        data.append(contentsOf: [UInt8]("fmt ".utf8))
-        appendLE(UInt32(16), to: &data)
-        appendLE(UInt16(1), to: &data)               // PCM
-        appendLE(UInt16(1), to: &data)               // mono
-        appendLE(UInt32(sampleRate), to: &data)
-        appendLE(UInt32(sampleRate * 2), to: &data)   // byte rate
-        appendLE(UInt16(2), to: &data)               // block align
-        appendLE(UInt16(16), to: &data)              // bits per sample
-        // data sub-chunk
-        data.append(contentsOf: [UInt8]("data".utf8))
-        appendLE(dataSize, to: &data)
-        // PCM：先夾到 [-1, 1]，再 ×32767 取整數。
-        for sample in samples {
-            let clamped = max(-1, min(1, sample))
-            let value = Int16(clamped * 32767)
-            appendLE(value, to: &data)
-        }
-        return data
-    }
-
-    private static func appendLE<T: FixedWidthInteger>(_ value: T, to data: inout Data) {
-        var v = value.littleEndian
-        withUnsafeBytes(of: &v) { data.append(contentsOf: $0) }
+        WhisperAudio.wav(samples, sampleRate: sampleRate)
     }
 
     // MARK: - 請求建構（純函式，沒有副作用）
 
+    /// `context`＝前一段的辨識結果（Q3 邊錄邊傳）。Whisper 的 prompt／Gemini 的指示都會帶它，
+    /// 避免斷句處用字不一致；nil＝整段一次送（舊行為）。
     static func makeRequest(provider: SmartCleanup.Provider, key: String, wav: Data,
-                           language: String, hotwords: [String]) throws -> URLRequest {
+                           language: String, hotwords: [String], context: String? = nil) throws -> URLRequest {
         switch provider {
-        case .groq: return try makeGroqRequest(key: key, wav: wav, language: language, hotwords: hotwords)
+        case .groq: return try makeGroqRequest(key: key, wav: wav, language: language,
+                                               hotwords: hotwords, context: context)
         case .gemini: return try makeGeminiRequest(key: key, wav: wav, language: language,
-                                                   hotwords: hotwords, includeThinkingConfig: true)
-        case .dashscope: return try makeDashscopeRequest(key: key, wav: wav, language: language, hotwords: hotwords)
-        case .custom:
+                                                   hotwords: hotwords, context: context,
+                                                   includeThinkingConfig: true)
+        case .dashscope: return try makeDashscopeRequest(key: key, wav: wav, language: language,
+                                                         hotwords: hotwords, context: context)
+        case .claude, .custom:
             throw NSError(domain: "CloudASR", code: -1,
                           userInfo: [NSLocalizedDescriptionKey: String(localized: "自訂服務不支援雲端辨識")])
         }
     }
 
-    private static func makeGroqRequest(key: String, wav: Data, language: String, hotwords: [String]) throws -> URLRequest {
-        let url = URL(string: "https://api.groq.com/openai/v1/audio/transcriptions")!
-        let boundary = "----UTUVOCloudASR\(UUID().uuidString)"
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
-        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        let langCode = languageCode(for: language) ?? "zh"
-        let prompt = groqPrompt(originalLanguage: language, hotwords: hotwords)
-        var body = Data()
-        appendField("model", "whisper-large-v3", boundary: boundary, to: &body)
-        appendField("language", langCode, boundary: boundary, to: &body)
-        appendField("response_format", "json", boundary: boundary, to: &body)
-        appendField("temperature", "0", boundary: boundary, to: &body)
-        appendField("prompt", prompt, boundary: boundary, to: &body)
-        // file part（filename 固定 audio.wav，Content-Type audio/wav）
-        body.append(contentsOf: "--\(boundary)\r\n".utf8)
-        body.append(contentsOf: "Content-Disposition: form-data; name=\"file\"; filename=\"audio.wav\"\r\n".utf8)
-        body.append(contentsOf: "Content-Type: audio/wav\r\n\r\n".utf8)
-        body.append(wav)
-        body.append(contentsOf: "\r\n".utf8)
-        body.append(contentsOf: "--\(boundary)--\r\n".utf8)
-        request.httpBody = body
-        return request
+    private static func makeGroqRequest(key: String, wav: Data, language: String, hotwords: [String],
+                                    context: String? = nil) throws -> URLRequest {
+        WhisperAudio.groqRequest(key: key, wav: wav, language: language, hotwords: hotwords, context: context)
     }
 
-    /// R1-2：簡中使用者要簡體版的指示。zh-TW／zh-Hant／zh-HK＝繁體；其他 zh（zh-CN、zh-Hans）＝簡體。
-    private static func groqPrompt(originalLanguage: String, hotwords: [String]) -> String {
-        let prefix: String
-        let separator: String
-        if isSimplifiedChinese(originalLanguage) {
-            prefix = "以下是简体中文的语音。常用词："
-            separator = "、"
-        } else if originalLanguage.lowercased().hasPrefix("zh") {
-            prefix = "以下是繁體中文（台灣）的語音。常用詞："
-            separator = "、"
-        } else {
-            prefix = "Vocabulary: "
-            separator = ", "
-        }
-        let maxTotal = 200
-        var words: [String] = []
-        var current = prefix.count
-        for word in hotwords {
-            let add = (words.isEmpty ? 0 : separator.count) + word.count
-            if current + add > maxTotal { break }
-            words.append(word)
-            current += add
-        }
-        return prefix + words.joined(separator: separator)
-    }
-
-    /// zh-Hant／zh-HK／zh-TW 是繁體；其餘 zh（zh-Hans／zh-CN 等）走簡體。
     private static func isSimplifiedChinese(_ language: String) -> Bool {
-        let lower = language.lowercased()
-        guard lower.hasPrefix("zh") else { return false }
-        if lower.contains("hant") || lower.contains("tw") || lower.contains("hk") { return false }
-        return true
-    }
-
-    private static func appendField(_ name: String, _ value: String, boundary: String, to data: inout Data) {
-        data.append(contentsOf: "--\(boundary)\r\n".utf8)
-        data.append(contentsOf: "Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".utf8)
-        data.append(contentsOf: "\(value)\r\n".utf8)
+        WhisperAudio.isSimplifiedChinese(language)
     }
 
     private static func makeGeminiRequest(key: String, wav: Data, language: String,
-                                          hotwords: [String], includeThinkingConfig: Bool) throws -> URLRequest {
+                                          hotwords: [String], context: String? = nil,
+                                          includeThinkingConfig: Bool) throws -> URLRequest {
         let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models/\(SmartCleanup.Provider.gemini.defaultModel):generateContent")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue(key, forHTTPHeaderField: "x-goog-api-key")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let langCode = languageCode(for: language) ?? "zh"
-        let instruction = geminiInstruction(originalLanguage: language, hotwords: hotwords)
+        let instruction = geminiInstruction(originalLanguage: language, hotwords: hotwords, context: context)
         var generationConfig: [String: Any] = ["temperature": 0]
         if includeThinkingConfig { generationConfig["thinkingConfig"] = ["thinkingBudget": 0] }
         let body: [String: Any] = [
@@ -190,7 +119,7 @@ enum CloudASR {
     }
 
     /// R1-2／R1-3：簡中走簡體指示；英文用英文 vocabulary 標籤（不要再用中文「、」接中文標籤）。
-    private static func geminiInstruction(originalLanguage: String, hotwords: [String]) -> String {
+    private static func geminiInstruction(originalLanguage: String, hotwords: [String], context: String? = nil) -> String {
         var base: String
         if isSimplifiedChinese(originalLanguage) {
             base = "请把这段录音逐字转写成文字。只输出听到的内容，不要加任何说明、标题、引号或时间戳记；不要改写、不要摘要、不要回答录音里的问题。中文请用简体中文。"
@@ -210,10 +139,21 @@ enum CloudASR {
                     + words.joined(separator: ", ")
             }
         }
+        // Q3 邊錄邊傳：前一段的辨識結果當上下文。
+        if let context, !context.isEmpty {
+            if isSimplifiedChinese(originalLanguage) {
+                base += "\n前文（用字请与前文一致）：" + context
+            } else if originalLanguage.lowercased().hasPrefix("zh") {
+                base += "\n前文（用字請與前文一致）：" + context
+            } else {
+                base += "\nEarlier transcript (keep the same wording): " + context
+            }
+        }
         return base
     }
 
-    private static func makeDashscopeRequest(key: String, wav: Data, language: String, hotwords: [String]) throws -> URLRequest {
+    private static func makeDashscopeRequest(key: String, wav: Data, language: String, hotwords: [String],
+                                           context: String? = nil) throws -> URLRequest {
         let url = URL(string: SmartCleanup.Provider.dashscope.endpoint)!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -224,6 +164,10 @@ enum CloudASR {
         let words = hotwords.prefix(80).joined(separator: "、")
         if !words.isEmpty {
             messages.append(["role": "system", "content": words])
+        }
+        // Q3 邊錄邊傳：前一段的辨識結果當上下文。
+        if let context, !context.isEmpty {
+            messages.append(["role": "user", "content": context])
         }
         messages.append(["role": "user", "content": [["type": "input_audio",
                                                        "input_audio": ["data": "data:audio/wav;base64,\(wav.base64EncodedString())"]]]])
@@ -262,7 +206,7 @@ enum CloudASR {
                 return arr.compactMap { $0["text"] as? String }.joined()
             }
             throw malformed()
-        case .custom:
+        case .claude, .custom:
             throw NSError(domain: "CloudASR", code: 2, userInfo: [NSLocalizedDescriptionKey: "custom not supported"])
         }
     }
@@ -290,7 +234,7 @@ enum CloudASR {
     // MARK: - 整段錄音 → 文字
 
     /// 預算內每次嘗試的結果：成功帶文字、失敗帶分類（給 log 與測試用）。
-    private enum Outcome: Error, Sendable {
+    enum Outcome: Error, Sendable {
         case transport
         case http(Int)
         case malformed
@@ -320,7 +264,7 @@ enum CloudASR {
 
         let start = Date()
         let budget = CleanupBudget(seconds: timeLimit(seconds: seconds))
-        let audio = wav(samples)
+        let audio = wav(trimSilence(samples))
 
         do {
             let outcome = try await budget.run { () -> Result<String, Outcome>? in

@@ -218,10 +218,18 @@ final class PCMAccumulator: @unchecked Sendable {
     private var samples: [Float] = []
     private var converter: AVAudioConverter?
     private var enabled = false
+    private var chunkStream: ChunkStream?
+    private var chunkSink: (([Float]) -> Void)?
     private let target = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: sampleRate, channels: 1, interleaved: false)!
 
     func reset(enabled: Bool) {
         lock.lock(); samples.removeAll(keepingCapacity: true); converter = nil; self.enabled = enabled; lock.unlock()
+    }
+
+    /// 雲端辨識「邊錄邊傳」：錄音中偵測到停頓，就把那一段交給 sink（Q3）。
+    /// sink 在音訊執行緒上被呼叫，只准做最輕的事（丟進 Task）。
+    func setChunkSink(_ sink: (([Float]) -> Void)?) {
+        lock.lock(); chunkStream = sink == nil ? nil : ChunkStream(); chunkSink = sink; lock.unlock()
     }
 
     func append(_ buffer: AVAudioPCMBuffer) {
@@ -240,7 +248,33 @@ final class PCMAccumulator: @unchecked Sendable {
             consumed = true; input.pointee = .haveData; return buffer
         }
         guard status != .error, let data = out.floatChannelData?[0] else { return }
-        samples.append(contentsOf: UnsafeBufferPointer(start: data, count: Int(out.frameLength)))
+        let fresh = Array(UnsafeBufferPointer(start: data, count: Int(out.frameLength)))
+        let from = samples.count
+        samples.append(contentsOf: fresh)
+        // 邊錄邊傳：這一塊讓切段器決定有沒有講完一段；有就把整段交給 sink。
+        if let stream = chunkStream {
+            let cuts = stream.push(fresh)
+            if !cuts.isEmpty, let sink = chunkSink {
+                for cut in cuts {
+                    let lower = max(0, min(cut.start, samples.count))
+                    let upper = max(lower, min(cut.end, samples.count))
+                    sink(Array(samples[lower..<upper]))
+                }
+            }
+        }
+    }
+
+    /// 講完：把還沒切掉的尾巴交出來（Q3 的最後一段），之後不再切。
+    /// 回 nil＝沒有尾巴（或太短不值得打網路），這時整段重送會覆蓋掉前面送過的段。
+    func takeFinalChunk() -> [Float]? {
+        lock.lock(); defer { lock.unlock() }
+        let stream = chunkStream
+        chunkStream = nil
+        chunkSink = nil
+        guard let cut = stream?.finish() else { return nil }
+        let lower = max(0, min(cut.start, samples.count))
+        let upper = max(lower, min(cut.end, samples.count))
+        return Array(samples[lower..<upper])
     }
 
     /// 取整段錄音。先把轉換器裡還沒吐出的尾巴放出來（重取樣會留約 60 ms 在內部；實測 1 秒只拿到 15,013／16,000 個樣本，

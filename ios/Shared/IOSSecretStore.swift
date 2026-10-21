@@ -35,28 +35,14 @@ enum IOSSecretStore {
         guard !value.isEmpty else { return String(localized: "key 是空的，沒有寫入。") }
         guard let data = value.data(using: .utf8) else { return String(localized: "key 編碼失敗（需為 UTF-8）。") }
 
-        let base: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
-        ]
-        let updateStatus = SecItemUpdate(base as CFDictionary, [kSecValueData as String: data] as CFDictionary)
-        if updateStatus == errSecSuccess {
+        // 鍵盤也要讀得到：新的一律存 App Group 共用的 Keychain（見 SharedKeychain）。
+        let status = SharedKeychain.save(data, service: service, account: account,
+                                         accessible: kSecAttrAccessibleWhenUnlockedThisDeviceOnly)
+        if status == errSecSuccess {
             deleteLegacySmartCleanupKey()
             return nil
         }
-        if updateStatus == errSecItemNotFound {
-            var addQuery = base
-            addQuery[kSecValueData as String] = data
-            addQuery[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-            if addStatus == errSecSuccess {
-                deleteLegacySmartCleanupKey()
-                return nil
-            }
-            return String(localized: "Keychain 寫入失敗（OSStatus \(addStatus)）。")
-        }
-        return String(localized: "Keychain 更新失敗（OSStatus \(updateStatus)）。")
+        return String(localized: "Keychain 寫入失敗（OSStatus \(status)）。")
     }
 
     /// 刪除。找不到也算成功（結果一致：沒有 key）。
@@ -113,17 +99,6 @@ enum IOSSecretStore {
     }
 
     private static func readKey(service: String, account: String) -> String {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        var result: CFTypeRef?
-        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
-              let data = result as? Data,
-              let value = String(data: data, encoding: .utf8) else { return "" }
-        return value.trimmingCharacters(in: .whitespacesAndNewlines)
+        SharedKeychain.read(service: service, account: account)
     }
 }

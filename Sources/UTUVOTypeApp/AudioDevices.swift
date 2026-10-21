@@ -63,6 +63,15 @@ enum AudioDeviceCatalog {
         return deviceIDs().first { stringProperty(kAudioDevicePropertyDeviceUID, deviceID: $0) == uid }
     }
 
+    /// 這台裝置實際的**輸入**聲道數（`kAudioDevicePropertyStreamConfiguration`）。
+    /// 拿來跟 engine 報的格式聲道數對照：2026-10-14 選 1 軌的 MV7、engine 卻還
+    /// 報 64 軌的預設裝置，錄出來整份都是錯的聲道數。
+    static func inputChannelCount(uid: String) -> Int? {
+        guard let id = deviceID(for: uid) else { return nil }
+        let count = channelCount(deviceID: id, scope: kAudioObjectPropertyScopeInput)
+        return count > 0 ? count : nil
+    }
+
     static func defaultInputUID() -> String? {
         defaultDeviceID(selector: kAudioHardwarePropertyDefaultInputDevice)
             .flatMap { stringProperty(kAudioDevicePropertyDeviceUID, deviceID: $0) }

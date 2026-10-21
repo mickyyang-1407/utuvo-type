@@ -12,6 +12,8 @@ dependencies {
     compileOnly("org.json:json:20250517")
     testImplementation(kotlin("test"))
     testImplementation("org.json:json:20250517")
+    // 0c 重排的標準分數要在電腦上真跑一次模型才對得起來（JVM 版，只給測試）。MIT。
+    testImplementation("com.microsoft.onnxruntime:onnxruntime:1.31.0")
 }
 
 tasks.test {
@@ -20,5 +22,8 @@ tasks.test {
     systemProperty("utuvo.resources", rootDir.resolve("../ios/Keyboard/Resources").canonicalPath)
     // OpenCC 詞表跟 iOS 共用同一份（不複製），繁體修正的測試直接讀。
     systemProperty("utuvo.opencc", rootDir.resolve("../ios/Shared/Resources/OpenCC").canonicalPath)
+    // 0c 重排的標準答案（kbest/features/scores/choose .jsonl）與模型檔。
+    systemProperty("zc.fixtures", rootDir.resolve("core/src/test/resources/zc").canonicalPath)
+    systemProperty("zc.model", rootDir.resolve("app/src/main/assets/zc").canonicalPath)
     testLogging { events("failed"); exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL }
 }

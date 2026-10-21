@@ -8,6 +8,7 @@ import com.utuvo.type.core.PinyinLexicon
 import com.utuvo.type.core.ZhuyinCandidate
 import com.utuvo.type.core.ZhuyinEngine
 import com.utuvo.type.core.ZhuyinLexicon
+import com.utuvo.type.core.ZcVocab
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
@@ -74,10 +75,45 @@ class ImeSession(context: Context, val kind: Kind) {
     val hasComposing: Boolean
         get() = zhuyin?.let { it.composing.isNotEmpty() } ?: if (pinyin != null) false else fallback.isNotEmpty()
 
-    val preedit: String get() = zhuyin?.preedit ?: pinyin?.preedit ?: fallback.toString()
+    /** 0c 重排覆寫中的文字（連同它對應的讀音）；讀音對不上就自動失效。 */
+    private var override: Pair<List<String>, String>? = null
+
+    /** 整句可重排的讀音（只有注音、讀音已定、2..32 個音節時才會給）。主執行緒只做這個，很便宜。 */
+    fun rerankInput(): List<String>? {
+        val z = zhuyin ?: return null
+        val readings = z.completeReadings() ?: return null
+        if (readings.size !in ZcVocab.MIN_SYLLABLES..ZcVocab.MAX_SYLLABLES) return null
+        return readings
+    }
+
+    /** 目前讀音（重排回呼比對用；沒有回 null）。 */
+    fun completeReadingsForRerank(): List<String>? = zhuyin?.completeReadings()
+
+    /**
+     * 背景執行緒用的引擎候選。只吃詞庫、不讀引擎可變狀態，所以可以在推論執行緒呼叫。
+     * 見 [ZhuyinEngine.kBest]（讀音清單版）。
+     */
+    fun kBestForRerank(readings: List<String>): List<Pair<String, Double>> =
+        zhuyin?.kBest(readings, ZcVocab.MAX_CANDIDATES) ?: emptyList()
+
+    /** 套用 0c 重排的結果；讀音一變就自動失效（下一個按鍵）。 */
+    fun applyRerank(readings: List<String>, text: String) {
+        override = readings to text
+    }
+
+    /** 目前讀音對得上的重排結果（沒有回 null）。 */
+    private fun activeOverride(): String? {
+        val o = override ?: return null
+        if (zhuyin?.completeReadings() == o.first) return o.second
+        return null
+    }
+
+    val preedit: String get() = zhuyin?.let { z -> activeOverride() ?: z.preedit }
+        ?: pinyin?.preedit ?: fallback.toString()
 
     /** 整串送出時的文字（候選列第 0 格）。注音簡拼時輸入框顯示打的符號（preedit），送出的是轉換結果。 */
-    val conversion: String get() = zhuyin?.conversion ?: pinyin?.preedit ?: fallback.toString()
+    val conversion: String get() = zhuyin?.let { z -> activeOverride() ?: z.conversion }
+        ?: pinyin?.preedit ?: fallback.toString()
 
     /** 剛送出 `text` 之後可以接的聯想詞（只回要接著插入的部分）。 */
     fun associationsAfter(text: String): List<String> =
@@ -115,6 +151,7 @@ class ImeSession(context: Context, val kind: Kind) {
         fallback.setLength(0)
         shownZhuyin = emptyList()
         shownPinyin = emptyList()
+        override = null
     }
 
     fun type(key: Char) {
@@ -144,7 +181,12 @@ class ImeSession(context: Context, val kind: Kind) {
     }
 
     fun commitAll(): String {
-        zhuyin?.let { return it.commitAll() }
+        zhuyin?.let { z ->
+            val text = activeOverride()
+            override = null
+            val engineText = z.commitAll()   // 引擎狀態照常清空
+            return text ?: engineText
+        }
         pinyin?.let { return it.commitAll() }
         return fallback.toString().also { fallback.setLength(0) }
     }

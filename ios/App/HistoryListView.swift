@@ -6,6 +6,11 @@ struct HistoryListView: View {
     @State private var copiedID: UUID?
     @State private var query = ""
     @State private var starredOnly = false
+    @State private var retention = RetentionSettings.policy
+    @State private var confirmDeleteAll = false
+    /// 檔案裡的**真實總筆數**（沒被期限／搜尋／星標過濾）。
+    /// 「全部刪除」刪的是整份檔案，確認框要報這個數，不是畫面上看到的那幾筆。
+    @State private var storedCount = 0
 
     private var visible: [DictationRecord] {
         HistoryGrouping.filter(records, query: query, starredOnly: starredOnly)
@@ -41,7 +46,31 @@ struct HistoryListView: View {
             .searchable(text: $query, prompt: "搜尋歷史")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            TapPulse.shared.fire()
+                            purgeExpired()
+                        } label: {
+                            Label(String(localized: "刪除超過期限的"), systemImage: "clock.arrow.circlepath")
+                        }
+                        .disabled(retention == .forever || retention == .none || records.isEmpty)
+
+                        Button(role: .destructive) {
+                            TapPulse.shared.fire()
+                            confirmDeleteAll = true
+                        } label: {
+                            Label(String(localized: "全部刪除"), systemImage: "trash")
+                        }
+                        .disabled(records.isEmpty)
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel(String(localized: "歷史操作"))
+                    .accessibilityIdentifier("historyActions")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        TapPulse.shared.fire()
                         starredOnly.toggle()
                     } label: {
                         Image(systemName: starredOnly ? "star.fill" : "star")
@@ -51,7 +80,21 @@ struct HistoryListView: View {
                     .accessibilityIdentifier("starredOnly")
                 }
             }
-            .onAppear { records = HistoryStore.shared.load() }
+            .confirmationDialog(
+                // 報**檔案裡的總筆數**：`records` 是過濾後的，用它會少報。
+                String(localized: "確定要刪掉全部 \(storedCount) 筆歷史嗎？"),
+                isPresented: $confirmDeleteAll, titleVisibility: .visible
+            ) {
+                Button(String(localized: "全部刪除"), role: .destructive) { deleteAll() }
+                Button(String(localized: "取消"), role: .cancel) {}
+            } message: {
+                // 星號不會被保留——要講清楚，不要讓人以為星號有特權。
+                Text(String(localized: "有星號的也會一起刪掉。使用數據（每日字數與時長）不受影響。"))
+            }
+            .onAppear {
+                retention = RetentionSettings.policy
+                reload()
+            }
         }
     }
 
@@ -92,6 +135,7 @@ struct HistoryListView: View {
                 }
                 Spacer()
                 Button {
+                    TapPulse.shared.fire()
                     var r = record
                     r.starred.toggle()
                     update(r)
@@ -101,6 +145,7 @@ struct HistoryListView: View {
                 }
                 .buttonStyle(.borderless)
                 Button {
+                    TapPulse.shared.fire()
                     UIPasteboard.general.string = record.cleaned
                     copiedID = record.id
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { copiedID = nil }
@@ -122,6 +167,7 @@ struct HistoryListView: View {
         }
         .swipeActions(edge: .trailing) {
             Button(role: .destructive) {
+                TapPulse.shared.fire()
                 delete(record)
             } label: {
                 Label("刪除", systemImage: "trash")
@@ -129,14 +175,77 @@ struct HistoryListView: View {
         }
     }
 
+    /// 讀檔在背景佇列（history.json 可以有 500 筆，不該在主執行緒上解碼），回來再更新畫面。
+    private func reload() {
+        let policy = retention
+        HistoryIO.shared.readAsync { all in
+            storedCount = all.count
+            records = RetentionPolicy.filter(all, policy: policy)
+        }
+    }
+
+    /// 對**整份檔案**做讀-改-寫。畫面上的 `records` 是過濾後的，直接存回去會把
+    /// 被搜尋／期限／星標濾掉的紀錄一起刪掉（除錯：同一個 bug 的另外兩條路徑）。
+    private func mutateFile(_ body: @escaping (inout [DictationRecord]) -> Void) {
+        let policy = retention
+        HistoryIO.shared.mutateAsync { all in
+            body(&all)
+        } didFinish: { all in
+            storedCount = all.count
+            records = RetentionPolicy.filter(all, policy: policy)
+        }
+    }
+
     private func update(_ record: DictationRecord) {
-        guard let idx = records.firstIndex(where: { $0.id == record.id }) else { return }
-        records[idx] = record
-        HistoryStore.shared.save(records)
+        mutateFile { all in
+            guard let idx = all.firstIndex(where: { $0.id == record.id }) else { return }
+            all[idx] = record
+        }
     }
 
     private func delete(_ record: DictationRecord) {
-        records.removeAll { $0.id == record.id }
-        HistoryStore.shared.save(records)
+        mutateFile { all in all.removeAll { $0.id == record.id } }
+    }
+
+    /// 刪掉超過保留期限的（星號不例外，跟期限走）。每日計數不受影響。
+    private func purgeExpired() {
+        let policy = retention
+        mutateFile { all in
+            all = RetentionPolicy.filter(all, policy: policy)
+        }
+    }
+
+    /// 全部刪除：只動歷史，每日計數留著。
+    private func deleteAll() {
+        mutateFile { all in all = [] }
+    }
+}
+
+/// 歷史檔的讀寫排到**序列背景佇列**，離開主執行緒。
+/// 鍵盤 extension 那邊交付時的寫入也走同一條思路（RULE-common 第 7 點）。
+final class HistoryIO: @unchecked Sendable {
+    nonisolated(unsafe) static let shared = HistoryIO()
+
+    private let queue = DispatchQueue(label: "utuvo.type.ios.history.io", qos: .userInitiated)
+
+    /// 讀整份歷史，回主執行緒交付結果。
+    func readAsync(_ completion: @escaping @MainActor ([DictationRecord]) -> Void) {
+        queue.async {
+            let all = HistoryStore.shared.load()
+            DispatchQueue.main.async { completion(all) }
+        }
+    }
+
+    /// 讀-改-寫（跨 process 協調在 `HistoryStore.withExclusiveAccess` 裡），完成後回主執行緒。
+    func mutateAsync(_ body: @escaping (inout [DictationRecord]) -> Void,
+                     didFinish: @escaping @MainActor ([DictationRecord]) -> Void) {
+        let store = HistoryStore.shared
+        queue.async {
+            store.withExclusiveAccess { all in
+                body(&all)
+            }
+            let all = store.load()
+            DispatchQueue.main.async { didFinish(all) }
+        }
     }
 }

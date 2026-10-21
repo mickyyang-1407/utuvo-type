@@ -31,7 +31,7 @@ struct TranslationLanguagesView: View {
             } header: {
                 Text("鍵盤上的順序（中間那個是長按時預選的）")
             } footer: {
-                Text("長按鍵盤的光球，這些語言會排在光球上方；滑到語言放開、講中文，就貼上翻譯。最多 \(QuickPickStore.maxCount) 個，至少 1 個。")
+                Text("長按鍵盤的光球，這些語言會排在光球上方；滑到語言放開、講中文，就貼上翻譯。最多 \(QuickPickStore.maxCount) 個，至少 1 個。弧的最後一格是「＋語言」，滑過去放開可以直接在鍵盤裡加新的語言，不用回到這裡。")
             }
 
             Section("語言") {
@@ -67,7 +67,7 @@ struct TranslationLanguagesView: View {
             }
             Spacer()
             if status[target.code] == "supported" {
-                Button("下載") { downloadCode = target.code }
+                Button("下載") { TapPulse.shared.fire(); downloadCode = target.code }
                     .font(.caption.weight(.semibold))
                     .buttonStyle(.bordered)
             }
@@ -77,6 +77,7 @@ struct TranslationLanguagesView: View {
         .onTapGesture {
             let next = QuickPickStore.toggled(target.code, in: selected)
             guard next != selected else { return }
+            TapPulse.shared.fire()
             selected = next
             QuickPickStore.setCodes(next)
         }

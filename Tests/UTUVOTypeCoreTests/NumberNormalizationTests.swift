@@ -36,4 +36,12 @@ final class NumberNormalizationTests: XCTestCase {
             XCTAssertEqual(n.normalize(input).cleaned, input, input)
         }
     }
+
+    /// 2026-10-19 真人錄音：金額規則從千分位逗號後面開始讀，「12,000塊」變「12,0塊」。
+    func testFormattedAmountFollowedByCurrencyIsUntouched() {
+        XCTAssertEqual(Normalizer.normalizeNumbers("金額是12,000塊"), "金額是12,000塊")
+        XCTAssertEqual(Normalizer.normalizeNumbers("先付105,000元"), "先付105,000元")
+        XCTAssertEqual(Normalizer.normalizeNumbers("總共一千兩百五十塊"), "總共1,250塊")
+        XCTAssertEqual(Normalizer.normalizeNumbers("3.5元"), "3.5元")
+    }
 }

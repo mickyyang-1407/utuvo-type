@@ -48,6 +48,13 @@ final class IOSPipelineTests: XCTestCase {
         _ = output
     }
 
+    func testKeyboardTextPipelineAppliesNotIsSelfCorrectionBeforePunctuation() {
+        let input = "幫我轉寄給小雅跟小博,不是,是小雅跟小潘。"
+        let (output, steps) = TextPipeline(dictionary: [:], latinTerms: []).clean(input)
+        XCTAssertEqual(output, "幫我轉寄給小雅跟小潘。")
+        XCTAssertTrue(steps.contains("self-correction"), "實際步驟：\(steps)")
+    }
+
     func testHistoryStoreRoundTrip() {
         // 用暫存目錄驗證 JSON round-trip（不碰 App Group）
         let dir = FileManager.default.temporaryDirectory

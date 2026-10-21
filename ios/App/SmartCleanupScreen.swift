@@ -6,6 +6,7 @@ import SwiftUI
 struct SmartCleanupScreen: View {
     @AppStorage(SmartCleanup.enabledKey) private var enabled = true   // 沒動過＝開（與 SmartCleanup.enabledPreference 一致）
     @AppStorage(CloudASR.enabledKey) private var cloudASREnabled = false   // 沒設過＝關（與 CloudASR.enabledPreference 一致）
+    @AppStorage(SmartCleanup.autoListKey) private var autoList = true   // 沒設過＝開（與 SmartCleanup.autoListEnabled 一致）
     @State private var provider = SmartCleanup.provider
     @State private var keyDraft = ""
     @State private var hasKey = false
@@ -27,12 +28,28 @@ struct SmartCleanupScreen: View {
         Form {
             Section {
                 Toggle("智慧整理", isOn: $enabled)
+                    .feedbackOnChange(of: enabled)
             } footer: {
                 Text("講完先貼出辨識結果，大模型在背景整理改口、贅詞和錯字，再安全替換。沒有設定 key 時，用 Apple Intelligence 在這支手機上整理，文字不離機；設定 key 後改用下面選的雲端服務。是否使用 Apple 雲端辨識，請在「辨識與隱私」設定管理；雲端整理服務只會收到辨識文字與你選擇傳送的欄位脈絡。開了下面的「雲端辨識」時，錄音也會送到同一家服務。")
             }
 
+            if GemmaCleanup.isOffered {
+                GemmaSection()
+            }
+            #if DEBUG
+            DebugNoAISection()
+            #endif
+
+            Section {
+                Toggle("自動條列", isOn: $autoList)
+                    .feedbackOnChange(of: autoList)
+            } footer: {
+                Text("講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。")
+            }
+
             Section("整理脈絡") {
                 Toggle("整理時參考前文（最多 500 字）", isOn: $includeAppContext)
+                    .feedbackOnChange(of: includeAppContext)
                 Text("開啟後，會把目前欄位游標前最多 500 個字和辨識文字一起送到所選整理服務，只用來理解指涉與語氣。iOS 鍵盤無法讀取宿主 App 名稱，因此不會傳送 App 名稱。")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
@@ -41,10 +58,12 @@ struct SmartCleanupScreen: View {
             Section("服務") {
                 Picker("服務", selection: $provider) {
                     Text("Groq（推薦）").tag(SmartCleanup.Provider.groq)
+                    Text("Claude（整理最準）").tag(SmartCleanup.Provider.claude)
                     Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
                     Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
                     Text("自訂（OpenAI 相容）").tag(SmartCleanup.Provider.custom)
                 }
+                .feedbackOnChange(of: provider)
                 .onChange(of: provider) { _, new in
                     SmartCleanup.provider = new
                     refresh()
@@ -57,7 +76,18 @@ struct SmartCleanupScreen: View {
                 }
             }
 
-            Section("申請免費 key") {
+            Section(provider == .claude ? LocalizedStringKey("申請 API key") : LocalizedStringKey("申請免費 key")) {
+                if provider == .groq {
+                    NavigationLink {
+                        GuidedTutorialView(kind: .groqKey)
+                            .pushHaptic()
+                            .onDisappear { refresh() }
+                    } label: {
+                        Label("一步一步教我申請（約 3 分鐘）", systemImage: "hand.point.up.left.fill")
+                            .foregroundStyle(Aurora.orange)
+                    }
+                    .accessibilityIdentifier("groqTutorialRow")
+                }
                 ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
                     Text("\(index + 1). \(step)")
                 }
@@ -71,6 +101,7 @@ struct SmartCleanupScreen: View {
                 if provider == .dashscope {
                     NavigationLink {
                         CloudKeyScreen()
+                            .pushHaptic()
                     } label: {
                         LabeledContent("阿里雲百鍊 key", value: hasKey ? String(localized: "已設定") : String(localized: "未設定"))
                     }
@@ -83,6 +114,7 @@ struct SmartCleanupScreen: View {
                         .accessibilityIdentifier("smartKey")
                     HStack {
                         Button("儲存") {
+                            TapPulse.shared.fire()
                             if SmartCleanup.saveKey(keyDraft, for: provider) {
                                 keyDraft = ""
                                 message = String(localized: "已存進這支手機的鑰匙圈。")
@@ -97,6 +129,7 @@ struct SmartCleanupScreen: View {
                         .disabled(keyDraft.trimmingCharacters(in: .whitespaces).isEmpty)
                         Spacer()
                         Button("清除", role: .destructive) {
+                            TapPulse.shared.fire()
                             SmartCleanup.deleteKey(for: provider)
                             message = String(localized: "已刪除。")
                             messageIsError = false
@@ -107,6 +140,7 @@ struct SmartCleanupScreen: View {
                     .buttonStyle(.borderless)
                 }
                 Button {
+                    TapPulse.shared.fire()
                     Task { await test() }
                 } label: {
                     if testing { ProgressView() } else { Text("測試") }
@@ -134,7 +168,9 @@ struct SmartCleanupScreen: View {
             Section {
                 Toggle("用這把 key 辨識語音", isOn: $cloudASREnabled)
                     .disabled(!cloudASRAvailable)
+                    .feedbackOnChange(of: cloudASREnabled)
                 Button {
+                    TapPulse.shared.fire()
                     Task { await testCloudASR() }
                 } label: {
                     if cloudASRTesting { ProgressView() } else { Text("測試雲端辨識") }
@@ -169,6 +205,11 @@ struct SmartCleanupScreen: View {
             return [String(localized: "打開阿里雲百鍊主控台，開通模型服務（需要實名認證）。"),
                     String(localized: "在「API-KEY」頁建立 key。"),
                     String(localized: "複製 key，回到設定裡的阿里雲百鍊頁貼上；回到這裡按「測試」。")]
+        case .claude:
+            return [String(localized: "按下面「打開申請頁面」，登入 Anthropic Console（Claude 的開發者後台）。"),
+                    String(localized: "在「API Keys」按「Create Key」，取個名字。"),
+                    String(localized: "複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。"),
+                    String(localized: "按「測試」確認可以用。")]
         case .custom:
             return [String(localized: "填入任何 OpenAI 相容服務的端點網址與模型名稱（例如自己架的伺服器）。"),
                     String(localized: "貼上 key、按「儲存」，再按「測試」。")]
@@ -183,6 +224,8 @@ struct SmartCleanupScreen: View {
             return String(localized: "有免費額度（上限依模型，可在 Groq 後台查看），速度很快；預設不保留送出的資料。")
         case .dashscope:
             return String(localized: "新用戶有免費額度，之後依用量計費。")
+        case .claude:
+            return String(localized: "依用量計費，要在 Anthropic Console 加值或有 API 額度；Claude Pro／Max 訂閱本身不能直接用，要另外申請 API key。Anthropic 預設不拿 API 送出的資料訓練模型。Claude 不能辨識語音：雲端辨識會改用你存的 Groq／Gemini key。")
         case .custom:
             return String(localized: "文字會送到你填的端點。")
         }
@@ -191,6 +234,8 @@ struct SmartCleanupScreen: View {
     private var cloudASRAvailable: Bool {
         // 自訂端點不支援雲端辨識；其他三家需要有 key 才能開。
         if provider == .custom { return false }
+        // Claude 不能辨識語音，改用另外存的 Groq／Gemini／百鍊 key（CloudASR.route）。
+        if provider == .claude { return CloudASR.route() != nil }
         if !hasKey { return false }
         return CloudASR.supports(provider)
     }
@@ -202,6 +247,11 @@ struct SmartCleanupScreen: View {
         case .gemini: extra = String(localized: "Gemini 免費版送出的錄音，Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶就不會。")
         case .groq: extra = String(localized: "使用 Whisper large-v3。")
         case .dashscope: extra = String(localized: "使用 Qwen3-ASR-Flash，依用量計費。")
+        case .claude:
+            if let route = CloudASR.route() {
+                return base + "\n" + String(localized: "Claude 不能辨識語音，會用你存的 \(SmartLog.providerName(route.provider.rawValue)) key 辨識。")
+            }
+            return base + "\n" + String(localized: "Claude 不能辨識語音。要用雲端辨識，請另外存一把 Groq key（免費）。")
         case .custom: extra = String(localized: "自訂服務目前不支援雲端辨識。")
         }
         if !hasKey { return base + "\n" + String(localized: "先在上面存好 key。") }
@@ -225,10 +275,9 @@ struct SmartCleanupScreen: View {
             return
         }
         let start = Date()
-        let provider = SmartCleanup.provider
-        let key = SmartCleanup.key(for: provider)
+        guard let route = CloudASR.route() else { return }
         let result = await CloudASR.transcribe(samples, language: "zh-TW", hotwords: [],
-                                                provider: provider, key: key)
+                                                provider: route.provider, key: route.key)
         let elapsed = Date().timeIntervalSince(start)
         if let text = result, !text.isEmpty {
             cloudMessage = String(localized: "辨識結果：\(text)（\(String(format: "%.1f", elapsed)) 秒）")
@@ -331,3 +380,21 @@ private final class TimeoutFlag: @unchecked Sendable {
         set { lock.lock(); _fired = newValue; lock.unlock() }
     }
 }
+
+#if DEBUG
+/// 只在開發版：當作沒有 Apple Intelligence（有 Apple Intelligence 的手機也能試 Gemma）。切換後回上一頁再進來就會看到。
+private struct DebugNoAISection: View {
+    @AppStorage(OnDeviceAssistant.debugManualDisableKey, store: KeyboardPresence.defaults) private var pretend = false
+
+    var body: some View {
+        Section {
+            Toggle("當作沒有 Apple Intelligence", isOn: $pretend)
+                .onChange(of: pretend) { _, _ in GemmaCleanup.shared.refreshOffer() }
+        } header: {
+            Text("開發版測試")
+        } footer: {
+            Text("只有開發版有這個開關。打開後這支手機的智慧整理會改用 Gemma（要先下載），正式版不會出現。")
+        }
+    }
+}
+#endif

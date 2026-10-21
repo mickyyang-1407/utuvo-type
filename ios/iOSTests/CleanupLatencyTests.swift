@@ -1,5 +1,6 @@
 import XCTest
 @testable import UTUVOTypeiOS
+import UTUVOTypeCore
 
 @MainActor
 final class CleanupLatencyTests: XCTestCase {
@@ -34,7 +35,8 @@ final class CleanupLatencyTests: XCTestCase {
         XCTAssertEqual(body["reasoning_effort"] as? String, "low")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer fixture-key")
         let messages = body["messages"] as! [[String: String]]
-        XCTAssertEqual(messages[0]["content"], SmartCleanup.instructions + "\n這位使用者常用的專有名詞（逐字稿裡聽起來像的，就改成這個寫法）：合成專名")
+        // 指示＝v3 原文套上「自動條列」設定（2026-10-19，預設開）。
+        XCTAssertEqual(messages[0]["content"], CleanupPromptRules.apply(SmartCleanup.instructions, autoList: SmartCleanup.autoListEnabled) + "\n這位使用者常用的專有名詞（逐字稿裡聽起來像的，就改成這個寫法）：合成專名")
         XCTAssertEqual(state.logs, ["ok"])
     }
 

@@ -37,6 +37,8 @@ let package = Package(
             path: "Sources/UTUVOTypeApp",
             resources: [
                 .copy("Resources/vocabulary"),
+                // 簡轉繁字典（符號連結到 ios/Shared/Resources/OpenCC；雲端辨識的 TraditionalFixer 用）。
+                .copy("Resources/OpenCC"),
             ]
         ),
         // 測試：normalizer、routing、prompt safety、fixtures、衛生、短句禁大模型。

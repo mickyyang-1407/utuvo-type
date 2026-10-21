@@ -27,13 +27,17 @@ struct LevelSample: Equatable, Sendable {
     let db: Float
 }
 
-/// 從音量找靜音段。門檻依這段錄音的背景噪音自動調：背景（第 10 百分位）＋12 dB，夾在 −60…−30 dBFS。
+/// 從音量找靜音段。門檻依這段錄音的背景噪音自動調：背景（第 10 百分位）＋headroom，夾在 −60…−30 dBFS。
+/// - `quiet`：小聲說話模式，把 headroom 從 12 dB 降到 6 dB，讓音量只比背景高一點的輕聲也算在講話。
 enum SilenceDetector {
-    static func intervals(_ samples: [LevelSample], minDuration: Double = 0.18) -> [SilenceInterval] {
+    static func intervals(_ samples: [LevelSample], minDuration: Double = 0.18, quiet: Bool = false) -> [SilenceInterval] {
         guard samples.count >= 5 else { return [] }
         let sorted = samples.map(\.db).sorted()
         let floor = sorted[sorted.count / 10]
-        let threshold = min(-30, max(floor + 12, -60))
+        // 門檻＝背景（第 10 百分位）＋ headroom，夾在 −60…−30 dBFS。
+        // 小聲模式把 headroom 從 12 降到 6，讓「只比背景高一點」的輕聲也算在講話
+        // （為什麼動 headroom 而不是動門檻，見 QuietMode.silenceHeadroomQuiet 的說明）。
+        let threshold = QuietMode.silenceThreshold(floor: floor, enabled: quiet)
         var out: [SilenceInterval] = []
         var runStart: Double?
         var runEnd: Double = 0

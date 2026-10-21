@@ -13,8 +13,9 @@ enum VoiceAudioSession {
     static let category: AVAudioSession.Category = .playAndRecord
     static let options: AVAudioSession.CategoryOptions = [.mixWithOthers, .allowBluetoothA2DP, .defaultToSpeaker]
 
-    static func activate(_ session: AVAudioSession = .sharedInstance()) throws {
-        try session.setCategory(category, mode: .default, options: options)
+    /// `exclusive`：麥克風被別的 App 佔著、收到的全是 0 時才用——不混音，向系統要回輸入（會打斷別人的聲音）。
+    static func activate(_ session: AVAudioSession = .sharedInstance(), exclusive: Bool = false) throws {
+        try session.setCategory(category, mode: .default, options: exclusive ? options.subtracting(.mixWithOthers) : options)
         // 錄音中 iOS 預設把震動與系統音靜音——鍵盤的開始／停止震動會整個消失（真機回報）。
         try? session.setAllowHapticsAndSystemSoundsDuringRecording(true)
         try session.setActive(true)

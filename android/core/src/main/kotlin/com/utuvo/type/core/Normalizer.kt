@@ -195,7 +195,8 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
                 val m = pausedPhraseRepeat.find(working) ?: break
                 working = working.replaceRange(m.range, m.groupValues[1])
             }
-            working = applyRegex(working, "([我你他它這那是不就要很請等])(?:[、，,\\s]+\\1)+(?=[\\u4E00-\\u9FFF]|[、，,\\s]|$)") { it[1] }
+            // 「不是,是」是明確改口，不要把「不是」末尾的「是」和後面的「是」當口吃合併。
+            working = applyRegex(working, "(?<!不)([我你他它這那是不就要很請等])(?:[、，,\\s]+\\1)+(?=[\\u4E00-\\u9FFF]|[、，,\\s]|$)") { it[1] }
             while (true) {
                 val m = phraseRepeat.find(working) ?: break
                 working = working.replaceRange(m.range, m.groupValues[1])
@@ -206,7 +207,8 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
             while (i < chars.size) {
                 var j = i + 1
                 while (j < chars.size && chars[j] == chars[i]) j++
-                if (j - i >= 2 && chars[i] in repeatableCharacters) {
+                val negatedCopula = chars[i] == "是" && i > 0 && chars[i - 1] == "不"
+                if (j - i >= 2 && chars[i] in repeatableCharacters && !negatedCopula) {
                     sb.append(chars[i]); i = j
                 } else {
                     sb.append(chars[i]); i++
@@ -215,22 +217,26 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
             return sb.toString()
         }
 
-        private const val SEG = "[^，。！？,!?\\s]{1,30}"
-        /** 「X不是A，是B」刪掉 A 後還需要「是」的主詞／指示詞（同 Swift copulaSubjects）。 */
-        private const val COPULA_SUBJECTS = "這些|那些|這個|那個|我們|你們|他們|她們|它們|這|那|它|他|她|我|你|您"
-
-        private val selfCorrections = listOf(
-            icu("($COPULA_SUBJECTS)不是($SEG)[，,。是]?是($SEG)") to "$1是$3",
-            icu("不是($SEG)[，,。是]?是($SEG)") to "$2",
-            icu("($SEG)不對[，,]?是($SEG)") to "$2",
-            icu("($SEG)不對($SEG)") to "$2",
-            icu("改成($SEG)") to "$1",
-            icu("應該是($SEG)") to "$1",
+        private val correctionMarkerWords = listOf("我的意思是", "應該說", "我是說", "应该说")
+        private val standaloneCorrections = listOf("啊不對", "喔不對", "哦不對", "噢不對", "不對不對", "不對", "不是不是", "不是", "說錯了", "講錯了", "说错了")
+        private val copulaSubjects = listOf("這些", "那些", "這個", "那個", "我們", "你們", "他們", "她們", "它們", "這", "那", "它", "他", "她", "我", "你", "您")
+        private val weekdayModifiers = listOf(
+            "大後天的", "明天的", "昨天的", "後天的",
+            "大後天", "明天", "昨天", "後天", "下個", "這個", "上個", "下", "這", "上",
         )
 
-        /** 「不是 A，是 B」→ B；「A 不對，是 B」→ B；「A 不對 B」→ B；「改成 B」→ B。 */
-        /** 停頓後「應該說／我是說／我的意思是」＝前一小句作廢（同 Swift correctionMarkers）。 */
-        private val correctionMarkerWords = listOf("我的意思是", "應該說", "我是說", "应该说")
+        private fun isCorrectionWhitespace(ch: Char): Boolean =
+            ch in '\t'..'\r' || ch == ' ' || ch == '\u0085' || ch == '\u00A0' || ch == '\u1680' ||
+                ch in '\u2000'..'\u200A' || ch == '\u2028' || ch == '\u2029' || ch == '\u202F' ||
+                ch == '\u205F' || ch == '\u3000'
+
+        private fun trimCorrectionWhitespace(text: String): String {
+            var start = 0
+            var end = text.length
+            while (start < end && isCorrectionWhitespace(text[start])) start++
+            while (end > start && isCorrectionWhitespace(text[end - 1])) end--
+            return text.substring(start, end)
+        }
 
         internal fun correctionMarkers(text: String): String {
             var out = text
@@ -238,31 +244,138 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
                 val hit = findCorrection(out) ?: return out
                 val (clauseStart, comma, afterMarker) = hit
                 val old = out.substring(clauseStart, comma)
-                val rest = out.substring(afterMarker).trimStart('，', ',', ' ')
-                var keep = ""
-                for (n in listOf(2, 1)) {
-                    val anchor = SwiftText.graphemes(rest).take(n).joinToString("")
-                    if (SwiftText.count(anchor) == n) { val r = old.lastIndexOf(anchor); if (r >= 0) { keep = old.substring(0, r); break } }
-                }
-                out = out.substring(0, clauseStart) + keep + rest
+                val rawRest = out.substring(afterMarker).dropWhile { it == '，' || it == ',' || isCorrectionWhitespace(it) }
+                val rest = stripCorrectionLead(rawRest)
+                val (replacement, suffix) = splitCorrectionPayload(rest) ?: return out
+                val corrected = alignCorrection(old, replacement) ?: return out
+                out = out.substring(0, clauseStart) + corrected + suffix
             }
             return out
         }
 
-        private val standaloneCorrections = listOf("喔不對", "哦不對", "噢不對", "不對不對", "不對", "不是不是", "不是", "說錯了", "講錯了", "说错了")
+        private fun stripCorrectionLead(text: String): String {
+            var value = trimCorrectionWhitespace(text)
+            val leads = listOf("就是啊", "就是", "是", "啊", "欸", "诶")
+            repeat(3) {
+                val lead = leads.firstOrNull { value.startsWith(it) } ?: return trimCorrectionWhitespace(value)
+                value = value.removePrefix(lead)
+            }
+            return trimCorrectionWhitespace(value)
+        }
+
+        private fun splitCorrectionPayload(text: String): Pair<String, String>? {
+            val boundaries = setOf('，', ',', '。', '！', '？', '!', '?', '\r', '\n')
+            val boundary = text.indexOfFirst { it in boundaries }
+            if (boundary < 0) {
+                val value = trimCorrectionWhitespace(text)
+                return if (value.isEmpty()) null else value to ""
+            }
+            val value = trimCorrectionWhitespace(text.substring(0, boundary))
+            return if (value.isEmpty()) null else value to text.substring(boundary)
+        }
+
+        /** Replace only a confidently aligned value in the old clause; keep surrounding words intact. */
+        private fun alignCorrection(old: String, replacement: String): String? {
+            val relativeDays = listOf("大後天", "前天", "後天", "昨天", "今天", "明天")
+            for (newDay in relativeDays.filter { replacement.startsWith(it) }) {
+                for (oldDay in relativeDays.filter { it != newDay }) {
+                    val at = old.lastIndexOf(oldDay)
+                    if (at < 0) continue
+                    val newSuffix = replacement.substring(newDay.length)
+                    replaceAlignedToken(old, at until at + oldDay.length, newDay, newSuffix)?.let { return it }
+                }
+            }
+
+            // Stable weekday prefix and one-character value: 星期三 → 星期四, 禮拜三 → 禮拜四.
+            val weekday = Regex("(星期|禮拜|週|周)([一二三四五六日天])")
+            val oldDays = weekday.findAll(old).toList()
+            val newDays = weekday.findAll(replacement).toList()
+            for (newDay in newDays) {
+                val newPrefix = newDay.groups[1]?.value ?: continue
+                val newLead = replacement.substring(0, newDay.range.first)
+                val newModifier = weekdayModifiers.firstOrNull { newLead.endsWith(it) } ?: ""
+                for (oldDay in oldDays.asReversed()) {
+                    if (oldDay.groups[1]?.value != newPrefix) continue
+                    val oldModifier = if (newModifier.isEmpty()) {
+                        ""
+                    } else {
+                        weekdayModifiers.firstOrNull { old.substring(0, oldDay.range.first).endsWith(it) } ?: ""
+                    }
+                    val oldExpressionRange = (oldDay.range.first - oldModifier.length)..oldDay.range.last
+                    val newSuffix = replacement.substring(newDay.range.last + 1)
+                    replaceAlignedToken(old, oldExpressionRange, newModifier + newDay.value, newSuffix)?.let { return it }
+                }
+            }
+
+            // Numeric and version tokens align when their non-numeric shape matches (48K → 96K, V3 → V4).
+            val token = Regex("""(?<![A-Za-z0-9_])(?:[A-Za-z_]*[0-9]+[A-Za-z0-9_]*|[0-9零〇一二三四五六七八九十百千兩两]+(?:點|点|樓|楼|層|层|號|号|塊|块|元|K|k)?)(?![A-Za-z0-9_])""")
+            val oldTokens = token.findAll(old).toList()
+            val newTokens = token.findAll(replacement).toList()
+            for (newMatch in newTokens) {
+                val newToken = newMatch.value
+                val newShape = newToken.replace(Regex("[0-9零〇一二三四五六七八九十百千兩两]+"), "#").lowercase()
+                for (oldMatch in oldTokens.asReversed()) {
+                    val oldToken = oldMatch.value
+                    val oldShape = oldToken.replace(Regex("[0-9零〇一二三四五六七八九十百千兩两]+"), "#").lowercase()
+                    val sameNumberWithAddedUnit = newToken.startsWith(oldToken) && newToken.length > oldToken.length
+                    if (oldShape != newShape && !sameNumberWithAddedUnit) continue
+                    val newSuffix = replacement.substring(newMatch.range.last + 1)
+                    replaceAlignedToken(old, oldMatch.range, newToken, newSuffix)?.let { return it }
+                }
+            }
+
+            // Shared opening phrase aligns short edits such as 小雅跟小博 → 小雅跟小潘.
+            val newCharacters = SwiftText.graphemes(replacement)
+            if (newCharacters.size < 2) return null
+            for (length in newCharacters.size downTo 2) {
+                val anchor = newCharacters.take(length).joinToString("")
+                val at = old.lastIndexOf(anchor)
+                if (at < 0) continue
+                val oldTail = old.substring(at + anchor.length)
+                val newTail = newCharacters.drop(length).joinToString("")
+                // A longer unmatched tail may be context, so decline instead of deleting it.
+                if (SwiftText.count(oldTail) > SwiftText.count(newTail) + 1 || newTail.isEmpty()) continue
+                return old.substring(0, at) + anchor + newTail
+            }
+            // A one-grapheme shared opening also anchors a correction: 剛上去 → 剛出門.
+            // 單字錨點只認虛詞／副詞（同 Swift singleCharAnchors）。
+            val anchor = newCharacters.firstOrNull() ?: return null
+            if (anchor !in SINGLE_CHAR_ANCHORS) return null
+            val at = old.lastIndexOf(anchor)
+            if (at < 0) return null
+            val oldTail = old.substring(at + anchor.length)
+            val newTail = newCharacters.drop(1).joinToString("")
+            if (SwiftText.count(oldTail) > SwiftText.count(newTail) + 1 || newTail.isEmpty()) return null
+            return old.substring(0, at) + anchor + newTail
+        }
+
+        private val SINGLE_CHAR_ANCHORS = setOf("剛", "在", "去", "到", "要", "是", "給", "跟", "把", "從", "往", "用", "叫", "先", "再", "就", "還", "也", "都", "會", "想", "和", "對")
+
+        /** Keep an existing tail when it agrees with the replacement; decline mismatched tails. */
+        private fun replaceAlignedToken(old: String, range: IntRange, token: String, suffix: String): String? {
+            val oldSuffix = old.substring(range.last + 1)
+            val prefix = old.substring(0, range.first)
+            if (suffix.isEmpty() || oldSuffix.contains(suffix)) return prefix + token + oldSuffix
+            if (oldSuffix.isEmpty() || suffix.endsWith(oldSuffix)) return prefix + token + suffix
+            return null
+        }
 
         private fun findCorrection(s: String): Triple<Int, Int, Int>? {
-            val breakers = setOf('，', ',', '。', '！', '？', '!', '?', '\n')
+            val breakers = setOf('，', ',', '。', '！', '？', '!', '?', '\r', '\n')
             for (marker in standaloneCorrections) {
                 var from = 0
                 while (true) {
                     val r = s.indexOf(marker, from)
                     if (r < 0) break
                     val end = r + marker.length
-                    val before = r > 0 && (s[r - 1] == '，' || s[r - 1] == ',')
-                    val after = end < s.length && (s[end] == '，' || s[end] == ',')
+                    var beforeMarker = r
+                    while (beforeMarker > 0 && isCorrectionWhitespace(s[beforeMarker - 1])) beforeMarker--
+                    var afterMarker = end
+                    while (afterMarker < s.length && isCorrectionWhitespace(s[afterMarker])) afterMarker++
+                    val before = beforeMarker > 0 && (s[beforeMarker - 1] == '，' || s[beforeMarker - 1] == ',')
+                    val after = afterMarker < s.length && (s[afterMarker] == '，' || s[afterMarker] == ',')
                     if (before && after) {
-                        val comma = r - 1
+                        val comma = beforeMarker - 1
                         var start = comma
                         while (start > 0 && s[start - 1] !in breakers) start--
                         if (start < comma) return Triple(start, comma, end)
@@ -276,7 +389,7 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
                     val r = s.indexOf(marker, from)
                     if (r < 0) break
                     var p = r
-                    if (p > 0 && s[p - 1] == ' ') p--
+                    while (p > 0 && isCorrectionWhitespace(s[p - 1])) p--
                     if (p > 0 && (s[p - 1] == '，' || s[p - 1] == ',')) {
                         val comma = p - 1
                         var start = comma
@@ -340,9 +453,24 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
             return applyRegex(text, timeShape) { g -> if (g[0] in times) "${g[1]}:${g[2]}" else g[0] }
         }
 
-        fun applySelfCorrection(text: String): String {
-            var out = repairAfterFiller(correctionMarkers(text))
-            for ((re, template) in selfCorrections) out = re.replace(out, template)
+        fun applySelfCorrection(text: String): String =
+            applyExplicitNotCorrection(repairAfterFiller(correctionMarkers(text)))
+
+        private fun applyExplicitNotCorrection(text: String): String {
+            val pattern = Regex("""([^，。！？,!?\s　]{0,30})不是([^，。！？,!?\s　]{1,30})([，,。]?)是(?!不是|對不對|要不要)([^，。！？,!?\s　]{1,30})""")
+            var out = text
+            repeat(5) {
+                val match = pattern.find(out) ?: return out
+                val prefix = match.groups[1]?.value ?: return out
+                val separator = match.groups[3]?.value ?: return out
+                if (separator.isEmpty() && prefix.endsWith("是")) return out
+                val old = prefix + (match.groups[2]?.value ?: return out)
+                val replacement = match.groups[4]?.value ?: return out
+                val corrected = alignCorrection(old, replacement)
+                    ?: copulaSubjects.firstOrNull { prefix.endsWith(it) }?.let { prefix + "是" + replacement }
+                    ?: return out
+                out = out.replaceRange(match.range, corrected)
+            }
             return out
         }
 
@@ -371,7 +499,8 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
                     else -> "$h:" + String.format("%02d", chineseToInt(suffix.dropLast(1)) ?: 0)
                 }
             }
-            out = applyRegex(out, "([\\d零〇一二三四五六七八九十百千萬億兩]{1,15})(元|塊|圓| dollars?)") { g ->
+            // 前面已經是數字／千分位逗號／小數點＝在數字中間：「12,000塊」原本只抓到「000塊」→「12,0塊」。同 Swift。
+            out = applyRegex(out, "(?<![\\d,，.])([\\d零〇一二三四五六七八九十百千萬億兩]{1,15})(元|塊|圓| dollars?)") { g ->
                 chineseToInt(colloquial(g[1]))?.let { formatThousands(it) + g[2] } ?: (g[1] + g[2])
             }
             // 2026-09-24 實機回報（Fast 模式講數字不轉）：以下規則都在金額之後，避免金額規則重讀已轉好的「35,000」。
@@ -630,6 +759,8 @@ class Normalizer(val options: NormalizerOptions = NormalizerOptions()) {
         fun normalizePunctuation(text: String): String {
             var out = applyRegex(text, "[ \\t]+([，。？！、：；])") { g -> g[1] }
             out = applyRegex(out, "([，。？！、：；])[ \\t]+") { g -> g[1] }
+            // 中文後面的刪節號（... 或 …）→「……」；不先處理的話第一個點會被當句號變成「但是。..」（2026-10-20 Pixel）。同 Swift。
+            out = applyRegex(out, "([\\u4E00-\\u9FFF])(?:\\.{2,}|…+)") { g -> g[1] + "……" }
             for ((from, to) in punctuationPairs) {
                 out = applyRegex(out, "([\\u4E00-\\u9FFF])(" + Regex.escape(from) + ")") { g -> g[1] + to }
             }

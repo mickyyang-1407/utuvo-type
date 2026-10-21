@@ -43,6 +43,7 @@ object AssistantRoutes {
     fun order(selected: SmartCleanup.Provider): List<SmartCleanup.Provider> {
         val fallbacks = listOf(
             SmartCleanup.Provider.GROQ,
+            SmartCleanup.Provider.CLAUDE,
             SmartCleanup.Provider.GEMINI,
             SmartCleanup.Provider.DASHSCOPE,
             SmartCleanup.Provider.CUSTOM

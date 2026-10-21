@@ -5,6 +5,12 @@
       "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The UTUVO Type keyboard records only after you tap the microphone button, turning what you say into text inserted at the cursor."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23,6 +29,12 @@
       "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The UTUVO Type keyboard uses iOS speech recognition to turn what you say into text. In the keyboard, recognition runs on Apple's servers, so your audio is sent to Apple."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",

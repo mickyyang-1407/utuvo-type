@@ -220,8 +220,8 @@
     "taiwan" : "不是今天做，是明天做。"
   },
   {
-    "cleaned" : "下週三開會。",
-    "cleanedWithDictionary" : "下週三開會。",
+    "cleaned" : "改成下週三開會。",
+    "cleanedWithDictionary" : "改成下週三開會。",
     "input" : "改成下週三開會。",
     "steps" : [
       "trim",
@@ -1090,8 +1090,8 @@
     "taiwan" : "我不是生氣，是累了"
   },
   {
-    "cleaned" : "下週三開會",
-    "cleanedWithDictionary" : "下週三開會",
+    "cleaned" : "改成下週三開會",
+    "cleanedWithDictionary" : "改成下週三開會",
     "input" : "改成下週三開會",
     "steps" : [
       "trim",
@@ -2030,8 +2030,8 @@
     "taiwan" : "但是不是應該都是 500嗎？"
   },
   {
-    "cleaned" : "把軟件的數據庫設置默認",
-    "cleanedWithDictionary" : "把軟件的數據庫設置默認",
+    "cleaned" : "把軟件的數據庫設置改成默認",
+    "cleanedWithDictionary" : "把軟件的數據庫設置改成默認",
     "input" : "把軟件的數據庫設置改成默認",
     "steps" : [
       "trim",

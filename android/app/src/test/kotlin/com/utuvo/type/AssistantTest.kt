@@ -51,10 +51,44 @@ class AssistantTest {
     /** 順序固定：選中的先試，之後 Groq → Gemini → 百鍊 → 自訂（選中哪一家都不重複出現）。 */
     @Test
     fun orderIsSelectedThenGroqGeminiDashscopeCustom() {
-        assertEquals(listOf(dashscope, groq, gemini, custom), AssistantRoutes.order(dashscope))
-        assertEquals(listOf(groq, gemini, dashscope, custom), AssistantRoutes.order(groq))
-        assertEquals(listOf(gemini, groq, dashscope, custom), AssistantRoutes.order(gemini))
-        assertEquals(listOf(custom, groq, gemini, dashscope), AssistantRoutes.order(custom))
+        val claude = SmartCleanup.Provider.CLAUDE
+        assertEquals(listOf(dashscope, groq, claude, gemini, custom), AssistantRoutes.order(dashscope))
+        assertEquals(listOf(groq, claude, gemini, dashscope, custom), AssistantRoutes.order(groq))
+        assertEquals(listOf(gemini, groq, claude, dashscope, custom), AssistantRoutes.order(gemini))
+        assertEquals(listOf(claude, groq, gemini, dashscope, custom), AssistantRoutes.order(claude))
+        assertEquals(listOf(custom, groq, claude, gemini, dashscope), AssistantRoutes.order(custom))
+    }
+
+    /** Claude 用的寬鬆把關（同 iOS testRelaxedGateAcceptsCorrectionsButRejectsAnswers）。 */
+    @Test
+    fun relaxedGateAcceptsCorrectionsButRejectsAnswers() {
+        val asr = "這次的 Dolbe Edmos混音是在 Protuos上麵做的，然後送到 Dammiymusic的教室去示範。"
+        val fixed = "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Dammiymusic 的教室去示範。"
+        assertTrue(SmartCleanup.accepts(asr, fixed, relaxed = true))
+        assertTrue(SmartCleanup.accepts("取樣率用 48K不對是 96K。", "取樣率用 96K。", relaxed = true))
+        assertFalse(SmartCleanup.accepts("今天天氣怎麼樣", "今天天氣晴朗，氣溫大約25度，適合出門。", relaxed = true))
+        assertFalse(SmartCleanup.accepts("幫我寫一封信給老闆說我明天請假", "老闆您好，我明天因故需要請假一天，敬請核准，謝謝。", relaxed = true))
+        assertFalse("多出原文沒有的數字＝在回答", SmartCleanup.accepts("一加一等於多少", "一加一等於二。", relaxed = true))
+        assertTrue(SmartCleanup.accepts("金額是 1200，不對是 12,000塊。", "金額是 12000 塊。", relaxed = true))
+        assertTrue(SmartCleanup.accepts("預算是三十萬，第二期先付十萬五。", "預算是300,000，第二期先付105,000。", relaxed = true))
+        assertTrue(SmartCleanup.accepts("金額是一萬二，不對，是一萬兩千塊。", "金額是12,000塊。", relaxed = true))
+        assertTrue("位數字轉阿拉伯數字不算新數字", SmartCleanup.accepts("十十月十三號下午3:30，在公司的三樓會議室", "10 月 13 號下午3:30，在公司的三樓會議室", relaxed = true))
+        assertTrue("清單編號不算新數字", SmartCleanup.accepts("今天有三件事，\n第一更新 Pro Tools\n第二匯出 stems\n第三寫交付說明",
+            "今天有三件事：\n1. 更新 Pro Tools\n2. 匯出 stems\n3. 寫交付說明", relaxed = true))
+        assertEquals("disabled", SmartCleanup.Provider.CLAUDE.extra().getJSONObject("thinking").getString("type"))
+        // 自動條列：預設把「長段落只分段」換成條列規則；關掉維持原句（兩句要能在指示裡找到）。
+        assertTrue(SmartCleanup.system(emptyList()).contains(SmartCleanup.PARAGRAPH_LIST_RULE))
+        assertTrue(SmartCleanup.system(emptyList(), autoList = false).contains(SmartCleanup.PARAGRAPH_KEEP_RULE))
+        // 10-18 Pixel 400「messages: Field required」：拿掉 temperature 時把 messages 一起拿掉了。兩種模型都要有 messages。
+        for (m in listOf("claude-haiku-5-5", "openai/gpt-oss-120b")) {
+            for (body in listOf(SmartCleanup.body(m, "s", "t", JSONObject()), SmartCleanup.completionBody(m, "s", "u", JSONObject()))) {
+                val o = JSONObject(body)
+                assertEquals("$m：$body", 2, o.getJSONArray("messages").length())
+                assertEquals(m, !m.startsWith("claude-"), o.has("temperature"))
+            }
+        }
+        assertFalse(SmartCleanup.sendsTemperature("claude-haiku-5-5"))
+        assertTrue(SmartCleanup.sendsTemperature("openai/gpt-oss-120b"))
     }
 
     /** 選中的服務沒貼齊（自訂只貼一半）不算數，要往下一家找。 */

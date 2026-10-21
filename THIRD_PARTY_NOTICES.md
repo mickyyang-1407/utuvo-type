@@ -1,5 +1,62 @@
 # Third-party notices
 
+## 0c D512 Zhuyin Candidate Reranker
+
+UTUVO Type 的注音整句候選重排（AI 選字）使用 0c 注音候選重排器模型
+（`Funmula/0c-sequence-d512`，https://huggingface.co/Funmula/0c-sequence-d512，
+revision `df4b9f04`，MIT License）。`android/ort/zc-d512-slim-w4.onnx`
+是該模型的**衍生檔**：改寫輸出層並做 4-bit（w4）量化後的版本，同屬 MIT；App 內的
+`android/app/src/main/assets/zc/zc-d512-slim-w4.ort` 是它轉成 ONNX Runtime 格式的版本。
+模型授權全文見 `android/app/src/main/assets/zc/LICENSE-0c.txt`。
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+## ONNX Runtime
+
+注音整句候選重排在手機上執行時使用 ONNX Runtime（Microsoft，MIT License，
+https://github.com/microsoft/onnxruntime）。Android 上使用 `android/ort/onnxruntime-android-1.31.0-zc-minimal.aar`：
+官方 `com.microsoft.onnxruntime:onnxruntime-android:1.31.0` 的 Java 類別與 JNI，加上由 v1.31.0 原始碼
+自行編譯、只含所需運算的 `libonnxruntime.so`（`android/ort/build-ort.sh`）。
+`com.microsoft.onnxruntime:onnxruntime` 僅於開發機的單元測試使用。
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 ## dictus-ios
 
 Portions of the iOS keyboard's host-app return (`ios/Keyboard/HostArbiterActivation.{h,m}`, `ios/Keyboard/HostAppResolver.swift`, `ios/Shared/HostPidTable.swift`, `ios/Shared/KnownAppSchemes.swift`) are adapted from dictus-ios, https://github.com/getdictus/dictus-ios (pull request #538).

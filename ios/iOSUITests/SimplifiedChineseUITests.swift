@@ -82,6 +82,8 @@ final class SimplifiedChineseUITests: XCTestCase {
         // 鍵盤翻譯語言
         for _ in 0..<5 { app.swipeDown() }
         let languages = app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH '键盘翻译语言'")).firstMatch
+        // 10-08 設定頁最上面加了「幫我加油」卡片與「震動與手感」，這一行不在第一屏了：往下捲到看得到為止。
+        for _ in 0..<4 where !(languages.exists && languages.isHittable) { app.swipeUp(); sleep(1) }
         XCTAssertTrue(languages.waitForExistence(timeout: 5), "設定頁找不到「键盘翻译语言」")
         languages.tap()
         sleep(2)

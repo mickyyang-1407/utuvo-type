@@ -5,6 +5,12 @@
       "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type uses the microphone while you dictate, or when you turn on speech from the UTUVO Type keyboard, to turn your voice into text."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23,6 +29,12 @@
       "comment" : "Info.plist 權限說明；原文在 ios/project.yml",
       "extractionState" : "manual",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTUVO Type uses iOS speech recognition to turn what you say into text."
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",

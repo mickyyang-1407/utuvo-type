@@ -4,6 +4,29 @@ import AVFAudio
 
 /// 雲端語音辨識的純邏輯（WAV 編碼、請求建構、解析、退路）；全部用假 transport，不打真網路、不碰真 Keychain。
 final class CloudASRTests: XCTestCase {
+    /// 2026-10-18 Micky 實機：Groq Whisper 在每段尾巴補「謝謝大家收看！」。
+    func testDropsWhisperOutroHallucination() {
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("要替換修改的時候，就是紫色光球的時候。謝謝大家收看！"),
+                       "要替換修改的時候，就是紫色光球的時候。")
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("把三點改成四點 謝謝收看 字幕由Amara.org社群提供"), "把三點改成四點")
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("謝謝大家收看。"), "", "整段都是幻覺→空")
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("Send it tomorrow. Thanks for watching!"), "Send it tomorrow.")
+        // 使用者真的講了（裝置端也聽到）→ 不動
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("今天的教學到這裡，謝謝大家收看！", reference: "今天的教學到這裡謝謝大家收看"),
+                       "今天的教學到這裡，謝謝大家收看！")
+        XCTAssertEqual(TranscriptGuard.dropOutroHallucination("謝謝大家，明天見"), "謝謝大家，明天見", "平常的謝謝不算")
+    }
+
+    func testTrimSilenceKeepsSpeechAndPadding() {
+        let rate = 16_000
+        let speech = (0..<rate).map { Float(sin(Double($0) * 0.05)) * 0.3 }
+        let audio = [Float](repeating: 0.001, count: rate * 2) + speech + [Float](repeating: 0.002, count: rate * 2)
+        let trimmed = CloudASR.trimSilence(audio)
+        XCTAssertEqual(Double(trimmed.count) / Double(rate), 1.6, accuracy: 0.05, "1 秒語音＋頭尾各 0.3 秒")
+        let quiet = [Float](repeating: 0.001, count: rate)
+        XCTAssertEqual(CloudASR.trimSilence(quiet).count, quiet.count, "整段沒聲音就原樣")
+    }
+
     /// Groq 實測輸出小寫全形逗號（U+FE50）：要轉成一般「，」，否則鍵盤的自我更正會把句子切壞。
     func testSmallFormPunctuationIsNormalised() {
         XCTAssertEqual(TranscriptGuard.clean("我們禮拜三\u{FE50}不對\u{FE50}禮拜四\u{FE56}", language: "zh-TW"), "我們禮拜三，不對，禮拜四？")
@@ -490,5 +513,18 @@ private final class RequestCollector: @unchecked Sendable {
     func snapshot() -> [URLRequest] {
         lock.lock(); defer { lock.unlock() }
         return requests
+    }
+}
+
+
+/// 2026-10-20：Whisper 提示詞約 200 字，個人字典之後要先放音訊／AI 詞，字典裡的簡體詞在繁中要轉繁。
+final class CloudHintsTests: XCTestCase {
+    func testPersonalFirstAndTraditionalForTaiwan() {
+        let hints = SpeechEngine.cloudHints(personal: ["邀请码", "楊敏奇"], language: "zh-TW")
+        XCTAssertEqual(Array(hints.prefix(2)), ["邀請碼", "楊敏奇"])
+    }
+
+    func testSimplifiedUsersKeepSimplified() {
+        XCTAssertEqual(SpeechEngine.cloudHints(personal: ["邀请码"], language: "zh-CN").first, "邀请码")
     }
 }

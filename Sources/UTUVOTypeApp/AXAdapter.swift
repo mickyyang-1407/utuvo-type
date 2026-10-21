@@ -9,6 +9,12 @@ protocol DictationDestination: AnyObject {
     func insert(_ text: String) async -> Bool
     func replaceInsertedText(with text: String) -> Bool
     func invalidate()
+    /// 剪貼簿退路貼上前的最後確認：先前回報沒寫進去的字，是不是其實晚到了（避免貼兩份）。
+    func textPresent(_ text: String) -> Bool
+}
+
+extension DictationDestination {
+    func textPresent(_ text: String) -> Bool { false }
 }
 
 @MainActor
@@ -20,6 +26,7 @@ final class AXAdapter {
         guard AXIsProcessTrusted(), let app = NSWorkspace.shared.frontmostApplication,
               expectedPID == nil || app.processIdentifier == expectedPID,
               let element = Self.focusedElement(), Self.pid(element) == app.processIdentifier,
+              Self.limitMessaging(element),
               let role = Self.attribute(element, kAXRoleAttribute) as? String,
               ["AXTextArea", "AXTextField"].contains(role),
               (Self.attribute(element, kAXSubroleAttribute) as? String) != "AXSecureTextField",
@@ -42,8 +49,15 @@ final class AXAdapter {
         var value: pid_t = 0
         return AXUIElementGetPid(element, &value) == .success ? value : nil
     }
+    /// 每次 AX 呼叫最多等 0.2 秒：慢的 App 不能讓按下聽寫快捷鍵時卡住主執行緒（luna-review r3）。
+    static func limitMessaging(_ element: AXUIElement) -> Bool {
+        AXUIElementSetMessagingTimeout(element, 0.2)
+        return true
+    }
     static func focusedElement() -> AXUIElement? {
-        guard let value = attribute(AXUIElementCreateSystemWide(), kAXFocusedUIElementAttribute),
+        let system = AXUIElementCreateSystemWide()
+        AXUIElementSetMessagingTimeout(system, 0.2)
+        guard let value = attribute(system, kAXFocusedUIElementAttribute),
               CFGetTypeID(value) == AXUIElementGetTypeID() else { return nil }
         return unsafeDowncast(value, to: AXUIElement.self)
     }
@@ -154,6 +168,15 @@ final class AXCapturedDestination: DictationDestination {
         return CFEqual(current, element)
     }
 
+    /// 寫入後字有沒有真的出現在欄位裡（只讀插入點附近，不讀整份內容）。
+    static func textAppeared(_ text: String, in element: AXUIElement, at location: Int) -> Bool {
+        let length = text.utf16.count
+        guard length > 0, location >= 0, location <= Int.max - length else { return false }
+        return AXAdapter.text(element, NSRange(location: location, length: length)) == text
+    }
+
+    func textPresent(_ text: String) -> Bool { Self.textAppeared(text, in: element, at: location) }
+
     private func matches(_ text: String) -> Bool {
         let length = text.utf16.count
         guard location <= Int.max - length, sameFocus(),
@@ -183,8 +206,21 @@ final class AXCapturedDestination: DictationDestination {
         }
         inserted = text
         // Confirm immediately, then allow AppKit's own AX notifications to drain.
-        // AX already accepted the write: report delivered (caller must not paste a second copy); only correction is off.
-        guard matches(text) else { changingOwnText = false; invalidate(); return true }
+        guard matches(text) else {
+            // AX 回 success 不代表字真的進去了：Electron／Chromium 的輸入框（Claude 桌面版等）
+            // 收下寫入卻什麼都不做（2026-10-14 實機：辨識正確、Smart 模式、畫面上沒字、也沒走剪貼簿）。
+            // 給它一點時間非同步套用；確定沒出現就回 false，讓呼叫端改走剪貼簿貼上。
+            // 每次讀取最多 0.2 秒（messaging timeout），輪數保守：最壞約 4×(75+200) ms。
+            for _ in 0..<4 {
+                try? await Task.sleep(for: .milliseconds(75))
+                if Task.isCancelled { break }
+                if Self.textAppeared(text, in: element, at: location) {
+                    // 字進去了（只是位置／游標驗證不過）：算已送達，不能再貼第二份；只是關掉事後替換。
+                    changingOwnText = false; invalidate(); return true
+                }
+            }
+            changingOwnText = false; inserted = nil; invalidate(); return false
+        }
         try? await Task.sleep(for: .milliseconds(80))
         changingOwnText = false
         if Task.isCancelled || !matches(text) { invalidate() }

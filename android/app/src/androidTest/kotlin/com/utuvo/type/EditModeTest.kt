@@ -42,12 +42,19 @@ class EditModeTest {
         }
     }
 
+    /**
+     * 鍵盤上的字串要跟鍵盤**當下的語言**比對，不是跟測試程序的語言。
+     * android-D：App 支援「每個 App 的語言」之後，鍵盤走 `AppTheme.wrapContext`，
+     * 儀器測試的 `targetContext` 拿到的是**系統語言**那份資源，兩邊語言不一定相同。
+     */
+    private fun res(id: Int): String = AppTheme.wrapContext(app).getString(id)
+
     @Test fun selectingTextSwitchesToEditHintAndBack() {
         device.findObject(By.desc("tryField")).click()
-        assertTrue("鍵盤沒出現", device.wait(Until.hasObject(By.text(app.getString(R.string.hint_idle))), 15_000))
+        assertTrue("鍵盤沒出現", device.wait(Until.hasObject(By.text(res(R.string.hint_idle))), 15_000))
         onField { it.setText("今天天氣很好"); it.requestFocus(); it.setSelection(0, 4) }
-        assertTrue("選取之後提示沒換成「說出要怎麼改」", device.wait(Until.hasObject(By.text("說出要怎麼改")), 5_000))
+        assertTrue("選取之後提示沒換成「說出要怎麼改」", device.wait(Until.hasObject(By.text(res(R.string.hint_edit_idle))), 5_000))
         onField { it.setSelection(it.text.length) }
-        assertTrue("取消選取之後提示沒換回來", device.wait(Until.hasObject(By.text(app.getString(R.string.hint_idle))), 5_000))
+        assertTrue("取消選取之後提示沒換回來", device.wait(Until.hasObject(By.text(res(R.string.hint_idle))), 5_000))
     }
 }

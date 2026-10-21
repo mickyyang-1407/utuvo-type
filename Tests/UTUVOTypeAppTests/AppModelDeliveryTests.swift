@@ -19,6 +19,9 @@ private final class CapturedFixture: DictationDestination {
         guard valid else { return false }; self.text = text; replacements += 1; return true
     }
     func invalidate() { valid = false }
+    /// 模擬 Electron：AX 寫入回報失敗，但字晚一點才出現在欄位裡。
+    var lateText: String?
+    func textPresent(_ text: String) -> Bool { lateText == text }
 }
 
 @MainActor
@@ -35,6 +38,23 @@ final class AppModelDeliveryTests: XCTestCase {
         }
         return model
     }
+    /// 2026-10-19 Typeless 對打：上一句還在轉錄時按熱鍵原本被靜默吃掉；現在排隊，處理完自動開錄，再按一次取消。
+    func testShortcutDuringProcessingQueuesInsteadOfDropping() async throws {
+        let context = try IsolatedContext.make(); defer { context.tearDown() }
+        let preferences = AppPreferences(isolation: context)
+        preferences.pushToTalkEnabled = false
+        let model = AppModel(preferences: preferences)
+        model.setProcessingForTesting(true)
+        model.shortcutPressed()
+        XCTAssertEqual(model.pendingStart, .off, "處理中按的開始要排隊")
+        XCTAssertFalse(model.isRecording)
+        model.shortcutPressed()
+        XCTAssertNil(model.pendingStart, "再按一次＝取消排隊")
+        model.shortcutPressed()
+        model.setProcessingForTesting(false)
+        XCTAssertNil(model.pendingStart, "處理完就把排隊的開始送出")
+    }
+
     func testCaptureOccursAtStartAndImmediateHistoryPrecedesCleanup() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         let target = CapturedFixture(), model = model(context, target: CapturedFixture())
@@ -83,7 +103,7 @@ final class AppModelDeliveryTests: XCTestCase {
         model.cleanupRunner = { _, _ in XCTFail("Local Smart must not call the cloud cleanup provider"); return nil }
         model.localBackgroundRunner = { text, _, _ in
             try? await Task.sleep(for: .milliseconds(80))
-            return text.replacingOccurrences(of: "然後", with: "接著")
+            return text.replacingOccurrences(of: "資料，然後", with: "資料；然後")
         }
 
         let transcript = "我們明天中午先確認大家都收到資料，然後下午三點再開會"
@@ -93,7 +113,7 @@ final class AppModelDeliveryTests: XCTestCase {
         await model.waitForBackgroundCleanup()
 
         XCTAssertEqual(target.replacements, 1)
-        XCTAssertTrue(target.text.contains("接著"))
+        XCTAssertTrue(target.text.contains("資料；然後"))
         XCTAssertEqual(model.preferences.historyRecords.first?.output, target.text.trimmingCharacters(in: .whitespaces))
         model.cancelProcessing()
     }
@@ -219,6 +239,23 @@ final class AppModelDeliveryTests: XCTestCase {
             XCTAssertEqual(events.last, "fallback")
             model.cancelProcessing()
         }
+    }
+
+    /// 2026-10-14 實機（Claude 桌面版）：AX 寫入回報失敗後改走剪貼簿；若字其實晚到，貼上前要發現、不能貼兩份。
+    func testLateAXTextSkipsClipboardPaste() async throws {
+        let context = try IsolatedContext.make(); defer { context.tearDown() }
+        let target = CapturedFixture(); target.valid = false
+        target.lateText = "合成測試文字 "
+        let model = model(context, target: target)
+        var events: [String] = []
+        model.onDeliveryEvent = { events.append($0) }
+        model.startRecording(mode: .smart)
+        await model.completeSyntheticDictation("合成測試文字")
+        await model.waitForBackgroundCleanup()
+        XCTAssertEqual(events.last, "delivered-late", "字已經在欄位裡：不能再走剪貼簿貼一次")
+        XCTAssertEqual(model.preferences.historyRecords.count, 1)
+        XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字", "歷史記實際送達的原句")
+        model.cancelProcessing()
     }
 
     /// 2026-09-24 實機：被取消的卸載計時器立刻醒來殺掉 ASR server（每次辨識完都重載模型）。
