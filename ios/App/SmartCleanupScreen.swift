@@ -4,9 +4,11 @@ import SwiftUI
 /// 智慧整理（選配）：選服務、照步驟申請免費 key、貼上、測試。
 /// key 輸入放在獨立子頁（跟字典欄同表單會被 iOS 當登入表單，2026-09-18 實測）。
 struct SmartCleanupScreen: View {
-    @AppStorage(SmartCleanup.enabledKey) private var enabled = true   // 沒動過＝開（與 SmartCleanup.enabledPreference 一致）
-    @AppStorage(CloudASR.enabledKey) private var cloudASREnabled = false   // 沒設過＝關（與 CloudASR.enabledPreference 一致）
-    @AppStorage(SmartCleanup.autoListKey) private var autoList = true   // 沒設過＝開（與 SmartCleanup.autoListEnabled 一致）
+    @AppStorage(SmartCleanup.enabledKey, store: SmartCleanup.settingsDefaults) private var enabled = true   // 沒動過＝開（與 SmartCleanup.enabledPreference 一致）
+    @State private var processingMode = DictationRouteSettings.mode
+    @State private var asrProvider = DictationRouteSettings.asrProvider
+    @State private var audioAuthorized = DictationRouteSettings.audioUploadAuthorized
+    @AppStorage(SmartCleanup.autoListKey, store: SmartCleanup.settingsDefaults) private var autoList = true   // 沒設過＝開（與 SmartCleanup.autoListEnabled 一致）
     @State private var provider = SmartCleanup.provider
     @State private var keyDraft = ""
     @State private var hasKey = false
@@ -17,8 +19,8 @@ struct SmartCleanupScreen: View {
     @State private var cloudMessage: String?
     @State private var cloudMessageIsError = false
     @State private var logSummary: SmartLog.Summary?
-    @AppStorage(SmartCleanup.customEndpointKey) private var customEndpoint = ""
-    @AppStorage(SmartCleanup.customModelKey) private var customModel = ""
+    @AppStorage(SmartCleanup.customEndpointKey, store: SmartCleanup.settingsDefaults) private var customEndpoint = ""
+    @AppStorage(SmartCleanup.customModelKey, store: SmartCleanup.settingsDefaults) private var customModel = ""
     @AppStorage(SmartCleanup.includeAppContextKey, store: UserDefaults(suiteName: VoiceBridge.groupID))
     private var includeAppContext = false
 
@@ -30,7 +32,18 @@ struct SmartCleanupScreen: View {
                 Toggle("智慧整理", isOn: $enabled)
                     .feedbackOnChange(of: enabled)
             } footer: {
-                Text("講完先貼出辨識結果，大模型在背景整理改口、贅詞和錯字，再安全替換。沒有設定 key 時，用 Apple Intelligence 在這支手機上整理，文字不離機；設定 key 後改用下面選的雲端服務。是否使用 Apple 雲端辨識，請在「辨識與隱私」設定管理；雲端整理服務只會收到辨識文字與你選擇傳送的欄位脈絡。開了下面的「雲端辨識」時，錄音也會送到同一家服務。")
+                Text("辨識後先整理，再一次貼入。雲端失敗會回退本機完整整理；本機模型也不可用時保留辨識結果。診斷會分別記錄模型產出與文字交付。")
+            }
+
+            Section("語音處理路徑") {
+                Picker("處理方式", selection: $processingMode) {
+                    ForEach(DictationProcessingMode.allCases) { mode in Text(mode.title).tag(mode) }
+                }
+                .accessibilityIdentifier("dictationProcessingMode")
+                .onChange(of: processingMode) { _, mode in
+                        if mode != DictationRouteSettings.mode { DictationRouteSettings.mode = mode }
+                        audioAuthorized = DictationRouteSettings.audioUploadAuthorized
+                    }
             }
 
             if GemmaCleanup.isOffered {
@@ -44,7 +57,7 @@ struct SmartCleanupScreen: View {
                 Toggle("自動條列", isOn: $autoList)
                     .feedbackOnChange(of: autoList)
             } footer: {
-                Text("講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。")
+                Text("講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。")
             }
 
             Section("整理脈絡") {
@@ -55,10 +68,11 @@ struct SmartCleanupScreen: View {
                     .foregroundStyle(.secondary)
             }
 
-            Section("服務") {
+            if processingMode == .cloud {
+            Section("雲端文字整理服務") {
                 Picker("服務", selection: $provider) {
-                    Text("Groq（推薦）").tag(SmartCleanup.Provider.groq)
-                    Text("Claude（整理最準）").tag(SmartCleanup.Provider.claude)
+                    Text("Groq").tag(SmartCleanup.Provider.groq)
+                    Text("Claude").tag(SmartCleanup.Provider.claude)
                     Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
                     Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
                     Text("自訂（OpenAI 相容）").tag(SmartCleanup.Provider.custom)
@@ -105,7 +119,7 @@ struct SmartCleanupScreen: View {
                     } label: {
                         LabeledContent("阿里雲百鍊 key", value: hasKey ? String(localized: "已設定") : String(localized: "未設定"))
                     }
-                    Text("這裡不重複輸入；請到「設定」裡的阿里雲百鍊頁管理同一把 key。")
+                    Text("點上方管理阿里雲百鍊 key，辨識與文字整理共用同一把 key。")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 } else {
@@ -139,19 +153,22 @@ struct SmartCleanupScreen: View {
                     }
                     .buttonStyle(.borderless)
                 }
+            }
+            }
+            Section("測試與診斷") {
                 Button {
                     TapPulse.shared.fire()
                     Task { await test() }
                 } label: {
                     if testing { ProgressView() } else { Text("測試") }
                 }
-                .disabled((!hasKey && !OnDeviceAssistant.onDeviceAvailable) || testing)
+                .disabled((processingMode == .local ? !OnDeviceCleanup.available : !hasKey) || testing)
                 if let message {
                     Text(message).font(.footnote).foregroundStyle(messageIsError ? .red : .secondary)
                 }
                 if let logSummary {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("最近整理：成功 \(logSummary.ok) 次、失敗 \(logSummary.failed) 次")
+                        Text("最近交付 \(logSummary.ok) 次、異常事件 \(logSummary.failed) 次")
                         if let lastFailure = logSummary.lastFailure, let lastProvider = logSummary.lastFailureProvider {
                             Text("最後一次失敗：\(lastFailure)（\(SmartLog.providerName(lastProvider))）")
                                 .foregroundStyle(logSummary.failed > logSummary.ok ? .red : .secondary)
@@ -165,10 +182,22 @@ struct SmartCleanupScreen: View {
                 }
             }
 
+            if processingMode == .cloud {
             Section {
-                Toggle("用這把 key 辨識語音", isOn: $cloudASREnabled)
-                    .disabled(!cloudASRAvailable)
-                    .feedbackOnChange(of: cloudASREnabled)
+                if !audioAuthorized {
+                    Text("舊設定只允許文字整理，錄音仍留在本機。啟用後才會將錄音送到選定的辨識服務。")
+                    Button("啟用雲端辨識") {
+                        DictationRouteSettings.audioUploadAuthorized = true
+                        audioAuthorized = true
+                    }
+                }
+                Picker("雲端辨識服務", selection: $asrProvider) {
+                    Text("Groq").tag(SmartCleanup.Provider.groq)
+                    Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
+                    Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
+                }
+                .onChange(of: asrProvider) { _, provider in DictationRouteSettings.asrProvider = provider }
+                Text("辨識與文字整理可選不同服務。辨識只使用這裡選定的服務，不會自動改用其他已儲存的 key。")
                 Button {
                     TapPulse.shared.fire()
                     Task { await testCloudASR() }
@@ -183,6 +212,7 @@ struct SmartCleanupScreen: View {
                 Text("雲端辨識（選配）")
             } footer: {
                 Text(cloudASRFooter)
+            }
             }
         }
         .navigationTitle("智慧整理（選配）")
@@ -232,33 +262,16 @@ struct SmartCleanupScreen: View {
     }
 
     private var cloudASRAvailable: Bool {
-        // 自訂端點不支援雲端辨識；其他三家需要有 key 才能開。
-        if provider == .custom { return false }
-        // Claude 不能辨識語音，改用另外存的 Groq／Gemini／百鍊 key（CloudASR.route）。
-        if provider == .claude { return CloudASR.route() != nil }
-        if !hasKey { return false }
-        return CloudASR.supports(provider)
+        processingMode == .cloud && audioAuthorized && !SmartCleanup.key(for: asrProvider).isEmpty
     }
 
     private var cloudASRFooter: String {
-        let base = String(localized: "開啟後，講完的整段錄音會用你的 key 上傳到上面選的服務重新辨識，專有名詞通常比手機內建辨識準，大約多等 1–3 秒。上傳失敗、逾時或額度用完時，自動改用手機辨識的結果。App 內聽寫若已下載「高準確度辨識」模型，會優先用手機上的模型（不上傳）。")
-        let extra: String
-        switch provider {
-        case .gemini: extra = String(localized: "Gemini 免費版送出的錄音，Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶就不會。")
-        case .groq: extra = String(localized: "使用 Whisper large-v3。")
-        case .dashscope: extra = String(localized: "使用 Qwen3-ASR-Flash，依用量計費。")
-        case .claude:
-            if let route = CloudASR.route() {
-                return base + "\n" + String(localized: "Claude 不能辨識語音，會用你存的 \(SmartLog.providerName(route.provider.rawValue)) key 辨識。")
-            }
-            return base + "\n" + String(localized: "Claude 不能辨識語音。要用雲端辨識，請另外存一把 Groq key（免費）。")
-        case .custom: extra = String(localized: "自訂服務目前不支援雲端辨識。")
-        }
-        if !hasKey { return base + "\n" + String(localized: "先在上面存好 key。") }
-        return base + "\n" + extra
+        String(localized: "本機模式不傳送錄音。雲端模式使用選定辨識服務的 key；尚未儲存時，請在上方選擇該服務儲存 key，再選回文字整理服務。失敗時保留 Apple 裝置端辨識結果。")
     }
 
     private func refresh() {
+        processingMode = DictationRouteSettings.mode
+        audioAuthorized = DictationRouteSettings.audioUploadAuthorized
         hasKey = !SmartCleanup.key(for: provider).isEmpty
         let entries = SmartLog.recentEntries()
         logSummary = entries.isEmpty ? nil : SmartLog.summary(entries)
@@ -327,15 +340,15 @@ struct SmartCleanupScreen: View {
         defer { testing = false }
         let start = Date()
         do {
-            if !hasKey {
-                // 沒 key：測 Apple Intelligence 裝置端整理（與實際聽寫同一條路徑）。
+            if processingMode == .local {
+                // Use the same explicit local route as dictation.
                 guard let out = await SmartCleanup.clean(Self.sample, language: "zh-TW", timeout: 8, log: { _, _, _, _ in }) else {
-                    message = String(localized: "Apple Intelligence 這次沒有產生可用結果。")
+                    message = String(localized: "本機模型這次沒有產生可用結果。")
                     messageIsError = true
                     return
                 }
                 let ms = Int(Date().timeIntervalSince(start) * 1000)
-                message = String(localized: "Apple Intelligence 裝置端可以用（\(ms) 毫秒）：\(out)")
+                message = String(localized: "本機整理可以用（\(ms) 毫秒）：\(out)")
                 messageIsError = false
                 return
             }

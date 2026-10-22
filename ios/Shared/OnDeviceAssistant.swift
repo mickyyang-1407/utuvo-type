@@ -25,8 +25,8 @@ enum OnDeviceAssistant {
     }
 
     static func currentEngine() -> Engine {
-        if onDeviceAvailable { return .appleIntelligence }
         if SmartCleanup.completionRoute() != nil { return .cloud }
+        if onDeviceAvailable { return .appleIntelligence }
         return .unavailable(String(localized: "需要 iOS 26 的 Apple Intelligence，或在主 app 設定雲端 key"))
     }
 
@@ -64,7 +64,7 @@ enum OnDeviceAssistant {
     /// 翻譯成目標語言，只回翻譯。系統翻譯（已裝語言包）優先，再來 Apple Intelligence／雲端 key。
     @MainActor
     static func translate(_ text: String, to target: TranslationTarget, sourceRaw: String) async throws -> String {
-        if let fast = try? await FastTranslator.shared.translate(text, sourceRaw: sourceRaw, targetCode: target.code) {
+        if DictationRouteSettings.mode == .local, let fast = try? await FastTranslator.shared.translate(text, sourceRaw: sourceRaw, targetCode: target.code) {
             return fast
         }
         return try await translate(text, to: target)
@@ -123,7 +123,28 @@ enum OnDeviceAssistant {
                 try await SmartCleanup.complete(system: system, user: user, provider: route.provider, key: route.key)
             }
         }
-        return try await run(system: system, user: user, onDevice: onDevice, cloud: cloud)
+        var cloudFailure: Error?
+        if let cloud {
+            do {
+                let output = try await cloud(system, user)
+                if !output.isEmpty { return output }
+                cloudFailure = AssistantError.emptyOutput
+            } catch {
+                guard !Task.isCancelled else { throw CancellationError() }
+                cloudFailure = error
+            }
+        }
+        let localCompletion = onDevice
+        do {
+            return try await CleanupBudget(seconds: 8).run {
+                try await run(system: system, user: user, onDevice: localCompletion, cloud: nil)
+            }
+        } catch {
+            if let cloudFailure {
+                throw AssistantError.cloudFailed(detail: describe(cloudFailure) + " / " + describe(error), afterOnDevice: true)
+            }
+            throw error
+        }
     }
 
     /// 裝置端優先；裝置端出錯就換雲端；兩邊都沒有或都失敗，丟出說得清楚的錯誤。

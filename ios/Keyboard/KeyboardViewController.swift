@@ -1209,6 +1209,10 @@ final class KeyboardViewController: UIInputViewController {
             // pendingTranscript 為單一純函式 flushText，順帶把「最後的 local partial」優先用
             // 主 app shared state 撐場的邏輯也集中測。翻譯／編輯模式沒有「整理中」階段，不動。
             let shared = VoiceBridge.readState()
+            if activeCommandID != nil, shared?.commandID == activeCommandID, shared?.phase == .finishing {
+                setHint(String(localized: "正在整理，完成後可繼續說話"), error: false)
+                return
+            }
             if let text = KeyboardMode.flushText(isDictating: mode == .dictate,
                                                  isRecording: isRecording,
                                                  pendingID: activeCommandID,
@@ -1452,6 +1456,7 @@ final class KeyboardViewController: UIInputViewController {
                                    translateTarget: pendingTranslateTarget, preferred: preferredMode)
         let id = UUID()
         var command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
+        command.polishDictation = mode == .dictate
         // 欄位脈絡：游標前 500 字、游標後 200 字、欄位語意提示。**與游標前共用同一個開關**。
         // 密碼／一次性密碼欄位（textContentType 或 isSecureTextEntry）整份不送，只留 contextBlocked 給稽核。
         // 欄位提示拿不到 placeholder 就留 nil（`textDocumentProxy` 沒有這項 API），不要湊。
@@ -1577,7 +1582,12 @@ final class KeyboardViewController: UIInputViewController {
             if isRecording { isRecording = false; setRecordingAppearance(false) }
             micButton.orb.phase = .idle
             updateTopBar()
-            finish(raw: text, appTranslation: translated, commandID: finishedID, fieldSnapshot: snapshot)
+            let state = VoiceBridge.readState()
+            let original = state?.commandID == finishedID ? state?.rawTranscript : nil
+            let outputLanguage = state?.commandID == finishedID ? state?.outputLanguage : nil
+            let outputVariant = state?.commandID == finishedID ? state?.outputVariant.flatMap(LanguageVariant.init(rawValue:)) : nil
+            finish(raw: text, appTranslation: translated, commandID: finishedID, fieldSnapshot: snapshot,
+                   originalTranscript: original, outputLanguage: outputLanguage, outputVariant: outputVariant)
         case .failed(let message):
             clearPending()
             // 出錯救援也是一段結束：先凍結（沒東西要交付，但計時不能漏）再收掉外觀。
@@ -1675,7 +1685,7 @@ final class KeyboardViewController: UIInputViewController {
 
     /// 定稿：依模式決定文件怎麼變。
     private func finish(raw rawText: String, appTranslation: String? = nil, commandID: UUID? = nil,
-                    fieldSnapshot: FieldGeneration? = nil) {
+                    fieldSnapshot: FieldGeneration? = nil, originalTranscript: String? = nil, outputLanguage: String? = nil, outputVariant: LanguageVariant? = nil) {
         let raw = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         // 使用者在等雲端的期間換了欄位（同一個 App 內換欄位不會重開鍵盤，只會有 textDidChange）：
         // 不能把這句貼進新欄位。判斷只看系統的 documentIdentifier，跟中間幾次 delegate 回呼無關——
@@ -1686,7 +1696,8 @@ final class KeyboardViewController: UIInputViewController {
             // 否則「問問題」會留到新欄位的下一句普通聽寫（B 票 resetVoiceModeState 的同一條規則）。
             _ = takeRecordingSeconds()
             mode = .dictate
-            endSegmentWithoutDelivery(message: KeyboardMode.dictate.idleHint, error: false)
+            SmartLog.record(outcome: "delivery-skipped-field-changed", start: Date(), input: originalTranscript ?? raw, output: nil, traceID: commandID)
+            endSegmentWithoutDelivery(message: String(localized: "輸入欄位已變更，未貼入"), error: false)
             return
         }
         let finishedMode = mode
@@ -1702,7 +1713,10 @@ final class KeyboardViewController: UIInputViewController {
         case .dictate:
             let returnKey = textDocumentProxy.returnKeyType
             let tone = ToneHint.infer(returnKeyType: returnKey)
-            var cleaned = ToneHint.apply(TextPipeline().clean(raw).output, tone: tone)
+            let finalLanguage = outputLanguage ?? language.rawValue
+            let finalVariant = outputVariant ?? LanguageVariantStore.currentVariant(language: finalLanguage)
+            let pipeline = TextPipeline(language: finalLanguage, variant: finalVariant)
+            var cleaned = ToneHint.apply(pipeline.clean(raw).output, tone: tone)
             if !ToneHint.allowsLineBreaks(returnKeyType: returnKey) { cleaned = OutputShape.singleLine(cleaned) }
             // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
             if insertedText.isEmpty, !cleaned.isEmpty {
@@ -1717,12 +1731,15 @@ final class KeyboardViewController: UIInputViewController {
                 let spoken = cleaned   // let 快照：背景 closure 不能捕捉 var
                 // 檔案寫入丟到背景序列佇列：鍵盤 extension 的主執行緒不能等磁碟。
                 StorageIO.write {
-                    HistoryStore.shared.append(DictationRecord(raw: raw, cleaned: spoken, source: .keyboard, duration: seconds))
+                    HistoryStore.shared.append(DictationRecord(raw: originalTranscript ?? raw, cleaned: spoken, source: .keyboard, duration: seconds))
                     // 每日計數獨立於歷史（App Group，跨 process 用檔案鎖合併；刪歷史不影響它）。
                     DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(spoken), seconds: seconds ?? 0)
                 }
             }
-            if let commandID, !cleaned.isEmpty {
+            if !cleaned.isEmpty {
+                SmartLog.record(outcome: "delivered", start: Date(), input: originalTranscript ?? raw, output: cleaned, traceID: commandID)
+            }
+            if originalTranscript == nil, let commandID, !cleaned.isEmpty {
                 if Date().timeIntervalSince(chainUpdatedAt) > 30 { correctionChain = []; chainReturnKeys = [:] }   // 太久以前的不接
                 correctionChain.append(CorrectionChain.Entry(id: commandID, inserted: cleaned))
                 chainReturnKeys[commandID] = returnKey
@@ -1865,7 +1882,7 @@ final class KeyboardViewController: UIInputViewController {
 
         case .translate(let target):
             guard !raw.isEmpty else { refreshContext(); return }
-            let (cleaned, _) = TextPipeline().clean(raw)
+            let (cleaned, _) = TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)).clean(raw)
             // 翻譯是**使用者講的話**（講中文、翻成英文），要計入每日字數與秒數；
             // 字數用**翻譯前**的原文（`cleaned`），不是譯文的長度。
             let seconds = recordingSeconds
@@ -1908,7 +1925,7 @@ final class KeyboardViewController: UIInputViewController {
         for correction in state.corrections ?? [] {
             guard correctionChain.contains(where: { $0.id == correction.id && !$0.done }) else { continue }
             let returnKey = chainReturnKeys[correction.id] ?? nil
-            var cleaned = ToneHint.apply(TextPipeline().clean(correction.text).output, tone: ToneHint.infer(returnKeyType: returnKey))
+            var cleaned = ToneHint.apply(TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)).clean(correction.text).output, tone: ToneHint.infer(returnKeyType: returnKey))
             if !ToneHint.allowsLineBreaks(returnKeyType: returnKey) { cleaned = OutputShape.singleLine(cleaned) }
             let before = textDocumentProxy.documentContextBeforeInput ?? ""
             guard let plan = CorrectionChain.plan(entries: correctionChain, id: correction.id, corrected: cleaned, contextBefore: before) else {

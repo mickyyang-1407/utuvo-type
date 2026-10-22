@@ -1,4 +1,5 @@
 import Foundation
+import UTUVOTypeCore
 
 /// 詞庫目錄（2026-09-20 runtime 票，依 CONTRACT-V2.md 改 schema 2）：
 /// app 啟動時只讀 metadata（catalog.json），terms 改成 `termsFile + termCount`；
@@ -190,27 +191,20 @@ enum VocabularySelector {
                                 stations: Set<String>,
                                 limit: Int = cleanupTokenLimit) -> [String] {
         // 個人字典：output 空字串時詞本身也有效。
-        var personalTerms: [String] = []
-        var seen = Set<String>()
-        for (k, v) in personal {
-            let candidates = v.isEmpty ? [k] : [v, k]
-            for c in candidates where !c.isEmpty && seen.insert(c).inserted {
-                personalTerms.append(c)
-            }
-        }
-        var out: [String] = []
-        out.reserveCapacity(limit)
-        for t in personalTerms where out.count < limit { out.append(t) }
-        if out.count >= limit { return Array(out.prefix(limit)) }
-        // 從專業包依 bigram / latin token 相關度篩入；公平合併（CONTRACT-V2 RUNTIME §4）。
+        guard limit > 0 else { return [] }
+        let personalTerms = DictationPolish.rankedTerms(text: text, dictionary: personal)
         let candidates = collectCandidates(text: text, enabled: enabled, stations: stations)
-        for t in candidates where seen.insert(t).inserted && out.count < limit { out.append(t) }
-        if out.count >= limit { return Array(out.prefix(limit)) }
-        // 未匹配：用各包 seedTerms 公平輪流補到上限，避免 ai／tw 吃光。
-        for t in fairSeedRotation(enabled: enabled, stations: stations) where seen.insert(t).inserted && out.count < limit {
-            out.append(t)
+        var out: [String] = [], seen = Set<String>()
+        func append(_ terms: [String]) {
+            for term in terms where out.count < limit && seen.insert(term).inserted { out.append(term) }
         }
-        return Array(out.prefix(limit))
+        // Keep relevant professional vocabulary inside even the 40-term local-model window.
+        let personalQuota = candidates.isEmpty ? limit : min(30, max(1, limit * 3 / 4))
+        append(Array(personalTerms.prefix(personalQuota)))
+        append(candidates)
+        append(personalTerms)
+        append(fairSeedRotation(enabled: enabled, stations: stations))
+        return out
     }
 
     /// 各包依 bigram／latin token 重疊分數排序，全局合併至上限。
