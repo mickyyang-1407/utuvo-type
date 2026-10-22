@@ -35,7 +35,23 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
 ## iPhone (App Store)
 
 [Free on the App Store](https://apps.apple.com/app/id6813380439), iOS 18 or later. The keyboard needs Full Access.
-Current version 0.2.7: Zhuyin candidates as you type (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, and long-press translate; punctuation follows meaning (questions end with ？, clear exclamations with ！, no full stop after the last sentence), and the keyboard's gear opens the app's settings.
+The App Store app offers: Zhuyin candidates as you type (abbreviations, tones optional), Pinyin, associated phrases, full-page candidates, an English suggestion bar, "say how to change it" on a selection, and long-press translate; punctuation follows meaning (questions end with ？, clear exclamations with ！, no full stop after the last sentence), and the keyboard's gear opens the app's settings.
+
+### iOS source build: local and cloud modes (unreleased)
+
+The following behavior belongs to this source branch and is not a claim about the currently released App Store build. Choose a mode under **Settings → Voice processing**:
+
+| Mode | Recognition and polishing | On failure |
+| --- | --- | --- |
+| **Local · Privacy first** | Apple on-device recognition in the containing app's background audio session, followed by an available local polishing model; no audio or text uploads | Preserve the transcript if polishing is unavailable; report unavailable recognition explicitly |
+| **Cloud · Accuracy first** | Explicitly selected ASR and text providers with your own keys; the two providers may differ | Use the private transcript and full local polishing when available; report failure if there is no local recognition fallback |
+
+- **Polish before inserting once.** Save final output to history and distinguish model output from actual delivery in diagnostics.
+- **Preserve existing text-only BYOK settings**, including Groq. Upgrading does not authorize audio uploads; existing text-only users explicitly enable cloud recognition in settings.
+- **Respect the selected language variant and personal dictionary.** Taiwan Traditional Chinese uses Taiwan terminology and CJK/Latin spacing (`使用ChatGPT和iOS26` → `使用 ChatGPT 和 iOS26`). Explicit names, capitalization and internal spacing take precedence; URLs, email addresses and backtick-delimited code are protected.
+- **Do not run Qwen in the background keyboard host.** It remains a foreground-app option. Apple Intelligence requires a supported device and available system model; unavailable polishing is not reported as model success.
+
+See [iOS routing, screenshots and validation](docs/IOS-DICTATION-ROUTING.md) and the [Chinese iOS guide](docs/USER-GUIDE-iOS.md). Simulator checks do not establish live Groq latency or real-device background microphone reliability.
 
 ## Android (APK, beta)
 

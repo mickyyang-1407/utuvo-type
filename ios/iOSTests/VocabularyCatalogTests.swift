@@ -191,6 +191,16 @@ final class VocabularyCatalogTests: XCTestCase {
         XCTAssertTrue(out.contains("Gemini"))
     }
 
+    func testLargePersonalDictionaryDoesNotHideRelevantProfessionalTerms() {
+        var dictionary = Dictionary(uniqueKeysWithValues: (0..<519).map { ("自訂詞\($0)", "") })
+        dictionary["Dolby Atmos"] = ""
+        let packs = makePacks(terms: ["computing": ["人工智慧"]])
+        let result = VocabularySelector.termsForCleanup(text: "Dolbe Edmos 人工智慧", enabled: packs,
+                                                       personal: dictionary, stations: [])
+        XCTAssertEqual(result.first, "Dolby Atmos")
+        XCTAssertTrue(result.prefix(40).contains("人工智慧"))
+    }
+
     func testCapAt200() {
         let dict = Dictionary(uniqueKeysWithValues: (1...500).map { ("k\($0)", "v\($0)") })
         let packs = makePacks(terms: [:])

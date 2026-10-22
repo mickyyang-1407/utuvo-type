@@ -13,9 +13,7 @@ struct SettingsScreen: View {
     @State private var newSource = ""
     @State private var newOutput = ""
     // 2026-09-11：key 不再回顯，欄位只用來輸入新值；實際值存 Keychain。
-    @State private var hasStoredKey = IOSSecretStore.hasKey()
-    @AppStorage(DictationModel.onDeviceOnlyKey) private var onDeviceOnly = false
-    @AppStorage(DictationModel.preferCloudKey) private var preferCloud = false
+    @State private var processingMode = DictationRouteSettings.mode
     @State private var dictionaryMode: DictionaryMode = .vocabulary
     private var autoLearned: Set<String> { LearnedVocabulary.autoLearned }
     private enum DictionaryMode { case vocabulary, replacement }
@@ -287,24 +285,17 @@ struct SettingsScreen: View {
                     Text("打開後會把錄到的聲音先放大（數位增益，約 +8 dB，放大後會限幅避免破音），同時把「這段算靜音」的判斷放寬，讓輕聲講也能被聽到。App 內聽寫與鍵盤講話都有效；iOS 沒有公開的麥克風硬體增益 API，所以是在軟體裡放大。")
                 }
 
-                Section("辨識與隱私") {
-                    Toggle("允許 Apple 雲端辨識", isOn: $preferCloud)
-                        .disabled(onDeviceOnly)
-                        .feedbackOnChange(of: preferCloud)
-                    Text(onDeviceOnly
-                         ? String(localized: "只用裝置端辨識目前已開啟；音訊不會送到 Apple，雲端偏好暫停。")
-                         : (preferCloud
-                         ? String(localized: "開啟後允許 Apple Speech 使用雲端辨識，音訊可能送到 Apple 伺服器；辨識文字之後才會送到你選擇的智慧整理服務。")
-                            : String(localized: "關閉時會優先用裝置端辨識；裝置端不可用時才依語言設定改用雲端。")))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Toggle("只用裝置端辨識", isOn: $onDeviceOnly)
-                        .feedbackOnChange(of: onDeviceOnly)
-                    Text(onDeviceOnly
-                         ? String(localized: "音訊永遠不離開這台裝置。遇到不支援裝置端辨識的語言或機型時，會直接拒絕錄音並告訴你，不會偷偷改用雲端。")
-                         : String(localized: "裝置端優先；裝置端不可用時 Apple Speech 可能改用伺服器辨識。聽寫畫面會標示目前允許的路徑。"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                Section("語音處理路徑") {
+                    Picker("處理方式", selection: $processingMode) {
+                        ForEach(DictationProcessingMode.allCases) { mode in Text(mode.title).tag(mode) }
+                    }
+                    .onChange(of: processingMode) { _, mode in
+                        if mode != DictationRouteSettings.mode { DictationRouteSettings.mode = mode }
+                    }
+                    Text(processingMode == .local
+                         ? "鍵盤使用 Apple 裝置端辨識，再由本機模型整理；音訊與文字不上傳。Qwen 僅供主 App 前景聽寫。"
+                         : "使用選定的雲端辨識與整理服務；失敗時改用 Apple 裝置端辨識結果與本機整理，完成後一次貼入。")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
 
                 Section {
@@ -456,19 +447,12 @@ struct SettingsScreen: View {
                     + Text("登入同一個 iCloud 的 Mac 會自動同步；Android 用匯出／匯入字典檔。兩邊都改過的詞留最後改的那個。")
                 }
 
-                Section("改寫與翻譯引擎") {
-                    LabeledContent("目前", value: OnDeviceAssistant.currentEngine().badge)
-                    Text("iOS 26 的 Apple Intelligence 會在裝置端改寫與翻譯，文字不離機；沒有的話才用下面你自己的雲端 key。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                }
-
                 Section {
                     NavigationLink {
                         SmartCleanupScreen()
                             .pushHaptic()
                     } label: {
-                        LabeledContent("智慧整理", value: SmartCleanup.usesOnDevice ? String(localized: "Apple Intelligence・裝置端")
+                        LabeledContent("智慧整理", value: SmartCleanup.usesOnDevice ? String(localized: "本機模型")
                                                         : SmartCleanup.isEnabled ? String(localized: "已開啟") : String(localized: "未設定"))
                     }
                     .accessibilityIdentifier("smartCleanupRow")
@@ -476,20 +460,6 @@ struct SettingsScreen: View {
                     Text("智慧整理（選配）")
                 } footer: {
                     Text("整理服務會收到辨識文字，以及你在整理設定中明確開啟的欄位脈絡；原始錄音不會轉送到整理服務。")
-                }
-
-                Section("阿里雲百鍊（選配）") {
-                    // key 輸入在子頁：密碼欄跟字典輸入欄放在同一個表單，iOS 會當成「帳號＋密碼」登入表單，
-                    // 字典欄跳 Passwords 列（2026-09-18 實測）。
-                    NavigationLink {
-                        CloudKeyScreen()
-                            .pushHaptic()
-                    } label: {
-                        LabeledContent("阿里雲百鍊 key", value: hasStoredKey ? String(localized: "已設定") : String(localized: "未設定"))
-                    }
-                    Text("這一把 key 同時供雲端翻譯與智慧整理使用。")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 }
 
                 Section("關於") {
@@ -513,7 +483,7 @@ struct SettingsScreen: View {
                     .onDisappear { dictionary = DictionaryStore.shared.dictionary }
             }
             .onAppear {
-                hasStoredKey = IOSSecretStore.hasKey()
+                processingMode = DictationRouteSettings.mode
                 dictionary = DictionaryStore.shared.dictionary
                 // 變體／介面語言／外觀存在 App Group，鍵盤那邊也可能改到（鍵盤沒有設定頁，
                 // 但匯入字典等流程會碰同一份偏好）——每次打開設定頁都重新讀一次。

@@ -3,6 +3,20 @@ import XCTest
 
 /// IOS2：辨識走本機還是雲端的決策，必須是明示的。
 final class RecognitionRouteTests: XCTestCase {
+    func testKeyboardCloudDoesNotRequireAppleAndLocalNeverUploads() {
+        XCTAssertEqual(KeyboardRecognitionPlan.decide(mode: .cloud, localAvailable: false, cloudAvailable: true), .cloudOnly)
+        XCTAssertEqual(KeyboardRecognitionPlan.decide(mode: .cloud, localAvailable: true, cloudAvailable: true), .cloudWithLocalFallback)
+        XCTAssertEqual(KeyboardRecognitionPlan.decide(mode: .local, localAvailable: true, cloudAvailable: true), .local)
+        XCTAssertEqual(KeyboardRecognitionPlan.decide(mode: .local, localAvailable: false, cloudAvailable: true), .unavailable)
+        XCTAssertEqual(KeyboardRecognitionPlan.decide(mode: .cloud, localAvailable: true, cloudAvailable: false), .local)
+    }
+
+    func testMigrationPreservesPrivacyAndExistingGroqUsers() {
+        XCTAssertEqual(DictationRouteSettings.migratedMode(localOnly: true, hasCloudKey: true, cloudASREnabled: true), .local)
+        XCTAssertEqual(DictationRouteSettings.migratedMode(localOnly: false, hasCloudKey: true, cloudASREnabled: false), .cloud)
+        XCTAssertEqual(DictationRouteSettings.migratedMode(localOnly: false, hasCloudKey: false, cloudASREnabled: false), .local)
+    }
+
 
     func testOnDeviceIsUsedWhenSupported() {
         XCTAssertEqual(
