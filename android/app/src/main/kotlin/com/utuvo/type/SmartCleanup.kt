@@ -411,20 +411,50 @@ object SmartCleanup {
     }
     private val mainHandler: Handler get() = main
 
+    /** Immutable per-operation settings. Kept in memory; never persisted or logged. */
+    class RequestSnapshot internal constructor(
+        internal val enabled: Boolean, internal val provider: Provider,
+        internal val apiKey: String, internal val endpoint: String, internal val model: String,
+        internal val system: String, internal val variant: LanguageVariant,
+        internal val dictionary: Map<String, String>, internal val latinTerms: List<String>,
+        internal val onDevice: Boolean, internal val localReady: Boolean, internal val cpuOnly: Boolean)
+
+    fun prepareRequest(c: Context, text: String, context: CleanupContext = CleanupContext()): RequestSnapshot {
+        val p = provider(c)
+        val dictionary = DictionaryStore.entries(c).toMap()
+        val localReady = onDeviceUsable(c)
+        val enabled = enabled(c)
+        val key = if (enabled) key(c, p).orEmpty() else ""
+        return RequestSnapshot(enabled, p, key, endpoint(c, p), model(c, p),
+            system(VocabularyPacks.termsForCleanup(c, text), requestContext(c, context), autoList = autoList(c)),
+            context.variant, dictionary, VocabularyPacks.latinTermsForCleanedText(c, dictionary).toList(),
+            key.isEmpty() && localReady, localReady, OnDeviceLlm.cpuOnly(c))
+    }
+
     /** 設定頁「測試」與 clean 共用；整個準備、請求與相容性重送共用同一個 deadline。 */
     fun run(c: Context, text: String, provider: Provider, apiKey: String, timeoutMs: Long,
             context: CleanupContext = CleanupContext(), deadlineNanos: Long? = null,
             validationSource: String = text, cancellation: CleanupCancellation? = null): String {
+        val frozen = prepareRequest(c, text, context)
+        return runFrozen(c, text, apiKey, timeoutMs, deadlineNanos, validationSource, cancellation,
+            RequestSnapshot(frozen.enabled, provider, apiKey, endpoint(c, provider), model(c, provider),
+                frozen.system, frozen.variant, frozen.dictionary, frozen.latinTerms,
+                frozen.onDevice, frozen.localReady, frozen.cpuOnly))
+    }
+
+    private fun runFrozen(c: Context, text: String, apiKey: String, timeoutMs: Long,
+                          deadlineNanos: Long?, validationSource: String, cancellation: CleanupCancellation?,
+                          frozen: RequestSnapshot): String {
         val deadline = deadlineNanos ?: System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs.coerceAtLeast(1))
         fun checkDeadline() {
             cancellation?.throwIfCancelled()
             if (System.nanoTime() >= deadline) throw SocketTimeoutException("cleanup deadline exceeded")
         }
         checkDeadline()
-        val endpoint = endpoint(c, provider)
-        val model = model(c, provider)
+        val endpoint = frozen.endpoint
+        val model = frozen.model
         if (apiKey.isEmpty() || endpoint.isEmpty() || model.isEmpty()) throw NotConfigured()
-        val system = system(VocabularyPacks.termsForCleanup(c, text), requestContext(c, context), autoList = autoList(c))
+        val system = frozen.system
         checkDeadline()
         fun send(extra: JSONObject): String {
             val remainingMs = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime()).coerceAtLeast(0)
@@ -434,19 +464,20 @@ object SmartCleanup {
                 deadlineNanos = deadline, cancellation = cancellation)
         }
         val content = try {
-            send(provider.extra())
+            send(frozen.provider.extra())
         } catch (e: CloudLlm.HttpError) {
             // Only compatibility retry: an unsupported low-thinking option gets one try within the same deadline.
-            if (e.code != 400 || provider.extra().length() == 0) throw e
+            if (e.code != 400 || frozen.provider.extra().length() == 0) throw e
             send(JSONObject())
         }
         checkDeadline()
-        return finish(c, content, validationSource, context.variant, relaxed = provider.trustsCleanup)
+        return finish(c, content, validationSource, frozen.variant, dictionary = frozen.dictionary, latinTerms = frozen.latinTerms)
     }
 
     /** 雲端與手機上的模型共用：同一套繁體修正與把關。 */
     private fun finish(c: Context, content: String, validationSource: String, variant: LanguageVariant,
-                       relaxed: Boolean = false): String {
+                       relaxed: Boolean = false, dictionary: Map<String, String> = DictionaryStore.entries(c),
+                       latinTerms: List<String> = VocabularyPacks.latinTermsForCleanedText(c, dictionary)): String {
         // 雲端回來的中文可能是逐字硬轉的繁體（同 iOS normalize）：按詞轉台灣繁體、救回讀音相同的錯字站名。
         // 只在台灣繁體時做——簡體／香港用字照模型寫的留著（同 iOS traditionalFixerTarget）。
         val fixed = if (LanguageVariant.traditionalFixerTarget(variant, "zh-TW")) {
@@ -454,9 +485,7 @@ object SmartCleanup {
             ChineseFixers.fix(content.trim())
         } else content.trim()
         // asr-vocab-2：個人字典跟本機整理版（Dictation.clean）同一份 DictionaryStore；英文專名只留個人詞＋產品名＋包內多字詞。
-        val dictionary = DictionaryStore.entries(c)
-        return finishCleaned(fixed, validationSource, relaxed, dictionary,
-            VocabularyPacks.latinTermsForCleanedText(c, dictionary))
+        return finishCleaned(fixed, validationSource, relaxed, dictionary, latinTerms)
     }
 
     /**
@@ -473,9 +502,12 @@ object SmartCleanup {
      */
     internal fun finishCleaned(fixed: String, validationSource: String, relaxed: Boolean,
                                dictionary: Map<String, String>, latinTerms: List<String>): String {
-        val out = com.utuvo.type.core.Normalizer.normalizeNumbers(fixed)
-        if (!accepts(validationSource, out, relaxed)) throw Rejected(out)
-        return com.utuvo.type.core.Normalizer.applyVocabulary(out, dictionary, latinTerms)
+        val out = com.utuvo.type.core.Normalizer.applyVocabulary(
+            com.utuvo.type.core.Normalizer.normalizeNumbers(fixed), dictionary, latinTerms)
+        val source = com.utuvo.type.core.Normalizer.applyVocabulary(
+            com.utuvo.type.core.Normalizer.normalizeNumbers(validationSource), dictionary, latinTerms)
+        if (!accepts(source, out)) throw Rejected(out)
+        return out
     }
 
     /**
@@ -516,14 +548,17 @@ object SmartCleanup {
 
     /** 背景整理；回 null＝不替換（沒設定、失敗、逾時、沒通過把關）。done 在主執行緒。 */
     fun clean(c: Context, text: String, done: (String?) -> Unit, context: CleanupContext = CleanupContext(),
-              validationSource: String = text): CleanupCancellation {
+              validationSource: String = text, forceOnDevice: Boolean = false,
+              prepared: RequestSnapshot? = null): CleanupCancellation {
         val cancellation = CleanupCancellation()
-        if (!isEnabled(c)) { done(null); return cancellation }
+        val frozen = prepared ?: prepareRequest(c, text, context)
+        if (!frozen.enabled || (frozen.apiKey.isEmpty() && !frozen.localReady) ||
+            (forceOnDevice && !frozen.localReady)) { done(null); return cancellation }
         val app = c.applicationContext
-        val p = provider(app)
-        val onDevice = usesOnDevice(app)
+        val p = frozen.provider
+        val onDevice = forceOnDevice || frozen.onDevice
         // 雲端回得快，等 4–10 秒；手機上的模型慢得多（CPU 最多 60 秒），兩者不能用同一個上限。
-        val timeoutMs = cleanupTimeoutMs(text, onDevice, OnDeviceLlm.cpuOnly(app))
+        val timeoutMs = cleanupTimeoutMs(text, onDevice, frozen.cpuOnly)
         val start = System.currentTimeMillis()
         val deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMs)
         val finished = AtomicBoolean(false)
@@ -544,8 +579,14 @@ object SmartCleanup {
                 val r = runCatching {
                     if (cancellation.isCancelled) throw CancellationException("cleanup cancelled")
                     // 兩條路徑吃同一個 deadline 上限與同一個 cancellation；只是上限長短不同。
-                    if (onDevice) runOnDevice(app, text, timeoutMs, context, deadlineNanos, validationSource, cancellation)
-                    else run(app, text, p, key(app, p).orEmpty(), timeoutMs, context, deadlineNanos, validationSource, cancellation)
+                    if (onDevice) {
+                        val content = OnDeviceLlm.complete(app, frozen.system, transcriptMessage(text), deadlineNanos,
+                            maxOutputTokens = (text.length * 8 / 5 + 48).coerceAtMost(600))
+                        cancellation.throwIfCancelled()
+                        finish(app, content, validationSource, frozen.variant,
+                            dictionary = frozen.dictionary, latinTerms = frozen.latinTerms)
+                    } else runFrozen(app, text, frozen.apiKey, timeoutMs, deadlineNanos,
+                        validationSource, cancellation, frozen)
                 }
                 val ms = System.currentTimeMillis() - start
                 val outcome = r.fold({ if (System.nanoTime() >= deadlineNanos) "timeout" else "ok" }, {
