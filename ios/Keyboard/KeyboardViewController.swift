@@ -14,8 +14,14 @@ final class KeyboardViewController: UIInputViewController {
     private var isRecording = false
     /// 這個鍵盤發出、還在等結果的指令 id。
     private var activeCommandID: UUID?
+    private var stopRequestedCommandID: UUID?
     private var bridgeObserver: DarwinObserver?
+    private var bridgeRefreshTask: Task<Void, Never>?
     private var appearanceObserver: DarwinObserver?
+    #if DEBUG
+    /// Simulator fixture: a newer bridge snapshot without a Darwin notification.
+    private var debugBridgeState: VoiceBridge.State?
+    #endif
     private var lastKeyboardActivityPost = Date.distantPast
     private static let pendingIDKey = VoicePending.idKey
     private static let pendingTranslateKey = VoicePending.translateKey
@@ -230,6 +236,24 @@ final class KeyboardViewController: UIInputViewController {
         super.viewDidAppear(animated)
         refreshContext()
         adoptPendingCommand()
+        // Darwin notifications have no replay when the extension is suspended.
+        // Also refresh an existing command, not only one adopted by a new controller.
+        bridgeUpdated()
+        bridgeRefreshTask?.cancel()
+        bridgeRefreshTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .milliseconds(350)) }
+                catch { return }
+                guard let self else { return }
+                if self.activeCommandID != nil { self.bridgeUpdated() }
+            }
+        }
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        bridgeRefreshTask?.cancel()
+        bridgeRefreshTask = nil
     }
 
     override func viewDidLayoutSubviews() {
@@ -623,6 +647,15 @@ final class KeyboardViewController: UIInputViewController {
                     self.activeCommandID = UUID()
                     self.handle(.partial("上一句要留下"), recording: true)
                     self.stopRecognition()
+                case "missed-update":
+                    let id = UUID()
+                    self.activeCommandID = id
+                    self.debugBridgeState = VoiceBridge.State(phase: .recording, heartbeat: Date(), commandID: id)
+                    self.handle(.partial(""), recording: true)
+                    // Deliberately no post(.update), microphone, network or shared-file write.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        self.debugBridgeState?.partial = "漏通知也要顯示逐字稿"
+                    }
                 case "edit":
                     // 走真正的「說出要怎麼改」定稿路徑（OnDeviceAssistant）：模擬器沒麥克風，指示直接給。
                     self.mode = .edit(selection: "今天天氣很好，我們去散步")
@@ -1476,6 +1509,7 @@ final class KeyboardViewController: UIInputViewController {
         if case .translate(let target) = mode { command.translateTo = target.code }
         VoiceBridge.writeCommand(command)
         activeCommandID = id
+        stopRequestedCommandID = nil
         insertedText = ""
         lastRawTranscript = ""
         commandFieldSnapshot = FieldGeneration(documentIdentifier: safeDocumentIdentifier)
@@ -1526,8 +1560,23 @@ final class KeyboardViewController: UIInputViewController {
 
     private func stopRecognition() {
         guard let id = activeCommandID else { return }
+        stopRequestedCommandID = id
+        #if DEBUG
+        if debugBridgeState != nil {
+            // Keep an old recording snapshot long enough to verify stop isn't undone.
+            // The later final also has no notification, and never touches shared files.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 6) { [weak self] in
+                self?.debugBridgeState?.phase = .ready
+                self?.debugBridgeState?.final = "漏通知也要顯示逐字稿"
+            }
+        } else {
+            VoiceBridge.writeCommand(VoiceBridge.Command(action: .stop, id: id, language: language.rawValue, sentAt: Date()))
+            VoiceBridge.post(.command)
+        }
+        #else
         VoiceBridge.writeCommand(VoiceBridge.Command(action: .stop, id: id, language: language.rawValue, sentAt: Date()))
         VoiceBridge.post(.command)
+        #endif
         isRecording = false
         setRecordingAppearance(false)
         updateTopBar()
@@ -1556,7 +1605,15 @@ final class KeyboardViewController: UIInputViewController {
 
     /// 主 app 更新了 state：依是否屬於我的指令，顯示逐字稿、定稿或錯誤。
     private func bridgeUpdated() {
-        guard let state = VoiceBridge.readState() else { return }
+        #if DEBUG
+        let snapshot = debugBridgeState ?? VoiceBridge.readState()
+        #else
+        let snapshot = VoiceBridge.readState()
+        #endif
+        guard let state = snapshot else { return }
+        // Until the host consumes stop, its last snapshot can still say recording.
+        // A retry/notification must not turn the recording UI back on in that gap.
+        if state.commandID == stopRequestedCommandID, state.phase == .recording { return }
         applyCorrectionIfReady(state)
         handle(VoiceBridge.delivery(for: state, expecting: activeCommandID), recording: state.phase == .recording)
     }
@@ -1603,6 +1660,7 @@ final class KeyboardViewController: UIInputViewController {
 
     private func clearPending() {
         activeCommandID = nil
+        stopRequestedCommandID = nil
         VoicePending.clear()
     }
 
