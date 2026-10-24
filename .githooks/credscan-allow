@@ -49,3 +49,5 @@ a620360cf0fbb3f504e1f5f673cc9e0df61998c38607aff3337efec95ba47b2c  # 2026-10-24 P
 f504d9937487087491560998861516be3b6159664c1f73e8a7d5f15ea7cd98d7  # 2026-10-24 PII reviewed: android/core/src/test/resources/golden/normalizer.json; synthetic sequential phone fixture / formatting example
 5bb5afd41d5a4bb799b5e00f1f86ec510a0aa7e0688c1de01fabcc4b0fd8686d  # 2026-10-24 PII reviewed: android/core/src/test/resources/structure-probes.json; synthetic sequential phone fixture / formatting example
 8d6cd4e5a8fb087678a4517a745b229bb9f0fd5e1f13791fbda7b8d545e345ed  # 2026-10-24 PII reviewed: ios/UTUVO Type.xcodeproj/project.pbxproj; Xcode PBXBuildFile identifier; not a bank account
+
+12485cb873bcd0194960a959bba2f0f4f24031cf43f0388c285f8131b9017cc4  # 2026-10-24 build 36: reviewed PBXBuildFile identifier on line 21, not an IBAN
