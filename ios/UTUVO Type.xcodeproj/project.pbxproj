@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ECFFE23C78794FD1DCA36E38 /* AutoListDeliveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AECAD9A3E02659496AE65CE4 /* AutoListDeliveryTests.swift */; };
 		008731F162DD15E63F682DB9 /* VoiceAudioSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61204B6543D1AA89AB309A0B /* VoiceAudioSession.swift */; };
 		011D7EB7EC55D49E05C43EC4 /* zhuyin.dat in Resources */ = {isa = PBXBuildFile; fileRef = 5030E73C0576DE31AE893BBA /* zhuyin.dat */; };
 		04571E38CC2B372353FF7E6B /* FieldGenerationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2162494B2E42059786D6FE3B /* FieldGenerationTests.swift */; };
@@ -237,6 +238,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AECAD9A3E02659496AE65CE4 /* AutoListDeliveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoListDeliveryTests.swift; sourceTree = "<group>"; };
 		020DC5181D800FE0A2809A0A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		02C38DD06432360CB22D06FD /* STCharacters.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = STCharacters.txt; sourceTree = "<group>"; };
 		047E9034BEDE616313BA6807 /* UTUVOTypeiOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = UTUVOTypeiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -598,6 +600,7 @@
 		CA501DA36B1E40965F7E9727 /* iOSTests */ = {
 			isa = PBXGroup;
 			children = (
+				AECAD9A3E02659496AE65CE4 /* AutoListDeliveryTests.swift */,
 				A0ABAB3CD9EC10344653B1EB /* ChunkedASRTests.swift */,
 				B877D47E65B458EC7DAC3C82 /* CleanupLatencyTests.swift */,
 				C925CEF631153E373DB7F687 /* CleanupVocabularyLatencyTests.swift */,
@@ -1028,6 +1031,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ECFFE23C78794FD1DCA36E38 /* AutoListDeliveryTests.swift in Sources */,
 				6235DC4EFB18860F15AC8DCA /* ChunkedASRTests.swift in Sources */,
 				3E5ECA70E9BD4039D6909804 /* CleanupLatencyTests.swift in Sources */,
 				9ACA3EEA0ECA44EDADC91E02 /* CleanupVocabularyLatencyTests.swift in Sources */,
@@ -1248,7 +1252,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = RPNT54P79S;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1326,7 +1330,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 36;
+				CURRENT_PROJECT_VERSION = 37;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = RPNT54P79S;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

@@ -10,6 +10,46 @@ import Foundation
 public enum OutputShape: Sendable {
     private static let bulletMarkers = ["- ", "* ", "• ", "・"]
 
+    private static let inlineOrdinal = try! NSRegularExpression(
+        pattern: #"(?:^|(?<=[ \t，,、：:；;]))([1-9][0-9]{0,2})[.、)](?![0-9])[ \t]*"#)
+    private static let itemBridge = try! NSRegularExpression(
+        pattern: #"(還有(?:最重要的)?|以及|最重要的)[ \t]*$"#)
+
+    /// Only expand an explicit, contiguous 1…N list. Do not infer items from prose,
+    /// decimal/version numbers, or code, and never invent or remove item content.
+    public static func expandingInlineNumberedList(_ text: String) -> String {
+        guard !text.contains("\n"), !text.contains("`") else { return text }
+        let ns = text as NSString
+        let markers = inlineOrdinal.matches(in: text, range: NSRange(location: 0, length: ns.length))
+        guard markers.count >= 2,
+              markers.enumerated().allSatisfy({ Int(ns.substring(with: $0.element.range(at: 1))) == $0.offset + 1 }) else { return text }
+        var bodies: [String] = []
+        for (index, marker) in markers.enumerated() {
+            let start = NSMaxRange(marker.range)
+            let end = index + 1 < markers.count ? markers[index + 1].range.location : ns.length
+            let body = ns.substring(with: NSRange(location: start, length: end - start))
+                .trimmingCharacters(in: .whitespaces)
+            guard !body.isEmpty else { return text }
+            bodies.append(body)
+        }
+        // “5. 耳機還有最重要的 6. 耳朵”: keep the bridge with item 6.
+        // Moving only the structural ordinal preserves the spoken word order.
+        for index in 0..<(bodies.count - 1) {
+            let body = bodies[index] as NSString
+            if let bridge = itemBridge.firstMatch(in: bodies[index], range: NSRange(location: 0, length: body.length)),
+               bridge.range.location > 0 {
+                let before = body.substring(to: bridge.range.location).trimmingCharacters(in: .whitespaces)
+                guard !before.isEmpty else { continue }
+                bodies[index] = before
+                bodies[index + 1] = body.substring(with: bridge.range).trimmingCharacters(in: .whitespaces) + bodies[index + 1]
+            }
+        }
+        var intro = ns.substring(to: markers[0].range.location).trimmingCharacters(in: .whitespaces)
+        if !intro.isEmpty, !intro.hasSuffix(":"), !intro.hasSuffix("：") { intro += "：" }
+        let lines = bodies.enumerated().map { "\($0.offset + 1). \($0.element)" }
+        return (intro.isEmpty ? lines : [intro] + lines).joined(separator: "\n")
+    }
+
     /// 整段輸出恰好一行、而且那行是條列項時，剝掉條列符號。
     /// 兩行以上（真的多項條列）一律原樣返回。
     public static func stripLoneBullet(_ text: String) -> String {

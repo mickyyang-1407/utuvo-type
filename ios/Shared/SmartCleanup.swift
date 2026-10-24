@@ -336,6 +336,7 @@ enum SmartCleanup {
     /// so an exhausted network request cannot consume the offline fallback's time.
     static func finalize(_ text: String, language: String, context: PromptContext = .init(),
                          forceLocal: Bool = false,
+                         autoList: Bool? = nil,
                          configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                          terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                          transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
@@ -345,12 +346,14 @@ enum SmartCleanup {
         guard !Task.isCancelled else { return nil }
         let configured = configuration()
         guard configured.enabled else { return text }
+        let lists = autoList ?? autoListEnabled
+        func present(_ value: String) -> String { lists ? OutputShape.expandingInlineNumberedList(value) : value }
         let config = Configuration(enabled: true, provider: configured.provider, endpoint: configured.endpoint,
                                    model: configured.model, key: forceLocal ? "" : configured.key)
         if !config.key.isEmpty {
             if let output = await clean(text, language: language, timeout: cloudTimeout ?? cleanupTimeout(for: text),
                                         context: context, configuration: { config }, terms: terms,
-                                        transport: transport, onDevice: nil, log: log) { return output }
+                                        transport: transport, onDevice: nil, log: log) { return present(output) }
             guard !Task.isCancelled else { return nil }
         }
         if let onDevice {
@@ -359,11 +362,11 @@ enum SmartCleanup {
                                         context: context, configuration: { local }, terms: terms,
                                         transport: transport, onDevice: onDevice, log: { outcome, start, input, output in
                                             log("local:" + outcome, start, input, output)
-                                        }) { return output }
+                                        }) { return present(output) }
         }
         guard !Task.isCancelled else { return nil }
         log("raw-fallback", Date(), text, nil)
-        return text
+        return present(text)
     }
 
     /// Existing opt-in warmup. No transcript or authorization is sent.

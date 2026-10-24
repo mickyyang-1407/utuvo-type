@@ -2521,7 +2521,8 @@ final class AppModel: ObservableObject {
             candidate = accepted(await SmartCleanup.withinDeadline(seconds: localBudget) { await local() })
         }
         guard token == operationToken, !Task.isCancelled else { return }
-        let named = candidate ?? original
+        let selected = candidate ?? original
+        let named = config.enabled && config.autoList ? OutputShape.expandingInlineNumberedList(selected) : selected
         let output = finishMood ? SentenceMood.finish(named) : named
         let mark = finishMood ? SentenceMood.finishDroppedMark(named) : ""
         let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: output,
