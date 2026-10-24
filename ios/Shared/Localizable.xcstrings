@@ -1,6 +1,454 @@
 {
   "sourceLanguage" : "zh-Hant",
   "strings" : {
+    "測試與診斷" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testing and diagnostics"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "测试与诊断"
+          }
+        }
+      }
+    },
+    "這個語言的裝置端辨識不可用，請確認模型與權限；雲端模式也需要有效的辨識 key。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On-device recognition is unavailable for this language. Check models and permissions; cloud mode also needs a valid recognition key."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此语言的设备端识别不可用，请确认模型与权限；云端模式也需要有效的识别 key。"
+          }
+        }
+      }
+    },
+    "未取得可用的辨識結果，請確認網路或裝置端模型後再試。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No usable transcript. Check your network or on-device model and try again."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未取得可用的识别结果，请确认网络或设备端模型后重试。"
+          }
+        }
+      }
+    },
+    "舊設定只允許文字整理，錄音仍留在本機。啟用後才會將錄音送到選定的辨識服務。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your previous settings allowed text polishing only. Audio stays on-device until you enable uploading to the selected recognition service."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "旧设置只允许文字整理，录音仍留在本机。启用后才会将录音发送到所选识别服务。"
+          }
+        }
+      }
+    },
+    "啟用雲端辨識" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enable cloud recognition"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启用云端识别"
+          }
+        }
+      }
+    },
+    "講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formats spoken steps and key points as a numbered list. Turn off to use paragraphs only."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讲步骤、流程或几个重点时，整理成 1. 2. 3.；关闭则只分段。"
+          }
+        }
+      }
+    },
+    "點上方管理阿里雲百鍊 key，辨識與文字整理共用同一把 key。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Manage your Bailian key above. Recognition and polishing share the same key."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点击上方管理阿里云百炼 key，识别与文字整理共用同一把 key。"
+          }
+        }
+      }
+    },
+    "使用選定的雲端辨識與整理服務；失敗時改用 Apple 裝置端辨識結果與本機整理，完成後一次貼入。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uses the selected cloud recognition and polishing services. On failure, falls back to Apple on-device recognition and local polishing, then inserts the result once."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用所选云端识别与整理服务；失败时改用 Apple 设备端识别结果与本机整理，完成后一次插入。"
+          }
+        }
+      }
+    },
+    "改寫與翻譯遵循同一處理方式：本機不上傳；雲端優先使用選定服務，失敗再回退本機。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rewriting and translation follow the same mode: local stays on-device; cloud uses the selected service first and falls back locally on failure."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "改写与翻译遵循同一处理方式：本机不上传；云端优先使用所选服务，失败再回退本机。"
+          }
+        }
+      }
+    },
+    "最近交付 %lld 次、異常事件 %lld 次" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent deliveries: %lld; diagnostic failures: %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近交付 %lld 次、异常事件 %lld 次"
+          }
+        }
+      }
+    },
+    "本機・隱私優先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local · Privacy first"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机・隐私优先"
+          }
+        }
+      }
+    },
+    "本機整理" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On-device polish"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机整理"
+          }
+        }
+      }
+    },
+    "本機整理不可用，已保留辨識結果" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local polishing unavailable; transcript preserved"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机整理不可用，已保留识别结果"
+          }
+        }
+      }
+    },
+    "本機整理可以用（%lld 毫秒）：%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local polishing works (%lld ms): %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机整理可用（%lld 毫秒）：%@"
+          }
+        }
+      }
+    },
+    "本機模型" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On-device model"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机模型"
+          }
+        }
+      }
+    },
+    "本機模型這次沒有產生可用結果。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The local model did not produce a usable result."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机模型本次未生成可用结果。"
+          }
+        }
+      }
+    },
+    "本機模式不傳送錄音。雲端模式使用選定辨識服務的 key；尚未儲存時，請在上方選擇該服務儲存 key，再選回文字整理服務。失敗時保留 Apple 裝置端辨識結果。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local mode never uploads audio. Cloud mode uses the selected recognition service key. To save a missing key, select that service above, save it, then reselect your polishing service. Failure preserves the Apple on-device transcript."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本机模式不发送录音。云端模式使用所选识别服务的 key；尚未保存时，请在上方选择该服务保存 key，再选回文字整理服务。失败时保留 Apple 设备端识别结果。"
+          }
+        }
+      }
+    },
+    "正在整理，完成後可繼續說話" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polishing. You can speak again when it finishes."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在整理，完成后可继续说话"
+          }
+        }
+      }
+    },
+    "處理方式" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Processing mode"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "处理方式"
+          }
+        }
+      }
+    },
+    "語音處理路徑" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voice processing"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "语音处理路径"
+          }
+        }
+      }
+    },
+    "輸入欄位已變更，未貼入" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input field changed; text was not inserted"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "输入框已变更，未插入"
+          }
+        }
+      }
+    },
+    "辨識後先整理，再一次貼入。雲端失敗會回退本機完整整理；本機模型也不可用時保留辨識結果。診斷會分別記錄模型產出與文字交付。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Polishes the transcript before inserting it once. Cloud failure falls back to full local polishing. If no local model is available, the transcript is preserved. Diagnostics distinguish model output from text delivery."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别后先整理，再一次插入。云端失败会回退本机完整整理；本机模型也不可用时保留识别结果。诊断会分别记录模型产出与文字交付。"
+          }
+        }
+      }
+    },
+    "辨識與文字整理可選不同服務。辨識只使用這裡選定的服務，不會自動改用其他已儲存的 key。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recognition and polishing can use different services. Recognition only uses the selected service, never another saved key automatically."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "识别与文字整理可选不同服务。识别只使用这里所选的服务，不会自动改用其他已保存的 key。"
+          }
+        }
+      }
+    },
+    "鍵盤使用 Apple 裝置端辨識，再由本機模型整理；音訊與文字不上傳。Qwen 僅供主 App 前景聽寫。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The keyboard uses Apple on-device recognition and local polishing. Audio and text stay on your device. Qwen is available only for dictation in the foreground app."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "键盘使用 Apple 设备端识别，再由本机模型整理；音频与文字不上传。Qwen 仅供主 App 前台听写。"
+          }
+        }
+      }
+    },
+    "雲端・準確優先" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud · Accuracy first"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端・准确优先"
+          }
+        }
+      }
+    },
+    "雲端文字整理服務" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud text polishing service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端文字整理服务"
+          }
+        }
+      }
+    },
+    "雲端辨識・音訊送到選定服務" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud recognition · Audio sent to selected service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端识别・音频发送到所选服务"
+          }
+        }
+      }
+    },
+    "雲端辨識服務" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cloud speech recognition service"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "云端识别服务"
+          }
+        }
+      }
+    },
     " " : {
       "shouldTranslate" : false
     },

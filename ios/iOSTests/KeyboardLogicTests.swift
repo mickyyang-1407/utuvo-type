@@ -216,7 +216,7 @@ final class KeyboardLogicTests: XCTestCase {
         // 字典後套：使用者若把「軟體」再改成「Software」，字典要贏
         // 字典規則：右側緊接文字時視為更長詞的一部分而不換，所以用句尾／標點前的位置測
         let pipeline = TextPipeline(dictionary: ["軟體": "Software"])
-        XCTAssertEqual(pipeline.clean("我在用軟件，很好用").output, "我在用Software，很好用")
+        XCTAssertEqual(pipeline.clean("我在用軟件，很好用").output, "我在用 Software，很好用")
         XCTAssertEqual(TextPipeline().clean("我在用軟件，很好用").output, "我在用軟體，很好用")
         XCTAssertTrue(pipeline.clean("軟件").steps.first == "taiwan-phrases")
     }

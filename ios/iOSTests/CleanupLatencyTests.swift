@@ -4,9 +4,9 @@ import UTUVOTypeCore
 
 @MainActor
 final class CleanupLatencyTests: XCTestCase {
-    private static let input = "我們明天下午三點開會"
+    private nonisolated static let input = "我們明天下午三點開會"
     /// 模型回「三點」；輸出與先貼出的本機版同一套數字格式（2026-09-24 起整理結果也過 normalizeNumbers）。
-    private static let output = "我們明天下午3:00開會。"
+    private nonisolated static let output = "我們明天下午3:00開會。"
     private nonisolated static func config(_ provider: SmartCleanup.Provider = .gemini) -> SmartCleanup.Configuration {
         .init(enabled: true, provider: provider, endpoint: "https://synthetic.invalid/cleanup", model: "fixture-model", key: "fixture-key")
     }
@@ -18,6 +18,66 @@ final class CleanupLatencyTests: XCTestCase {
         await withCheckedContinuation { continuation in
             DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(milliseconds)) { continuation.resume() }
         }
+    }
+
+    func testGroqCorrectionIsFinalizedBeforeDelivery() async {
+        let raw = "我昨天是要四點不對不對三點出發"
+        let result = await SmartCleanup.finalize(raw, language: "zh-TW", configuration: { Self.config(.groq) },
+            terms: { _ in [] }, transport: { request in
+                let data = Data(#"{"choices":[{"message":{"content":"我昨天是要三點出發"}}]}"#.utf8)
+                return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }, onDevice: { _, _ in XCTFail("Successful Groq must not fall back"); return raw }, log: { _, _, _, _ in })
+        XCTAssertEqual(result, "我昨天是要3:00出發")
+    }
+
+    func testCloudTimeoutStillGetsIndependentFullLocalPolish() async {
+        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW", configuration: { Self.config(.groq) },
+            terms: { _ in [] }, transport: { request in
+                await Self.ignoreCancellation(100)
+                return Self.response(request)
+            }, onDevice: { _, _ in "我們明天下午三點開會。" }, log: { _, _, _, _ in }, cloudTimeout: 0.02)
+        XCTAssertEqual(result, Self.output)
+    }
+
+    func testForcedLocalNeverUsesCloudEvenWithStoredCredential() async {
+        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW", forceLocal: true,
+            configuration: { Self.config(.groq) }, terms: { _ in [] },
+            transport: { _ in XCTFail("Local mode must not transmit text"); throw CancellationError() },
+            onDevice: { _, _ in "我們明天下午三點開會。" }, log: { _, _, _, _ in })
+        XCTAssertEqual(result, Self.output)
+    }
+
+    func testUnavailableLocalPreservesRawAndLogsFallback() async {
+        let state = CleanupFixtureState()
+        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW", forceLocal: true,
+            configuration: { Self.config() }, terms: { _ in [] },
+            transport: { _ in XCTFail("Local mode must not transmit text"); throw CancellationError() },
+            onDevice: nil, log: { outcome, _, _, _ in state.log(outcome) })
+        XCTAssertEqual(result, Self.input)
+        XCTAssertEqual(state.logs, ["raw-fallback"])
+    }
+
+    func testCancelledFinalizeDoesNotDeliverOrStartLocalFallback() async {
+        let state = CleanupFixtureState()
+        let task = Task {
+            await SmartCleanup.finalize(Self.input, language: "zh-TW", configuration: { Self.config() },
+                terms: { _ in [] }, transport: { request in
+                    state.request(request)
+                    await Self.ignoreCancellation(150)
+                    return Self.response(request)
+                }, onDevice: { _, _ in state.fallback(); return Self.input }, log: { _, _, _, _ in })
+        }
+        while state.requests.isEmpty { await Task.yield() }
+        task.cancel()
+        let result = await task.value
+        XCTAssertNil(result)
+        XCTAssertEqual(state.fallbacks, 0)
+    }
+
+    func testCandidatesAreNotCountedAsDelivered() {
+        let summary = SmartLog.summary([["outcome": "candidate"], ["outcome": "local:candidate"], ["outcome": "delivered"]])
+        XCTAssertEqual(summary.ok, 1)
+        XCTAssertEqual(summary.failed, 0)
     }
 
     func testSuccessPreservesProviderModelPromptAndOutput() async throws {
@@ -37,7 +97,7 @@ final class CleanupLatencyTests: XCTestCase {
         let messages = body["messages"] as! [[String: String]]
         // 指示＝v3 原文套上「自動條列」設定（2026-10-19，預設開）。
         XCTAssertEqual(messages[0]["content"], CleanupPromptRules.apply(SmartCleanup.instructions, autoList: SmartCleanup.autoListEnabled) + "\n這位使用者常用的專有名詞（逐字稿裡聽起來像的，就改成這個寫法）：合成專名")
-        XCTAssertEqual(state.logs, ["ok"])
+        XCTAssertEqual(state.logs, ["candidate"])
     }
 
     func testSlowPreprocessingConsumesWholeBudgetWithoutRequest() async {
@@ -89,12 +149,11 @@ final class CleanupLatencyTests: XCTestCase {
     func testParentCancellationReturnsWithoutLateLogOrFallback() async {
         let state = CleanupFixtureState()
         let task = Task {
-            await SmartCleanup.refine(Self.input, fallbackText: Self.input, language: "zh-TW", smart: true,
-                cleanup: { text, language, budget in
-                    await SmartCleanup.clean(text, language: language, budget: budget, configuration: { Self.config() }, terms: { _ in [] }, transport: { request in
-                        state.request(request); await Self.ignoreCancellation(250); return Self.response(request)
-                    }, normalize: { text, _ in text }, log: { outcome, _, _, _ in state.log(outcome) })
-                }, fallback: { text, _ in state.fallback(); return text })
+            await SmartCleanup.finalize(Self.input, language: "zh-TW", configuration: { Self.config() },
+                terms: { _ in [] }, transport: { request in
+                    state.request(request); await Self.ignoreCancellation(250); return Self.response(request)
+                }, onDevice: { _, _ in state.fallback(); return Self.input },
+                log: { outcome, _, _, _ in state.log(outcome) })
         }
         while state.requests.isEmpty { await Task.yield() }
         let start = ContinuousClock.now
@@ -107,17 +166,17 @@ final class CleanupLatencyTests: XCTestCase {
         XCTAssertEqual(state.fallbacks, 0)
     }
 
-    func testExhaustedBudgetSkipsFallbackAndFastFailureKeepsFallbackBudget() async {
-        let state = CleanupFixtureState()
-        let exhausted = await SmartCleanup.refine(Self.input, fallbackText: Self.input, language: "zh-TW", smart: true, budget: CleanupBudget(seconds: 0.03), cleanup: { _, _, _ in await Self.ignoreCancellation(50); return nil }, fallback: { text, _ in state.fallback(); return text })
-        XCTAssertNil(exhausted)
-        XCTAssertEqual(state.fallbacks, 0)
-        let start = ContinuousClock.now
-        let bounded = await SmartCleanup.refine(Self.input, fallbackText: Self.input, language: "zh-TW", smart: true, budget: CleanupBudget(seconds: 0.08), cleanup: { _, _, _ in nil }, fallback: { text, _ in state.fallback(); await Self.ignoreCancellation(200); return text })
-        XCTAssertNil(bounded)
-        XCTAssertEqual(state.fallbacks, 1)
-        XCTAssertLessThan(start.duration(to: .now), .milliseconds(160))
+    func testLocalTimeoutReturnsRawOnceWithinItsOwnBudget() async {
+        let state = CleanupFixtureState(), start = ContinuousClock.now
+        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW", forceLocal: true,
+            configuration: { Self.config() }, terms: { _ in [] },
+            transport: { _ in XCTFail("Local attempt must not use transport"); throw CancellationError() },
+            onDevice: { _, _ in await Self.ignoreCancellation(200); return Self.input },
+            log: { outcome, _, _, _ in state.log(outcome) }, localTimeout: 0.08)
+        XCTAssertEqual(result, Self.input)
+        XCTAssertLessThan(start.duration(to: .now), .milliseconds(180))
         await Self.ignoreCancellation(220)
+        XCTAssertEqual(state.logs, ["local:timeout", "raw-fallback"])
     }
 
     func testSameSessionSegmentsPublishButCanceledGenerationCannotReuseIdenticalText() async {

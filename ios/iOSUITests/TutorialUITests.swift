@@ -5,6 +5,33 @@ import XCTest
 final class TutorialUITests: XCTestCase {
     override func setUp() { continueAfterFailure = false }
 
+    func testDictationModesShowOnlyRelevantSettings() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(zh-Hant)", "-AppleLocale", "zh_TW", "-utuvo.type.ios.debugTab", "2"]
+        app.launch()
+        let row = app.buttons["smartCleanupRow"]
+        for _ in 0..<10 where !row.isHittable { app.swipeUp() }
+        XCTAssertTrue(row.isHittable)
+        row.tap()
+        let picker = app.buttons["dictationProcessingMode"]
+        XCTAssertTrue(picker.waitForExistence(timeout: 5))
+        picker.tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "本機・隱私優先")).firstMatch.tap()
+        XCTAssertFalse(app.staticTexts["雲端文字整理服務"].exists)
+        XCTAssertFalse(app.secureTextFields["smartKey"].exists)
+        shot("dictation-local-mode")
+        picker.tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "雲端・準確優先")).firstMatch.tap()
+        let cloud = app.staticTexts["雲端文字整理服務"]
+        for _ in 0..<5 where !cloud.isHittable { app.swipeUp() }
+        XCTAssertTrue(cloud.isHittable)
+        shot("dictation-cloud-mode")
+        for _ in 0..<6 where !picker.isHittable { app.swipeDown() }
+        picker.tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "本機・隱私優先")).firstMatch.tap()
+        app.terminate()
+    }
+
     private func openTutorial(_ id: String, app: XCUIApplication) {
         app.tabBars.buttons["設定"].tap()
         let guide = app.buttons.containing(NSPredicate(format: "label CONTAINS '使用教學'")).firstMatch

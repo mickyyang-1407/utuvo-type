@@ -47,6 +47,8 @@ enum VoiceBridge {
         var sentAt: Date
         /// 長按翻譯時的目標語言代碼（TranslationTarget.code）；主 app 一開始錄就預熱翻譯。
         var translateTo: String? = nil
+        /// Instructions for rewrite/ask modes must not be polished as dictated content.
+        var polishDictation: Bool? = nil
         /// Keyboard extension supplies a bounded, local-only field excerpt only when the user opted in.
         var contextText: String? = nil
         /// 游標後文字（上限 200；與 contextText 共用同一個使用者的開關）。
@@ -90,6 +92,10 @@ enum VoiceBridge {
         var commandID: UUID?
         var partial: String = ""
         var final: String?
+        /// Original ASR text, separate from the polished final delivered once.
+        var rawTranscript: String?
+        var outputLanguage: String?
+        var outputVariant: String?
         /// 主 app 已翻好的結果（有 translateTo 時）；nil＝鍵盤自己翻。
         var translated: String?
         /// 定稿先送（不等校正），背景整理完、真的有改才放進來（依指令 id，留最近幾筆）。

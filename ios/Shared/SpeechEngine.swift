@@ -65,6 +65,13 @@ final class SpeechFeed: @unchecked Sendable {
 }
 
 enum SpeechEngine {
+    /// Legacy capability must not veto iOS 26's independent SpeechTranscriber.
+    /// This permits a local startup attempt; `start` still checks the actual locale/model.
+    static func canAttemptOnDevice(legacy: SFSpeechRecognizer?) -> Bool {
+        if #available(iOS 26.0, *), SpeechTranscriber.isAvailable { return true }
+        return legacy?.isAvailable == true && legacy?.supportsOnDeviceRecognition == true
+    }
+
     /// 設 true＝強制用舊引擎（對照／緊急退路）。預設新引擎。
     static let legacyKey = "utuvo.type.speech.legacyEngine"
 
@@ -83,7 +90,7 @@ enum SpeechEngine {
            let analyzer = await AnalyzerSpeechStream.make(language: language, contextualStrings: hints, onResult: onResult) {
             return analyzer
         }
-        guard let recognizer else { return nil }
+        guard let recognizer, recognizer.isAvailable, !onDevice || recognizer.supportsOnDeviceRecognition else { return nil }
         return LegacySpeechStream(recognizer: recognizer, onDevice: onDevice, contextualStrings: hints, onResult: onResult)
     }
 
@@ -202,7 +209,7 @@ final class AnalyzerSpeechStream: SpeechStream, @unchecked Sendable {
             return nil
         }
         // 繁中：新引擎的繁體是逐字硬轉（回家→迴家、頭髮→頭發），按詞重轉一次（TraditionalFixer）。
-        let traditional = language.hasPrefix("zh-TW") || language.hasPrefix("zh-Hant") || language.hasPrefix("zh-HK")
+        let traditional = LanguageVariant.traditionalFixerTarget(variant: LanguageVariantStore.currentVariant(language: language), language: language)
         stream.resultsTask = Task.detached {
             await Self.collect(transcriber, traditional: traditional, onResult: onResult)
         }

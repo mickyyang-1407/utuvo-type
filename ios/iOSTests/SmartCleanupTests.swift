@@ -4,22 +4,44 @@ import UTUVOTypeCore
 
 /// 智慧整理的把關（大模型的輸出長度差太多＝改寫／回答／加內容，不用）。
 final class SmartCleanupTests: XCTestCase {
-    /// Claude 用的寬鬆把關（2026-10-17 同一批 44 句量測後加的）：正確的專名／改口修正要放行，替使用者回答要擋。
-    func testRelaxedGateAcceptsCorrectionsButRejectsAnswers() {
+    /// Every provider gets vocabulary-aware corrections without a weaker numeric or negation gate.
+    func testSharedGateAcceptsCorrectionsButRejectsAnswers() {
         let asr = "這次的 Dolbe Edmos混音是在 Protuos上麵做的，然後送到 Dammiymusic的教室去示範。"
         let fixed = "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Dammiymusic 的教室去示範。"
         XCTAssertFalse(SmartCleanup.accepts(original: asr, cleaned: fixed), "嚴格把關照舊擋專名修正")
-        XCTAssertTrue(SmartCleanup.accepts(original: asr, cleaned: fixed, relaxed: true))
-        XCTAssertTrue(SmartCleanup.accepts(original: "取樣率用 48K不對是 96K。", cleaned: "取樣率用 96K。", relaxed: true))
-        XCTAssertFalse(SmartCleanup.accepts(original: "今天天氣怎麼樣", cleaned: "今天天氣晴朗，氣溫大約25度，適合出門。", relaxed: true))
-        XCTAssertFalse(SmartCleanup.accepts(original: "一加一等於多少", cleaned: "一加一等於二。", relaxed: true), "多出原文沒有的數字＝在回答")
-        XCTAssertTrue(SmartCleanup.accepts(original: "金額是 1200，不對是 12,000塊。", cleaned: "金額是 12000 塊。", relaxed: true))
-        XCTAssertTrue(SmartCleanup.accepts(original: "今天有三件事，\n第一更新 Pro Tools\n第二匯出 stems\n第三寫交付說明",
-                                           cleaned: "今天有三件事：\n1. 更新 Pro Tools\n2. 匯出 stems\n3. 寫交付說明", relaxed: true), "清單編號不算新數字")
+        XCTAssertTrue(SmartCleanup.accepts(original: asr, cleaned: fixed, terms: ["Dolby Atmos", "Pro Tools"]))
+        XCTAssertTrue(SmartCleanup.accepts(original: "取樣率用 48K不對是 96K。", cleaned: "取樣率用 96K。"))
+        XCTAssertFalse(SmartCleanup.accepts(original: "今天天氣怎麼樣", cleaned: "今天天氣晴朗，氣溫大約25度，適合出門。"))
+        XCTAssertFalse(SmartCleanup.accepts(original: "一加一等於多少", cleaned: "一加一等於二。"), "多出原文沒有的數字＝在回答")
+        XCTAssertTrue(SmartCleanup.accepts(original: "金額是 1200，不對是 12,000塊。", cleaned: "金額是 12000 塊。"))
+        XCTAssertTrue(SmartCleanup.accepts(original: "今天有三件事，第一，更新 Pro Tools，第二，匯出 stems，第三，寫交付說明",
+                                           cleaned: "今天有三件事：\n1. 更新 Pro Tools\n2. 匯出 stems\n3. 寫交付說明"), "清單編號不算新數字")
         XCTAssertFalse(SmartCleanup.accepts(original: "幫我寫一封信給老闆說我明天請假",
-                                            cleaned: "老闆您好，我明天因故需要請假一天，敬請核准，謝謝。", relaxed: true))
+                                            cleaned: "老闆您好，我明天因故需要請假一天，敬請核准，謝謝。"))
         XCTAssertFalse(SmartCleanup.accepts(original: "你可以幫我看一下這份整理稿有沒有問題",
-                                            cleaned: "請把原始逐字稿和整理後的版本貼上來，我可以逐項確認贅詞、數字和專有名詞。", relaxed: true))
+                                            cleaned: "請把原始逐字稿和整理後的版本貼上來，我可以逐項確認贅詞、數字和專有名詞。"))
+    }
+
+    func testTaiwanVocabularyAndExplicitDictionaryAreAllowedByGate() async {
+        let raw = "這個軟件使用API，請交給小王。"
+        let polished = "這個軟體使用 API，請交給王主任。"
+        let result = await SmartCleanup.clean(raw, language: "zh-TW", context: .init(variant: .zhTW),
+            dictionary: ["小王": "王主任"],
+            configuration: { .init(enabled: true, provider: .groq, endpoint: "https://synthetic.invalid", model: "fixture", key: "fixture") },
+            terms: { _ in [] }, transport: { request in
+                let data = try JSONSerialization.data(withJSONObject: ["choices": [["message": ["content": polished]]]])
+                return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }, normalize: { text, _ in text }, log: { _, _, _, _ in })
+        XCTAssertEqual(result, polished)
+    }
+
+    func testLocalPolishKeepsExactDictionaryName() async {
+        let result = await SmartCleanup.clean("台灣大學使用API", language: "zh-TW", context: .init(variant: .zhTW),
+            dictionary: ["臺灣大學": ""],
+            configuration: { .init(enabled: true, provider: .groq, endpoint: "", model: "", key: "") },
+            terms: { _ in ["臺灣大學"] }, transport: { _ in XCTFail("Local only"); throw CancellationError() },
+            onDevice: { _, _ in "臺灣大學使用 API" }, log: { _, _, _, _ in })
+        XCTAssertEqual(result, "臺灣大學使用 API")
     }
 
     func testClaudeRequestOmitsTemperature() async throws {
@@ -84,7 +106,7 @@ final class SmartCleanupTests: XCTestCase {
 
     /// 第一次讀 provider 就要寫回偏好：之後清除／新增 key 不能讓服務在背後換家（review R2）。
     func testFirstProviderReadIsPinned() {
-        let defaults = UserDefaults.standard
+        let defaults = SmartCleanup.settingsDefaults
         let saved = defaults.string(forKey: SmartCleanup.providerKey)
         defer { if let saved { defaults.set(saved, forKey: SmartCleanup.providerKey) } else { defaults.removeObject(forKey: SmartCleanup.providerKey) } }
         defaults.removeObject(forKey: SmartCleanup.providerKey)
@@ -193,11 +215,11 @@ final class SmartCleanupTests: XCTestCase {
 
     func testSmartIsOnByDefault() {
         let key = SmartCleanup.enabledKey
-        let saved = UserDefaults.standard.object(forKey: key)
-        defer { UserDefaults.standard.set(saved, forKey: key) }
-        UserDefaults.standard.removeObject(forKey: key)
+        let saved = SmartCleanup.settingsDefaults.object(forKey: key)
+        defer { SmartCleanup.settingsDefaults.set(saved, forKey: key) }
+        SmartCleanup.settingsDefaults.removeObject(forKey: key)
         XCTAssertTrue(SmartCleanup.enabledPreference, "沒動過開關＝開")
-        UserDefaults.standard.set(false, forKey: key)
+        SmartCleanup.settingsDefaults.set(false, forKey: key)
         XCTAssertFalse(SmartCleanup.enabledPreference, "使用者關掉要尊重")
     }
 

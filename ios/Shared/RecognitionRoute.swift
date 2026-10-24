@@ -9,11 +9,13 @@ enum RecognitionRoute: String, Equatable, Sendable {
     case onDevice
     /// 允許 Apple Speech 使用伺服器辨識；最終由 Apple Speech 決定實際處理路徑。
     case server
+    case thirdPartyCloud
 
     var badgeText: String {
         switch self {
         case .onDevice: return String(localized: "裝置端辨識・音訊不離機")
         case .server: return String(localized: "允許雲端辨識・音訊可能送到 Apple")
+        case .thirdPartyCloud: return String(localized: "雲端辨識・音訊送到選定服務")
         }
     }
 
@@ -45,4 +47,78 @@ enum RecognitionRoutePolicy: Sendable {
         case .blockedOnDeviceUnavailable: return true
         }
     }
+}
+
+/// One user decision for the entire dictation pipeline, shared with the keyboard.
+/// Local mode never sends cloud requests, including rewrite/translation.
+enum DictationProcessingMode: String, CaseIterable, Identifiable, Sendable {
+    case local, cloud
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .local: return String(localized: "本機・隱私優先")
+        case .cloud: return String(localized: "雲端・準確優先")
+        }
+    }
+}
+
+enum DictationRouteSettings {
+    static let modeKey = "utuvo.type.dictation.mode"
+    static let audioConsentKey = "utuvo.type.dictation.audioUploadAuthorized"
+    static let asrProviderKey = "utuvo.type.dictation.asrProvider"
+    static var defaults: UserDefaults { UserDefaults(suiteName: "group.com.utuvo.type") ?? .standard }
+
+    static func migratedMode(localOnly: Bool, hasCloudKey: Bool, cloudASREnabled: Bool) -> DictationProcessingMode {
+        if localOnly { return .local }
+        return hasCloudKey || cloudASREnabled ? .cloud : .local
+    }
+
+    static var mode: DictationProcessingMode {
+        get {
+            if let raw = defaults.string(forKey: modeKey), let mode = DictationProcessingMode(rawValue: raw) { return mode }
+            let mode = migratedMode(localOnly: UserDefaults.standard.bool(forKey: "utuvo.type.ios.onDeviceOnly"),
+                                    hasCloudKey: !SmartCleanup.key(for: SmartCleanup.provider).isEmpty,
+                                    cloudASREnabled: UserDefaults.standard.bool(forKey: "utuvo.type.cloudASR.enabled"))
+            defaults.set(mode.rawValue, forKey: modeKey)
+            // Existing text-only BYOK consent does not authorize uploading recordings.
+            defaults.set(UserDefaults.standard.bool(forKey: "utuvo.type.cloudASR.enabled"), forKey: audioConsentKey)
+            return mode
+        }
+        set {
+            defaults.set(newValue.rawValue, forKey: modeKey)
+            defaults.set(newValue == .cloud, forKey: audioConsentKey)
+        }
+    }
+
+    static var audioUploadAuthorized: Bool {
+        get { _ = mode; return defaults.bool(forKey: audioConsentKey) }
+        set { defaults.set(newValue, forKey: audioConsentKey) }
+    }
+
+    /// Explicit, pinned ASR selection; changing the polish provider never changes the audio recipient.
+    static var asrProvider: SmartCleanup.Provider {
+        get {
+            if let raw = defaults.string(forKey: asrProviderKey), let provider = SmartCleanup.Provider(rawValue: raw),
+               [.groq, .gemini, .dashscope].contains(provider) { return provider }
+            let selected = SmartCleanup.provider
+            let resolved = [selected, .groq, .gemini, .dashscope].first {
+                [.groq, .gemini, .dashscope].contains($0) && !SmartCleanup.key(for: $0).isEmpty
+            } ?? .groq
+            defaults.set(resolved.rawValue, forKey: asrProviderKey)
+            return resolved
+        }
+        set { defaults.set(newValue.rawValue, forKey: asrProviderKey) }
+    }
+}
+
+/// Cloud speech must not require Apple's recognizer to be available. When it is
+/// available, keep a private transcript in parallel for offline recovery.
+enum KeyboardRecognitionPlan: Equatable {
+    case local, cloudWithLocalFallback, cloudOnly, unavailable
+    static func decide(mode: DictationProcessingMode, localAvailable: Bool, cloudAvailable: Bool) -> Self {
+        if mode == .cloud, cloudAvailable { return localAvailable ? .cloudWithLocalFallback : .cloudOnly }
+        return localAvailable ? .local : .unavailable
+    }
+    var usesCloud: Bool { self == .cloudWithLocalFallback || self == .cloudOnly }
+    var usesLocal: Bool { self == .local || self == .cloudWithLocalFallback }
 }

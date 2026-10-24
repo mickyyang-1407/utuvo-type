@@ -88,7 +88,7 @@ final class DictationModel: NSObject, ObservableObject {
     /// 麥克風 → 辨識：引擎起來前的話先存著。
     private let feed = SpeechFeed()
     private var recognizer: SFSpeechRecognizer?
-    private let pipeline = TextPipeline()
+    private var pipeline: TextPipeline { TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)) }
     private let cleanupTasks = CleanupTaskOwner()
     /// 同音校正中（畫面顯示「整理中…」用）。
     @Published var isCorrecting = false
@@ -127,6 +127,7 @@ final class DictationModel: NSObject, ObservableObject {
     }
 
     func toggle() {
+        guard !isCorrecting else { return }
         // 主 app 自己要錄音：先收掉替鍵盤開的語音工作階段（兩邊搶同一個 AVAudioSession）。
         if !isRecording, KeyboardVoiceHost.shared.isActive { KeyboardVoiceHost.shared.endSession() }
         if isRecording { stop() } else {
@@ -203,8 +204,8 @@ final class DictationModel: NSObject, ObservableObject {
             return
         }
 
-        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language.rawValue)),
-              recognizer.isAvailable else {
+        let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language.rawValue))
+        guard SpeechEngine.canAttemptOnDevice(legacy: recognizer) else {
             errorMessage = String(localized: "這個語言的辨識器目前不可用。")
             return
         }
@@ -216,9 +217,9 @@ final class DictationModel: NSObject, ObservableObject {
 
             // IOS2：裝置端優先，但「退回雲端」必須看得見，而且使用者可以直接禁止。
             let decision = RecognitionRoutePolicy.decide(
-                supportsOnDevice: recognizer.supportsOnDeviceRecognition,
-                onDeviceOnly: onDeviceOnly,
-                preferCloud: preferCloudRecognition
+                supportsOnDevice: SpeechEngine.canAttemptOnDevice(legacy: recognizer),
+                onDeviceOnly: true,
+                preferCloud: false
             )
             guard case .allow(let chosenRoute) = decision else {
                 errorMessage = String(localized: "你開了「只用裝置端辨識」，但這台裝置在\(language.localizedName(zh: true))沒有裝置端辨識可用。關掉這個開關才會改用雲端辨識（音訊會送到 Apple 伺服器）。")
@@ -241,7 +242,7 @@ final class DictationModel: NSObject, ObservableObject {
             // Swift 6 執行期在音訊執行緒上 SIGTRAP（2026-09-18 真機：主 app 一點麥克風就閃退）。
             levels.reset()
             feed.arm()
-            let qwenReady = LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: language.rawValue) != nil
+            let qwenReady = DictationRouteSettings.mode == .local && LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: language.rawValue) != nil
             let cloudReady = CloudASR.isReady(language: language.rawValue)
             let rerecog = Rerecognition.choose(qwenReady: qwenReady, cloudReady: cloudReady)
             pcm.reset(enabled: rerecog != .none)
@@ -263,7 +264,7 @@ final class DictationModel: NSObject, ObservableObject {
             }
             stream = started
             feed.attach(started)
-            if started.engineName == "analyzer" { route = .onDevice }
+            route = cloudReady ? .thirdPartyCloud : .onDevice
             AIPunctuator.shared.prewarm()
             SmartCleanup.warmUp()
             isRecording = true
@@ -289,6 +290,7 @@ final class DictationModel: NSObject, ObservableObject {
 
     /// 手動把目前逐字稿定稿（例如切頁時）。
     func finalizeNow() {
+        guard !isCorrecting else { return } // The pending polish owns the only commit/history entry.
         // R2-1（CodeX 複查 2026-09-25）：切頁時若還在等重辨識，先用 Apple 結果定稿；
         // flush 後就不必再 commit(liveTranscript) — 否則歷史會出現兩筆。
         if let p = gate.flush() {
@@ -334,7 +336,7 @@ final class DictationModel: NSObject, ObservableObject {
                 let appleBase = PunctuationGuard.preservesText(original: text, candidate: paused) ? paused : text
                 let samples = pcm.snapshot
                 // 定稿當下再選一次：開始錄音後 App 可能已切到背景，qwenReady 因此會變 false。
-                let qwenReadyNow = LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: language.rawValue) != nil
+                let qwenReadyNow = DictationRouteSettings.mode == .local && LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: language.rawValue) != nil
                 let cloudReadyNow = CloudASR.isReady(language: language.rawValue)
                 let rerecog = Rerecognition.choose(qwenReady: qwenReadyNow, cloudReady: cloudReadyNow)
                 if !samples.isEmpty, rerecog != .none {
@@ -364,7 +366,7 @@ final class DictationModel: NSObject, ObservableObject {
                         // Whisper／Qwen 補的「謝謝大家收看」：Apple 逐字稿沒有這句才去掉。
                         let kept = refined.map { TranscriptGuard.dropOutroHallucination($0, reference: p.base) }
                             .flatMap { $0.isEmpty ? nil : $0 }
-                        self.ingestFinal(text: kept ?? p.text, base: kept ?? p.base)
+                        self.ingestFinal(text: kept ?? p.text, base: kept ?? p.base, forceLocal: rerecog == .cloud && kept == nil)
                     }
                     return
                 }
@@ -390,40 +392,20 @@ final class DictationModel: NSObject, ObservableObject {
     }
 
     /// 定稿（Apple 或本機 Qwen 的結果）→ 同音校正／智慧整理 → commit。
-    private func ingestFinal(text: String, base: String) {
-        // 同音錯字校正：先出字，背景校正完有改、而且畫面上還是這段才換（不讓使用者等）。
-        let lang = language.rawValue
-        let smart = SmartCleanup.isEnabled
-        if !AIPunctuator.refineEnabled, !intent.isEdit,
-           smart || (HomophoneCorrector.applies(to: lang) && HomophoneCorrector.isAvailable && base.count >= HomophoneCorrector.minimumLength) {
-            commit(base)
-            let shown = finalText
-            isCorrecting = true
-            let budget = CleanupBudget(seconds: SmartCleanup.backgroundBudgetSeconds(for: text))
-            cleanupTasks.start(id: UUID(), work: { [weak self] in
-                // App 內聽寫沒有輸入欄位脈絡可送（沒有 textDocumentProxy），但**語言變體**照送——
-                // 變體是使用者對輸出的設定，兩條錄音路徑都要兌現。
-                guard let self else { return nil }
-                let context = SmartCleanup.PromptContext(
-                    variant: LanguageVariantStore.currentVariant(language: lang))
-                return await SmartCleanup.refine(text, fallbackText: base, language: lang, smart: smart,
-                                                  budget: budget, validationSource: shown, context: context)
-            }, apply: { [weak self] fixed in
-                guard let self else { return }
-                self.isCorrecting = self.cleanupTasks.pendingCount > 0
-                guard let fixed, fixed != base, self.finalText == shown else { return }
-                self.finalText = self.pipeline.clean(fixed).output
-            })
-            return
-        }
-        if AIPunctuator.refineEnabled, AIPunctuator.shared.isAvailable, base.count >= AIPunctuator.minimumLength {
-            Task { @MainActor [weak self] in
-                let better = await AIPunctuator.shared.refine(base)
-                self?.commit(better ?? base)
-            }
-        } else {
-            commit(base)
-        }
+    private func ingestFinal(text: String, base: String, forceLocal: Bool = false) {
+        guard !intent.isEdit else { commit(base); return }
+        let language = language.rawValue
+        let context = SmartCleanup.PromptContext(variant: LanguageVariantStore.currentVariant(language: language))
+        isCorrecting = true
+        cleanupTasks.start(id: UUID(), work: {
+            await SmartCleanup.finalize(text, language: language, context: context, forceLocal: forceLocal)
+        }, apply: { [weak self] output in
+            guard let self else { return }
+            self.isCorrecting = self.cleanupTasks.pendingCount > 0
+            guard let output else { return }
+            self.commit(output, originalTranscript: text, outputLanguage: language, outputVariant: context.variant)
+            SmartLog.record(outcome: "delivered", start: Date(), input: text, output: self.finalText)
+        })
     }
 
     /// R2-1（CodeX 複查 2026-09-25）→ R3（luna-review 2026-09-25）：等待中的重辨識回來之前，使用者又
@@ -455,7 +437,7 @@ final class DictationModel: NSObject, ObservableObject {
     }
 
     /// 逐字稿定稿：聽寫＝跑 core 管線清理＋寫歷史；編輯＝把講的話當指示丟給改寫引擎。
-    private func commit(_ text: String) {
+    private func commit(_ text: String, originalTranscript: String? = nil, outputLanguage: String? = nil, outputVariant: LanguageVariant? = nil) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         let finishedIntent = intent
@@ -463,14 +445,16 @@ final class DictationModel: NSObject, ObservableObject {
         guard !trimmed.isEmpty else { return }
         switch finishedIntent {
         case .dictate:
-            let (output, steps) = pipeline.clean(trimmed)
+            let lang = outputLanguage ?? language.rawValue
+            let finalPipeline = TextPipeline(language: lang, variant: outputVariant ?? LanguageVariantStore.currentVariant(language: lang))
+            let (output, steps) = finalPipeline.clean(trimmed)
             finalText = output
             appliedSteps = steps
             // 讀**凍結值**：按停到這裡即使過了雲端等待，秒數也不變。
             let seconds = recordingClock.take()
             // 檔案寫入丟到背景序列佇列，不卡主執行緒（鍵盤 extension 也走同一條）。
             StorageIO.write {
-                HistoryStore.shared.append(DictationRecord(raw: trimmed, cleaned: output, source: .app, duration: seconds))
+                HistoryStore.shared.append(DictationRecord(raw: originalTranscript ?? trimmed, cleaned: output, source: .app, duration: seconds))
                 // 每日計數獨立於歷史：刪歷史、清歷史、改期限都不影響它（工單要求）。
                 DailyUsageStore.shared.recordExclusive(words: UsageText.wordCount(output), seconds: seconds ?? 0)
             }

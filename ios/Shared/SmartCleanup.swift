@@ -9,7 +9,7 @@ import FoundationModels
 ///
 /// 預設優先在手機辨識；使用者可另外選擇把音訊送 Apple 雲端辨識。辨識好的**文字**再送到使用者選的整理服務；
 /// 目前不把原始音訊轉送給整理服務。選配欄位脈絡與文字分開標示，且只在明確開啟後提供。
-/// 流程：手機上的結果先貼出去 → 這裡在背景整理 → 通過把關才替換（鍵盤端 CorrectionSwap）。沒 key／沒網路／逾時＝維持手機結果。
+/// 流程：辨識 → 完整整理（雲端失敗回本機）→ 通過把關 → 一次交付。不可用時明確記錄並交付原文。
 enum SmartCleanup {
     enum Provider: String, CaseIterable, Identifiable, Sendable {
         case gemini, groq, dashscope, claude, custom
@@ -62,14 +62,19 @@ enum SmartCleanup {
         /// Claude 5.5 收到 temperature 會回 400（"temperature is deprecated for this model"，2026-10-17 實測）。
         var sendsTemperature: Bool { self != .claude }
 
-        /// 模型夠守規矩，把關改用寬鬆版（見 `accepts(original:cleaned:relaxed:)`）。
-        /// 2026-10-17 同一批 44 句：Claude Haiku 5.5 被嚴格把關擋掉 22 句，其中 21 句其實比原文更接近正解。
-        var trustsCleanup: Bool { self == .claude }
     }
 
     // MARK: - 設定
 
-    private static var defaults: UserDefaults { .standard }
+    static var settingsDefaults: UserDefaults { UserDefaults(suiteName: "group.com.utuvo.type") ?? .standard }
+    private static var defaults: UserDefaults { settingsDefaults }
+
+    /// Called by the containing app before the keyboard reads the shared settings.
+    static func migrateSettings(from legacy: UserDefaults = .standard, to shared: UserDefaults = settingsDefaults) {
+        for key in [enabledKey, providerKey, customEndpointKey, customModelKey, autoListKey] {
+            if shared.object(forKey: key) == nil, let value = legacy.object(forKey: key) { shared.set(value, forKey: key) }
+        }
+    }
     static let enabledKey = "utuvo.type.smart.enabled"
     static let providerKey = "utuvo.type.smart.provider"
     static let customEndpointKey = "utuvo.type.smart.customEndpoint"
@@ -163,12 +168,12 @@ enum SmartCleanup {
     /// 開著、但沒設 key：用 Apple Intelligence 在手機上整理（文字不離機、免費）；
     /// 沒有 Apple Intelligence 的 iPhone 改用主 app 下載的 Gemma 4（2026-10-11）。
     static var usesOnDevice: Bool {
-        enabledPreference && key(for: provider).isEmpty && OnDeviceCleanup.available
+        enabledPreference && (DictationRouteSettings.mode == .local || key(for: provider).isEmpty) && OnDeviceCleanup.available
     }
 
     /// 開著，而且有 key（雲端）或手機上的模型可用（Apple Intelligence 或 Gemma）。
     static var isEnabled: Bool {
-        enabledPreference && (!key(for: provider).isEmpty || OnDeviceCleanup.available)
+        enabledPreference && (OnDeviceCleanup.available || (DictationRouteSettings.mode == .cloud && !key(for: provider).isEmpty))
     }
 
     /// Background cleanup gets 4 seconds for a short sentence and scales to at most 10 seconds for longer text.
@@ -274,7 +279,7 @@ enum SmartCleanup {
         let enabled = enabledPreference
         return Configuration(enabled: enabled, provider: selected,
                              endpoint: selected.endpoint, model: selected.defaultModel,
-                             key: enabled ? key(for: selected) : "")
+                             key: enabled && DictationRouteSettings.mode == .cloud ? key(for: selected) : "")
     }
 
     /// The same monotonic budget covers preparation, compatibility resend and the caller's fallback.
@@ -283,6 +288,7 @@ enum SmartCleanup {
                       budget suppliedBudget: CleanupBudget? = nil,
                       validationSource: String? = nil,
                       context: PromptContext = .init(),
+                      dictionary: [String: String] = DictionaryStore.shared.dictionary,
                       configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                       terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                       transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
@@ -306,16 +312,16 @@ enum SmartCleanup {
                     guard let onDevice else { throw Failure.notConfigured }
                     return try await performOnDevice(text, traditional: traditional, budget: budget,
                                                      terms: terms, complete: onDevice, normalize: normalize,
-                                                     context: context, validationSource: validationSource ?? text,
+                                                     context: context, validationSource: validationSource ?? text, dictionary: dictionary,
                                                      onRejected: onRejected)
                 }
                 return try await perform(text, configuration: config, traditional: traditional,
                                          budget: budget, attempts: 1, terms: terms, transport: transport,
                                          normalize: normalize, context: context,
-                                         validationSource: validationSource ?? text, onRejected: onRejected)
+                                         validationSource: validationSource ?? text, dictionary: dictionary, onRejected: onRejected)
             }
             try Task.checkCancellation()
-            log("ok", start, text, out)
+            log("candidate", start, text, out)
             return out
         } catch Failure.notConfigured {
             return nil
@@ -326,30 +332,38 @@ enum SmartCleanup {
         }
     }
 
-    /// A fast cloud failure may still use the established on-device fallback, within the same budget.
-    static func refine(_ text: String, fallbackText: String, language: String, smart: Bool,
-                       budget: CleanupBudget = CleanupBudget(seconds: backgroundTimeout),
-                       validationSource: String? = nil,
-                       context: PromptContext = .init(),
-                       cleanup: (@Sendable (String, String, CleanupBudget) async -> String?)? = nil,
-                       fallback: (@Sendable (String, CleanupBudget) async -> String)? = nil) async -> String? {
-        // smart 關閉時這條 fallback 也是使用者的輸出路徑，變體同樣要吃到
-        //（否則香港／簡體變體在 smart 關閉時會被當成台灣繁體的錯字去「校對」）。
-        // 測試要注入自己的 fallback，所以做成可選參數、在這裡才組預設值。
-        let runFallback: @Sendable (String, CleanupBudget) async -> String = fallback ?? { value, limit in
-            await HomophoneCorrector.correct(value, budget: limit,
-                                             variant: LanguageVariantStore.currentVariant(language: language))
+    /// Resolve text before publishing it. Cloud and local attempts have separate bounded budgets,
+    /// so an exhausted network request cannot consume the offline fallback's time.
+    static func finalize(_ text: String, language: String, context: PromptContext = .init(),
+                         forceLocal: Bool = false,
+                         configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
+                         terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
+                         transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
+                         onDevice: OnDeviceCompletion? = OnDeviceCleanup.completion,
+                         log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
+                         cloudTimeout: TimeInterval? = nil, localTimeout: TimeInterval? = nil) async -> String? {
+        guard !Task.isCancelled else { return nil }
+        let configured = configuration()
+        guard configured.enabled else { return text }
+        let config = Configuration(enabled: true, provider: configured.provider, endpoint: configured.endpoint,
+                                   model: configured.model, key: forceLocal ? "" : configured.key)
+        if !config.key.isEmpty {
+            if let output = await clean(text, language: language, timeout: cloudTimeout ?? cleanupTimeout(for: text),
+                                        context: context, configuration: { config }, terms: terms,
+                                        transport: transport, onDevice: nil, log: log) { return output }
+            guard !Task.isCancelled else { return nil }
         }
-        guard !Task.isCancelled, budget.remaining > 0 else { return nil }
-        let runCleanup: @Sendable (String, String, CleanupBudget) async -> String? = cleanup ?? { value, lang, limit in
-            await clean(value, language: lang, budget: limit, validationSource: validationSource, context: context)
+        if let onDevice {
+            let local = Configuration(enabled: true, provider: config.provider, endpoint: "", model: "", key: "")
+            if let output = await clean(text, language: language, timeout: localTimeout ?? (OnDeviceCleanup.usesFallback ? gemmaTimeout(for: text) : 8),
+                                        context: context, configuration: { local }, terms: terms,
+                                        transport: transport, onDevice: onDevice, log: { outcome, start, input, output in
+                                            log("local:" + outcome, start, input, output)
+                                        }) { return output }
         }
-        if smart, let output = await runCleanup(text, language, budget) {
-            guard !Task.isCancelled, budget.remaining > 0 else { return nil }
-            return output
-        }
-        guard !Task.isCancelled, budget.remaining > 0, HomophoneCorrector.applies(to: language) else { return nil }
-        return try? await budget.run { await runFallback(fallbackText, budget) }
+        guard !Task.isCancelled else { return nil }
+        log("raw-fallback", Date(), text, nil)
+        return text
     }
 
     /// Existing opt-in warmup. No transcript or authorization is sent.
@@ -389,15 +403,13 @@ enum SmartCleanup {
     }
 
     /// 「說出要怎麼改」「放開就翻譯」在 Apple Intelligence 不能用時的退路：用使用者在智慧整理設定的服務。
-    /// 目前選的服務有 key 就用它，否則依序找任何一把已存的 key（Groq → Gemini → 百鍊 → 自訂）。都沒有回 nil。
+    /// Only cloud mode may use the explicitly selected provider. No scanning of other saved keys.
     static func completionRoute() -> (provider: Provider, key: String)? {
+        guard DictationRouteSettings.mode == .cloud else { return nil }
         let selected = provider
-        let order = [selected] + [Provider.groq, .claude, .gemini, .dashscope, .custom].filter { $0 != selected }
-        for p in order {
-            let k = key(for: p)
-            if !k.isEmpty, URL(string: p.endpoint) != nil, !p.defaultModel.isEmpty { return (p, k) }
-        }
-        return nil
+        let key = key(for: selected)
+        guard !key.isEmpty, URL(string: selected.endpoint) != nil, !selected.defaultModel.isEmpty else { return nil }
+        return (selected, key)
     }
 
     /// 通用 chat completion（不做逐字稿把關，改寫／翻譯用）。跟整理共用端點、模型、extraBody 相容重送。
@@ -437,14 +449,14 @@ enum SmartCleanup {
                               terms: { VocabularyPacks.termsForCleanup(text: $0) },
                               transport: { try await URLSession.shared.data(for: $0) },
                               normalize: { text, traditional in traditional ? TraditionalFixer.shared.fix(text) : text },
-                              context: .init(), validationSource: text)
+                              context: .init(), validationSource: text, dictionary: DictionaryStore.shared.dictionary)
         }
     }
 
     private static func perform(_ text: String, configuration: Configuration, traditional: Bool,
                                 budget: CleanupBudget, attempts: Int, terms: Terms,
                                 transport: Transport, normalize: Normalization,
-                                context: PromptContext, validationSource: String,
+                                context: PromptContext, validationSource: String, dictionary: [String: String],
                                 onRejected: Rejection = { _ in }) async throws -> String {
         try budget.check()
         guard !configuration.key.isEmpty, let url = URL(string: configuration.endpoint),
@@ -480,9 +492,17 @@ enum SmartCleanup {
         try budget.check()
         guard let content else { throw Failure.malformed }
         // 模型讀原始逐字稿（「三點」），把關的基準已轉成「3點」：數字格式先對齊（與 TextPipeline 同一條規則）。
-        let out = Normalizer.normalizeNumbers(normalize(content.trimmingCharacters(in: .whitespacesAndNewlines), traditional))
+        let canonicalNames = Dictionary(dictionary.map { key, value in
+            let name = value.isEmpty ? key : value
+            return (name, name)
+        }, uniquingKeysWith: { first, _ in first })
+        let out = TextPresentation.format(content.trimmingCharacters(in: .whitespacesAndNewlines), dictionary: canonicalNames, spaceMixedScripts: false) {
+            Normalizer.normalizeNumbers(normalize($0, traditional))
+        }
+        let source = TextPipeline.validationText(validationSource, taiwan: traditional, dictionary: dictionary, normalize: normalize)
+        let candidate = TextPipeline.validationText(out, taiwan: traditional, dictionary: dictionary, normalize: normalize)
         try budget.check()
-        guard accepts(original: validationSource, cleaned: out, relaxed: configuration.provider.trustsCleanup) else {
+        guard accepts(original: source, cleaned: candidate, terms: hints) else {
             if let reason = CleanupFidelity.rejectionReason(original: validationSource, cleaned: out) {
                 onRejected(reason + "｜原：" + String(validationSource.prefix(60)) + "｜候選：" + String(out.prefix(60)))
             }
@@ -511,7 +531,7 @@ enum SmartCleanup {
 
     private static func performOnDevice(_ text: String, traditional: Bool, budget: CleanupBudget, terms: Terms,
                                         complete: OnDeviceCompletion, normalize: Normalization,
-                                        context: PromptContext, validationSource: String,
+                                        context: PromptContext, validationSource: String, dictionary: [String: String],
                                         onRejected: Rejection = { _ in }) async throws -> String {
         try budget.check()
         // 裝置端模型的 context 只有 4096 tokens：詞庫提示只帶前 40 個。
@@ -520,8 +540,16 @@ enum SmartCleanup {
         let content = try await complete(systemPrompt(hints: hints, context: context), "逐字稿：\n\(transcriptMessage(text))")
         try budget.check()
         // 模型讀原始逐字稿（「三點」），把關的基準已轉成「3點」：數字格式先對齊（與 TextPipeline 同一條規則）。
-        let out = Normalizer.normalizeNumbers(normalize(content.trimmingCharacters(in: .whitespacesAndNewlines), traditional))
-        guard accepts(original: validationSource, cleaned: out) else {
+        let canonicalNames = Dictionary(dictionary.map { key, value in
+            let name = value.isEmpty ? key : value
+            return (name, name)
+        }, uniquingKeysWith: { first, _ in first })
+        let out = TextPresentation.format(content.trimmingCharacters(in: .whitespacesAndNewlines), dictionary: canonicalNames, spaceMixedScripts: false) {
+            Normalizer.normalizeNumbers(normalize($0, traditional))
+        }
+        let source = TextPipeline.validationText(validationSource, taiwan: traditional, dictionary: dictionary, normalize: normalize)
+        let candidate = TextPipeline.validationText(out, taiwan: traditional, dictionary: dictionary, normalize: normalize)
+        guard accepts(original: source, cleaned: candidate, terms: hints) else {
             if let reason = CleanupFidelity.rejectionReason(original: validationSource, cleaned: out) {
                 onRejected(reason + "｜原：" + String(validationSource.prefix(60)) + "｜候選：" + String(out.prefix(60)))
             }
@@ -554,76 +582,12 @@ enum SmartCleanup {
         return content
     }
 
-    /// 先以純函式確認實詞與數值順序不變，再用輸出形狀檢查擋住回答或擴寫。
-    /// 中文／英文長度比例與長文重疊檢查只作額外防護，不授權同義改寫或換句型。
-    /// `relaxed`：給守規矩的模型（Claude）用。不鎖「每個實詞都要留著」——那條會把正確的修正
-    /// （Dolbe Edmos→Dolby Atmos、「1200 不對是 12000」→「12000」）也擋掉；改成原文的雙字詞至少要留 35%。
-    /// 防「代替說話者回答／擴寫」的其他檢查（人稱、長度比例、分隔符）照舊。
-    static func accepts(original: String, cleaned: String, relaxed: Bool = false) -> Bool {
-        // 寬鬆把關：整套檢查（含字數比例）都用轉成同一種數字寫法的兩邊——「一萬二，不對，一萬兩千塊」→「12,000塊」
-        // 中文字從 14 掉到 4，比例 0.29 被擋（2026-10-19 真人錄音 sc02）。
-        let original = relaxed ? Normalizer.normalizeNumbers(original) : original
-        let cleaned = relaxed ? Normalizer.normalizeNumbers(cleaned) : cleaned
-        func counts(_ s: String) -> (cjk: Int, latin: Int) {
-            var cjk = 0, latin = 0
-            for c in s {
-                // 寬鬆把關（Claude）：阿拉伯數字不算進英數比例——「十月十三號」→「10 月 13 號」會讓數字變多；
-                // 數字另由 CleanupFidelity.introducesDigits 把關（2026-10-19 真人錄音 6 句數字句被誤擋）。
-                if c.isASCII { if c.isLetter || (!relaxed && c.isNumber) { latin += 1 } }
-                else if c.isLetter || c.isNumber { cjk += 1 }
-            }
-            return (cjk, latin)
-        }
-        guard !cleaned.contains("<<<"), !cleaned.contains(">>>") else { return false }
-        if relaxed {
-            // 2026-10-17 量測：Claude 正常整理（含改口、條列）新增的雙字詞最多 50%；
-            // 替使用者回答（「今天天氣怎麼樣」→「今天天氣晴朗…」）是 80%。
-            guard CleanupFidelity.passesRelaxed(original: original, cleaned: cleaned) else { return false }
-        } else {
-            guard CleanupFidelity.preservesContent(original: original, cleaned: cleaned) else { return false }
-        }
-        guard keepsPerson(original: original, cleaned: cleaned) else { return false }
-        if original.count > 12, !hasMeaningfulOverlap(cleaned, source: original) { return false }
-        let before = counts(original), after = counts(cleaned)
-        guard before.cjk + before.latin > 0, after.cjk + after.latin > 0 else { return false }
-        if before.cjk > 0 {
-            let ratio = Double(after.cjk) / Double(before.cjk)
-            guard ratio >= 0.3, ratio <= 1.55 else { return false }
-        } else if after.cjk > 3 {
-            return false    // 原本沒中文卻生出一段中文＝在回答，不是整理
-        }
-        if before.latin > 0 {
-            let ratio = Double(after.latin) / Double(before.latin)
-            guard ratio >= 0.3, ratio <= 2.0 else { return false }
-        } else if after.latin > 12 {
-            return false
-        }
-        return true
+    /// All providers share the same vocabulary-aware, content-preserving gate.
+    static func accepts(original: String, cleaned: String, terms: [String] = []) -> Bool {
+        DictationPolish.accepts(original: original, cleaned: cleaned, terms: terms)
     }
 
-    /// 人稱不能被翻轉（2026-09-24 Apple Intelligence 實測：「你今天晚上要吃什麼」→「我今天晚上想吃什麼」）：
-    /// 原文有「你」整理後全沒了、或原文沒有「我」整理後冒出來＝在改寫成自己的話或替對方回答。
-    static func keepsPerson(original: String, cleaned: String) -> Bool {
-        let second: Set<Character> = ["你", "妳", "您"]
-        let hadSecond = original.contains { second.contains($0) }, hasSecond = cleaned.contains { second.contains($0) }
-        if hadSecond && !hasSecond { return false }
-        if !original.contains("我") && cleaned.contains("我") { return false }
-        // 「我們先去錄音室」→「我想明天去錄音室」：複數人稱被縮成自己（同日端到端實測）。
-        if original.contains("我們") && !cleaned.contains("我們") { return false }
-        return true
-    }
 
-    private static func bigrams(_ text: String) -> Set<String> {
-        let characters = Array(text.filter { !$0.isWhitespace && !$0.isPunctuation })
-        guard characters.count >= 2 else { return [] }
-        return Set((0 ..< characters.count - 1).map { String(characters[$0 ..< $0 + 2]) })
-    }
-
-    private static func hasMeaningfulOverlap(_ output: String, source: String) -> Bool {
-        let sourceTerms = bigrams(source)
-        guard !sourceTerms.isEmpty else { return true }
-        return !sourceTerms.isDisjoint(with: bigrams(output))
-    }
 }
 
 /// 沒有 Apple Intelligence 的 iPhone 用的手機上模型（Gemma 4，主 app 下載）。主 app 啟動時注入；
@@ -649,7 +613,8 @@ enum OnDeviceCleanup {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
             return { system, user in
-                let session = LanguageModelSession(instructions: system)
+                let model = SystemLanguageModel(guardrails: .permissiveContentTransformations)
+                let session = LanguageModelSession(model: model, instructions: system)
                 let response = try await session.respond(to: user, options: GenerationOptions(samplingMode: .greedy))
                 return response.content
             }
@@ -676,10 +641,13 @@ enum SmartLog {
     private static let queue = DispatchQueue(label: "com.utuvo.type.smart-log", qos: .utility)
 
     static func metadata(outcome: String, start: Date, elapsedMs: Int, provider: String,
-                         inputChars: Int, outputChars: Int) -> [String: String] {
-        ["at": ISO8601DateFormatter().string(from: start), "ms": String(elapsedMs),
+                         inputChars: Int, outputChars: Int, traceID: UUID? = nil) -> [String: String] {
+        var result = ["at": ISO8601DateFormatter().string(from: start), "ms": String(elapsedMs),
          "provider": provider, "outcome": outcome,
          "inputChars": String(inputChars), "outputChars": String(outputChars)]
+        if let traceID { result["traceID"] = traceID.uuidString }
+        result["stage"] = outcome == "delivered" || outcome.hasPrefix("delivery-") ? "delivery" : "polish"
+        return result
     }
 
     static func removeTranscript(_ entry: [String: String]) -> [String: String] {
@@ -689,15 +657,15 @@ enum SmartLog {
         return safe
     }
 
-    static func record(outcome: String, start: Date, input: String, output: String?) {
+    static func record(outcome: String, start: Date, input: String, output: String?, traceID: UUID? = nil) {
         let elapsedMs = Int(Date().timeIntervalSince(start) * 1000)
         let inputChars = input.count, outputChars = output?.count ?? 0
-        let provider = SmartCleanup.usesOnDevice
+        let provider = outcome.hasPrefix("local:") || SmartCleanup.usesOnDevice
             ? (OnDeviceCleanup.usesFallback ? "gemma" : "apple-intelligence") : SmartCleanup.provider.rawValue
         queue.async {
             var entries = (defaults.array(forKey: key) as? [[String: String]] ?? []).map(removeTranscript)
             entries.append(metadata(outcome: outcome, start: start, elapsedMs: elapsedMs, provider: provider,
-                                    inputChars: inputChars, outputChars: outputChars))
+                                    inputChars: inputChars, outputChars: outputChars, traceID: traceID))
             defaults.set(Array(entries.suffix(20)), forKey: key)
         }
     }
@@ -723,9 +691,9 @@ enum SmartLog {
         var lastFailureOutcome: String?
         for entry in entries {
             let outcome = entry["outcome"] ?? ""
-            if outcome == "ok" {
+            if outcome == "ok" || outcome == "delivered" {
                 ok += 1
-            } else {
+            } else if outcome != "candidate" && outcome != "local:candidate" {
                 failed += 1
                 lastFailure = reason(outcome)
                 lastFailureProvider = entry["provider"]
@@ -756,6 +724,9 @@ enum SmartLog {
             let code = String(outcome.dropFirst("http(".count).dropLast())
             return String(localized: "服務回應錯誤（\(code)）")
         }
+        if outcome == "raw-fallback" { return String(localized: "本機整理不可用，已保留辨識結果") }
+        if outcome == "delivery-skipped-field-changed" { return String(localized: "輸入欄位已變更，未貼入") }
+        if outcome.hasPrefix("local:") { return String(localized: "本機整理") + "：" + reason(String(outcome.dropFirst(6))) }
         if outcome == "timeout" { return String(localized: "逾時") }
         if outcome == "rejected" { return String(localized: "整理結果沒通過把關") }
         if outcome == "malformed" { return String(localized: "服務回應格式不對") }
