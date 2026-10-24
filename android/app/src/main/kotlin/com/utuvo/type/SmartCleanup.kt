@@ -417,18 +417,20 @@ object SmartCleanup {
         internal val apiKey: String, internal val endpoint: String, internal val model: String,
         internal val system: String, internal val variant: LanguageVariant,
         internal val dictionary: Map<String, String>, internal val latinTerms: List<String>,
-        internal val onDevice: Boolean, internal val localReady: Boolean, internal val cpuOnly: Boolean)
+        internal val onDevice: Boolean, internal val localReady: Boolean, internal val cpuOnly: Boolean,
+        internal val autoList: Boolean)
 
     fun prepareRequest(c: Context, text: String, context: CleanupContext = CleanupContext()): RequestSnapshot {
         val p = provider(c)
         val dictionary = DictionaryStore.entries(c).toMap()
         val localReady = onDeviceUsable(c)
         val enabled = enabled(c)
+        val lists = autoList(c)
         val key = if (enabled) key(c, p).orEmpty() else ""
         return RequestSnapshot(enabled, p, key, endpoint(c, p), model(c, p),
-            system(VocabularyPacks.termsForCleanup(c, text), requestContext(c, context), autoList = autoList(c)),
+            system(VocabularyPacks.termsForCleanup(c, text), requestContext(c, context), autoList = lists),
             context.variant, dictionary, VocabularyPacks.latinTermsForCleanedText(c, dictionary).toList(),
-            key.isEmpty() && localReady, localReady, OnDeviceLlm.cpuOnly(c))
+            key.isEmpty() && localReady, localReady, OnDeviceLlm.cpuOnly(c), lists)
     }
 
     /** 設定頁「測試」與 clean 共用；整個準備、請求與相容性重送共用同一個 deadline。 */
@@ -439,7 +441,7 @@ object SmartCleanup {
         return runFrozen(c, text, apiKey, timeoutMs, deadlineNanos, validationSource, cancellation,
             RequestSnapshot(frozen.enabled, provider, apiKey, endpoint(c, provider), model(c, provider),
                 frozen.system, frozen.variant, frozen.dictionary, frozen.latinTerms,
-                frozen.onDevice, frozen.localReady, frozen.cpuOnly))
+                frozen.onDevice, frozen.localReady, frozen.cpuOnly, frozen.autoList))
     }
 
     private fun runFrozen(c: Context, text: String, apiKey: String, timeoutMs: Long,

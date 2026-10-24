@@ -313,6 +313,26 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertTrue(note.contains("智慧整理") || note.contains("Smart cleanup"), note)
         model.cancelProcessing()
     }
+
+    func testExplicitInlineListFallbackIsDeliveredOnceAndRespectsPreference() async throws {
+        let raw = "明天的錄音要帶 1.麥克風 2.輔駕 3.腳架 4.個人監聽器 5.耳機還有最重要的 6.耳朵"
+        for lists in [true, false] {
+            let context = try IsolatedContext.make(); defer { context.tearDown() }
+            let target = CapturedFixture(), model = model(context, target: CapturedFixture())
+            model.preferences.cleanupAutoList = lists
+            model.captureDestination = { _ in target }
+            model.cleanupRunner = { _, _ in nil }
+            model.localBackgroundRunner = { _, _, _ in nil }
+            model.startRecording(mode: .smart)
+            await model.completeSyntheticDictation(raw)
+            XCTAssertEqual(target.insertions, 1)
+            XCTAssertEqual(target.replacements, 0)
+            XCTAssertEqual(model.lastOutput.filter { $0 == "\n" }.count, lists ? 6 : 0)
+            XCTAssertTrue(model.lastOutput.contains(lists ? "還有最重要的耳朵" : "耳機還有最重要的"))
+            XCTAssertEqual(model.preferences.historyRecords.first?.output, model.lastOutput)
+            model.cancelProcessing()
+        }
+    }
     func testPendingCleanupInsertsNothingThenOneFinalResultWithRawHistory() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         let target = CapturedFixture(), model = model(context, target: target)

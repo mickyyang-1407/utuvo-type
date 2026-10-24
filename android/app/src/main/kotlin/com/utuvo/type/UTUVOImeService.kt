@@ -1630,6 +1630,8 @@ class UTUVOImeService : InputMethodService() {
             val preparedCleanup = SmartCleanup.prepareRequest(this, raw, route.context)
             val selectedOnDevice = preparedCleanup.onDevice
             val enabled = preparedCleanup.enabled
+            fun present(value: String): String = if (enabled && preparedCleanup.autoList)
+                fitField(com.utuvo.type.core.OutputShape.expandingInlineNumberedList(value), tone, inputType) else value
             var finalDroppedMark = droppedMark
             keyboard?.setHint(getString(R.string.hint_refining), error = false)
             finalDictation.start(cleaned,
@@ -1661,7 +1663,8 @@ class UTUVOImeService : InputMethodService() {
                         after == ic.getTextAfterCursor(200, 0)?.toString() &&
                         selection == ic.getSelectedText(0)?.toString()
                 },
-                deliver = { output ->
+                deliver = { candidate ->
+                    val output = present(candidate)
                     val previous = lastDictation
                     val prefix = DictationJoin.prefix(
                         ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previous), 0)?.toString(), previous, output)
@@ -1676,7 +1679,8 @@ class UTUVOImeService : InputMethodService() {
                     keyboard?.setHint(getString(R.string.hint_idle), error = false)
                     accepted
                 },
-                retain = { output ->
+                retain = { candidate ->
+                    val output = present(candidate)
                     noteDictation(raw, output, turn, countedAsDelivered = false)
                     endTurn(turn)
                     keyboard?.showTranscript(output)

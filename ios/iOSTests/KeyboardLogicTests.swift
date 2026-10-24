@@ -200,8 +200,14 @@ final class KeyboardLogicTests: XCTestCase {
         XCTAssertEqual(ToneHint.infer(returnKeyType: .default), .document)
         XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: .default))
         XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: nil))
-        for single in [UIReturnKeyType.send, .search, .go, .done, .next, .join, .route, .google, .yahoo, .emergencyCall, .continue] {
+        for multiline in [UIReturnKeyType.send, .done, .next, .continue] {
+            XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: multiline), "Return action alone does not mean single-line")
+        }
+        for single in [UIReturnKeyType.search, .go, .join, .route, .google, .yahoo, .emergencyCall] {
             XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: single), "\(single.rawValue)")
+        }
+        for single in [UIKeyboardType.URL, .emailAddress, .numberPad, .phonePad, .namePhonePad, .decimalPad, .asciiCapableNumberPad, .webSearch] {
+            XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: .send, keyboardType: single))
         }
         // 2026-10-02 Micky：最後一句不加句號——聊天框、文件都一樣；中間的句號留著；問號驚嘆號不動；分段長文照原樣。
         XCTAssertEqual(ToneHint.apply("我十分鐘到。", tone: .chat), "我十分鐘到")

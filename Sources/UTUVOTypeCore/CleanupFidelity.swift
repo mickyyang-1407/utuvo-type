@@ -1776,6 +1776,13 @@ public enum CleanupFidelity {
     public static func rejectionReason(original: String, cleaned: String) -> String? {
         // FX-3 ④：對比句被翻成相反的意思，來源怎麼讀都不放行（「星期三不是星期四」→「星期四」）。
         if invertsContrast(original: original, cleaned: cleaned) { return "對比句被改成相反的意思" }
+        // Compare structural ordinals symmetrically. Only a complete 1…N source
+        // and a matching contiguous output list qualify; body values still align.
+        let expanded = OutputShape.expandingInlineNumberedList(original)
+        let sourceItems = numberedListItems(in: expanded)
+        let outputItems = numberedListItems(in: cleaned)
+        let original = expanded != original && sourceItems.count == outputItems.count
+            && contiguousListOrdinals(in: cleaned, count: sourceItems.count) ? expanded : original
         let listItems = numberedListItems(in: cleaned)
         let allowListFormatting = listItems.count >= 2 && hasListContext(original, numberedItemCount: listItems.count)
         let cleanedRange = NSRange(cleaned.startIndex..<cleaned.endIndex, in: cleaned)
@@ -1890,6 +1897,16 @@ public enum CleanupFidelity {
             guard match.numberOfRanges > 1, let itemRange = Range(match.range(at: 1), in: value) else { return nil }
             return String(value[itemRange])
         }
+    }
+
+    private static func contiguousListOrdinals(in value: String, count: Int) -> Bool {
+        guard count >= 2 else { return false }
+        let lines = value.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }
+        let ordinals = lines.compactMap { line -> Int? in
+            guard let end = line.firstIndex(where: { ".、)".contains($0) }) else { return nil }
+            return Int(line[..<end])
+        }
+        return ordinals == Array(1...count)
     }
 
     private static func hasListContext(_ value: String, numberedItemCount: Int) -> Bool {
