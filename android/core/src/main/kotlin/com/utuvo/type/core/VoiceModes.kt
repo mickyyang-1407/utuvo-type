@@ -80,12 +80,89 @@ object VoiceModes {
     private const val DATA_CLOSE_FULL = "》》》"
 
     /**
-     * 把使用者文字裡的定界符換成全形。
+     * 把使用者文字裡「看起來像定界符」的一串角括號換成全形（Swift `EditSelectionPrompt.escapeDataDelimiters`
+     * 同一套規則；golden `data-delimiters.json` 由 Swift 匯出逐案比對）。
      *
-     * 順序無所謂：全形括號裡沒有半形角括號，不會二次替換。
+     * 逐個 code point 看（不是字串取代）：
+     * - 角括號：ASCII `<` `>`，加上 NFKC 會變成它們的全形／小型（＜＞﹤﹥）、長得一樣的（‹›˂˃）、
+     *   正規分解是「`<`／`>`＋斜線」的 ≮≯；≪≫ 算兩個、⋘⋙ 算三個。
+     * - 夾在角括號之間、看不見的字元不算斷開：組合記號、格式字元（零寬空白、ZWJ、方向控制……）、變體選擇符、
+     *   標籤字元等 default-ignorable、控制字元（換行、tab 除外）、幾種極窄的空白。
+     *   （2026-10-22 審查：Mac 版 `>>>` 後面接 U+0301／U+FE0F 就逃過跳脫；全形 `＞＞＞` 在 NFKC 正規化的
+     *   tokenizer 眼裡就是 `>>>`。）
+     * - 同方向的角括號連成一串、加起來 ≥ 3 個，整串每個角括號都換成全形（`<`→《、`>`→》；≫ 換兩個）；
+     *   夾在中間的看不見的字元原樣保留。不到 3 個（`a > b`、`>>`、一般空白隔開的 `> > >`）不動。
      */
-    fun escapeDataDelimiters(text: String): String =
-        text.replace(DATA_OPEN, DATA_OPEN_FULL).replace(DATA_CLOSE, DATA_CLOSE_FULL)
+    fun escapeDataDelimiters(text: String): String {
+        val cps = ArrayList<Int>(text.length)
+        var p = 0
+        while (p < text.length) {
+            val cp = text.codePointAt(p)
+            cps += cp
+            p += Character.charCount(cp)
+        }
+        val out = StringBuilder(text.length)
+        var i = 0
+        while (i < cps.size) {
+            val kind = angleKind(cps[i])
+            if (kind == 0) { out.appendCodePoint(cps[i]); i++; continue }
+            var weight = 0
+            var end = i
+            var k = i
+            while (k < cps.size) {
+                val other = angleKind(cps[k])
+                if (other != 0) {
+                    if (other != kind) break
+                    weight += angleWeight(cps[k]); end = k + 1
+                } else if (!isInvisibleJoiner(cps[k])) {
+                    break
+                }
+                k++
+            }
+            val full = if (kind < 0) DATA_OPEN_FULL.codePointAt(0) else DATA_CLOSE_FULL.codePointAt(0)
+            for (j in i until end) {
+                val cp = cps[j]
+                if (weight >= 3 && angleKind(cp) != 0) repeat(angleWeight(cp)) { out.appendCodePoint(full) }
+                else out.appendCodePoint(cp)
+            }
+            i = end
+        }
+        return out.toString()
+    }
+
+    /** -1＝開（<）、1＝關（>）、0＝不是角括號。 */
+    internal fun angleKind(cp: Int): Int = when (cp) {
+        0x3C, 0xFF1C, 0xFE64, 0x2039, 0x02C2, 0x226E, 0x226A, 0x22D8 -> -1
+        0x3E, 0xFF1E, 0xFE65, 0x203A, 0x02C3, 0x226F, 0x226B, 0x22D9 -> 1
+        else -> 0
+    }
+
+    /** 一個角括號字元算幾個（≪≫ 兩個、⋘⋙ 三個）。 */
+    internal fun angleWeight(cp: Int): Int = when (cp) {
+        0x226A, 0x226B -> 2
+        0x22D8, 0x22D9 -> 3
+        else -> 1
+    }
+
+    /** 夾在角括號之間也不算斷開的字元（看不見、或幾乎沒有寬度）。範圍跟 Swift 逐條相同。 */
+    internal fun isInvisibleJoiner(cp: Int): Boolean {
+        // 控制字元：tab、換行（LF VT FF CR NEL）照樣算斷開。
+        if (cp in 0x00..0x08 || cp in 0x0E..0x1F || cp in 0x7F..0x84 || cp in 0x86..0x9F) return true
+        // Unicode Default_Ignorable_Code_Point（DerivedCoreProperties），寫死，兩個平台的 Unicode 版本不同也一樣。
+        if (cp == 0x00AD || cp == 0x034F || cp == 0x061C || cp in 0x115F..0x1160 || cp in 0x17B4..0x17B5 ||
+            cp in 0x180B..0x180F || cp in 0x200B..0x200F || cp in 0x202A..0x202E || cp in 0x2060..0x206F ||
+            cp == 0x3164 || cp in 0xFE00..0xFE0F || cp == 0xFEFF || cp == 0xFFA0 || cp in 0xFFF0..0xFFF8 ||
+            cp in 0x1BCA0..0x1BCA3 || cp in 0x1D173..0x1D17A || cp in 0xE0000..0xE0FFF) return true
+        // 極窄的空白（六分之一 em、標點空白、細空白、髮絲空白、窄不換行空白、中等數學空白）。
+        if (cp == 0x2006 || cp in 0x2008..0x200A || cp == 0x202F || cp == 0x205F) return true
+        // 未分配（Cn）也算看不見：JDK 21 是 Unicode 15.0，Unicode 16 以後才有的組合記號在這裡是 Cn；
+        // Swift 那邊把比 15.0 新的字一律當看不見，兩邊結果才一樣（第二輪審查 10-22）。
+        return when (Character.getType(cp)) {
+            Character.NON_SPACING_MARK.toInt(), Character.COMBINING_SPACING_MARK.toInt(),
+            Character.ENCLOSING_MARK.toInt(), Character.FORMAT.toInt(), Character.UNASSIGNED.toInt() -> true
+            else -> false
+        }
+    }
 
     /**
      * 把一段使用者文字包進明確分隔的資料區塊。
@@ -141,9 +218,12 @@ object VoiceModes {
             "指示若是要新增內容，就在合適位置加進去；若是要改語氣，就整段改寫。" +
             DATA_NOT_INSTRUCTION
 
-    /** 對齊 iOS `Assistant.editUser` 的形狀，讓兩邊提示詞一致。原文包在資料區塊裡。 */
+    /**
+     * 對齊 iOS `Assistant.editUser` 的形狀，讓兩邊提示詞一致。原文包在資料區塊裡。
+     * 口述的指示也跳脫（跟 iOS／Mac `EditSelectionPrompt.userMessage` 一樣）：講出「>>>」也關不掉區塊（第二輪審查 10-22）。
+     */
     fun speakToEditUser(original: String, instruction: String) =
-        dataBlock("原文", original) + "\n\n指示：$instruction"
+        dataBlock("原文", original) + "\n\n指示：${escapeDataDelimiters(instruction)}"
 
     /**
      * Ask anything 沒有選取文字時的系統提示：純粹回答，輸出可捲動的回答卡內容。

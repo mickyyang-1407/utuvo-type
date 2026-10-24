@@ -387,12 +387,16 @@ object CloudASR {
     /**
      * 錄音 → 文字。任何失敗都回 null，呼叫端退回系統 SpeechRecognizer 的結果。
      * 整段（含 Gemini 400 重送）共用同一個預算：逾時不等輸入完成。
+     * [maxBudgetMs]＝最多能用多久（從按停起算的總時限剩下的時間，capture-latency-v1）；
+     * null＝只受 [timeLimit] 限制（舊行為）；≤ 0＝時間已經用完，不打網路、記一筆 timeout。
      */
+    @JvmOverloads
     fun transcribe(samples: FloatArray, language: String, hotwords: List<String>,
                    provider: SmartCleanup.Provider, key: String,
                    transport: Transport = HttpTransport,
                    log: Log = NO_LOG,
-                   guard: Guard = Guard(::trimGuard)): String? {
+                   guard: Guard = Guard(::trimGuard),
+                   maxBudgetMs: Long? = null): String? {
         val seconds = samples.size / 16_000.0
         // 太短（< 0.25 秒）不打網路。
         if (seconds < 0.25) return null
@@ -402,7 +406,11 @@ object CloudASR {
         if (key.isEmpty()) return null
 
         val start = System.currentTimeMillis()
-        val budgetMs = (timeLimit(seconds) * 1000).toLong().coerceAtLeast(1)
+        if (maxBudgetMs != null && maxBudgetMs <= 0) {
+            log.record(start, 0, provider.id, "timeout", seconds, 0)
+            return null
+        }
+        val budgetMs = minOf((timeLimit(seconds) * 1000).toLong(), maxBudgetMs ?: Long.MAX_VALUE).coerceAtLeast(1)
         val deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budgetMs)
         val audio = wav(trimSilence(samples))
         val providerId = provider.id
@@ -563,9 +571,57 @@ object CloudASR {
     /** 測試用的無聲 log（不寫本機 pref）。 */
     val NO_LOG = Log { _, _, _, _, _, _ -> }
 
+    /**
+     * 記下這一次雲端重辨識最後一筆結果（"ok"／"timeout"／"transport"／"http:500"…），其餘照原本的 log 寫。
+     * 鍵盤用它決定退回裝置端文字時要提示哪一種原因（[CloudFallback]）。
+     */
+    class OutcomeTap(private val inner: Log = NO_LOG) : Log {
+        @Volatile var last: String? = null
+            private set
+
+        override fun record(start: Long, elapsedMs: Long, provider: String, outcome: String,
+                            audioSeconds: Double, outputChars: Int) {
+            last = outcome
+            inner.record(start, elapsedMs, provider, outcome, audioSeconds, outputChars)
+        }
+    }
+
+    /** 從按停起算的總時限還剩多少毫秒（可能 ≤ 0）。總時限＝[timeLimit]（整段秒數，最多 6 秒）。 */
+    fun remainingBudgetMs(stoppedAtNanos: Long, seconds: Double, now: Long = System.nanoTime()): Long =
+        (timeLimit(seconds) * 1000).toLong() - TimeUnit.NANOSECONDS.toMillis(now - stoppedAtNanos)
+
     /** 預設 log：寫進本機 pref，最近 20 筆。 */
     fun defaultLog(c: Context) = Log { start, elapsedMs, provider, outcome, audioSeconds, outputChars ->
         CloudAsrLog.record(c, start, elapsedMs, provider, outcome, audioSeconds, outputChars)
+    }
+}
+
+/**
+ * 雲端重辨識沒成功、改貼裝置端（系統辨識器）文字時，要不要提示使用者、提示哪一種（delivery-learning-v3、capture-latency-v1）。
+ * 以前完全靜默：使用者不知道這次是比較弱的那一份結果。純函式，JVM 測得到。
+ */
+object CloudFallback {
+    enum class Notice {
+        /** 不用提示：雲端成功、沒有裝置端文字可貼、或根本沒送出請求（太短、沒有 key）。 */
+        NONE,
+        /** 網路慢或連不上（逾時、傳輸錯誤）。 */
+        SLOW_NETWORK,
+        /** 服務回錯誤、被限流、或回來的文字不能用。 */
+        FAILED,
+    }
+
+    /**
+     * @param outcome 這次最後一筆雲端結果（[CloudASR.OutcomeTap.last]）；null＝沒有送出任何請求。
+     * @param cloudText 雲端回來的文字；非 null＝雲端成功（就算整段只是被濾掉的結尾句，也不是失敗）。
+     * @param deviceText 系統辨識器的文字（就是要改貼的那一份）。
+     */
+    @JvmStatic
+    fun notice(outcome: String?, cloudText: String?, deviceText: String): Notice = when {
+        cloudText != null -> Notice.NONE
+        deviceText.isEmpty() -> Notice.NONE
+        outcome == null || outcome == "ok" -> Notice.NONE
+        outcome == "timeout" || outcome == "transport" -> Notice.SLOW_NETWORK
+        else -> Notice.FAILED
     }
 }
 

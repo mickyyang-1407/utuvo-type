@@ -11,10 +11,20 @@ protocol DictationDestination: AnyObject {
     func invalidate()
     /// 剪貼簿退路貼上前的最後確認：先前回報沒寫進去的字，是不是其實晚到了（避免貼兩份）。
     func textPresent(_ text: String) -> Bool
+    /// 開始聽寫當下游標前的文字（context-awareness-2：接續上一段要不要先補空白或拿掉的「，」）。
+    /// 讀不到、或目的地已失效（使用者打字／點滑鼠／換焦點）回 nil＝不補。
+    var textBeforeCursor: String? { get }
+    /// 這個目的地是哪一個欄位（context-awareness-2：接續上一段只在同一個欄位；同一個 App 的別的欄位不算）。nil＝不知道＝不接續。
+    var fieldIdentity: AnyHashable? { get }
+    /// 開始聽寫當下的游標位置（UTF-16）。接續上一段要游標正好停在上一段送完的地方。nil＝不知道。
+    var cursorLocation: Int? { get }
 }
 
 extension DictationDestination {
     func textPresent(_ text: String) -> Bool { false }
+    var textBeforeCursor: String? { nil }
+    var fieldIdentity: AnyHashable? { nil }
+    var cursorLocation: Int? { nil }
 }
 
 @MainActor
@@ -23,6 +33,31 @@ final class AXAdapter {
 
     /// Captured before ASR. Unsupported fields return nil; no full-value reads.
     func capture(expectedPID: Int32? = nil) -> (any DictationDestination)? {
+        capture(expectedPID: expectedPID, beforeUTF16: Self.minimumBeforeWindow)
+    }
+
+    /// 游標前至少讀這麼多（UTF-16），跟以前一樣。
+    static let minimumBeforeWindow = 32
+    /// 游標前最多讀這麼多（UTF-16）：上一段很長時也只讀有限的一段，不讀整份內容。
+    static let maximumBeforeWindow = 4_096
+
+    /// context-awareness-2：游標前要讀多長才比得出「游標前就是上一段聽寫的結尾」——上一段長度＋8，
+    /// 至少 32、最多 4096（UTF-16，跟 AX 的範圍單位一樣）。
+    static func beforeWindow(previous: String?) -> Int {
+        min(maximumBeforeWindow, max(minimumBeforeWindow, (previous?.utf16.count ?? 0) + 8))
+    }
+
+    /// 游標前真正要讀多長：只有焦點欄位就是上一段送進去的那個欄位，才讀 `window`（上一段＋8）；
+    /// 別的欄位（同一個 App 的另一則筆記、別的 App、封鎖網站）一律 32，跟以前一樣——那裡不會接續，多讀沒有用。
+    static func effectiveBeforeWindow(_ window: Int, field: AnyHashable, previousField: AnyHashable?) -> Int {
+        guard let previousField, previousField == field else { return minimumBeforeWindow }
+        return window
+    }
+
+    /// 同 `capture(expectedPID:)`，游標前改讀 `beforeUTF16` 個 UTF-16 單位（只限 `previousField` 那個欄位，見
+    /// `effectiveBeforeWindow`）；讀不到就退回 32（跟以前一樣）。
+    func capture(expectedPID: Int32?, beforeUTF16 requested: Int,
+                 previousField: AnyHashable? = nil) -> (any DictationDestination)? {
         guard AXIsProcessTrusted(), let app = NSWorkspace.shared.frontmostApplication,
               expectedPID == nil || app.processIdentifier == expectedPID,
               let element = Self.focusedElement(), Self.pid(element) == app.processIdentifier,
@@ -34,10 +69,19 @@ final class AXAdapter {
               Self.settable(element, kAXSelectedTextAttribute), Self.settable(element, kAXSelectedTextRangeAttribute),
               let count = Self.attribute(element, kAXNumberOfCharactersAttribute) as? Int,
               count >= selection.location,
-              let before = Self.text(element, NSRange(location: max(0, selection.location - 32), length: min(32, selection.location))),
+              case let window = Self.effectiveBeforeWindow(requested, field: AnyHashable(element), previousField: previousField),
+              let before = Self.textBefore(element, location: selection.location, window: window),
               let after = Self.text(element, NSRange(location: selection.location, length: min(32, count - selection.location))) else { return nil }
         return AXCapturedDestination(element: element, pid: app.processIdentifier, role: role, location: selection.location,
                                      before: before, after: after)
+    }
+
+    private static func textBefore(_ element: AXUIElement, location: Int, window: Int) -> String? {
+        let wanted = min(max(minimumBeforeWindow, min(window, maximumBeforeWindow)), location)
+        if let wide = text(element, NSRange(location: location - wanted, length: wanted)) { return wide }
+        let narrow = min(minimumBeforeWindow, location)
+        guard wanted > narrow else { return nil }
+        return text(element, NSRange(location: location - narrow, length: narrow))
     }
 
     static func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
@@ -176,6 +220,13 @@ final class AXCapturedDestination: DictationDestination {
     }
 
     func textPresent(_ text: String) -> Bool { Self.textAppeared(text, in: element, at: location) }
+
+    /// 開始聽寫當下讀到的游標前文字；目的地已失效就不提供（不能拿過時的內容決定要不要補標點）。
+    var textBeforeCursor: String? { invalid ? nil : before }
+
+    /// AXUIElement 以 CFEqual／CFHash 比較：同一個 App 的同一個欄位元素才相等（元素本身帶著 pid）。
+    var fieldIdentity: AnyHashable? { AnyHashable(element) }
+    var cursorLocation: Int? { location }
 
     private func matches(_ text: String) -> Bool {
         let length = text.utf16.count

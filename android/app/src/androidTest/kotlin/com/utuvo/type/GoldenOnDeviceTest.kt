@@ -70,6 +70,32 @@ class GoldenOnDeviceTest {
         report("句尾語氣", cases.length(), diffs)
     }
 
+    /** 接續聽寫（W2-7）：交界上的字靠 BreakIterator 切字形叢集、java.text.Normalizer 比標準等價，手機上是 ICU。 */
+    @Test
+    fun sentenceMoodJoinMatchesSwift() {
+        val cases = golden("sentence-mood-join.json")
+        val diffs = mutableListOf<String>()
+        fun cps(s: String?) = s?.codePoints()?.toArray()?.joinToString(" ") { Integer.toHexString(it) } ?: "nil"
+        fun JSONObject.optText(key: String) = if (isNull(key)) null else getString(key)
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            if (c.getString("fn") == "joinPrefix") {
+                val got = com.utuvo.type.core.SentenceMood.joinPrefix(
+                    c.optText("before"), c.optText("previous"), c.getString("next"), c.optText("droppedMark"))
+                if (got != c.getString("prefix")) diffs += "joinPrefix before[${cps(c.optText("before"))}] previous[${cps(c.optText("previous"))}] " +
+                    "next[${cps(c.getString("next"))}] swift[${cps(c.getString("prefix"))}] android[${cps(got)}]"
+            } else {
+                val text = c.getString("text")
+                val mark = com.utuvo.type.core.SentenceMood.finishDroppedMark(text)
+                val finish = com.utuvo.type.core.SentenceMood.finish(text)
+                if (mark != c.getString("mark") || finish != c.getString("finish")) {
+                    diffs += "finishDroppedMark[${cps(text)}] swift[${cps(c.getString("mark"))}|${cps(c.getString("finish"))}] android[${cps(mark)}|${cps(finish)}]"
+                }
+            }
+        }
+        report("接續聽寫", cases.length(), diffs)
+    }
+
     @Test
     fun zhuyinMatchesSwift() {
         val lexicon = Lexicons.zhuyin(app) ?: error("zhuyin.dat 開不起來")

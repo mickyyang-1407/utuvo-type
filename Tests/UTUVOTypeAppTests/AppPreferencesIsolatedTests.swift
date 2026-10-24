@@ -1,5 +1,6 @@
 import XCTest
 @testable import UTUVOTypeApp
+import UTUVOTypeCore
 
 @MainActor
 final class AppPreferencesIsolatedTests: XCTestCase {
@@ -11,7 +12,9 @@ final class AppPreferencesIsolatedTests: XCTestCase {
         XCTAssertEqual(preferences.applicationSupportDirectory, context.applicationSupportDirectory)
         XCTAssertEqual(preferences.logDirectory, context.logDirectory)
         XCTAssertFalse(preferences.cleanupEnabled)
-        XCTAssertTrue(preferences.enabledVocabularyPackIDs.isEmpty)
+        // asr-vocab-1（2026-10-22）：內建 ai、tw 包跟 iOS／Android 一樣預設開；catalog 六包照舊預設全關。
+        XCTAssertEqual(preferences.enabledVocabularyPackIDs, BuiltInVocabulary.defaultOnIDs)
+        XCTAssertTrue(preferences.enabledVocabularyPackIDs.isDisjoint(with: VocabularyCatalog.Catalog.knownIDs))
         DictionaryCloud.start(preferences) // Must return before constructing a live store.
     }
     func testTeardownOwnsOnlyUniqueChild() async throws {

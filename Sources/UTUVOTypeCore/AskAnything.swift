@@ -55,8 +55,19 @@ public enum AskAnything: Sendable {
         let spoken = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let selection, !selection.isEmpty else { return "指令：\(spoken)" }
         let bounded = ContextBounds.bounded(selection, limit: selectionLimit)
-            .replacingOccurrences(of: "<<<", with: "‹‹‹").replacingOccurrences(of: ">>>", with: "›››")
+            // `.literal`：`>>>` 後面接組合記號也對得到（字素比對會漏掉）。
+            .replacingOccurrences(of: "<<<", with: "‹‹‹", options: .literal)
+            .replacingOccurrences(of: ">>>", with: "›››", options: .literal)
         return "選取文字：\n<<<\n\(bounded)\n>>>\n\n指令：\(spoken)"
+    }
+
+    /// 同 `parse(_:hasSelection:)`，再加一道：選取文字所在的欄位不能編輯（網頁、PDF、郵件閱讀窗格、
+    /// 唯讀文字框）時，replace 一律降級成 answer——貼回去只會貼進空氣，還會回報「已改寫」（modes-4）。
+    /// `editable` 由呼叫端在開始問問題當下判斷（AXValue 或 AXSelectedText 可寫）。
+    public static func parse(_ raw: String, hasSelection: Bool, editable: Bool) -> Reply? {
+        guard var reply = parse(raw, hasSelection: hasSelection) else { return nil }
+        if !editable, reply.action == .replace { reply.action = .answer }
+        return reply
     }
 
     /// 解析模型回應。容錯：去掉 code fence、找第一個 JSON 物件；不是 JSON 就當成回答。

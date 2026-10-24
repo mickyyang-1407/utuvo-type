@@ -349,24 +349,42 @@ final class PinyinTests: XCTestCase {
     // MARK: - 記憶體
 
     /// 設計上：詞庫以 .alwaysMapped 開檔，常駐 Swift 物件只有音節表（415 筆＋前綴區間），
-    /// 3.9 萬把拼音鍵與 6.5 萬筆詞條都留在映射的檔案裡。這裡同時驗「結構」與「實測 footprint」。
-    /// footprint 儀器本身的反面對照在 ZhuyinTests.testFootprintInstrumentSeesAWholeFileRead。
+    /// 3.9 萬把拼音鍵與 6.5 萬筆詞條都留在映射的檔案裡。
+    /// 主檢查是結構：詞庫位元組就是 pinyin.dat 的映射（跟 heap 歷史、測試順序無關）。
+    /// footprint 前後差只在同一狀態下的整檔讀入對照看得見時才斷言（FootprintGate），看不見會印原因。
+    /// 結構檢查的反面對照在 testMappingProbeRejectsHeapCopy 與 ZhuyinTests.testMappingProbeRejectsHeapCopyAndOtherFile。
     func testLexiconDoesNotLoadWholeFileIntoMemory() throws {
-        let before = ZhuyinTests.physFootprint()
-        let lex = try XCTUnwrap(PinyinLexicon(url: Self.dataURL))
-        for s in ["shi", "ni", "hao", "zhong", "guo"] {
-            _ = lex.lookup(syllables: [s])
+        try MappedFileProbe.requireAvailable()
+        let fileSize = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: Self.dataURL.path)[.size] as? Int)
+        let (lex, delta) = try FootprintGate.measure("PinyinLexicon(url:)", wholeFileReadOf: Self.dataURL) {
+            let lex = try XCTUnwrap(PinyinLexicon(url: Self.dataURL))
+            for s in ["shi", "ni", "hao", "zhong", "guo"] {
+                _ = lex.lookup(syllables: [s])
+            }
+            _ = lex.lookup(prefixes: ["z", "g"])
+            return lex
         }
-        _ = lex.lookup(prefixes: ["z", "g"])
-        let after = ZhuyinTests.physFootprint()
         XCTAssertLessThan(lex.syllableCount, 1_000, "常駐表只能是音節表，不是整份詞庫")
         XCTAssertGreaterThan(lex.entryCount, 60_000, "詞條確實在檔案裡")
-        let fileSize = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: Self.dataURL.path)[.size] as? Int)
-        if let before, let after {
-            let delta = after - before
+        let why = lex.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: Self.dataURL) }
+        XCTAssertNil(why, "詞庫位元組不是 pinyin.dat 的映射 → 被整份讀進記憶體了：\(why ?? "")")
+        // 繁體拼音（pinyin-hant.dat）走同一個 PinyinLexicon(url:)
+        let hant = try XCTUnwrap(PinyinLexicon(url: PinyinHantTests.dataURL))
+        let whyHant = hant.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: PinyinHantTests.dataURL) }
+        XCTAssertNil(whyHant, "詞庫位元組不是 pinyin-hant.dat 的映射：\(whyHant ?? "")")
+        if let delta {
             XCTAssertLessThan(delta, fileSize / 2,
                               "開詞庫後 footprint 增加 \(delta) bytes，接近整檔 \(fileSize) bytes → 疑似被整份讀進記憶體")
         }
+    }
+
+    /// 反面對照：整份讀進 heap 的拼音詞庫（拿掉 .alwaysMapped 的退化）一定被判「不是檔案映射」。
+    func testMappingProbeRejectsHeapCopy() throws {
+        try MappedFileProbe.requireAvailable()
+        let heap = try XCTUnwrap(PinyinLexicon(data: try Data(contentsOf: Self.dataURL)))
+        let why = heap.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: Self.dataURL) }
+        XCTAssertNotNil(why, "整份讀進 heap 的詞庫被判成 pinyin.dat 的映射 → 結構檢查是空心的")
+        XCTAssertTrue(why?.contains("不是檔案映射") ?? false, "理由應該是匿名記憶體，實際：\(why ?? "nil")")
     }
 
     func testMalformedDataIsRejected() throws {

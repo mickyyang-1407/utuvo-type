@@ -14,6 +14,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import com.utuvo.type.core.DictationClock
 import com.utuvo.type.core.DictionarySync
+import com.utuvo.type.core.EmptyStopPlan
 import com.utuvo.type.core.SpeechPunctuation
 import com.utuvo.type.core.EditScope
 import com.utuvo.type.core.VoiceMode
@@ -82,6 +83,10 @@ class UTUVOImeService : InputMethodService() {
         const val TAG = "UTUVOIme"
         /** 雲端辨識目前只做這一段語音（與 iOS 的兩段指示相同）；其他語言照系統辨識。 */
         const val CLOUD_LANGUAGE = "zh-TW"
+        /** 短暫提示（例：雲端退回裝置端結果）留在畫面上多久，期間不被一般的待機提示蓋掉。 */
+        const val NOTICE_MILLIS = 4_000L
+        /** 「不用按住，點一下」的提示留 3 秒（mobile-keyboard-2）。 */
+        const val HOLD_TIP_MILLIS = 3_000L
     }
 
     /** 徽章選的聽寫語言（存在共用 prefs，每次讀，別處改了也會跟到）。 */
@@ -93,8 +98,11 @@ class UTUVOImeService : InputMethodService() {
     private var cloudRecognizer: SpeechRecognizer? = null
     private var listening = false
     private var lastPartial = ""
-    /** 上一段聽寫插入的文字：最後一句的句號被拿掉了，緊接著再講時先補回去（SentenceMood.continuationPrefix）。 */
-    private var lastDictationOutput: String? = null
+    /**
+     * 上一段聽寫插入的文字＋送出前被拿掉的句尾標點：緊接著再講時決定這一段前面要不要先補空白／「，」「、」
+     * （[DictationJoin]，W2-7 同 Mac；永遠不補「。」）。
+     */
+    private var lastDictation: DictationJoin.Previous? = null
     /** 這一次聽寫（點光球到再點一次）。辨識器每段結束交回一段，沒按停就重新開始聽（見 [ContinuousDictation]）。 */
     private var session: ContinuousDictation? = null
     /** 這次聽寫開始的時間戳；用來算說了幾秒（記使用數據用，0＝還沒開始）。 */
@@ -129,14 +137,12 @@ class UTUVOImeService : InputMethodService() {
     private var voiceMode: VoiceMode = VoiceMode.DICTATE
     /** 改寫模式沒有選取文字時，使用者選了「這一段」還是「全部文字」；null＝還沒選。 */
     private var pendingScope: EditScope? = null
-    /**
-     * 一次性的復原：剛插入或剛改寫掉的文字。只留一次，再動一次就作廢。
-     *
-     * [insertEnd] 是插入／改寫**當下**的游標絕對位置（也就是剛寫的那段的結尾）。
-     * 復原前要確認游標還停在這裡，否則使用者自己動過位置，刪掉的就不是我們寫的那一段。
-     */
-    private data class VoiceUndo(val rewritten: String, val original: String, val insertEnd: Int)
+    /** 一次性的復原（[VoiceUndo]）：剛插入或剛改寫掉的文字。只留一次，再動一次就作廢。 */
     private var voiceUndo: VoiceUndo? = null
+    /** 這一次語音的身分與狀態（mobile-keyboard-1）：✕ 只作廢這一次，不動上一段還在背景跑的整理。 */
+    private val turns = VoiceTurns()
+    /** 翻譯前的智慧整理（modes-2）還在跑：哪一次語音的、怎麼取消。 */
+    private var translateCleanup: Pair<Int, CleanupCancellation>? = null
     /** 游標前後各取多少字來算範圍（InputConnection 的 n 是 UTF-16 偏移）。 */
     private val cursorWindow = 100_000
     private var ime: ImeSession? = null
@@ -175,6 +181,27 @@ class UTUVOImeService : InputMethodService() {
     private var cloudKey: String? = null
     private var cloudProvider: SmartCleanup.Provider? = null
     private var cloudAsrRunning = false
+    /** 取回雲端錄音（按停）的時間：有裝置端文字可退時，雲端重辨識的總時限從這一刻算（capture-latency-v1）。 */
+    private var cloudStoppedAtNanos = 0L
+
+    /** capture-latency-1：按停當下就開跑的雲端最後一段，連同它的紀錄與分段工作（取消時一起收掉）。 */
+    private class EarlyCloud(val finish: EarlyCloudFinish, val outcomes: CloudASR.OutcomeTap, val live: LiveCloudASR?) {
+        fun cancel() { finish.cancel(); live?.abandon() }
+    }
+    /**
+     * 按停時開跑的那一份，記著是哪一次語音的：還沒被 [deliverWithCloud] 拿走的（pending）與已經在等的（running）。
+     * ✕ 只中斷被取消的那一次自己的（別讓網路白跑）；上一次還在等的照常跑完、照常貼。
+     */
+    private val earlyJobs = TurnCloudJobs<EarlyCloud> { it.cancel() }
+    /** 按停時開跑的那一份自己一條執行緒：不排在 [cloudWorker] 上一段還在等網路的工作後面。 */
+    private val earlyExecutor = java.util.concurrent.Executor { r ->
+        Thread(r, "cloud-asr-early").apply { isDaemon = true }.start()
+    }
+    /** 每次開始雲端錄音就加一：錄音執行緒 post 回來的上限通知要對得上這一次才算數。 */
+    private var cloudRecordingGeneration = 0
+    /** 短暫提示與它的到期時間（[showNotice]）：送出文字後宿主會回呼 onUpdateSelection，不能馬上被待機提示蓋掉。 */
+    private var notice: String? = null
+    private var noticeUntil = 0L
 
     // ── 候選列的預測（對齊 iOS `KeyboardViewController`）──
 
@@ -267,6 +294,9 @@ class UTUVOImeService : InputMethodService() {
             }
             override fun onAnswerCopy(text: String) { copyAnswer(text) }
             override fun onAnswerDismiss() { dismissAnswer() }
+            override fun onVoiceCancel() { cancelVoiceTurn() }
+            override fun onInsertUndo() { undoVoiceEdit() }
+            override fun onHoldTip() { showNotice(getString(R.string.hint_hold_tip), HOLD_TIP_MILLIS, revert = true) }
             override fun onUndoInsert(text: String) = undoInsert(text)
             override fun onUndoCompose() = undoCompose()
             override fun onUndoDelete() = undoDelete()
@@ -292,12 +322,14 @@ class UTUVOImeService : InputMethodService() {
         if (fieldId != lastStartedFieldId) {
             lastStartedFieldId = fieldId
             inputGeneration++
+            dropInsertUndo()   // 換了欄位：剛才那一段不在這裡
         }
         preloadFixers()
         // 每次叫出鍵盤從語音開始（打字是修正用的）。錄音中不切。
         // 提示也重設：錄音被中斷（鍵盤收起又叫出）時，否則會一直卡在「整理中…」（真機實測）。
         if (!listening) {
             switchSurface(KeyboardView.Surface.VOICE)
+            keyboard?.setCancelVisible(turns.cancellable)
             keyboard?.showTranscript("")
             keyboard?.showModeRow(true)
             keyboard?.setHint(getString(R.string.hint_idle), error = false)
@@ -342,12 +374,17 @@ class UTUVOImeService : InputMethodService() {
         mode = KeyboardMode.Dictate
         if (listening) stopListening()
         dropCloudRecording()
+        // 鍵盤收起：這一次的 ✕ 收掉（結果照舊走 inputGeneration 的作廢規則，這裡不改）；剛才的復原也不在了。
+        endTurn(turns.current)
+        dropInsertUndo()
+        notice = null
         super.onFinishInputView(finishingInput)
     }
 
     override fun onDestroy() {
         mainHandler.removeCallbacks(restartRunnable)
         cancelPendingCleanups()
+        earlyJobs.cancelAll()
         onDeviceRecognizer?.destroy()
         cloudRecognizer?.destroy()
         recognizer = null
@@ -372,6 +409,8 @@ class UTUVOImeService : InputMethodService() {
     // ── 打字 ──
 
     private fun switchSurface(surface: KeyboardView.Surface) {
+        // 換去打字＝要自己改字了：剛才那段聽寫／翻譯的一鍵復原作廢（回來不會再出現過期的「復原」）。
+        if (surface != KeyboardView.Surface.VOICE) dropInsertUndo()
         commitComposition()
         ime = when (surface) {
             KeyboardView.Surface.HANT -> session(if (hantUsesPinyin) ImeSession.Kind.PINYIN_HANT else ImeSession.Kind.ZHUYIN)
@@ -465,6 +504,7 @@ class UTUVOImeService : InputMethodService() {
 
     private fun insert(text: String) {
         chain.clear()
+        dropInsertUndo()
         commitComposition()
         currentInputConnection?.commitText(text, 1)
         learnTyped(text)
@@ -492,6 +532,7 @@ class UTUVOImeService : InputMethodService() {
             return
         }
         chain.clear()
+        dropInsertUndo()
         val before = currentInputConnection?.getTextBeforeCursor(1, 0)?.lastOrNull()
         lastDeleted = before
         learner.willDelete(before)
@@ -596,6 +637,7 @@ class UTUVOImeService : InputMethodService() {
     private fun enter() {
         val s = ime
         if (s != null && !s.isEmpty) { commitComposition(); return }
+        dropInsertUndo()
         clearSuggestions()
         englishWord = ""
         val info = currentInputEditorInfo
@@ -730,6 +772,7 @@ class UTUVOImeService : InputMethodService() {
     private fun selectVoiceMode(next: VoiceMode) {
         voiceMode = next
         pendingScope = null
+        dropInsertUndo()
         keyboard?.hideAnswerCard()
         keyboard?.showModeRow(true)
         keyboard?.setVoiceMode(next)
@@ -796,19 +839,27 @@ class UTUVOImeService : InputMethodService() {
      * 不能當絕對位置用，改用「游標前文字的長度」當代理：同一個位置就有同樣的長度，
      * 使用者把游標移開就一定對不上。兩種算法在呼叫端與記錄時必須一致。
      */
-    private fun cursorOffset(ic: android.view.inputmethod.InputConnection): Int? = runCatching {
+    private fun cursorOffset(ic: android.view.inputmethod.InputConnection): Int? = selectionOffsets(ic)?.first
+
+    /**
+     * 選取範圍的絕對位置（起點, 終點；沒有選取時兩個一樣）。算法同 [cursorOffset]（它就是這裡的起點）。
+     * 復原要確認使用者沒有又選了一段（[VoiceUndoPlan.canUndo]）。
+     */
+    private fun selectionOffsets(ic: android.view.inputmethod.InputConnection): Pair<Int, Int>? = runCatching {
         // ExtractedText.startOffset＋selectionStart 就是絕對位置（宿主只回一段文字時也成立）。
         // 拿不到 ExtractedText 就不給復原——「前文長度」當代理在兩處長度相同時會刪錯（luna-review B r2）。
         val extracted = ic.getExtractedText(android.view.inputmethod.ExtractedTextRequest(), 0)
             ?: return@runCatching null
-        if (extracted.selectionStart < 0) null else extracted.startOffset + extracted.selectionStart
+        if (extracted.selectionStart < 0) null
+        else (extracted.startOffset + extracted.selectionStart) to (extracted.startOffset + extracted.selectionEnd)
     }.getOrNull()
 
     /** 這一次要改寫的範圍（相對游標的偏移）與原文。 */
     private data class EditTarget(val back: Int, val forward: Int, val original: String)
 
-    private fun editTarget(): EditTarget? {
-        val scope = pendingScope ?: return null
+    /** [scope]＝這一次語音開始時選好的範圍（[TurnSnapshot.scope]）。 */
+    private fun editTarget(scope: EditScope?): EditTarget? {
+        scope ?: return null
         val w = cursorWindow() ?: return null
         if (scope == EditScope.ALL && !allTextAvailable()) return null
         val range = if (scope == EditScope.ALL) VoiceModes.allRange(w.before, w.after)
@@ -842,6 +893,22 @@ class UTUVOImeService : InputMethodService() {
     }
 
     /**
+     * 第 [turn] 次語音的交付收尾要把模式歸零時用這個：之後已經有新的一次開始了就不動——
+     * 那是新的一次的模式（它自己的交付或 ✕ 會收），上一次晚到的失敗不能把它改回聽寫。
+     */
+    private fun resetVoiceModeStateFor(turn: Int) {
+        if (turns.isLatest(turn)) resetVoiceModeState()
+    }
+
+    /**
+     * 第 [turn] 次語音開始時定下來的走向（[TurnSnapshot]）。交付一律照它走，不讀「現在」的 mode／voiceMode／
+     * translateTarget／pendingScope——那些會被下一次的開始、下一次的 ✕、中途切換模式改掉。
+     * 太舊沒記到時（不會發生）才退回現在的狀態。
+     */
+    private fun snapshotOf(turn: Int): TurnSnapshot =
+        turns.snapshot(turn) ?: TurnSnapshot(mode, voiceMode, pendingScope, activeCleanupContext)
+
+    /**
      * 選取狀態一變，提示與光球顏色跟著變（同 iOS `refreshContext`）。
      * 有選取＝「說出要怎麼改」（光球薰衣草）；其餘＝一般聽寫。
      */
@@ -862,8 +929,26 @@ class UTUVOImeService : InputMethodService() {
             is KeyboardMode.Edit -> getString(R.string.hint_edit_idle)
             is KeyboardMode.Translate -> getString(R.string.hint_translate_idle, getString(current.target.labelRes))
         }
-        keyboard?.setHint(hint, error = false)
+        // 剛貼出文字時的短暫提示（雲端退回裝置端結果）：一般聽寫的待機提示先不要蓋掉它。
+        val plain = current == KeyboardMode.Dictate && voiceMode == VoiceMode.DICTATE
+        keyboard?.setHint((if (plain) activeNotice() else null) ?: hint, error = false)
     }
+
+    /**
+     * 顯示一則短暫提示：[millis]（預設 [NOTICE_MILLIS]）內 [refreshContext] 不會把它換回待機提示。
+     * [revert]：時間到自己換回待機提示（「不用按住」只顯示 3 秒）；其他提示照舊留到下一次更新。
+     */
+    private fun showNotice(text: String, millis: Long = NOTICE_MILLIS, revert: Boolean = false) {
+        notice = text
+        noticeUntil = android.os.SystemClock.uptimeMillis() + millis
+        keyboard?.setHint(text, error = false)
+        if (revert) mainHandler.postDelayed({
+            if (notice == text && activeNotice() == null && !listening) { notice = null; refreshContext() }
+        }, millis)
+    }
+
+    private fun activeNotice(): String? =
+        notice?.takeIf { android.os.SystemClock.uptimeMillis() < noticeUntil }
 
     /**
      * 只更新模式與光球顏色，不動提示。
@@ -900,10 +985,12 @@ class UTUVOImeService : InputMethodService() {
         }
         cancelPendingCleanups()
         commitComposition()
+        notice = null
         // 選取／翻譯目標在按下光球的瞬間就定下來（開始錄音前 commitComposition 會動游標，重新判斷一次）。
         // 帶上 voiceMode：使用者選了「幫我寫／問問題／改寫」時，有選取也不走「說出要怎麼改」。
         mode = KeyboardMode.decide(selectedText(), translateTarget, voiceMode)
         keyboard?.setEditMode(mode.isEdit)
+        dropInsertUndo()   // 再講一段：上一段的一鍵復原作廢（只留一次）
         listening = true
         lastPartial = ""
         listeningStartedAt = System.currentTimeMillis()
@@ -935,9 +1022,12 @@ class UTUVOImeService : InputMethodService() {
                 variant = variant
             )
         } else SmartCleanup.CleanupContext(variant = variant)
+        // 新的一次：這一次的走向（模式、範圍、整理上下文）現在就記下來，結果晚到時照它走（mobile-keyboard-1）。
+        turns.start(TurnSnapshot(mode, voiceMode, pendingScope, activeCleanupContext))
         if (translateTarget == null) SmartCleanup.warmUp(this)   // 講話的時候先連上智慧整理服務
         startCloudRecording()
         keyboard?.setListening(true)
+        keyboard?.setCancelVisible(true)
 
         val intent = recognizeIntent()
         if (attachDebugAudio(intent)) dropCloudRecording()   // 測試音檔取代麥克風：沒有雲端錄音可送
@@ -1030,6 +1120,7 @@ class UTUVOImeService : InputMethodService() {
             resetVoiceModeState()   // 沒有辨識器＝這次不會有結果，語音模式要回到聽寫
             dropCloudRecording()   // 沒有系統辨識器就不會有雲端重辨識的機會，麥克風別留著
             keyboard?.setListening(false)
+            endTurn(turns.current)
             keyboard?.setHint(getString(R.string.hint_no_recognizer), error = true)
             return
         }
@@ -1040,7 +1131,8 @@ class UTUVOImeService : InputMethodService() {
     private fun begin(r: SpeechRecognizer, intent: Intent, onDevice: Boolean) {
         recognizer = r
         activeIntent = intent
-        r.setRecognitionListener(listener)
+        // 每一次語音一個門口：按 ✕ 之後系統補送的 onError(ERROR_CLIENT)／onResults 都擋在這裡（mobile-keyboard-1）。
+        r.setRecognitionListener(gatedListener(turns.current))
         r.startListening(intent)
         when (val current = mode) {
             is KeyboardMode.Edit -> {
@@ -1077,6 +1169,7 @@ class UTUVOImeService : InputMethodService() {
     private fun stopListening() {
         val s = session
         s?.requestStop()
+        turns.stopped()   // 錄音結束、等結果：✕ 還在，整理中也能取消
         if (restartPending) {
             // 正在兩段之間（辨識器剛結束、還沒重新開始）：沒有下一段會回來了，直接收尾。
             mainHandler.removeCallbacks(restartRunnable)
@@ -1086,11 +1179,81 @@ class UTUVOImeService : InputMethodService() {
         }
         recognizer?.stopListening()
         finishCloudRecording()
+        // capture-latency-1：音訊已經齊了，雲端最後一段現在就送，不等系統辨識器交回最終結果。
+        startEarlyCloudFinish()
         listening = false
         keyboard?.setListening(false)
         keyboard?.setHint(getString(R.string.hint_finishing), error = false)
         // 就在使用者按停的這一刻把秒數算好：之後的雲端重辨識／翻譯延遲不再影響記錄。
         freezeSessionSeconds()
+    }
+
+    /** 這一次語音有結果了（貼出、出錯、沒聽到）：✕ 收起來。舊的那一次結束不影響現在這一次。 */
+    private fun endTurn(turn: Int) {
+        turns.finish(turn)
+        if (!turns.cancellable) keyboard?.setCancelVisible(false)
+    }
+
+    /**
+     * 每一次語音給辨識器一個自己的門口（mobile-keyboard-1）：按了 ✕ 的那一次，
+     * 系統之後補送的 onResults（會把字貼出去）與 onError(ERROR_CLIENT)（會顯示「辨識出錯」）都擋在這裡。
+     * 已經有新的一次開始了，舊辨識器晚到的回呼也擋（[VoiceTurns.accepts]）：[listener] 讀寫的 session／錄音
+     * 是現在這一次的，舊的結果併進去或報錯收尾會把新的一次拆掉。其餘照舊交給 [listener]，行為跟以前一樣。
+     */
+    private fun gatedListener(turn: Int) = object : RecognitionListener {
+        override fun onPartialResults(partialResults: Bundle?) {
+            if (turns.accepts(turn)) listener.onPartialResults(partialResults)
+        }
+        override fun onResults(results: Bundle?) {
+            if (turns.accepts(turn)) listener.onResults(results) else Log.i(TAG, "results after cancel or from an earlier turn ignored")
+        }
+        override fun onError(error: Int) {
+            if (turns.accepts(turn)) listener.onError(error) else Log.i(TAG, "recognition error $error after cancel or from an earlier turn ignored")
+        }
+        override fun onRmsChanged(rmsdB: Float) {
+            if (turns.accepts(turn)) listener.onRmsChanged(rmsdB)
+        }
+        override fun onReadyForSpeech(params: Bundle?) {}
+        override fun onBeginningOfSpeech() {}
+        override fun onBufferReceived(buffer: ByteArray?) {}
+        override fun onEndOfSpeech() {}
+        override fun onEvent(eventType: Int, params: Bundle?) {}
+    }
+
+    /**
+     * ✕：這一次不要了（mobile-keyboard-1，同 Mac 的 Esc）。錄音中、等結果、整理／翻譯／改寫中都能按。
+     *
+     * 什麼都不貼、不記歷史、不記秒數（不呼叫 noteDictation）。只作廢**這一次**（[turns]）：
+     * 不動 inputGeneration，上一段還在背景跑的智慧整理照常換字。
+     *
+     * 上一次還在等雲端時（第 1 次按停 → 雲端還在跑 → 又按光球開始第 2 次 → 按 ✕）：只收第 2 次自己的。
+     * 第 1 次的雲端那一份不中斷（[TurnCloudJobs.cancelTurn]），它交付時照它開始時的走向（[snapshotOf]），
+     * 這裡把模式歸零回聽寫也不會讓它的「幫我寫」指示被當成聽寫貼出去；秒數也是它自己的（[VoiceTurns.seconds]）。
+     */
+    private fun cancelVoiceTurn() {
+        val cancelled = turns.cancel()
+        if (cancelled == null) { keyboard?.setCancelVisible(false); return }
+        mainHandler.removeCallbacks(restartRunnable)
+        restartPending = false
+        session?.requestStop()
+        session = null
+        runCatching { recognizer?.cancel() }   // 之後補送的回呼由 gatedListener 擋掉
+        runCatching { debugAudio?.close() }
+        debugAudio = null
+        earlyJobs.cancelTurn(cancelled)
+        translateCleanup?.let { (turn, request) -> if (turn == cancelled) { request.cancel(); translateCleanup = null } }
+        dropCloudRecording()
+        listening = false
+        lastPartial = ""
+        listeningStartedAt = 0L
+        dictationSeconds = 0
+        translateTarget = null
+        resetVoiceModeState()
+        keyboard?.setListening(false)
+        keyboard?.showTranscript("")
+        keyboard?.setCancelVisible(false)
+        refreshContext()
+        showNotice(getString(R.string.hint_voice_cancelled))
     }
 
     // ── 雲端語音辨識（選配；失敗一律退回系統 SpeechRecognizer 的結果）──
@@ -1102,11 +1265,20 @@ class UTUVOImeService : InputMethodService() {
         cloudSamples = null
         cloudKey = null
         cloudProvider = null
+        cloudStoppedAtNanos = 0L
         if (translateTarget != null) return
         if (!cloudAsrAvailable()) return
         val language = CLOUD_LANGUAGE
         if (!CloudASR.isReady(this, language)) return
         val (provider, routeKey) = CloudASR.route(this) ?: return
+        // 錄音上限（capture-latency-3）：錄音執行緒只 post 回主執行緒，這裡再確認還是同一次錄音。
+        val generation = ++cloudRecordingGeneration
+        cloudRecorder.onLimitWarning = {
+            mainHandler.post { if (generation == cloudRecordingGeneration) onCloudRecordingLimitWarning() }
+        }
+        cloudRecorder.onLimitReached = {
+            mainHandler.post { if (generation == cloudRecordingGeneration) onCloudRecordingLimit() }
+        }
         if (!cloudRecorder.start(QuietMode.isEnabled(this))) { Log.i(TAG, "cloud ASR recording unavailable, staying on system recognizer"); return }
         cloudKey = routeKey
         cloudProvider = provider
@@ -1116,17 +1288,63 @@ class UTUVOImeService : InputMethodService() {
         cloudRecorder.setChunkSink { chunk -> live.submit(chunk) }
     }
 
-    /** 收掉背景分段工作（定稿、取消、換輸入框都會走到）。 */
+    /** 收掉背景分段工作（定稿、取消、換輸入框都會走到）；按停時先開跑、還沒人等的那一份一起取消。 */
     private fun stopLiveCloud() {
         cloudRecorder.setChunkSink(null)
         liveCloud?.abandon()
         liveCloud = null
+        earlyJobs.dropPending()
     }
 
-    /** 停聽時取回整段錄音；沒錄到就清空（後面就不會送網路）。 */
+    /** 雲端回來的文字一律過這一關（簡轉繁＋去頭尾雜訊）；按停時開跑與 onResults 之後跑共用。 */
+    private fun cloudGuard() = CloudASR.Guard { value, language, _ ->
+        // 雲端回來的中文可能是簡體；繁中要轉回來（與 iOS TranscriptGuard.clean 同一個理由）。
+        val converted = if (language.startsWith("zh-TW") || language.startsWith("zh-Hant")
+            || language.startsWith("zh-HK")) toTraditional(value) else value
+        CloudASR.trimGuard(converted, language, 0.0)
+    }
+
+    /**
+     * capture-latency-1：按停的這一刻就把雲端最後一段丟上背景（音訊已經齊了），用按停時間起算的總時限
+     * （跟以前「手上有系統文字」時同一個）。系統辨識器的最終結果晚到也不再跟雲端相加。
+     * 翻譯不錄雲端、上一次雲端還在跑、沒有錄音：照舊等 onResults 再決定。
+     */
+    private fun startEarlyCloudFinish() {
+        val turn = turns.current
+        if (earlyJobs.hasPending || cloudAsrRunning || snapshotOf(turn).translateTarget != null) return
+        val samples = cloudSamples?.takeIf { it.isNotEmpty() } ?: return
+        val key = cloudKey?.takeIf { it.isNotEmpty() } ?: return
+        val provider = cloudProvider ?: return
+        val live = liveCloud
+        val liveLast = liveCloudLastChunk
+        liveCloud = null              // 分段工作交給這一份，之後由它收尾或取消
+        liveCloudLastChunk = null
+        val stoppedAt = cloudStoppedAtNanos.takeIf { it != 0L } ?: System.nanoTime()
+        val hotwords = VocabularyPacks.cloudHints(this)
+        val outcomes = CloudASR.OutcomeTap(CloudASR.defaultLog(applicationContext))
+        val guard = cloudGuard()
+        val finish = EarlyCloudFinish(earlyExecutor) {
+            if (live != null) live.finish(last = liveLast, whole = samples, log = outcomes, guard = guard, stoppedAtNanos = stoppedAt)
+            else CloudASR.transcribe(samples, CLOUD_LANGUAGE, hotwords, provider, key, log = outcomes, guard = guard,
+                maxBudgetMs = CloudASR.remainingBudgetMs(stoppedAt, samples.size / 16_000.0))
+        }
+        earlyJobs.begin(turn, EarlyCloud(finish, outcomes, live))
+    }
+
+    /**
+     * 停聽時取回整段錄音（只取一次；錄滿上限自己停了也照樣取）。
+     *
+     * 可以重複呼叫：已經取過就不再動 [cloudSamples]——以前第二次呼叫會把取好的樣本清成 null。
+     * 沒有樣本（沒錄、錄音失敗）時把背景分段一起收掉，不然它的執行緒一直留著。
+     */
     private fun finishCloudRecording() {
-        if (!cloudRecorder.isActive) { cloudSamples = null; closeMicPipe(); return }
+        if (!cloudRecorder.hasSamplesToClaim) {
+            closeMicPipe()
+            if (cloudSamples?.isNotEmpty() != true) { stopLiveCloud(); liveCloudLastChunk = null }
+            return
+        }
         cloudSamples = cloudRecorder.stop()
+        cloudStoppedAtNanos = System.nanoTime()
         closeMicPipe()
         // 除錯版：記下這次錄音的音量（10-20 Pixel 雲端錄到全 0 的問題）。正式版不記。
         if (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0) {
@@ -1135,8 +1353,31 @@ class UTUVOImeService : InputMethodService() {
                 Log.i(TAG, "cloud recording samples=${s.size} peak=$peak quiet=${QuietMode.isEnabled(this)} chunked=${liveCloud != null}")
             }
         }
+        if (cloudSamples?.isNotEmpty() != true) { stopLiveCloud(); liveCloudLastChunk = null; return }
         // Q3：還沒講完的最後一段，講完時才送（前面幾段錄音中就送完了）。
         liveCloudLastChunk = cloudRecorder.takeFinalChunk()
+    }
+
+    /** 錄音快到上限（capture-latency-3）：先講清楚會自動送出，輕震一下。 */
+    private fun onCloudRecordingLimitWarning() {
+        if (!listening) return
+        keyboard?.setHint(getString(R.string.hint_limit_warning, CloudRecorder.WARNING_SECONDS,
+            CloudRecorder.MAX_SECONDS / 60), error = false)
+        keyboard?.let { view ->
+            KeyFeedback.constantFor(this, KeyFeedback.Kind.SPECIAL)?.let {
+                view.performHapticFeedback(it, android.view.HapticFeedbackConstants.FLAG_IGNORE_VIEW_SETTING)
+            }
+        }
+    }
+
+    /**
+     * 錄滿上限（capture-latency-3）：照使用者按停走正常收尾——收錄音時關掉 pipe，系統辨識器讀到檔尾自己定稿，
+     * 雲端用錄到的這一整段。以前這時只是安靜地停錄，鍵盤還顯示聆聽中、之後講的話全部收不到。
+     */
+    private fun onCloudRecordingLimit() {
+        if (!listening) return
+        stopListening()
+        keyboard?.setHint(getString(R.string.hint_limit_reached, CloudRecorder.MAX_SECONDS / 60), error = false)
     }
 
     /** 使用者放棄（鍵盤收起、換模式、辨識出錯）→ 丟掉錄音。 */
@@ -1146,7 +1387,7 @@ class UTUVOImeService : InputMethodService() {
         cloudSamples = null
         cloudKey = null
         cloudProvider = null
-        if (cloudRecorder.isActive) cloudRecorder.cancel()
+        if (cloudRecorder.hasSamplesToClaim) cloudRecorder.cancel()
         closeMicPipe()
     }
 
@@ -1203,7 +1444,12 @@ class UTUVOImeService : InputMethodService() {
      * 系統結果到了：先取走這次的雲端錄音（只取一次，onResults 可能晚到）。
      * 有錄音就先問雲端，成功用雲端文字、失敗／逾時用系統原文；兩邊都走同一條輸出流程。
      */
-    private fun deliverWithCloud(raw: String, onNothing: () -> Unit = {}) {
+    private fun deliverWithCloud(raw: String, turn: Int = turns.current, onNothing: () -> Unit = {}) {
+        // 系統什麼都沒交回、雲端也救不回來：這一次結束（✕ 收起），再講「沒有聽到聲音」之類的提示。
+        val nothing = { endTurn(turn); onNothing() }
+        val route = snapshotOf(turn)
+        // 這一次按停時開跑的那一份（別次的不拿：TurnCloudJobs.claim 會收掉）。
+        val early = earlyJobs.claim(turn)
         val samples = cloudSamples
         val key = cloudKey
         val provider = cloudProvider
@@ -1212,40 +1458,65 @@ class UTUVOImeService : InputMethodService() {
         liveCloud = null
         liveCloudLastChunk = null
         cloudSamples = null; cloudKey = null; cloudProvider = null
-        if (samples == null || samples.isEmpty() || key.isNullOrEmpty() || provider == null || translateTarget != null) {
-            if (raw.isNotEmpty()) deliver(raw) else onNothing()
+        if (samples == null || samples.isEmpty() || key.isNullOrEmpty() || provider == null || route.translateTarget != null) {
+            early?.cancel()
+            live?.abandon()   // 用不到的背景分段要收掉，不然它的執行緒一直留著
+            if (raw.isNotEmpty()) deliver(raw, turn) else nothing()
             return
         }
-        if (cloudAsrRunning) { if (raw.isNotEmpty()) deliver(raw) else onNothing(); return }
+        if (cloudAsrRunning) { early?.cancel(); live?.abandon(); if (raw.isNotEmpty()) deliver(raw, turn) else nothing(); return }
         cloudAsrRunning = true
+        earlyJobs.running(turn, early)
         keyboard?.setHint(getString(R.string.hint_cloud_listening), error = false)
         val hotwords = VocabularyPacks.cloudHints(this)
         val app = applicationContext
         val generation = inputGeneration
+        // capture-latency-v1：手上有裝置端文字可退時，雲端重辨識從按停起算一個總時限（最多 6 秒），時間到就貼裝置端文字。
+        // 沒有（系統什麼都沒聽到，只能靠雲端救）就照舊不設總時限——不能為了快把唯一的結果也丟掉。
+        val stoppedAt: Long? = if (raw.isEmpty()) null
+            else cloudStoppedAtNanos.takeIf { it != 0L } ?: System.nanoTime()
+        // 記下最後一筆雲端結果：退回裝置端文字時要講清楚是網路慢還是服務失敗。
+        val outcomes = early?.outcomes ?: CloudASR.OutcomeTap(CloudASR.defaultLog(app))
+        val cloudGuard = cloudGuard()
         cloudWorker.execute {
-            // Q3：分段送（前面幾段錄音中就送完了）→ 只等最後一段；沒分段就整段一次送。
-            val cloudGuard = CloudASR.Guard { value, language, _ ->
-                    // 雲端回來的中文可能是簡體；繁中要轉回來（與 iOS TranscriptGuard.clean 同一個理由）。
-                    val converted = if (language.startsWith("zh-TW") || language.startsWith("zh-Hant")
-                        || language.startsWith("zh-HK")) toTraditional(value) else value
-                    CloudASR.trimGuard(converted, language, 0.0)
+            val text = when {
+                // capture-latency-1：按停時就開跑的那一份（通常這時已經回來了）。它在總時限內放棄、
+                // 系統又什麼都沒聽到時，才整段再送一次、不設總時限（唯一的結果不能丟）。
+                early != null -> early.finish.await(raw) {
+                    CloudASR.transcribe(samples, CLOUD_LANGUAGE, hotwords, provider, key,
+                        log = outcomes, guard = cloudGuard, maxBudgetMs = null)
                 }
-            val text = if (live != null) {
-                // 分段：前面幾段錄音中就送完了，這裡只等最後一段（沒有段就整段一次送）。
-                live.finish(last = liveLast, whole = samples,
-                            log = CloudASR.defaultLog(app), guard = cloudGuard)
-            } else {
-                CloudASR.transcribe(samples, CLOUD_LANGUAGE, hotwords, provider, key,
-                    log = CloudASR.defaultLog(app), guard = cloudGuard)
+                // Q3：分段送（前面幾段錄音中就送完了）→ 只等最後一段；沒分段就整段一次送。
+                live != null -> live.finish(last = liveLast, whole = samples,
+                            log = outcomes, guard = cloudGuard, stoppedAtNanos = stoppedAt)
+                else -> CloudASR.transcribe(samples, CLOUD_LANGUAGE, hotwords, provider, key,
+                    log = outcomes, guard = cloudGuard,
+                    maxBudgetMs = stoppedAt?.let { CloudASR.remainingBudgetMs(it, samples.size / 16_000.0) })
             }
             keyboard?.post {
                 cloudAsrRunning = false
+                earlyJobs.done(early)
+                // 使用者按了 ✕：這一次什麼都不貼（mobile-keyboard-1）。
+                if (!turns.isLive(turn)) return@post
                 // 使用者在等雲端的期間換了輸入框或收起鍵盤：不能貼到新的欄位去。
-                if (generation != inputGeneration) return@post
+                if (generation != inputGeneration) { endTurn(turn); return@post }
                 // 兩邊都沒東西就不要貼一個空字串出去（系統出錯時會走這裡）。
                 // Whisper 補的「謝謝大家收看」：系統辨識沒聽到這句才去掉（說出要怎麼改時這句會被當成指示）。
                 val kept = text?.let { CloudASR.dropOutroHallucination(it, reference = raw) }?.ifEmpty { null }
-                if (kept != null) deliver(kept) else if (raw.isNotEmpty()) deliver(raw) else onNothing()
+                if (kept != null) { deliver(kept, turn); return@post }
+                if (raw.isEmpty()) { nothing(); return@post }
+                // 改貼裝置端文字（delivery-learning-v3）：一般聽寫要講一聲，不然使用者不知道這次是比較弱的結果。
+                // 改寫／幫我寫／問問題各有自己的進度提示，不去蓋掉。
+                // 照這一次開始時的走向判斷（下一次的 ✕ 會把現在的模式改回聽寫）。
+                val dictating = route.dictating
+                deliver(raw, turn)
+                if (dictating && !listening) {
+                    when (CloudFallback.notice(outcomes.last, text, raw)) {
+                        CloudFallback.Notice.SLOW_NETWORK -> showNotice(getString(R.string.hint_cloud_slow_fallback))
+                        CloudFallback.Notice.FAILED -> showNotice(getString(R.string.hint_cloud_failed_fallback))
+                        CloudFallback.Notice.NONE -> Unit
+                    }
+                }
             }
         }
     }
@@ -1271,8 +1542,9 @@ class UTUVOImeService : InputMethodService() {
      * 一次聽寫完成：寫歷史（**看保留期限**）＋記使用數據（**永遠記**，只有數字）。
      * 這是使用數據的唯一寫入點，App 內與鍵盤內都走這裡。
      */
-    private fun noteDictation(raw: String, output: String) {
-        val seconds = sessionSeconds()
+    private fun noteDictation(raw: String, output: String, turn: Int = turns.current) {
+        // 這一次按停時算好的秒數：交付晚到時，下一次的開始（秒數歸零重算）或 ✕ 不會把它改成別次的或 0。
+        val seconds = turns.seconds(turn) ?: sessionSeconds()
         val app = applicationContext
         // 歷史寫檔是磁碟 IO，丟背景去，不要卡住輸入法（與語音功能的寫入同一條路）。
         cloudWorker.execute {
@@ -1294,22 +1566,25 @@ class UTUVOImeService : InputMethodService() {
 
     /** 停止聽寫：算好這次的秒數並歸零起始時間（重複呼叫安全）。 */
     private fun freezeSessionSeconds() {
-        if (dictationSeconds > 0) { listeningStartedAt = 0L; return }
-        dictationSeconds = DictationClock.freeze(listeningStartedAt, System.currentTimeMillis())
+        if (dictationSeconds <= 0) dictationSeconds = DictationClock.freeze(listeningStartedAt, System.currentTimeMillis())
         listeningStartedAt = 0L
+        turns.freezeSeconds(turns.current, dictationSeconds)   // 記在這一次身上（交付晚到也是它自己的秒數）
     }
 
     /** 系統或雲端拿到的逐字稿走同一條輸出流程（整理 → 貼上 → 背景智慧整理）。 */
-    private fun deliver(raw: String) {
+    private fun deliver(raw: String, turn: Int = turns.current) {
+        // 照這一次按下光球時定下來的走向（[TurnSnapshot]）：結果晚到時，下一次的開始／✕／切換模式都改不到它。
+        val route = snapshotOf(turn)
+        val routeMode = route.mode
         // 說出要怎麼改：raw 是指示，不是要貼上的內容。改寫完取代選取。
-        if (mode is KeyboardMode.Edit) { deliverEdit(raw); return }
+        if (routeMode is KeyboardMode.Edit) { deliverEdit(raw, turn, routeMode.selection); return }
         // 鍵盤語音模式（幫我寫／改寫／問問題）都在聽寫之外，走各自那條路。
         // 翻譯優先：長按弧選了語言時 translateTarget 有值，不能被模式蓋掉。
-        if (translateTarget == null) {
-            when (voiceMode) {
-                VoiceMode.HELP_WRITE -> { deliverHelpWrite(raw); return }
-                VoiceMode.SPEAK_TO_EDIT -> { deliverSpeakToEdit(raw); return }
-                VoiceMode.ASK_ANYTHING -> { deliverAskAnything(raw); return }
+        if (route.translateTarget == null) {
+            when (route.voiceMode) {
+                VoiceMode.HELP_WRITE -> { deliverHelpWrite(raw, turn); return }
+                VoiceMode.SPEAK_TO_EDIT -> { deliverSpeakToEdit(raw, turn, route.scope); return }
+                VoiceMode.ASK_ANYTHING -> { deliverAskAnything(raw, turn); return }
                 VoiceMode.DICTATE -> Unit
             }
         }
@@ -1317,6 +1592,8 @@ class UTUVOImeService : InputMethodService() {
         val inputType = currentInputEditorInfo?.inputType
         // 同一套整理：台灣用語 → 贅詞／重複／自我修正／數字／標點
         // 整理萬一出錯，送原文、記下錯誤——鍵盤閃退會讓使用者剛講的話整段不見（09-19 真機實測過一次）。
+        // 接續聽寫要記 fitField（句尾語氣＋拿掉最後的句號）這次拿掉的標點：同 Mac，在拿掉之前先算（W2-7）。
+        var droppedMark = ""
         val cleaned = runCatching {
             val field = when (tone) {
                 FieldToneHint.Kind.DOCUMENT -> SpeechPunctuation.Field.DOCUMENT
@@ -1324,43 +1601,95 @@ class UTUVOImeService : InputMethodService() {
                 FieldToneHint.Kind.SEARCH -> SpeechPunctuation.Field.SEARCH
             }
             val language = dictation()
-            fitField(SpeechPunctuation.restore(
-                Dictation.clean(this, raw, language, DictationLanguage.currentVariant(this, language)), field), tone, inputType)
+            val restored = SpeechPunctuation.restore(
+                Dictation.clean(this, raw, language, DictationLanguage.currentVariant(this, language),
+                    numberedLists = FieldShape.allowsNumberedLists(inputType)), field)
+            droppedMark = com.utuvo.type.core.SentenceMood.finishDroppedMark(restored)
+            fitField(restored, tone, inputType)
         }
-            .getOrElse { Log.e(TAG, "normalize failed, inserting raw transcript", it); raw }
-        val target = translateTarget
-        translateTarget = null
-        mode = KeyboardMode.Dictate
+            .getOrElse { Log.e(TAG, "normalize failed, inserting raw transcript", it); droppedMark = ""; raw }
+        val target = route.translateTarget
+        // 這一次之後已經有新的一次開始了：現在的翻譯目標與模式是新的那一次的，不能清掉。
+        if (turns.isLatest(turn)) { translateTarget = null; mode = KeyboardMode.Dictate }
         if (target == null) {
-            // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
+            // 緊接在上一段後面講（W2-7，同 Mac）：英數字接英數字補一個空白、上一段拿掉的「，」「、」補回；
+            // 中文接中文什麼都不插，永遠不補「。」——辨識器在停頓處就交回一段，補句號會把一句話切成兩句。
             val ic = currentInputConnection
-            val prefix = com.utuvo.type.core.SentenceMood.continuationPrefix(
-                ic?.getTextBeforeCursor(200, 0)?.toString(), lastDictationOutput)
+            val previousDictation = lastDictation
+            val prefix = DictationJoin.prefix(
+                ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previousDictation), 0)?.toString(), previousDictation, cleaned)
             if (prefix.isNotEmpty()) ic?.commitText(prefix, 1)
             ic?.commitText(cleaned, 1)
-            if (cleaned.isNotEmpty()) lastDictationOutput = cleaned
-            noteDictation(raw, cleaned)
+            lastDictation = DictationJoin.remember(previousDictation, cleaned, droppedMark)
+            noteDictation(raw, cleaned, turn)
             learner.dictationInserted(cleaned)
-            refine(cleaned, raw, activeCleanupContext, tone, inputType)
+            endTurn(turn)
+            val chainId = refine(cleaned, raw, route.context, tone, inputType, prefix)
+            // delivery-learning-5：一般聽寫也給一鍵復原（連同接續補的空白／「，」「、」一起收回）。
+            if (ic != null) offerInsertUndo(VoiceUndoPlan.forDictation(prefix, cleaned, cursorOffset(ic) ?: -1, chainId, previousDictation))
             return
         }
         keyboard?.setHint(getString(R.string.hint_translating), error = false)
         keyboard?.showTranscript(cleaned)
-        // 翻譯是非同步的：翻好時鍵盤可能已經換到別的輸入框，要插進當下那一個（跟使用者看到的一致）。
-        Translation.translate(this, cleaned, target) { result ->
+        // modes-2：有開智慧整理又有雲端 key → 先用同一套整理（改口、口頭禪）再翻；整理失敗／逾時就翻原本這份。
+        TranslateSource.run(
+            cleanFirst = TranslateSource.cleansFirst(SmartCleanup.isEnabled(this), SmartCleanup.usesOnDevice(this)),
+            deterministic = cleaned,
+            clean = { done ->
+                val request = SmartCleanup.clean(this, raw, { result -> done(result?.let { fitField(it, tone, inputType) }) },
+                    context = route.context, validationSource = cleaned)
+                if (!request.isCancelled && turns.isLive(turn)) translateCleanup = turn to request
+            },
+            translate = { source -> translateAndInsert(raw, source, target, tone, inputType, turn) }
+        )
+    }
+
+    /**
+     * 翻譯並插入。翻譯是非同步的：翻好時鍵盤可能已經換到別的輸入框，要插進當下那一個（跟使用者看到的一致）。
+     * 按了 ✕ 的那一次什麼都不翻、不貼。插入之後留一次復原（delivery-learning-5）。
+     */
+    private fun translateAndInsert(raw: String, source: String, target: Translation.Target,
+                                   tone: FieldToneHint.Kind, inputType: Int?, turn: Int) {
+        if (translateCleanup?.first == turn) translateCleanup = null
+        if (!turns.isLive(turn)) return
+        keyboard?.showTranscript(source)
+        Translation.translate(this, source, target) { result ->
+            if (!turns.isLive(turn)) return@translate
+            endTurn(turn)
             keyboard?.showTranscript("")
             result.onSuccess { translated ->
                 keyboard?.setHint(getString(R.string.hint_idle), error = false)
                 val output = fitField(translated.trim(), tone, inputType, mood = false)
-                currentInputConnection?.commitText(output, 1)
-                noteDictation(raw, output)
+                insertWithUndo(output)
+                noteDictation(raw, output, turn)
             }.onFailure {
                 Log.w(TAG, "translate to ${target.code} failed", it)
                 keyboard?.setHint(getString(R.string.assistant_translate_failed, AssistantErrors.detail(it)), error = true)
-                currentInputConnection?.commitText(cleaned, 1)
-                noteDictation(raw, cleaned)
+                insertWithUndo(source)
+                noteDictation(raw, source, turn)
             }
         }
+    }
+
+    /** 翻譯結果插入游標處（有選取就取代它），並留一次「復原」：刪掉插入的、放回原本選取的。 */
+    private fun insertWithUndo(text: String) {
+        val ic = currentInputConnection ?: return
+        val replaced = selectedText().orEmpty()
+        ic.commitText(text, 1)
+        offerInsertUndo(VoiceUndoPlan.forTranslation(text, replaced, cursorOffset(ic) ?: -1))
+    }
+
+    /** 一般聽寫／翻譯剛貼上：記下復原、頂列出現「復原」。 */
+    private fun offerInsertUndo(record: VoiceUndo?) {
+        record ?: return
+        rememberVoiceUndo(record)
+        keyboard?.showInsertUndo(true)
+    }
+
+    /** 一般聽寫／翻譯的一鍵復原作廢（幫我寫／改寫的復原卡不受影響，那是卡片自己的生命週期）。 */
+    private fun dropInsertUndo() {
+        if (voiceUndo?.chip == true) voiceUndo = null
+        keyboard?.showInsertUndo(false)
     }
 
     /**
@@ -1368,36 +1697,47 @@ class UTUVOImeService : InputMethodService() {
      *
      * 沒有雲端 key 時不打任何網路，直接講清楚要去哪裡加（iPhone 的 AssistantError.unavailable）。
      */
-    private fun deliverEdit(instruction: String) {
-        val selection = (mode as? KeyboardMode.Edit)?.selection.orEmpty()
-        mode = KeyboardMode.Dictate
+    private fun deliverEdit(instruction: String, turn: Int, selection: String) {
+        // [selection]＝這一次開始錄音時存的（trim 過的）選取（[TurnSnapshot.mode]）。
+        if (turns.isLatest(turn)) mode = KeyboardMode.Dictate
         keyboard?.showTranscript("")
-        if (instruction.isBlank() || currentInputConnection == null) { refreshContext(); return }
+        if (instruction.isBlank() || currentInputConnection == null) { endTurn(turn); refreshContext(); return }
         if (SmartCleanup.completionRoute(this) == null) {
-            resetVoiceModeState()
+            endTurn(turn)
+            resetVoiceModeStateFor(turn)
             keyboard?.setHint(getString(R.string.assistant_no_key), error = true)
             return
         }
         keyboard?.setHint(getString(R.string.hint_editing, engineLabel()), error = false)
         val generation = inputGeneration
         SmartCleanup.completeAsync(this, Assistant.EDIT_SYSTEM, Assistant.editUser(selection, instruction)) { result ->
+            if (!turns.isLive(turn)) return@completeAsync   // 按了 ✕：不改他的文字
+            endTurn(turn)
             keyboard?.showTranscript("")
             // 使用者在等的期間換了輸入框或收起鍵盤：不能貼到新的欄位去。
             if (generation != inputGeneration) return@completeAsync
             result.onSuccess { rewritten ->
                 // 選取還是原本那一段才取代；使用者中途取消或改選別段就不動他的文字
                 // （以前只檢查「還有選取」：等待時改選別段，改寫結果會蓋到新選的那段——review 抓到）。
-                if (selectedText()?.trim() != selection) {   // Edit 存的是 trim 過的選取
-                    resetVoiceModeState()
+                // 規則跟「問問題」取代選取同一條（VoiceModes.canReplace）。
+                val rawNow = selectedText()
+                if (!VoiceUndoPlan.selectionUnchanged(selection, rawNow)) {   // Edit 存的是 trim 過的選取
+                    resetVoiceModeStateFor(turn)
                     keyboard?.setHint(getString(R.string.assistant_selection_gone), error = true)
                     return@onSuccess
                 }
-                currentInputConnection?.commitText(rewritten, 1)
+                val ic = currentInputConnection
+                ic?.commitText(rewritten, 1)
                 logVoiceResult(instruction, rewritten)
-                refreshContext()
+                // modes-5：選取改寫是最常用的改寫路徑，以前是唯一不能復原的。復原放回**原樣**的選取（含前後空白）。
+                val record = ic?.let { VoiceUndoPlan.forSelectionEdit(rewritten, rawNow.orEmpty(), cursorOffset(it) ?: -1) }
+                if (record == null) { refreshContext(); return@onSuccess }
+                updateMode()   // 選取已經換掉了：光球回到聽寫的顏色
+                rememberVoiceUndo(record)
+                showVoiceUndoCard(rewritten)
             }.onFailure {
                 Log.w(TAG, "edit failed", it)
-                resetVoiceModeState()
+                resetVoiceModeStateFor(turn)
                 keyboard?.setHint(editFailureMessage(it), error = true)
             }
         }
@@ -1421,12 +1761,12 @@ class UTUVOImeService : InputMethodService() {
      * 有選取文字時（使用者切到這個模式又選了一段）：選取是**參考上下文**，
      * 產出插在選取**之後**，不取代——取代掉使用者自己選的東西不是他要的。
      */
-    private fun deliverHelpWrite(instruction: String) {
+    private fun deliverHelpWrite(instruction: String, turn: Int) {
         val ic = currentInputConnection
         keyboard?.showTranscript("")
-        if (instruction.isBlank() || ic == null) { refreshContext(); return }
+        if (instruction.isBlank() || ic == null) { endTurn(turn); refreshContext(); return }
         val selection = selectedText()?.trim().orEmpty()
-        if (!ensureCompletionRoute()) return
+        if (!ensureCompletionRoute(turn)) { endTurn(turn); return }
         val before = ic.getTextBeforeCursor(VoiceModes.CONTEXT_LIMIT, 0)?.toString().orEmpty()
         keyboard?.setHint(getString(R.string.hint_writing, engineLabel()), error = false)
         val generation = inputGeneration
@@ -1434,12 +1774,14 @@ class UTUVOImeService : InputMethodService() {
             this, VoiceModes.HELP_WRITE_SYSTEM,
             VoiceModes.helpWriteUser(before, instruction, if (selection.isNotEmpty()) selection else "")
         ) { result ->
+            if (!turns.isLive(turn)) return@completeAsync   // 按了 ✕：什麼都不貼
+            endTurn(turn)
             keyboard?.showTranscript("")
             if (generation != inputGeneration) return@completeAsync
             result.onSuccess { reply ->
                 val text = VoiceModes.cleanAnswer(reply).trim()
                 if (text.isEmpty()) {
-                    resetVoiceModeState(); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
+                    resetVoiceModeStateFor(turn); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
                 }
                 // 等待期間的選取還在 → 插在選取之後；選取不見了 → 照游標處插入（別去改他的文字）。
                 // 用目前選取的「原樣」文字（含前後空白）放回去，復原只刪產出的字，選取原文一字不少（luna-review B r2）。
@@ -1451,7 +1793,7 @@ class UTUVOImeService : InputMethodService() {
                 showVoiceUndoCard(text)
             }.onFailure {
                 Log.w(TAG, "help me write failed", it)
-                resetVoiceModeState()
+                resetVoiceModeStateFor(turn)
                 keyboard?.setHint(editFailureMessage(it), error = true)
             }
         }
@@ -1466,30 +1808,34 @@ class UTUVOImeService : InputMethodService() {
      * 而不是 setSelection——setSelection 要的是整份文件的絕對偏移，而我們只拿得到游標前後的相對文字，
      * 宿主截斷時那個絕對值根本推不出來。刪掉前後再插入，游標正好停在段落開頭。
      */
-    private fun deliverSpeakToEdit(instruction: String) {
+    private fun deliverSpeakToEdit(instruction: String, turn: Int, scope: EditScope?) {
         val ic = currentInputConnection
         keyboard?.showTranscript("")
-        val target = editTarget()
-        pendingScope = null
+        // [scope]＝這一次開始錄音時選好的範圍；現在的 pendingScope 若已是新的一次的，不能清掉。
+        val target = editTarget(scope)
+        if (turns.isLatest(turn)) pendingScope = null
         if (instruction.isBlank() || ic == null || target == null) {
+            endTurn(turn)
             if (target == null && instruction.isNotBlank()) {
-                resetVoiceModeState(); keyboard?.setHint(getString(R.string.assistant_all_unavailable), error = true)
+                resetVoiceModeStateFor(turn); keyboard?.setHint(getString(R.string.assistant_all_unavailable), error = true)
             } else refreshContext()
             return
         }
-        if (!ensureCompletionRoute()) return
+        if (!ensureCompletionRoute(turn)) { endTurn(turn); return }
         keyboard?.setHint(getString(R.string.hint_editing_scope, engineLabel()), error = false)
         val generation = inputGeneration
         SmartCleanup.completeAsync(
             this, VoiceModes.SPEAK_TO_EDIT_SYSTEM,
             VoiceModes.speakToEditUser(target.original, instruction)
         ) { result ->
+            if (!turns.isLive(turn)) return@completeAsync   // 按了 ✕：什麼都不貼
+            endTurn(turn)
             keyboard?.showTranscript("")
             if (generation != inputGeneration) return@completeAsync
             result.onSuccess { reply ->
                 val rewritten = VoiceModes.cleanAnswer(reply).trim()
                 if (rewritten.isEmpty()) {
-                    resetVoiceModeState(); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
+                    resetVoiceModeStateFor(turn); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
                 }
                 // 送去改寫的這一段還在原處才取代；使用者中途動過（移動游標、刪字）就不動他的文字。
                 // 長度先驗（VoiceModes.targetStillThere 內做）：舊版 drop(負數) 會讓整個鍵盤崩掉。
@@ -1507,7 +1853,7 @@ class UTUVOImeService : InputMethodService() {
                 showVoiceUndoCard(rewritten)
             }.onFailure {
                 Log.w(TAG, "speak to edit failed", it)
-                resetVoiceModeState()
+                resetVoiceModeStateFor(turn)
                 keyboard?.setHint(editFailureMessage(it), error = true)
             }
         }
@@ -1522,16 +1868,16 @@ class UTUVOImeService : InputMethodService() {
      * 其餘一律當回答（Mac 版踩過的坑，見 [VoiceModes.parseAskReply]）。
      * 取代前還要確認選取沒變，變了就改成回答卡。
      */
-    private fun deliverAskAnything(question: String) {
+    private fun deliverAskAnything(question: String, turn: Int) {
         val ic = currentInputConnection
         keyboard?.showTranscript("")
-        if (question.isBlank() || ic == null) { refreshContext(); return }
+        if (question.isBlank() || ic == null) { endTurn(turn); refreshContext(); return }
         val selection = selectedText()?.trim().orEmpty()
         val hasSelection = selection.isNotEmpty()
         if (hasSelection && !VoiceModes.selectionWithinLimit(selection)) {
-            resetVoiceModeState(); keyboard?.setHint(getString(R.string.assistant_selection_too_long), error = true); return
+            endTurn(turn); resetVoiceModeStateFor(turn); keyboard?.setHint(getString(R.string.assistant_selection_too_long), error = true); return
         }
-        if (!ensureCompletionRoute()) return
+        if (!ensureCompletionRoute(turn)) { endTurn(turn); return }
         keyboard?.setHint(getString(R.string.hint_asking, engineLabel()), error = false)
         val generation = inputGeneration
         val (system, user) = if (hasSelection) {
@@ -1540,6 +1886,8 @@ class UTUVOImeService : InputMethodService() {
             VoiceModes.ASK_ANYTHING_SYSTEM to VoiceModes.askAnythingUser(question)
         }
         SmartCleanup.completeAsync(this, system, user) { result ->
+            if (!turns.isLive(turn)) return@completeAsync   // 按了 ✕：什麼都不貼
+            endTurn(turn)
             keyboard?.showTranscript("")
             if (generation != inputGeneration) return@completeAsync
             result.onSuccess { reply ->
@@ -1555,21 +1903,21 @@ class UTUVOImeService : InputMethodService() {
                     }
                 }
                 if (parsed.text.isBlank()) {
-                    resetVoiceModeState(); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
+                    resetVoiceModeStateFor(turn); keyboard?.setHint(getString(R.string.assistant_empty), error = true); return@onSuccess
                 }
                 showAnswerCard(parsed.text)
             }.onFailure {
                 Log.w(TAG, "ask anything failed", it)
-                resetVoiceModeState()
+                resetVoiceModeStateFor(turn)
                 keyboard?.setHint(editFailureMessage(it), error = true)
             }
         }
     }
 
     /** 沒有雲端 key 就不打任何網路，直接講清楚要去哪裡加（與既有改寫路徑同一句）。 */
-    private fun ensureCompletionRoute(): Boolean {
+    private fun ensureCompletionRoute(turn: Int): Boolean {
         if (SmartCleanup.completionRoute(this) != null) return true
-        resetVoiceModeState()
+        resetVoiceModeStateFor(turn)
         keyboard?.setHint(getString(R.string.assistant_no_key), error = true)
         return false
     }
@@ -1636,21 +1984,23 @@ class UTUVOImeService : InputMethodService() {
      *
      * 只留一次——使用者自己又動了欄位就作廢，不要復原到一個跟他現在看到的不一樣的狀態。
      *
-     * 刪之前要**兩個條件都成立**（[VoiceModes.undoStillApplies]）：游標還停在插入的結尾、
-     * 前文結尾就是插入的那段。舊版只看 endsWith：使用者把游標移到插入段中間、或前面有同樣的字時，
-     * 會刪掉錯的那一段，而且原文還補回去，變成兩份。
+     * 刪之前要**條件都成立**（[VoiceUndoPlan.canUndo]）：沒有選取、游標還停在插入的結尾、
+     * 前文結尾就是插入的那段（[VoiceModes.undoStillApplies]）。舊版只看 endsWith：使用者把游標移到插入段中間、
+     * 或前面有同樣的字時，會刪掉錯的那一段，而且原文還補回去，變成兩份。
      */
     private fun undoVoiceEdit() {
         val record = voiceUndo
         voiceUndo = null
+        keyboard?.showInsertUndo(false)
         keyboard?.hideAnswerCard()
         keyboard?.showModeRow(true)
         if (record == null) { refreshContext(); return }
         val ic = currentInputConnection ?: return
         if (record.rewritten.isNotEmpty()) {
             val before = ic.getTextBeforeCursor(record.rewritten.length, 0)?.toString().orEmpty()
-            val cursor = cursorOffset(ic) ?: -1
-            if (!VoiceModes.undoStillApplies(before, cursor, record.insertEnd, record.rewritten)) {
+            // 使用者插入之後又選了一段（就算從插入結尾開始）就不復原：放回原文會蓋掉他新選的字（VoiceUndoPlan.canUndo）。
+            val (selStart, selEnd) = selectionOffsets(ic) ?: (-1 to -1)
+            if (!VoiceUndoPlan.canUndo(record, before, selStart, selEnd)) {
                 refreshContext()
                 keyboard?.setHint(getString(R.string.hint_undo_unavailable), error = true)
                 return
@@ -1658,17 +2008,26 @@ class UTUVOImeService : InputMethodService() {
             ic.deleteSurroundingText(record.rewritten.length, 0)
         }
         if (record.original.isNotEmpty()) ic.commitText(record.original, 1)
+        // 收回的是一般聽寫：那一段不在了——背景整理別再換它、下一段的接續照它之前的狀態判斷、自動學字典別再比對它。
+        record.chainId?.let { id ->
+            chain.remove(id)
+            lastDictation = record.previousDictation
+            learner.dictationInserted("")
+        }
         syncAutoCapitalization()
         refreshContext()
         keyboard?.setHint(getString(R.string.hint_undone), error = false)
     }
 
-    /** 智慧整理：背景送出剛貼上的這段，回來時游標前還是原文才換（使用者動過就不換）。 */
+    /**
+     * 智慧整理：背景送出剛貼上的這段，回來時游標前還是原文才換（使用者動過就不換）。
+     * 回傳這段在 [chain] 的 id（沒開智慧整理＝null）；一鍵復原靠它在換字之後跟著更新。
+     */
     private fun refine(inserted: String, raw: String, context: SmartCleanup.CleanupContext = SmartCleanup.CleanupContext(),
                        tone: FieldToneHint.Kind = FieldToneHint.infer(currentInputEditorInfo),
-                       inputType: Int? = currentInputEditorInfo?.inputType) {
-        if (!SmartCleanup.isEnabled(this)) return
-        val id = chain.add(inserted)
+                       inputType: Int? = currentInputEditorInfo?.inputType, prefix: String = ""): Long? {
+        if (!SmartCleanup.isEnabled(this)) return null
+        val id = chain.add(inserted, prefix)
         refining++
         keyboard?.setHint(getString(R.string.hint_refining), error = false)
         var request: CleanupCancellation? = null
@@ -1676,11 +2035,16 @@ class UTUVOImeService : InputMethodService() {
             request?.let(pendingCleanupRequests::remove)
             refining--
             val corrected = result?.let { fitField(it, tone, inputType) }
+            // 整理版這次被 fitField 拿掉的句尾標點（同 Mac：拿掉之前先算），換字之後接著講時用。
+            val correctedMark = result?.let { com.utuvo.type.core.SentenceMood.finishDroppedMark(it) }.orEmpty()
             var swapped = false
             val ic = currentInputConnection
             if (corrected != null && corrected != inserted && ic != null && chain.swap(ic, id, corrected)) {
-                if (lastDictationOutput == inserted) lastDictationOutput = corrected   // 之後接著講要比對換過的文字
+                // 之後接著講要比對換過的文字、補回的標點也照整理版。
+                lastDictation = DictationJoin.afterRefine(lastDictation, inserted, corrected, correctedMark)
                 learner.dictationInserted(corrected)
+                // 一鍵復原記的是換字前的文字與位置：跟著換，不然換字之後按「復原」會對不上。
+                if (voiceUndo?.chainId != null) voiceUndo = VoiceUndoPlan.afterRefine(voiceUndo, id, corrected, cursorOffset(ic))
                 swapped = true
             }
             if (!listening && refining == 0) {
@@ -1689,6 +2053,7 @@ class UTUVOImeService : InputMethodService() {
         }, context = context, validationSource = inserted)
         request = cleanupRequest
         pendingCleanupRequests += cleanupRequest
+        return id
     }
 
     private fun cancelPendingCleanups() {
@@ -1717,9 +2082,12 @@ class UTUVOImeService : InputMethodService() {
 
     /** 整次聽寫收尾：段落接好的文字走原本的輸出流程（雲端重辨識 → 整理 → 貼上，只貼一次）。 */
     private fun finishSession(text: String) {
-        // 60 秒沒講話自動收尾、或出錯收尾時沒經過 stopListening：雲端錄音在這裡收。
-        // 只在還在錄時才收——finishCloudRecording 對已停的錄音會把取好的樣本清掉。
-        if (cloudRecorder.isActive) finishCloudRecording()
+        // 先記下是不是使用者自己按停的（下面就把 session 清掉了）。
+        val stopRequested = session?.stopRequested == true
+        turns.stopped()   // 60 秒自動收尾也一樣：錄音結束、等結果（✕ 還在）
+        // 60 秒沒講話自動收尾、或出錯收尾時沒經過 stopListening：雲端錄音在這裡收（錄滿上限自己停的也算）。
+        // 已經取過就不再收（同一個條件，取好的樣本才不會被清掉）。
+        if (cloudRecorder.hasSamplesToClaim) finishCloudRecording()
         session = null
         restartPending = false
         mainHandler.removeCallbacks(restartRunnable)
@@ -1731,7 +2099,16 @@ class UTUVOImeService : InputMethodService() {
         keyboard?.setHint(getString(R.string.hint_idle), error = false)
         // 沒有經過 stopListening（60 秒自動收尾、出錯）的路徑，在這裡補算秒數。
         freezeSessionSeconds()
-        if (text.isEmpty()) { dropCloudRecording(); return }
+        if (text.isEmpty()) {
+            // mobile-keyboard-v2：系統回空結果。以前一律丟掉錄音、靜默回到待機；
+            // 現在跟 onError 一樣：使用者按了停又有雲端錄音就先送雲端救，救不回來（或不能救）都講「沒有聽到聲音」。
+            val noSpeech = { keyboard?.setHint(getString(R.string.hint_no_speech), error = false) }
+            when (EmptyStopPlan.decide(stopRequested, cloudSamples?.isNotEmpty() == true, snapshotOf(turns.current).translateTarget != null)) {
+                EmptyStopPlan.Action.RESCUE -> deliverWithCloud("") { noSpeech() }
+                EmptyStopPlan.Action.DROP -> { dropCloudRecording(); endTurn(turns.current); noSpeech() }
+            }
+            return
+        }
         deliverWithCloud(text)
     }
 
@@ -1793,8 +2170,8 @@ class UTUVOImeService : InputMethodService() {
             freezeSessionSeconds()   // 出錯走雲端救援也要在這裡凍結秒數，不能把網路延遲算進去
             // 麥克風同時有兩個人在用（辨識器＋我們的錄音），系統有可能因此報錯。
             // 這種時候手上還有錄音就丟給雲端救；雲端也沒救回來才照原本的錯誤提示走。
-            if (cloudRecorder.isActive) finishCloudRecording()
-            if (cloudSamples?.isNotEmpty() == true && translateTarget == null) {
+            if (cloudRecorder.hasSamplesToClaim) finishCloudRecording()
+            if (cloudSamples?.isNotEmpty() == true && snapshotOf(turns.current).translateTarget == null) {
                 keyboard?.setListening(false)
                 keyboard?.showTranscript("")
                 deliverWithCloud("") { showRecognitionError(error) }
@@ -1805,6 +2182,7 @@ class UTUVOImeService : InputMethodService() {
             dropCloudRecording()
             keyboard?.setListening(false)
             keyboard?.showTranscript("")
+            endTurn(turns.current)
             showRecognitionError(error)
         }
 

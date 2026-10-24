@@ -69,6 +69,29 @@ class LatinNameFixerTest {
         assertEquals("kimee", LatinNameFixer.fix("kimee", listOf("Kimi", "Kimmy")))
     }
 
+    /** asr-vocab-v1（2026-10-22）：距離內最接近的詞優先；只有骨架對得上時首字要同類（同 Swift）。 */
+    @Test fun distanceCandidateBeatsSkeletonOnlyCandidate() {
+        assertEquals("更新 Pro Tools", LatinNameFixer.fix("更新 Protus", listOf("Uber Eats", "Pro Tools")))
+        assertEquals("更新 Pro Tools", LatinNameFixer.fix("更新 Protus", listOf("Pro Tools", "Uber Eats")))
+        assertEquals("1. 更新 Pro Tools", LatinNameFixer.fix("1. 更新 Protus", listOf("Uber Eats", "Pro Tools")))
+    }
+
+    @Test fun skeletonOnlyCandidateNeedsSameOnset() {
+        assertEquals("更新 Protus", LatinNameFixer.fix("更新 Protus", listOf("Uber Eats")))
+        assertEquals("Gemini", fix("Jamin"))
+        assertEquals("Gemini", fix("jeman"))
+        assertEquals("Grok", fix("grook"))
+        assertEquals("Claude Code", fix("clote coate"))
+        assertEquals("Claude Code", LatinNameFixer.fix("clotecoate", terms))
+    }
+
+    @Test fun skeletonOnlyCandidateNeedsSameWordCountWhenWordsWereHeard() {
+        assertEquals(null, LatinNameFixer.Table(listOf("Gemini")).match("ja min", heardWords = 2))
+        assertEquals("Gemini", LatinNameFixer.Table(listOf("Gemini")).match("jamin", heardWords = 1))
+        assertEquals(null, LatinNameFixer.Table(listOf("Claude Code")).match("clotecoate", heardWords = 3))
+        assertEquals("Claude Code", LatinNameFixer.Table(listOf("Claude Code")).match("clote coate", heardWords = 2))
+    }
+
     @Test fun normalizerRunsTheStep() {
         val out = Normalizer(NormalizerOptions(latinTerms = terms)).normalize("我在測試 Gimani 的東西")
         assertEquals("我在測試 Gemini 的東西", out.cleaned)

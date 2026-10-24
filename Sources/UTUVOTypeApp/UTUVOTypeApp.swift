@@ -171,7 +171,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 model: model,
                 onOpenSettings: { [weak self] in self?.showSettings(nil) },
                 onClose: { [weak self] in self?.popover?.performClose(nil) },
-                onQuit: { NSApp.terminate(nil) }
+                onQuit: { NSApp.terminate(nil) },
+                onOpenShortcuts: { [weak self] in self?.showSettings(section: .shortcuts) }
             )
         )
         return popover
@@ -302,12 +303,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
         button.attributedTitle = NSAttributedString(string: "")
-        button.toolTip = model.isProcessing
-            ? "\(AppBrand.displayName)：\(model.statusMessage)"
-            : AppBrand.displayName
+        button.toolTip = Self.statusItemToolTip(isRecording: model.isRecording, isProcessing: model.isProcessing,
+                                                statusMessage: model.statusMessage, limitNotice: model.recordingLimitNotice)
         // 圖本身已是品牌橘（非 template）；tint 留 nil，macOS 26／27 對 template 圖會無視 tint。
         button.contentTintColor = nil
         button.isEnabled = true
+    }
+
+    /// 狀態列圖示的提示文字。錄音中快到上限／很久沒聲音的倒數也顯示在這裡（repair-batch1：選單關著也看得到）。
+    static func statusItemToolTip(isRecording: Bool, isProcessing: Bool, statusMessage: String, limitNotice: String?) -> String {
+        if isRecording, let limitNotice { return "\(AppBrand.displayName)：\(limitNotice)" }
+        return isProcessing ? "\(AppBrand.displayName)：\(statusMessage)" : AppBrand.displayName
     }
 
     private func brandImage() -> NSImage {
@@ -594,6 +600,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         let window = makeSettingsWindow()
+        settingsWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// app-shell-5：打開設定並跳到指定分頁（視窗已開就切過去）。
+    private func showSettings(section: SettingsSection) {
+        popover?.performClose(nil)
+        if let settingsWindow {
+            NotificationCenter.default.post(name: .utuvoShowSettingsSection, object: section.rawValue)
+            settingsWindow.appearance = AppBrand.nsAppearance
+            settingsWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let window = makeSettingsWindow(initialSection: section)
         settingsWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

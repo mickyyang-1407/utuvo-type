@@ -164,7 +164,7 @@ enum SmartCleanup {
     一定要做：
     - 刪掉口語贅詞：嗯、呃、啊、欸、那個、這個（當語助詞時）、就是、就是說、然後（句首或沒有承接意思時）、對對、重複的詞（然後然後）。
     - 改口時只留最後的說法：「三點，不對，四點」→「四點」，句子其他部分保留（「我們約三點開會，不對，四點」→「我們約四點開會」）。
-    - 「不對」「不是」「呃不是」「我是說」後面緊接著另一個說法＝改口：不管有沒有標點、連說幾次「不對」，被改掉的那個說法（連同「不對」）一律刪掉，只留最後的說法，接回原句：「我昨天是要四點不對不對三點出發」→「我昨天是要三點出發」、「我應該要去找 Claude Code 不對是要去搞 Codex」→「我應該要去搞 Codex」、「取樣率用四十八K不對是九十六K」→「取樣率用九十六K」。只有「不對」是在描述事情（「這樣不對」「聽起來不對勁」）時才保留。
+    - 「不對」「不是」「呃不是」「我是說」後面緊接著另一個說法＝改口：不管有沒有標點、連說幾次「不對」，被改掉的那個說法（連同「不對」）一律刪掉，只留最後的說法，接回原句：「我昨天是要四點不對不對三點出發」→「我昨天是要三點出發」、「我應該要去找 Claude Code 不對是要去搞 Codex」→「我應該要去搞 Codex」、「取樣率用四十八K不對是九十六K」→「取樣率用九十六K」。只有「不對」是在描述事情（「這樣不對」「聽起來不對勁」）時才保留。「不是」只有後面接著「是」、或前後都停頓（「三點，不是，四點」）才算改口；「是A不是B」「A，不是B」是對比（前面那個才對），照原樣保留：「我們約三點開會，不是四點」→「我們約三點開會，不是四點。」
     - 後面才推翻前面說過的某一項，也算改口（常用「喔對」「啊對」「對了」「還是」開頭，例：前面說「收大行李」，後面說「行李只住兩晚，帶登機箱就好」）：把那一項直接改成最後的決定，被推翻的說法（收大行李）刪掉，理由留著；清單裡那一項就寫成最後的決定（「帶登機箱（只住兩晚）」），不要新舊兩個都留。改口改的是順序（「不對，先訂停車」）時，那一項移到最前面當第 1 項。句首當應答或接話的「好，」「喔對，」「哦，對，」也算贅詞，要刪掉。
     - 說話者列舉三項以上的「短項目」（每項大約一句話以內），或明說「第一…第二…第三」「有幾件事／幾個重點／清單」時，改成編號清單，每項一行（1. 2. 3.），引言保留在第一行。
     - 長段落（用「首先、另外、對了、接著、總之」串起來的說明）不要改成清單：**這些轉折詞一個都不能刪**，只在轉折處分段（空一行）。
@@ -208,9 +208,10 @@ enum SmartCleanup {
     }
 
     /// Transcript delimiters are prompt structure; user text must not be able to create another pair.
+    /// `.literal`：逐個 UTF-16 單位比，`>>>` 後面接組合記號（U+0301）也對得到（字素比對會整串漏掉，第二輪審查 10-22）。
     static func transcriptMessage(_ text: String) -> String {
-        let escaped = text.replacingOccurrences(of: "<<<", with: "‹‹‹")
-            .replacingOccurrences(of: ">>>", with: "›››")
+        let escaped = text.replacingOccurrences(of: "<<<", with: "‹‹‹", options: .literal)
+            .replacingOccurrences(of: ">>>", with: "›››", options: .literal)
         return "<<<\n\(escaped)\n>>>"
     }
 
@@ -260,7 +261,8 @@ enum SmartCleanup {
                                   traditional: traditional,
                                   transport: transport, customEndpoint: mapped == .dashscope ? config.bailianEndpoint : config.customEndpoint,
                                   customModel: config.customModel, context: config.context,
-                                  validationSource: config.validationSource ?? text, autoList: config.autoList)
+                                  validationSource: config.validationSource ?? text, autoList: config.autoList,
+                                  variant: config.variant)
                 }
             )
             try Task.checkCancellation()
@@ -325,7 +327,7 @@ enum SmartCleanup {
                     traditional: Bool,
                     transport: CleanupTransport, customEndpoint: String = "", customModel: String = "",
                     context: CleanupPromptContext = .init(), validationSource: String? = nil,
-                    autoList: Bool = true) async throws -> String {
+                    autoList: Bool = true, variant: CleanupVariant = .none) async throws -> String {
         if key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             throw Failure.missingAPIKey
         }
@@ -341,7 +343,7 @@ enum SmartCleanup {
                                         extra: provider.extraBody, sendsTemperature: provider.sendsTemperature,
                                         autoList: autoList, text: text,
                                         personal: personal, enabledPacks: enabledPacks,
-                                        transport: transport, context: context)
+                                        transport: transport, context: context, variant: variant)
         let result = content.trimmingCharacters(in: .whitespacesAndNewlines)
         // Preserve existing Traditional Chinese. No lossy character-by-character conversion.
         guard accepts(original: validationSource ?? text, cleaned: result, relaxed: provider.trustsCleanup) else { throw Failure.rejected }
@@ -396,7 +398,8 @@ enum SmartCleanup {
                                  personal: [String: String],
                                  enabledPacks: Set<String>,
                                  transport: CleanupTransport,
-                                 context: CleanupPromptContext) async throws -> String {
+                                 context: CleanupPromptContext,
+                                 variant: CleanupVariant = .none) async throws -> String {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         // 請求本身另設 timeout；整段工作仍受 runWithTotalDeadline 的總預算約束。
@@ -410,17 +413,21 @@ enum SmartCleanup {
         if !terms.isEmpty {
             system += "\n這位使用者常用的專有名詞（逐字稿裡聽起來像的，就改成這個寫法）：" + terms.joined(separator: "、")
         }
+        // app-shell-7：語言變體（只有選了非預設變體才多一行；預設 `.none` 是空字串，提示詞一個 byte 都不變）。
+        system += variant.promptBlock
         func escapedContext(_ value: String) -> String {
-            value.replacingOccurrences(of: "<<<", with: "‹‹‹")
-                .replacingOccurrences(of: ">>>", with: "›››")
+            value.replacingOccurrences(of: "<<<", with: "‹‹‹", options: .literal)
+                .replacingOccurrences(of: ">>>", with: "›››", options: .literal)
         }
         let appName = escapedContext(String(context.appName.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120)))
         let styleHint = escapedContext(String(context.styleHint.trimmingCharacters(in: .whitespacesAndNewlines).prefix(800)))
-        let surroundingText = escapedContext(String(context.surroundingText.trimmingCharacters(in: .whitespacesAndNewlines).prefix(600)))
+        // context-awareness-1：游標前留最靠近游標的 500 字、游標後另一行 200 字（跟 iOS／Android 同標籤同上限）。
+        let surroundingText = escapedContext(ContextBounds.clampBeforeCursor(context.surroundingText))
+        let textAfterCursor = escapedContext(ContextBounds.clampAfterCursor(context.textAfterCursor))
         let windowTitle = escapedContext(String(context.windowTitle.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120)))
         let pageLocation = escapedContext(String(context.pageLocation.trimmingCharacters(in: .whitespacesAndNewlines).prefix(200)))
         let placeholder = escapedContext(String(context.fieldPlaceholder.trimmingCharacters(in: .whitespacesAndNewlines).prefix(120)))
-        if !appName.isEmpty || !styleHint.isEmpty || !surroundingText.isEmpty
+        if !appName.isEmpty || !styleHint.isEmpty || !surroundingText.isEmpty || !textAfterCursor.isEmpty
             || !windowTitle.isEmpty || !pageLocation.isEmpty || !placeholder.isEmpty {
             system += """
 
@@ -429,6 +436,7 @@ enum SmartCleanup {
             if !appName.isEmpty { system += "\n目前 App：<<<\(appName)>>>" }
             if !styleHint.isEmpty { system += "\n目前 App 語氣提示：<<<\(styleHint)>>>" }
             if !surroundingText.isEmpty { system += "\n目前輸入欄位最近文字：<<<\(surroundingText)>>>" }
+            if !textAfterCursor.isEmpty { system += "\n目前輸入欄位游標後文字：<<<\(textAfterCursor)>>>" }
             if !pageLocation.isEmpty { system += "\n目前網頁：<<<\(pageLocation)>>>" }
             if !windowTitle.isEmpty { system += "\n目前視窗標題：<<<\(windowTitle)>>>" }
             if !placeholder.isEmpty { system += "\n輸入欄位提示文字：<<<\(placeholder)>>>" }
@@ -465,24 +473,28 @@ enum SmartCleanup {
         // 中文字從 14 掉到 4，比例 0.29 被擋（2026-10-19 真人錄音 sc02）。
         let original = relaxed ? Normalizer.normalizeNumbers(original) : original
         let cleaned = relaxed ? Normalizer.normalizeNumbers(cleaned) : cleaned
-        func counts(_ s: String) -> (cjk: Int, latin: Int) {
-            var cjk = 0, latin = 0
+        func counts(_ s: String) -> (cjk: Int, latin: Int, digits: Int) {
+            var cjk = 0, latin = 0, digits = 0
             for c in s {
                 // 寬鬆把關（Claude）：阿拉伯數字不算進英數比例——「十月十三號」→「10 月 13 號」會讓數字變多；
                 // 數字另由 CleanupFidelity.introducesDigits 把關（2026-10-19 真人錄音 6 句數字句被誤擋）。
-                if c.isASCII { if c.isLetter || (!relaxed && c.isNumber) { latin += 1 } }
+                if c.isASCII { if c.isLetter || (!relaxed && c.isNumber) { latin += 1 } else if c.isNumber { digits += 1 } }
                 else if c.isLetter || c.isNumber { cjk += 1 }
             }
-            return (cjk, latin)
+            return (cjk, latin, digits)
         }
         guard !cleaned.contains("<<<"), !cleaned.contains(">>>"),
               FormatterOutputGuard.sanitize(cleaned, source: original, mode: .smart) != nil,
               relaxed ? CleanupFidelity.passesRelaxed(original: original, cleaned: cleaned)
-                      : CleanupFidelity.preservesContent(original: original, cleaned: cleaned) else { return false }
+                      : CleanupFidelity.preservesContent(original: original, cleaned: cleaned),
+              // 人稱不能被翻轉（同 iOS；寬鬆與嚴格都檢查）。
+              CleanupFidelity.keepsPerson(original: original, cleaned: cleaned) else { return false }
         let lower = cleaned.lowercased()
         guard !["here is", "here are", "sure,", "certainly", "as an ai"].contains(where: lower.hasPrefix) else { return false }
         let before = counts(original), after = counts(cleaned)
-        guard before.cjk + before.latin > 0, after.cjk + after.latin > 0 else { return false }
+        // 只有數字的一句（「一萬二」→「12,000」）兩邊照樣有內容（FX-9）：寬鬆把關不把數字算進比例，但空不空要算；
+        // 數值對不對由 passesRelaxed 的數值檢查把關（「12,000」→「21,000」擋）。
+        guard before.cjk + before.latin + before.digits > 0, after.cjk + after.latin + after.digits > 0 else { return false }
         if before.cjk > 0 {
             let ratio = Double(after.cjk) / Double(before.cjk)
             guard ratio >= 0.3, ratio <= 1.55 else { return false }
@@ -548,6 +560,8 @@ struct CleanupConfig: Sendable, Equatable {
     var validationSource: String? = nil
     /// 自動條列（CleanupPromptRules）；預設開。
     var autoList: Bool = true
+    /// 語言變體（app-shell-7）；預設 `.none`＝提示詞不變。
+    var variant: CleanupVariant = .none
 }
 
 /// Extra prompt context is populated only when the existing include-surrounding-context switch is on.
@@ -555,6 +569,8 @@ struct CleanupPromptContext: Sendable, Equatable {
     var appName: String = ""
     var styleHint: String = ""
     var surroundingText: String = ""
+    /// 游標後文字（context-awareness-1）；同一個開關。
+    var textAfterCursor: String = ""
     /// 2026-10-13：視窗標題、網頁（網域＋路徑）、欄位提示文字；同一個開關。
     var windowTitle: String = ""
     var pageLocation: String = ""

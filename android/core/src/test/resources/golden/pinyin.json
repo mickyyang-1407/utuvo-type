@@ -4902,5 +4902,98 @@
       "x",
       "y"
     ]
+  },
+  {
+    "candidates" : [
+      {
+        "consumed" : 3,
+        "text" : "你来"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尼龙"
+      },
+      {
+        "consumed" : 3,
+        "text" : "逆流"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妳"
+      },
+      {
+        "consumed" : 2,
+        "text" : "妮"
+      },
+      {
+        "consumed" : 2,
+        "text" : "腻"
+      },
+      {
+        "consumed" : 2,
+        "text" : "逆"
+      }
+    ],
+    "candidates8" : [
+      {
+        "consumed" : 3,
+        "text" : "你来"
+      },
+      {
+        "consumed" : 3,
+        "text" : "尼龙"
+      },
+      {
+        "consumed" : 3,
+        "text" : "逆流"
+      },
+      {
+        "consumed" : 2,
+        "text" : "你"
+      },
+      {
+        "consumed" : 2,
+        "text" : "拟"
+      },
+      {
+        "consumed" : 2,
+        "text" : "尼"
+      },
+      {
+        "consumed" : 2,
+        "text" : "呢"
+      },
+      {
+        "consumed" : 2,
+        "text" : "泥"
+      }
+    ],
+    "commitAll" : "你了",
+    "keys" : "nil",
+    "preedit" : "你了",
+    "segmentation" : [
+      "ni",
+      "l"
+    ]
   }
 ]

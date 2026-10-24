@@ -90,6 +90,20 @@ enum AudioDeviceCatalog {
         setCurrentDevice(uid: uid, on: audioUnit)
     }
 
+    /// 藍牙裝置（含 BLE）：開麥時耳機從 A2DP 切到 HFP，剛播的提示音會被吃掉（capture-latency-5）。
+    static func isBluetooth(uid: String) -> Bool {
+        guard let id = deviceID(for: uid) else { return false }
+        var address = AudioObjectPropertyAddress(
+            mSelector: kAudioDevicePropertyTransportType,
+            mScope: kAudioObjectPropertyScopeGlobal,
+            mElement: kAudioObjectPropertyElementMain
+        )
+        var value: UInt32 = 0
+        var dataSize = UInt32(MemoryLayout<UInt32>.size)
+        guard AudioObjectGetPropertyData(id, &address, 0, nil, &dataSize, &value) == noErr else { return false }
+        return value == kAudioDeviceTransportTypeBluetooth || value == kAudioDeviceTransportTypeBluetoothLE
+    }
+
     static func outputMuted(uid: String) -> Bool? {
         guard let deviceID = deviceID(for: uid) else { return nil }
         return muteProperty(deviceID: deviceID)

@@ -32,6 +32,11 @@
     <string name="hint_listening_translate">Tap again to finish — translates to %1$s</string>
     <string name="hint_translate_download">Tap again to finish — translates to %1$s · first use downloads the model</string>
     <string name="hint_translating">Translating…</string>
+    <string name="hint_translate_release">Release to translate to %1$s</string>
+    <string name="hint_hold_tip">No need to hold — tap to start, tap again when you’re done</string>
+    <string name="key_cancel_voice">Cancel without inserting</string>
+    <string name="hint_voice_cancelled">Canceled — nothing was inserted</string>
+    <string name="undo_insert_desc">Undo the text just inserted</string>
 
     <!-- Say what to change, plus the engine badge. Errors stay short: two lines, with the fix. -->
     <string name="hint_edit_idle">Say how to change it</string>
@@ -176,6 +181,10 @@
     <string name="hint_refining">Refining…</string>
     <string name="hint_cloud_listening">Re-recognising with your key…</string>
     <string name="hint_refined">Refined</string>
+    <string name="hint_cloud_slow_fallback">Slow network — used the on-device result</string>
+    <string name="hint_cloud_failed_fallback">Cloud recognition failed — used the on-device result</string>
+    <string name="hint_limit_warning">Sends automatically in %1$d s (%2$d-minute limit per recording)</string>
+    <string name="hint_limit_reached">Reached the %1$d-minute limit — sending</string>
 
     <string name="smart_title">Smart Refine (optional)</string>
     <string name="smart_toggle">Smart Refine</string>
@@ -385,7 +394,7 @@
     <string name="history_retention_week">1 week</string>
     <string name="history_retention_month">1 month</string>
     <string name="history_retention_year">1 year</string>
-    <string name="history_retention_forever">Forever</string>
+    <string name="history_retention_forever">Forever (keeps the latest 500)</string>
     <string name="history_retention_none">Don’t keep</string>
     <string name="history_retention_confirm">This deletes %1$d dictations past the limit. The usage numbers on the home tab are unaffected.</string>
     <string name="history_retention_apply">Delete</string>

@@ -19,18 +19,22 @@ struct MenuPopoverView: View {
     let onOpenSettings: () -> Void
     let onClose: () -> Void
     let onQuit: () -> Void
+    /// app-shell-5：點快捷鍵卡打開設定 → 快捷鍵（沒給就開一般設定）。
+    let onOpenShortcuts: (() -> Void)?
 
     init(
         model: AppModel,
         onOpenSettings: @escaping () -> Void,
         onClose: @escaping () -> Void,
-        onQuit: @escaping () -> Void
+        onQuit: @escaping () -> Void,
+        onOpenShortcuts: (() -> Void)? = nil
     ) {
         self.model = model
         self._preferences = ObservedObject(wrappedValue: model.preferences)
         self.onOpenSettings = onOpenSettings
         self.onClose = onClose
         self.onQuit = onQuit
+        self.onOpenShortcuts = onOpenShortcuts
     }
 
     var body: some View {
@@ -58,6 +62,7 @@ struct MenuPopoverView: View {
                     modeGrid
                     primaryAction
                     quickActions
+                    shortcutsCard
 
                     if !model.lastOutput.isEmpty {
                         recentResult
@@ -558,6 +563,46 @@ struct MenuPopoverView: View {
         }
     }
 
+    /// app-shell-5：首頁列出所有快捷鍵（像 Typeless 首頁的快捷鍵卡）；順序與內容由 ShortcutCheatSheet 決定。
+    @ViewBuilder
+    private var shortcutsCard: some View {
+        let items = ShortcutCheatSheet.items(for: preferences)
+        if !items.isEmpty {
+            Button(action: { (onOpenShortcuts ?? onOpenSettings)() }) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack {
+                        Label(preferences.tr("快捷鍵", "Shortcuts"), systemImage: "keyboard")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundStyle(AppBrand.retroMuted)
+                    }
+                    ForEach(items) { item in
+                        HStack(spacing: 8) {
+                            Text(item.title)
+                                .font(AppBrand.ui(11))
+                                .foregroundStyle(AppBrand.retroText)
+                                .lineLimit(1)
+                            Spacer(minLength: 8)
+                            Text(item.keys)
+                                .font(AppBrand.mono(11, weight: .semibold))
+                                .foregroundStyle(AppBrand.retroText)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 2)
+                                .background(RoundedRectangle(cornerRadius: 5).fill(AppBrand.retroMuted.opacity(0.14)))
+                        }
+                    }
+                }
+                .padding(12)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .popoverCard(cornerRadius: 14)
+            .accessibilityLabel(preferences.tr("快捷鍵；按一下到設定修改", "Shortcuts; click to change them in Settings"))
+        }
+    }
+
     private func quickAction(title: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Label(title, systemImage: icon)
@@ -625,6 +670,8 @@ struct MenuPopoverView: View {
 
     private var statusSubtitle: String {
         if model.isRecording {
+            // 快到錄音上限：倒數（capture-latency-v3）。
+            if let notice = model.recordingLimitNotice { return notice }
             return preferences.tr("說完後再次按下停止；本機 ASR 會接手轉錄", "Press again to stop; local ASR takes over transcription")
         }
         if model.isProcessing { return model.statusMessage }

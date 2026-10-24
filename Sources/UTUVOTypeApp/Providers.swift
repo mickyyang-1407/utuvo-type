@@ -226,14 +226,31 @@ struct LocalFormatterProcessClient: FormatterClient, @unchecked Sendable {
 enum LocalEditorPrewarmer {
     private static let lock = NSLock()
     private static nonisolated(unsafe) var running = false
+    /// 內建 editor wrapper（相對 repo root）與它要的模型（相對引擎家目錄）。安裝程式不下載這個模型。
+    static let bundledWrapperRelativePath = "runtime/utuvo-type-editor.py"
+    static let bundledModelRelativePath = ".models/editor/Qwen3-4B-Instruct-2507-4bit"
+
+    /// 內建 wrapper 的完整路徑；找不到 repo root＝nil。
+    static func bundledWrapperPath() -> String? {
+        RuntimeBootstrap.locateRepoRoot().map {
+            URL(fileURLWithPath: $0).appendingPathComponent(bundledWrapperRelativePath).standardizedFileURL.path
+        }
+    }
+
+    /// 內建 editor 的模型真的在不在（modes-1：新裝的 Mac 沒有）。
+    static func bundledModelExists() -> Bool {
+        guard let root = RuntimeBootstrap.locateRepoRoot() else { return false }
+        let home = URL(fileURLWithPath: RuntimeBootstrap.engineHome(for: root))
+        return FileManager.default.fileExists(atPath: home.appendingPathComponent(bundledModelRelativePath).path)
+    }
 
     static func warmUp(command: String) {
         guard let root = RuntimeBootstrap.locateRepoRoot() else { return }
-        let expected = URL(fileURLWithPath: root).appendingPathComponent("runtime/utuvo-type-editor.py").standardizedFileURL.path
+        let expected = URL(fileURLWithPath: root).appendingPathComponent(bundledWrapperRelativePath).standardizedFileURL.path
         guard URL(fileURLWithPath: command).standardizedFileURL.path == expected else { return }
         let home = URL(fileURLWithPath: RuntimeBootstrap.engineHome(for: root))
         let python = home.appendingPathComponent(".runtime/bin/python").path
-        let model = home.appendingPathComponent(".models/editor/Qwen3-4B-Instruct-2507-4bit").path
+        let model = home.appendingPathComponent(bundledModelRelativePath).path
         let files = FileManager.default
         guard files.isExecutableFile(atPath: expected), files.isExecutableFile(atPath: python),
               files.fileExists(atPath: model) else { return }

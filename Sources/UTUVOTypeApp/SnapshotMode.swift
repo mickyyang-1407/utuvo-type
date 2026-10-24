@@ -86,9 +86,10 @@ enum SnapshotRunner {
             }
             AnswerCardController.shared.close()
 
-            // Overlay 膠囊：聆聽中＋處理中。
-            for (name, listening) in [("listening", true), ("processing", false)] {
-                let panel = overlay.showPreview(model: model, listening: listening, position: .bottom)
+            // Overlay 膠囊：聆聽中＋處理中＋快到上限／很久沒聲音的倒數（repair round 2：倒數不出聲，看球）。
+            for (name, listening, warning) in [("listening", true, false), ("processing", false, false),
+                                               ("countdown", true, true)] {
+                let panel = overlay.showPreview(model: model, listening: listening, position: .bottom, limitWarning: warning)
                 try await settle(ms: 500)
                 try capture(panel, to: out.appendingPathComponent("overlay-\(name)-\(suffix).png"))
                 overlay.hide()

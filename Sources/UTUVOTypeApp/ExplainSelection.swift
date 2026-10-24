@@ -41,7 +41,9 @@ enum ExplainSelection: String, CaseIterable, Sendable {
 
     /// 選取文字放進分隔符，避免被當成指令。
     static func userMessage(_ selection: String) -> String {
-        let escaped = selection.replacingOccurrences(of: "<<<", with: "‹‹‹").replacingOccurrences(of: ">>>", with: "›››")
+        // `.literal`：`>>>` 後面接組合記號也對得到（字素比對會漏掉）。
+        let escaped = selection.replacingOccurrences(of: "<<<", with: "‹‹‹", options: .literal)
+            .replacingOccurrences(of: ">>>", with: "›››", options: .literal)
         return "<<<\n\(escaped)\n>>>"
     }
 

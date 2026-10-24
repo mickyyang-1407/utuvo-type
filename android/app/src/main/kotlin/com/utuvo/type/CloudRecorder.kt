@@ -12,13 +12,50 @@ import android.util.Log
  * 跟系統 SpeechRecognizer 同時開：辨識器照跑（現場字＋失敗時的退路），這邊另外存一份給雲端。
  * 麥克風被占用、沒有錄音權限、或開不起來都回 false——呼叫端就只留系統辨識器，不影響打字。
  */
-class CloudRecorder {
-    private companion object {
-        const val TAG = "UTUVOCloudASR"
-        const val SAMPLE_RATE = 16_000
+class CloudRecorder @JvmOverloads constructor(
+    /** 單次錄音上限（秒）。正式版用 [MAX_SECONDS]；測試縮短才跑得完。 */
+    maxSeconds: Int = MAX_SECONDS,
+    /** 上限前多久提醒（秒）。 */
+    warningSeconds: Int = WARNING_SECONDS,
+) {
+    companion object {
+        private const val TAG = "UTUVOCloudASR"
+        private const val SAMPLE_RATE = 16_000
         /** 超過這個長度就停止（雲端各家上限 210–300 秒；記憶體與逾時都不會先到）。 */
         const val MAX_SECONDS = 300
+        /** 上限前多久提醒使用者（Typeless 是 9 分鐘上限、8 分鐘先提醒）。 */
+        const val WARNING_SECONDS = 60
     }
+
+    private val limit = SAMPLE_RATE * maxSeconds
+    /** 錄到這個樣本數就提醒一次；-1＝不提醒（上限太短）。 */
+    private val warnAt = if (warningSeconds in 1 until maxSeconds) SAMPLE_RATE * (maxSeconds - warningSeconds) else -1
+
+    /**
+     * 錄到上限前 [WARNING_SECONDS] 秒時呼叫一次（capture-latency-3）。
+     * 在錄音執行緒上呼叫：只准 post 到主執行緒，不能在這裡碰 UI。
+     */
+    @Volatile var onLimitWarning: (() -> Unit)? = null
+
+    /**
+     * 錄滿上限、錄音執行緒自己結束時呼叫一次（麥克風已放掉、樣本已備好，等 [stop] 取走）。
+     * 以前到上限只是安靜地跳出迴圈：鍵盤還顯示聆聽中、系統辨識器收不到聲音，使用者按停時整段雲端錄音被丟掉。
+     * 同 [onLimitWarning]，在錄音執行緒上呼叫，只准 post。
+     */
+    @Volatile var onLimitReached: (() -> Unit)? = null
+
+    /** 這次錄音是不是錄滿上限才結束的。 */
+    @Volatile var limitReached = false
+        private set
+
+    /** 錄音執行緒自己結束（錄滿上限）、樣本還沒被 [stop] 取走。 */
+    @Volatile private var unclaimed = false
+
+    /**
+     * 有沒有樣本可以取：還在錄，或錄滿上限自己停了但還沒取走。取走一次（[stop]／[cancel]）就變 false——
+     * 呼叫端用這個當「要不要收錄音」的唯一條件，第二次收尾才不會把已經取好的樣本清掉。
+     */
+    val hasSamplesToClaim: Boolean get() = running || unclaimed
 
     @Volatile private var running = false
     @Volatile private var failed = false
@@ -66,25 +103,58 @@ class CloudRecorder {
         if (created == null || created.state != AudioRecord.STATE_INITIALIZED) {
             Log.w(TAG, "AudioRecord init failed"); created?.release(); return false
         }
-        failed = false
-        running = true
+        resetForStart()
         record = created
         thread = Thread({ read(created) }, "cloud-asr-rec").apply { isDaemon = true; start() }
         return true
     }
 
+    /** 測試用：不開麥克風，用假來源在自己的執行緒上跑同一個錄音迴圈（同正式版的 [read]）。 */
+    internal fun startWithSource(source: (ShortArray, Int) -> Int, quietMode: Boolean = false): Boolean {
+        if (running) return true
+        quiet = quietMode
+        resetForStart()
+        thread = Thread({ pump(source) }, "cloud-asr-rec-test").apply { isDaemon = true; start() }
+        return true
+    }
+
+    private fun resetForStart() {
+        failed = false
+        limitReached = false
+        unclaimed = false
+        samples = FloatArray(0)
+        running = true
+    }
+
     private fun read(rec: AudioRecord) {
+        pump(
+            source = { buffer, size -> rec.read(buffer, 0, size) },
+            prepare = {
+                rec.startRecording()
+                rec.recordingState == AudioRecord.RECORDSTATE_RECORDING
+            },
+            release = {
+                runCatching { rec.stop() }
+                // 錄滿上限自己結束時麥克風要馬上放掉（以前只有 stop() 才 release，到上限之後一直占著）。
+                runCatching { rec.release() }
+            })
+    }
+
+    /**
+     * 錄音迴圈：讀到 [stop] 或錄滿上限。`source(buffer, size)` 最多讀 size 個樣本，回傳讀到幾個（負數＝出錯）。
+     */
+    private fun pump(source: (ShortArray, Int) -> Int, prepare: () -> Boolean = { true }, release: () -> Unit = {}) {
         // 直接寫進會長大的 FloatArray：每個樣本都 boxed 進 ArrayList 的話，300 秒錄音會吃掉上百 MB。
-        var out = FloatArray(SAMPLE_RATE * 4)
+        var out = FloatArray(minOf(limit, SAMPLE_RATE * 4))
         var count = 0
-        val limit = SAMPLE_RATE * MAX_SECONDS
         val buffer = ShortArray(2048)
         val gain = QuietMode.gain(quiet)
+        var warned = false
         try {
-            rec.startRecording()
-            if (rec.recordingState != AudioRecord.RECORDSTATE_RECORDING) { failed = true; return }
+            if (!prepare()) { failed = true; return }
             while (running && count < limit) {
-                val read = rec.read(buffer, 0, buffer.size)
+                // 最後一批只讀到上限為止：以前整批讀進來，寫超過陣列尾端丟例外，整段錄音被當成失敗清空。
+                val read = source(buffer, minOf(buffer.size, limit - count))
                 if (read <= 0) { if (read < 0) failed = true; continue }
                 pcmTap?.invoke(buffer, read)
                 if (count + read > out.size) {
@@ -106,15 +176,22 @@ class CloudRecorder {
                         for (cut in cuts) sink(out.copyOfRange(cut.start, cut.end))
                     }
                 }
+                if (!warned && warnAt in 1..count) {
+                    warned = true
+                    onLimitWarning?.invoke()
+                }
             }
-
+            if (count >= limit) limitReached = true
         } catch (e: Exception) {
-            Log.w(TAG, "recording failed", e)
+            runCatching { Log.w(TAG, "recording failed", e) }
             failed = true
         } finally {
-            runCatching { rec.stop() }
+            release()
             samples = if (failed) FloatArray(0) else out.copyOf(count)
+            val reachedLimit = limitReached && !failed
+            unclaimed = reachedLimit
             running = false
+            if (reachedLimit) onLimitReached?.invoke()
         }
     }
 
@@ -126,8 +203,10 @@ class CloudRecorder {
         running = false
         if (t != null) runCatching { t.join(2000) }
         thread = null
-        runCatching { record?.release() }
+        // 錄音執行緒結束時自己會放掉麥克風；卡住沒結束（read 不回來）才在這裡補放。
+        if (t?.isAlive == true) runCatching { record?.release() }
         record = null
+        unclaimed = false
         return if (failed) FloatArray(0) else samples
     }
 

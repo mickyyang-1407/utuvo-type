@@ -1,0 +1,1726 @@
+[
+  {
+    "before" : "前面的字我到了",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "Note: I'm here",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "Where are you?",
+    "prefix" : " ",
+    "previous" : "I'm here"
+  },
+  {
+    "before" : "Done.",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "Next step",
+    "prefix" : " ",
+    "previous" : "Done."
+  },
+  {
+    "before" : "room 42",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "3 people",
+    "prefix" : " ",
+    "previous" : "room 42"
+  },
+  {
+    "before" : "我到了 ",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "I'm here ",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "Where",
+    "prefix" : "",
+    "previous" : "I'm here"
+  },
+  {
+    "before" : "我到了\n",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : null,
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "別的內容",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : null
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : ""
+  },
+  {
+    "before" : "你到了嗎？",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "我在門口",
+    "prefix" : "",
+    "previous" : "你到了嗎？"
+  },
+  {
+    "before" : "OK",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "我在門口",
+    "prefix" : "",
+    "previous" : "OK"
+  },
+  {
+    "before" : "I'm here",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "「好」",
+    "prefix" : "",
+    "previous" : "I'm here"
+  },
+  {
+    "before" : "I'm here",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "",
+    "prefix" : "",
+    "previous" : "I'm here"
+  },
+  {
+    "before" : "如果明天下雨的話",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "我們就改到室內",
+    "prefix" : "，",
+    "previous" : "如果明天下雨的話"
+  },
+  {
+    "before" : "蘋果、香蕉",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "還有芭樂",
+    "prefix" : "、",
+    "previous" : "蘋果、香蕉"
+  },
+  {
+    "before" : "如果明天下雨的話",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "我們就改到室內",
+    "prefix" : "",
+    "previous" : "如果明天下雨的話"
+  },
+  {
+    "before" : "我會晚一點到因為",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "塞車",
+    "prefix" : "",
+    "previous" : "我會晚一點到因為"
+  },
+  {
+    "before" : "如果明天下雨的话",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "我们就改到室内",
+    "prefix" : "",
+    "previous" : "如果明天下雨的话"
+  },
+  {
+    "before" : "他到家的時候",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "記得打給我",
+    "prefix" : "",
+    "previous" : "他到家的時候"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "今天很暖和",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "我們出去走走",
+    "prefix" : "",
+    "previous" : "今天很暖和"
+  },
+  {
+    "before" : "我真的比不過",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "算了",
+    "prefix" : "",
+    "previous" : "我真的比不過"
+  },
+  {
+    "before" : "我才不管",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你自己看著辦",
+    "prefix" : "",
+    "previous" : "我才不管"
+  },
+  {
+    "before" : "我想要",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "一杯咖啡",
+    "prefix" : "",
+    "previous" : "我想要"
+  },
+  {
+    "before" : "如果明天下雨的話 ",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "我們",
+    "prefix" : "",
+    "previous" : "如果明天下雨的話"
+  },
+  {
+    "before" : "別的內容",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "我們",
+    "prefix" : "",
+    "previous" : "如果明天下雨的話"
+  },
+  {
+    "before" : "蘋果 ",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "香蕉",
+    "prefix" : "",
+    "previous" : "蘋果"
+  },
+  {
+    "before" : null,
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "香蕉",
+    "prefix" : "",
+    "previous" : "蘋果"
+  },
+  {
+    "before" : "別的",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "香蕉",
+    "prefix" : "",
+    "previous" : "蘋果"
+  },
+  {
+    "before" : "Wait,",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "then",
+    "prefix" : " ",
+    "previous" : "Wait,"
+  },
+  {
+    "before" : "Really?",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "Yes",
+    "prefix" : " ",
+    "previous" : "Really?"
+  },
+  {
+    "before" : "Wow!",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : " ",
+    "previous" : "Wow!"
+  },
+  {
+    "before" : "Note:",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "x",
+    "prefix" : " ",
+    "previous" : "Note:"
+  },
+  {
+    "before" : "Hmm;",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "fine",
+    "prefix" : " ",
+    "previous" : "Hmm;"
+  },
+  {
+    "before" : "value)",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "",
+    "previous" : "value)"
+  },
+  {
+    "before" : "x",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "_y",
+    "prefix" : "",
+    "previous" : "x"
+  },
+  {
+    "before" : "x",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "-y",
+    "prefix" : "",
+    "previous" : "x"
+  },
+  {
+    "before" : "Ａ",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "b",
+    "prefix" : "",
+    "previous" : "Ａ"
+  },
+  {
+    "before" : "a",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "Ｂ",
+    "prefix" : "",
+    "previous" : "a"
+  },
+  {
+    "before" : "end.",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "。",
+    "prefix" : "",
+    "previous" : "end."
+  },
+  {
+    "before" : "price 100",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "元",
+    "prefix" : "",
+    "previous" : "price 100"
+  },
+  {
+    "before" : "ok",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "，",
+    "previous" : "ok"
+  },
+  {
+    "before" : "ok",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : " ",
+    "previous" : "ok"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "；",
+    "fn" : "joinPrefix",
+    "next" : "你",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "",
+    "prefix" : "，",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "到了",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "你",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "說我到了",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "你",
+    "prefix" : "，",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了🙂",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "你在哪",
+    "prefix" : "",
+    "previous" : "我到了🙂"
+  },
+  {
+    "before" : "OK 👍",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "thanks",
+    "prefix" : "",
+    "previous" : "OK 👍"
+  },
+  {
+    "before" : "I'm here",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "👍 ok",
+    "prefix" : "",
+    "previous" : "I'm here"
+  },
+  {
+    "before" : "great👍🏽",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : "，",
+    "previous" : "👍🏽"
+  },
+  {
+    "before" : "great👍🏽",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : "",
+    "previous" : "🏽"
+  },
+  {
+    "before" : "家👨‍👩‍👧",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : "",
+    "previous" : "👧"
+  },
+  {
+    "before" : "家👨‍👩‍👧",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : "，",
+    "previous" : "👨‍👩‍👧"
+  },
+  {
+    "before" : "🇹🇼🇯🇵",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "a",
+    "prefix" : "，",
+    "previous" : "🇯🇵"
+  },
+  {
+    "before" : "ok",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "🇹🇼 go",
+    "prefix" : "",
+    "previous" : "ok"
+  },
+  {
+    "before" : "𠮷野家",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "好",
+    "prefix" : "",
+    "previous" : "𠮷野家"
+  },
+  {
+    "before" : "abc𠮷",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "x",
+    "prefix" : "",
+    "previous" : "abc𠮷"
+  },
+  {
+    "before" : "x",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "𠮷",
+    "prefix" : "",
+    "previous" : "x"
+  },
+  {
+    "before" : "吃𠮷",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "好",
+    "prefix" : "、",
+    "previous" : "𠮷"
+  },
+  {
+    "before" : "café",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "ok",
+    "prefix" : "",
+    "previous" : "café"
+  },
+  {
+    "before" : "咖啡café",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "好",
+    "prefix" : "，",
+    "previous" : "咖啡café"
+  },
+  {
+    "before" : "xé",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "好",
+    "prefix" : "",
+    "previous" : "́"
+  },
+  {
+    "before" : "xé",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "好",
+    "prefix" : "",
+    "previous" : "e"
+  },
+  {
+    "before" : "ok",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "áb",
+    "prefix" : "",
+    "previous" : "ok"
+  },
+  {
+    "before" : "A.́",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "b",
+    "prefix" : "",
+    "previous" : "A.́"
+  },
+  {
+    "before" : "我到了 ́",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "你",
+    "prefix" : "",
+    "previous" : "我到了 ́"
+  },
+  {
+    "before" : "é",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "x",
+    "prefix" : "",
+    "previous" : "é"
+  },
+  {
+    "before" : "ok ",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "",
+    "previous" : "ok"
+  },
+  {
+    "before" : "ok　",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "",
+    "previous" : "ok"
+  },
+  {
+    "before" : "ok",
+    "droppedMark" : null,
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "",
+    "previous" : "ok"
+  },
+  {
+    "before" : "ok​",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "next",
+    "prefix" : "，",
+    "previous" : "ok​"
+  },
+  {
+    "before" : "ok\u001c",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "x",
+    "prefix" : "，",
+    "previous" : "ok\u001c"
+  },
+  {
+    "before" : "我到了\r\n",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "你",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "a\r\nb",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "c",
+    "prefix" : "",
+    "previous" : "\nb"
+  },
+  {
+    "before" : "a\r\nb",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "c",
+    "prefix" : "，",
+    "previous" : "\r\nb"
+  },
+  {
+    "before" : "因為下雨",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "所以取消",
+    "prefix" : "",
+    "previous" : "因為下雨"
+  },
+  {
+    "before" : "雖然很累",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "但是很開心",
+    "prefix" : "",
+    "previous" : "雖然很累"
+  },
+  {
+    "before" : "如果你有空",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們就見面",
+    "prefix" : "",
+    "previous" : "如果你有空"
+  },
+  {
+    "before" : "我想要",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "一杯咖啡",
+    "prefix" : "",
+    "previous" : "我想要"
+  },
+  {
+    "before" : "因為明天要早起",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我先睡了",
+    "prefix" : "",
+    "previous" : "因為明天要早起"
+  },
+  {
+    "before" : "雖然他沒說",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "大家都知道",
+    "prefix" : "",
+    "previous" : "雖然他沒說"
+  },
+  {
+    "before" : "即使下雨",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "大家也要準時",
+    "prefix" : "",
+    "previous" : "即使下雨"
+  },
+  {
+    "before" : "只要你願意",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "隨時都可以來",
+    "prefix" : "",
+    "previous" : "只要你願意"
+  },
+  {
+    "before" : "你這樣說的話",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "那我就不去了",
+    "prefix" : "",
+    "previous" : "你這樣說的話"
+  },
+  {
+    "before" : "沒有的話",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們再想辦法",
+    "prefix" : "",
+    "previous" : "沒有的話"
+  },
+  {
+    "before" : "我們先去吃飯",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "然後去看電影",
+    "prefix" : "",
+    "previous" : "我們先去吃飯"
+  },
+  {
+    "before" : "我會晚一點到",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "因為塞車",
+    "prefix" : "",
+    "previous" : "我會晚一點到"
+  },
+  {
+    "before" : "如果明天下雨",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們就改到室內",
+    "prefix" : "",
+    "previous" : "如果明天下雨"
+  },
+  {
+    "before" : "如果明天下雨的话",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我们就改到室内",
+    "prefix" : "",
+    "previous" : "如果明天下雨的话"
+  },
+  {
+    "before" : "我覺得",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "這樣不太好",
+    "prefix" : "",
+    "previous" : "我覺得"
+  },
+  {
+    "before" : "我希望",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "你能來",
+    "prefix" : "",
+    "previous" : "我希望"
+  },
+  {
+    "before" : "這都是為了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "大家好",
+    "prefix" : "",
+    "previous" : "這都是為了"
+  },
+  {
+    "before" : "如果你覺得",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "不錯",
+    "prefix" : "",
+    "previous" : "如果你覺得"
+  },
+  {
+    "before" : "我想要",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "但是太貴了",
+    "prefix" : "",
+    "previous" : "我想要"
+  },
+  {
+    "before" : "如果有需要",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "再跟我說",
+    "prefix" : "",
+    "previous" : "如果有需要"
+  },
+  {
+    "before" : "這是他說的話",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我記住了",
+    "prefix" : "",
+    "previous" : "這是他說的話"
+  },
+  {
+    "before" : "沒有如果",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "只有結果",
+    "prefix" : "",
+    "previous" : "沒有如果"
+  },
+  {
+    "before" : "沒有但是",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "照做就對了",
+    "prefix" : "",
+    "previous" : "沒有但是"
+  },
+  {
+    "before" : "因為下雨所以取消",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "大家先回家",
+    "prefix" : "",
+    "previous" : "因為下雨所以取消"
+  },
+  {
+    "before" : "雖然很累但很開心",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "明天繼續",
+    "prefix" : "",
+    "previous" : "雖然很累但很開心"
+  },
+  {
+    "before" : "如果下雨就改期",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "大家記得看群組",
+    "prefix" : "",
+    "previous" : "如果下雨就改期"
+  },
+  {
+    "before" : "這主要是成本",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們再看看",
+    "prefix" : "",
+    "previous" : "這主要是成本"
+  },
+  {
+    "before" : "我也這麼覺得",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "就這樣吧",
+    "prefix" : "",
+    "previous" : "我也這麼覺得"
+  },
+  {
+    "before" : "我也這麼覺得",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "你呢",
+    "prefix" : "",
+    "previous" : "我也這麼覺得"
+  },
+  {
+    "before" : "已經沒有希望",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "放棄吧",
+    "prefix" : "",
+    "previous" : "已經沒有希望"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "那個餐廳在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "便利商店在哪",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我在門口",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我要",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "一杯咖啡",
+    "prefix" : "",
+    "previous" : "我要"
+  },
+  {
+    "before" : "我的老闆",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "明天要來",
+    "prefix" : "",
+    "previous" : "我的老闆"
+  },
+  {
+    "before" : "明天早上",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們去爬山",
+    "prefix" : "",
+    "previous" : "明天早上"
+  },
+  {
+    "before" : "請給我",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "一杯水",
+    "prefix" : "",
+    "previous" : "請給我"
+  },
+  {
+    "before" : "他在",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "開會",
+    "prefix" : "",
+    "previous" : "他在"
+  },
+  {
+    "before" : "我想用",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "Pro Tools 混音",
+    "prefix" : "",
+    "previous" : "我想用"
+  },
+  {
+    "before" : "今天的會議",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "改到下午3點",
+    "prefix" : "",
+    "previous" : "今天的會議"
+  },
+  {
+    "before" : "你可以",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "幫我買咖啡嗎",
+    "prefix" : "",
+    "previous" : "你可以"
+  },
+  {
+    "before" : "我不知道如果他不來",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "怎麼辦",
+    "prefix" : "",
+    "previous" : "我不知道如果他不來"
+  },
+  {
+    "before" : "我住在",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "就近的飯店",
+    "prefix" : "",
+    "previous" : "我住在"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "就業博覽會在三樓",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我只要一杯水",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "謝謝",
+    "prefix" : "",
+    "previous" : "我只要一杯水"
+  },
+  {
+    "before" : "好",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們走",
+    "prefix" : "",
+    "previous" : "好"
+  },
+  {
+    "before" : "謝謝",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "再見",
+    "prefix" : "",
+    "previous" : "謝謝"
+  },
+  {
+    "before" : "不需要",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "我自己來",
+    "prefix" : "",
+    "previous" : "不需要"
+  },
+  {
+    "before" : "我也想要",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "可以幫我買嗎",
+    "prefix" : "",
+    "previous" : "我也想要"
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "就在門口",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "我要",
+    "droppedMark" : "。",
+    "fn" : "joinPrefix",
+    "next" : "一杯咖啡",
+    "prefix" : "",
+    "previous" : "我要"
+  },
+  {
+    "before" : "太好了！",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們走",
+    "prefix" : "",
+    "previous" : "太好了！"
+  },
+  {
+    "before" : "你在哪？",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我到了",
+    "prefix" : "",
+    "previous" : "你在哪？"
+  },
+  {
+    "before" : "你明天會來嗎？",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我等你",
+    "prefix" : "",
+    "previous" : "你明天會來嗎？"
+  },
+  {
+    "before" : "I want",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "a coffee",
+    "prefix" : " ",
+    "previous" : "I want"
+  },
+  {
+    "before" : "I am here.",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "Where",
+    "prefix" : " ",
+    "previous" : "I am here."
+  },
+  {
+    "before" : "Sounds OK",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "thanks",
+    "prefix" : " ",
+    "previous" : "Sounds OK"
+  },
+  {
+    "before" : "room 42",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "3 people",
+    "prefix" : " ",
+    "previous" : "room 42"
+  },
+  {
+    "before" : "Done.",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "Next step",
+    "prefix" : " ",
+    "previous" : "Done."
+  },
+  {
+    "before" : "Pro Tools",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "2024",
+    "prefix" : " ",
+    "previous" : "Pro Tools"
+  },
+  {
+    "before" : "Hello world,",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "again",
+    "prefix" : " ",
+    "previous" : "Hello world,"
+  },
+  {
+    "before" : "如果明天下雨的話",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "我們就改到室內",
+    "prefix" : "，",
+    "previous" : "如果明天下雨的話"
+  },
+  {
+    "before" : "蘋果",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "香蕉",
+    "prefix" : "、",
+    "previous" : "蘋果"
+  },
+  {
+    "before" : "取樣率用96k",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "48k也可以",
+    "prefix" : "，",
+    "previous" : "取樣率用96k"
+  },
+  {
+    "before" : "我要",
+    "droppedMark" : "，",
+    "fn" : "joinPrefix",
+    "next" : "一杯咖啡",
+    "prefix" : "，",
+    "previous" : "我要"
+  },
+  {
+    "before" : "轉寄給小雅跟小潘 ",
+    "droppedMark" : "、",
+    "fn" : "joinPrefix",
+    "next" : "還有小王",
+    "prefix" : "",
+    "previous" : "轉寄給小雅跟小潘 "
+  },
+  {
+    "before" : "我到了",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "OK 我們走",
+    "prefix" : "",
+    "previous" : "我到了"
+  },
+  {
+    "before" : "Sounds good",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我們走",
+    "prefix" : "",
+    "previous" : "Sounds good"
+  },
+  {
+    "before" : "價格是100",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "元",
+    "prefix" : "",
+    "previous" : "價格是100"
+  },
+  {
+    "before" : "I am here.",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "我在門口",
+    "prefix" : "",
+    "previous" : "I am here."
+  },
+  {
+    "before" : "第一段。\n第二段，",
+    "droppedMark" : "",
+    "fn" : "joinPrefix",
+    "next" : "第三段",
+    "prefix" : "",
+    "previous" : "第一段。\n第二段，"
+  },
+  {
+    "finish" : "因為下雨",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "因為下雨"
+  },
+  {
+    "finish" : "雖然很累",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "雖然很累"
+  },
+  {
+    "finish" : "如果你有空",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果你有空"
+  },
+  {
+    "finish" : "我想要",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我想要"
+  },
+  {
+    "finish" : "因為明天要早起",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "因為明天要早起"
+  },
+  {
+    "finish" : "雖然他沒說",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "雖然他沒說"
+  },
+  {
+    "finish" : "即使下雨",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "即使下雨"
+  },
+  {
+    "finish" : "只要你願意",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "只要你願意"
+  },
+  {
+    "finish" : "你這樣說的話",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "你這樣說的話"
+  },
+  {
+    "finish" : "沒有的話",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "沒有的話"
+  },
+  {
+    "finish" : "我們先去吃飯",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我們先去吃飯"
+  },
+  {
+    "finish" : "我會晚一點到",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我會晚一點到"
+  },
+  {
+    "finish" : "如果明天下雨",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果明天下雨"
+  },
+  {
+    "finish" : "如果明天下雨的话",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果明天下雨的话"
+  },
+  {
+    "finish" : "我覺得",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我覺得"
+  },
+  {
+    "finish" : "我希望",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我希望"
+  },
+  {
+    "finish" : "這都是為了",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "這都是為了"
+  },
+  {
+    "finish" : "如果你覺得",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果你覺得"
+  },
+  {
+    "finish" : "如果有需要",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果有需要"
+  },
+  {
+    "finish" : "這是他說的話",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "這是他說的話"
+  },
+  {
+    "finish" : "沒有如果",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "沒有如果"
+  },
+  {
+    "finish" : "沒有但是",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "沒有但是"
+  },
+  {
+    "finish" : "因為下雨所以取消",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "因為下雨所以取消"
+  },
+  {
+    "finish" : "雖然很累但很開心",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "雖然很累但很開心"
+  },
+  {
+    "finish" : "如果下雨就改期",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "如果下雨就改期"
+  },
+  {
+    "finish" : "這主要是成本",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "這主要是成本"
+  },
+  {
+    "finish" : "我也這麼覺得",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我也這麼覺得"
+  },
+  {
+    "finish" : "已經沒有希望",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "已經沒有希望"
+  },
+  {
+    "finish" : "我到了",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我到了"
+  },
+  {
+    "finish" : "我要",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我要"
+  },
+  {
+    "finish" : "我的老闆",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我的老闆"
+  },
+  {
+    "finish" : "明天早上",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "明天早上"
+  },
+  {
+    "finish" : "請給我",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "請給我"
+  },
+  {
+    "finish" : "他在",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "他在"
+  },
+  {
+    "finish" : "我想用",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我想用"
+  },
+  {
+    "finish" : "今天的會議",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "今天的會議"
+  },
+  {
+    "finish" : "你可以",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "你可以"
+  },
+  {
+    "finish" : "我不知道如果他不來",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我不知道如果他不來"
+  },
+  {
+    "finish" : "我住在",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我住在"
+  },
+  {
+    "finish" : "我只要一杯水",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "我只要一杯水"
+  },
+  {
+    "finish" : "好",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "好"
+  },
+  {
+    "finish" : "謝謝",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "謝謝"
+  },
+  {
+    "finish" : "不需要",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "不需要。"
+  },
+  {
+    "finish" : "我也想要",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "我也想要。"
+  },
+  {
+    "finish" : "我到了",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "我到了。"
+  },
+  {
+    "finish" : "我要",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "我要。"
+  },
+  {
+    "finish" : "太好了！",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "太好了！"
+  },
+  {
+    "finish" : "你在哪？",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "你在哪？"
+  },
+  {
+    "finish" : "你明天會來嗎？",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "你明天會來嗎。"
+  },
+  {
+    "finish" : "I want",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "I want"
+  },
+  {
+    "finish" : "I am here.",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "I am here."
+  },
+  {
+    "finish" : "Sounds OK",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "Sounds OK"
+  },
+  {
+    "finish" : "room 42",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "room 42"
+  },
+  {
+    "finish" : "Done.",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "Done."
+  },
+  {
+    "finish" : "Pro Tools",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "Pro Tools"
+  },
+  {
+    "finish" : "Hello world,",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "Hello world,"
+  },
+  {
+    "finish" : "如果明天下雨的話",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "如果明天下雨的話，"
+  },
+  {
+    "finish" : "蘋果",
+    "fn" : "finishDroppedMark",
+    "mark" : "、",
+    "text" : "蘋果、"
+  },
+  {
+    "finish" : "取樣率用96k",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "取樣率用96k，"
+  },
+  {
+    "finish" : "我要",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "我要，"
+  },
+  {
+    "finish" : "轉寄給小雅跟小潘 ",
+    "fn" : "finishDroppedMark",
+    "mark" : "、",
+    "text" : "轉寄給小雅跟小潘、 "
+  },
+  {
+    "finish" : "Sounds good",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "Sounds good"
+  },
+  {
+    "finish" : "價格是100",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "價格是100"
+  },
+  {
+    "finish" : "第一段。\n第二段，",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "第一段。\n第二段，"
+  },
+  {
+    "finish" : "，",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "，"
+  },
+  {
+    "finish" : "第一段，\n\n第二段，",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "第一段，\n\n第二段，"
+  },
+  {
+    "finish" : "好 ́",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好， ́"
+  },
+  {
+    "finish" : "好　",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好，　"
+  },
+  {
+    "finish" : "好 ",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好， "
+  },
+  {
+    "finish" : "好",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好，"
+  },
+  {
+    "finish" : "好，\u001c",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "好，\u001c"
+  },
+  {
+    "finish" : "好，​",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "好，​"
+  },
+  {
+    "finish" : "好\r\n",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好，\r\n"
+  },
+  {
+    "finish" : "好，́",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "好，́"
+  },
+  {
+    "finish" : "é",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "é，"
+  },
+  {
+    "finish" : "🙂，",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "🙂，"
+  },
+  {
+    "finish" : "好🙂",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "好🙂，"
+  },
+  {
+    "finish" : "好，🙂",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "好，🙂"
+  },
+  {
+    "finish" : "👨‍👩‍👧、",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "👨‍👩‍👧、"
+  },
+  {
+    "finish" : "①",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "①，"
+  },
+  {
+    "finish" : "Ⅻ",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "Ⅻ，"
+  },
+  {
+    "finish" : "́，",
+    "fn" : "finishDroppedMark",
+    "mark" : "",
+    "text" : "́，"
+  },
+  {
+    "finish" : "𠮷",
+    "fn" : "finishDroppedMark",
+    "mark" : "，",
+    "text" : "𠮷，"
+  },
+  {
+    "finish" : "𠮷",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "𠮷。"
+  },
+  {
+    "finish" : "好 ",
+    "fn" : "finishDroppedMark",
+    "mark" : "。",
+    "text" : "好。 "
+  },
+  {
+    "finish" : "好\t",
+    "fn" : "finishDroppedMark",
+    "mark" : "、",
+    "text" : "好、\t"
+  }
+]

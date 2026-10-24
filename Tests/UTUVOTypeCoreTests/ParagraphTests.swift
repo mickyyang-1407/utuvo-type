@@ -74,7 +74,10 @@ final class ParagraphTests: XCTestCase {
     }
 
     func testCompactListsStillBreak() {
-        XCTAssertEqual(n.normalize("今天有三件事第一買牛奶第二回email第三寫報告。").cleaned, "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。")
+        // 2026-10-22 W2-6：序數行改成編號清單、引言收「：」。
+        XCTAssertEqual(n.normalize("今天有三件事，第一買牛奶，第二回email，第三寫報告。").cleaned, "今天有三件事：\n1. 買牛奶\n2. 回email\n3. 寫報告")
+        // 第四輪（2026-10-22）政策 (A)：沒有標點連著講的序數串（第二、第三不在子句開頭）不編號、不切行（第三輪這句會編號）。
+        XCTAssertEqual(n.normalize("今天有三件事第一買牛奶第二回email第三寫報告。").cleaned, "今天有三件事第一買牛奶第二回email第三寫報告。")
         XCTAssertEqual(n.normalize("首先整理桌面其次回信最後趕稿。").cleaned, "首先整理桌面\n其次回信\n最後趕稿。")
         XCTAssertEqual(n.normalize("接下來是測試然後是驗收最後是上線。").cleaned, "接下來是測試\n然後是驗收\n最後是上線。")
     }

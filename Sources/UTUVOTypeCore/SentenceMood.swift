@@ -26,12 +26,13 @@ public enum SentenceMood {
     }
 
     /// 最後一句的句號拿掉（只拿「。」；問號、驚嘆號、英文句點不動）。有換行＝分段長文，照原樣。
+    /// 句尾吊著的「，」「、」（講到一半停住，Groq 常這樣收尾）也一起拿掉（2026-10-22 ls03／sc05）。
     public static func dropFinalPeriod(_ text: String) -> String {
         guard !text.contains("\n") else { return text }
         var body = Substring(text)
         var trailing = ""
         while let last = body.last, last.isWhitespace { trailing = String(last) + trailing; body = body.dropLast() }
-        guard body.last == "。" else { return text }
+        guard let last = body.last, "。，、".contains(last) else { return text }
         let without = body.dropLast()
         // 整段只剩標點或空字串就別動（「。」本身是使用者唸的「句號」之類）。
         guard without.contains(where: { $0.isLetter || $0.isNumber }) else { return text }
@@ -50,6 +51,41 @@ public enum SentenceMood {
         // 上一段結尾已經是標點（？！。…）或英數字 → 不補。
         guard isCJKLetter(last) else { return "" }
         return "。"
+    }
+
+    /// Mac 接續聽寫用（2026-10-22 context-awareness-2 ticket A；第三輪審查 10-22 改成保守規則）：
+    /// 游標前正好是上一段聽寫的結尾（同一個欄位、游標沒動）時，這一段前面要先插什麼。
+    /// - 永遠不插「。」（或任何句末標點）：辨識器幾乎每段都收在「。」，話講到一半停住也一樣，
+    ///   插句號會把一句話切成兩句（「我要。一杯咖啡」「我的老闆。明天要來」）。猜「這裡講完了沒」的詞表
+    ///  （第一、二輪的承接詞／從屬子句／動詞受詞）一律拿掉：拿不準就照原樣接上。
+    /// - 中文接中文：什麼都不插（「我要」＋「一杯咖啡」→「我要一杯咖啡」）。
+    /// - 英數字接英數字（上一段尾是英數字或 .!?,;:，這一段頭是英數字）：插一個空白，免得黏成一個字。
+    /// - 上一段自己的標點照留：游標前已經是？！. 之類就不再加；`droppedMark`（[finish] 拿掉的句尾標點，
+    ///   見 [finishDroppedMark]）是「，」「、」就原樣補回——那是辨識結果本來就有的停頓標點，不是猜的
+    ///  （「如果明天下雨的話，」＋「我們就改到室內」）。拿掉的是「。」不補（同第一條）。
+    /// - 游標前最後一個字元是空白（「結尾加空白」開著、或使用者自己打了空白）、讀不到游標前（nil）、
+    ///   游標前不是上一段的結尾：什麼都不插。
+    /// iOS／Android 仍呼叫 [continuationPrefix]，這個函式不改它的行為。
+    public static func joinPrefix(before: String?, previous: String?, next: String, droppedMark: String? = nil) -> String {
+        guard let before, let previous, !previous.isEmpty else { return "" }
+        guard let lastBefore = before.last, !lastBefore.isWhitespace else { return "" }
+        guard before.hasSuffix(previous) else { return "" }
+        if let droppedMark, droppedMark == "，" || droppedMark == "、" { return droppedMark }
+        guard let tail = previous.last, let head = next.first else { return "" }
+        if (isASCIIWordCharacter(tail) || ".!?,;:".contains(tail)) && isASCIIWordCharacter(head) { return " " }
+        return ""
+    }
+
+    /// [finish] 會拿掉的句尾標點（「。」「，」「、」）；不拿就回空字串。
+    /// Mac 接續聽寫把它記下來當 [joinPrefix] 的 `droppedMark`：下一段緊接著講時，「，」「、」原樣補回（「。」不補）。
+    public static func finishDroppedMark(_ text: String) -> String {
+        let applied = apply(text)
+        guard dropFinalPeriod(applied) != applied, let mark = applied.last(where: { !$0.isWhitespace }) else { return "" }
+        return String(mark)
+    }
+
+    private static func isASCIIWordCharacter(_ c: Character) -> Bool {
+        c.isASCII && (c.isLetter || c.isNumber)
     }
 
     static func isCJKLetter(_ c: Character) -> Bool {

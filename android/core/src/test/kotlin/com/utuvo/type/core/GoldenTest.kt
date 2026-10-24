@@ -48,6 +48,64 @@ class GoldenTest {
         report("文字整理", cases.length(), diffs)
     }
 
+    /** 序數清單的封閉動詞表（2026-10-22 W2-6 第四輪）：跟 Swift Normalizer.ordinalListVerbs／ordinalListVerbNouns 逐字、同順序。 */
+    @Test
+    fun ordinalListVerbsMatchSwift() {
+        val o = JSONObject(javaClass.getResource("/golden/ordinal-list-verbs.json")?.readText() ?: error("找不到 golden/ordinal-list-verbs.json"))
+        val verbs = o.getJSONArray("verbs").strings()
+        assertTrue(verbs.size >= 50, "動詞表是空的（匯出壞了？）")
+        kotlin.test.assertEquals(verbs, Normalizer.ordinalListVerbs, "動詞表跟 Swift 不一樣")
+        kotlin.test.assertEquals(o.getJSONArray("nouns").strings(), Normalizer.ordinalListVerbNouns, "名詞例外表跟 Swift 不一樣")
+    }
+
+    /** 數字正規化（FX-2 v2）：normalizeNumbers 本身（也跑在 LLM 輸出上）＋整條 normalize。 */
+    @Test
+    fun numbersMatchSwift() {
+        val cases = golden("numbers.json")
+        val plain = Normalizer()
+        val diffs = mutableListOf<String>()
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val input = c.getString("input")
+            val n = Normalizer.normalizeNumbers(input)
+            if (n != c.getString("numbers")) diffs += "numbers 「$input」\n   swift 「${c.getString("numbers")}」\n  kotlin 「$n」"
+            val a = plain.normalize(input).cleaned
+            if (a != c.getString("cleaned")) diffs += "cleaned 「$input」\n   swift 「${c.getString("cleaned")}」\n  kotlin 「$a」"
+        }
+        report("數字正規化", cases.length(), diffs)
+    }
+
+    /**
+     * LLM 把關（FX-7）：本機版第一次貼上的字＋寬鬆把關的意思檢查（數值多出／換主人、對比翻轉、對調、人稱），
+     * 句子是 fx-seven 審查回報＋fuzz 每 20 取 1＋單元測試的句對。同 Swift GoldenExportTests 的 fidelity.json。
+     */
+    @Test
+    fun fidelityMatchesSwift() {
+        val cases = golden("fidelity.json")
+        val plain = Normalizer()
+        val diffs = mutableListOf<String>()
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val input = c.getString("input")
+            val first = SentenceMood.finish(plain.normalize(input).cleaned)
+            if (first != c.getString("first")) diffs += "first   「$input」\n   swift 「${c.getString("first")}」\n  kotlin 「$first」"
+            if (!c.has("candidate")) continue
+            val candidate = c.getString("candidate")
+            val o = CleanupFidelity.spelledNumbers(Normalizer.normalizeNumbers(first))
+            val n = CleanupFidelity.spelledNumbers(Normalizer.normalizeNumbers(candidate))
+            val checks = listOf(
+                CleanupFidelity.introducesNumberValues(o, n),
+                CleanupFidelity.reordersNumberValues(o, n),
+                CleanupFidelity.dropsNumberValues(o, n),
+                CleanupFidelity.invertsContrast(o, n),
+                CleanupFidelity.swapsAroundSharedMiddle(o, n),
+                CleanupFidelity.keepsPerson(first, Normalizer.normalizeNumbers(candidate)),
+            ).joinToString("") { if (it) "1" else "0" }
+            if (checks != c.getString("checks")) diffs += "checks  「$input」→「$candidate」 swift ${c.getString("checks")} kotlin $checks"
+        }
+        report("LLM 把關", cases.length(), diffs)
+    }
+
     private fun JSONArray.candidates() = (0 until length()).map {
         val o = getJSONObject(it)
         "${o.getString("text")}/${o.getInt("readingCount")}"
@@ -166,6 +224,64 @@ class GoldenTest {
         report("句尾語氣", cases.length() + cont.length(), diffs)
     }
 
+    /**
+     * 接續聽寫（W2-7）：joinPrefix＋finishDroppedMark（＋finish）逐條對 Swift。交界上有 emoji、組合記號、各種空白，
+     * 所以逐 code point 列差異（組合記號會讓兩邊印出來看起來一樣）。
+     */
+    @Test
+    fun sentenceMoodJoinMatchesSwift() {
+        val cases = golden("sentence-mood-join.json")
+        val diffs = mutableListOf<String>()
+        fun cps(s: String?) = s?.codePoints()?.toArray()?.joinToString(" ") { Integer.toHexString(it) } ?: "nil"
+        fun JSONObject.optText(key: String) = if (isNull(key)) null else getString(key)
+        var joins = 0
+        var marks = 0
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            when (c.getString("fn")) {
+                "joinPrefix" -> {
+                    joins++
+                    val before = c.optText("before")
+                    val previous = c.optText("previous")
+                    val next = c.getString("next")
+                    val droppedMark = c.optText("droppedMark")
+                    val got = SentenceMood.joinPrefix(before, previous, next, droppedMark)
+                    if (got != c.getString("prefix")) {
+                        diffs += "joinPrefix before[${cps(before)}] previous[${cps(previous)}] next[${cps(next)}] mark[${cps(droppedMark)}]\n" +
+                            "   swift[${cps(c.getString("prefix"))}] kotlin[${cps(got)}]"
+                    }
+                }
+                "finishDroppedMark" -> {
+                    marks++
+                    val text = c.getString("text")
+                    val mark = SentenceMood.finishDroppedMark(text)
+                    val finish = SentenceMood.finish(text)
+                    if (mark != c.getString("mark")) diffs += "finishDroppedMark[${cps(text)}] swift[${cps(c.getString("mark"))}] kotlin[${cps(mark)}]"
+                    if (finish != c.getString("finish")) diffs += "finish[${cps(text)}] swift[${cps(c.getString("finish"))}] kotlin[${cps(finish)}]"
+                }
+                else -> diffs += "不認得的 fn：${c.getString("fn")}"
+            }
+        }
+        assertTrue(joins > 0 && marks > 0, "接續聽寫：joinPrefix $joins 條、finishDroppedMark $marks 條（兩種都要有）")
+        report("接續聽寫", cases.length(), diffs)
+    }
+
+    /** 資料區塊定界符跳脫（審查 10-22）：逐 code point 比，不靠字串相等（組合記號會讓兩邊看起來一樣）。 */
+    @Test
+    fun dataDelimiterEscapeMatchesSwift() {
+        val cases = golden("data-delimiters.json")
+        val diffs = mutableListOf<String>()
+        fun cps(s: String) = s.codePoints().toArray().joinToString(" ") { Integer.toHexString(it) }
+        for (i in 0 until cases.length()) {
+            val c = cases.getJSONObject(i)
+            val input = c.getString("input")
+            val got = VoiceModes.escapeDataDelimiters(input)
+            val want = c.getString("escaped")
+            if (cps(got) != cps(want)) diffs += "「${cps(input)}」\n   swift ${cps(want)}\n  kotlin ${cps(got)}"
+        }
+        report("定界符跳脫", cases.length(), diffs)
+    }
+
     @Test
     fun englishCurrentWordMatchesSwift() {
         val cases = golden("english-current-word.json")
@@ -210,5 +326,69 @@ class GoldenTest {
             }
         }
         report("英文 merge", cases.length(), diffs)
+    }
+
+    /** 英文專名修正（FX-5）：同一組詞、同樣的句子逐字對；english-words.txt 同一段逐字掃過，換掉的字（與換成什麼）要一模一樣。 */
+    @Test
+    fun latinNamesMatchSwift() {
+        val sets = golden("latin-names.json")
+        val english = File("../app/src/main/assets/english-words.txt").readLines().map { it.trim() }.filter { it.isNotEmpty() }
+        val diffs = mutableListOf<String>()
+        var total = 0
+        for (i in 0 until sets.length()) {
+            val set = sets.getJSONObject(i)
+            val name = set.getString("set")
+            val terms = set.getJSONArray("terms").strings()
+            val cases = set.getJSONArray("cases")
+            for (j in 0 until cases.length()) {
+                val c = cases.getJSONObject(j)
+                val got = LatinNameFixer.fix(c.getString("input"), terms)
+                total++
+                if (got != c.getString("output")) diffs += "$name 「${c.getString("input")}」\n   swift 「${c.getString("output")}」\n  kotlin 「$got」"
+                // 智慧整理的規則（W2-1 verifier）
+                val cleanup = LatinNameFixer.fix(c.getString("input"), terms, LatinNameFixer.TextSource.CLEANUP)
+                total++
+                if (cleanup != c.getString("cleanupOutput")) {
+                    diffs += "$name cleanup 「${c.getString("input")}」\n   swift 「${c.getString("cleanupOutput")}」\n  kotlin 「$cleanup」"
+                }
+            }
+            val range = set.getJSONArray("sweepRange")
+            val words = english.subList(range.getInt(0), range.getInt(1))
+            for ((source, key) in listOf(LatinNameFixer.TextSource.SPEECH to "sweepChanges", LatinNameFixer.TextSource.CLEANUP to "cleanupSweepChanges")) {
+                val out = LatinNameFixer.fix(words.joinToString("，"), terms, source).split("，")
+                val got = words.indices.filter { words[it] != out[it] }.map { "${words[it]}→${out[it]}" }
+                val swiftChanges = set.getJSONArray(key)
+                val want = (0 until swiftChanges.length()).map { swiftChanges.getJSONArray(it).let { p -> "${p.getString(0)}→${p.getString(1)}" } }
+                total += words.size
+                if (got != want) diffs += "$name $key：swift ${want.size} 個、kotlin ${got.size} 個\n  只有 swift：${(want - got.toSet()).take(20)}\n  只有 kotlin：${(got - want.toSet()).take(20)}"
+            }
+        }
+        report("英文專名", total, diffs)
+    }
+
+    /** 智慧整理後補套（W2-1 verifier）：同一份字典＋英文專名目標，套一次、套兩次都要跟 Swift 逐字一樣。 */
+    @Test
+    fun vocabularyApplyMatchesSwift() {
+        val sets = golden("vocabulary-apply.json")
+        val diffs = mutableListOf<String>()
+        var total = 0
+        for (i in 0 until sets.length()) {
+            val set = sets.getJSONObject(i)
+            val name = set.getString("set")
+            val dictObject = set.getJSONObject("dictionary")
+            val dictionary = dictObject.keys().asSequence().associateWith { dictObject.getString(it) }
+            val terms = set.getJSONArray("latinTerms").strings()
+            val cases = set.getJSONArray("cases")
+            for (j in 0 until cases.length()) {
+                val c = cases.getJSONObject(j)
+                val once = Normalizer.applyVocabulary(c.getString("input"), dictionary, terms)
+                val twice = Normalizer.applyVocabulary(once, dictionary, terms)
+                total++
+                if (once != c.getString("output") || twice != c.getString("twice")) {
+                    diffs += "$name 「${c.getString("input")}」\n   swift 「${c.getString("output")}」「${c.getString("twice")}」\n  kotlin 「$once」「$twice」"
+                }
+            }
+        }
+        report("智慧整理後補套", total, diffs)
     }
 }

@@ -90,8 +90,27 @@ private final class IsolatedDelegate: NSObject, NSApplicationDelegate, NSWindowD
                         output: String(repeating: "字", count: 40 + (offset * 37) % 260), duration: Double(10 + offset % 50), mode: .smart))
                 }
             }
+            if requested == "history" || requested == "advanced" {
+                // 隔離預覽的假紀錄（只寫隔離 suite）：正常、辨識失敗（錄音留著）、處理中取消各一筆。
+                let prefs = model.preferences
+                let failedID = UUID()
+                let failedAudio = prefs.recordingsDirectory.appendingPathComponent("\(failedID.uuidString).caf")
+                try? FileManager.default.createDirectory(at: prefs.recordingsDirectory, withIntermediateDirectories: true)
+                try? Data("synthetic".utf8).write(to: failedAudio)
+                prefs.appendHistory(HistoryRecord(date: Date().addingTimeInterval(-3_600), rawTranscript: "合成測試文字",
+                    output: "合成測試文字。", duration: 4, mode: .smart, appName: "Notes"))
+                prefs.appendHistory(HistoryRecord(id: failedID, date: Date().addingTimeInterval(-600), rawTranscript: "",
+                    output: "", duration: 7, mode: .fast, appName: "Mail", audioPath: failedAudio.path,
+                    note: "The network connection was lost.", status: .failed), countsTowardStats: false)
+                prefs.appendHistory(HistoryRecord(date: Date().addingTimeInterval(-60), rawTranscript: "取消前已經辨識好的一段話",
+                    output: "", duration: 5, mode: .smart, appName: "Slack", status: .cancelled), countsTowardStats: false)
+            }
             if requested == "dictionary" {
                 model.preferences.addSuggestions([.init(from: "元山", to: "圓山"), .init(from: "Atmus", to: "Atmos")])
+                // 隔離預覽的假詞條（只寫隔離 suite），看得到搜尋框、詞條與「復原」列。
+                for (source, output) in [("Atmos", ""), ("cloud code", "Claude Code"), ("除值", "儲值"), ("pik", "Pik")] {
+                    model.preferences.addDictionaryTerm(source: source, output: output)
+                }
             }
             if requested == "answer" {
                 AnswerCardController.shared.show(.init(question: "台北到高雄高鐵大概要多久？",
@@ -105,9 +124,29 @@ private final class IsolatedDelegate: NSObject, NSApplicationDelegate, NSWindowD
             window.isRestorable = false
             window.isReleasedWhenClosed = false
             window.delegate = self
-            window.contentView = NSHostingView(rootView: SettingsView(model: model, initialSection: section))
+            if arguments.contains("--preview-zh") { model.preferences.appLanguage = .traditionalChinese }
+            let comps = Calendar.current.dateComponents([.year, .month], from: Date())
+            let thisMonth = String(format: "%04d-%02d", comps.year ?? 0, comps.month ?? 0)
+            window.contentView = NSHostingView(rootView: SettingsView(model: model, initialSection: section,
+                expandedHistoryMonths: requested == "history" ? [thisMonth] : []))
             self.window = window
             window.center(); window.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true)
+            if let raw = value("--preview-scroll"), let fraction = Double(raw) {
+                // 截圖用：把內容區捲到指定比例（0＝頂、1＝底）。
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak window] in
+                    guard let root = window?.contentView else { return }
+                    func scrollViews(_ view: NSView) -> [NSScrollView] {
+                        (view as? NSScrollView).map { [$0] } ?? [] + view.subviews.flatMap(scrollViews)
+                    }
+                    guard let scroll = scrollViews(root).max(by: {
+                        ($0.documentView?.frame.height ?? 0) < ($1.documentView?.frame.height ?? 0) }),
+                          let document = scroll.documentView else { return }
+                    let maxY = max(0, document.frame.height - scroll.contentView.bounds.height)
+                    let y = document.isFlipped ? maxY * min(1, max(0, fraction)) : maxY * (1 - min(1, max(0, fraction)))
+                    scroll.contentView.scroll(to: NSPoint(x: 0, y: y))
+                    scroll.reflectScrolledClipView(scroll.contentView)
+                }
+            }
             emit("preview", details: "Unique suite and storage; safe controls enabled; no keychain/cloud/microphone/hotkeys/network")
         }
     }

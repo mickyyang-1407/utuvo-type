@@ -61,6 +61,23 @@ final class PredictionTests: XCTestCase {
         XCTAssertNil(PhraseAssociations(data: header), "索引超出檔案")
     }
 
+    /// 詞表跟詞庫一樣留在映射的檔案裡：位元組就是 assoc-*.dat 的映射（跟 heap 歷史、測試順序無關）。
+    /// 反面對照：整份讀進 heap 的詞表一定被判「不是檔案映射」。
+    func testAssociationsStayInTheMappedFile() throws {
+        try MappedFileProbe.requireAvailable()
+        for name in ["assoc-hant.dat", "assoc-hans.dat"] {
+            let url = Self.resource(name)
+            let mapped = try XCTUnwrap(PhraseAssociations(url: url))
+            let why = mapped.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: url) }
+            XCTAssertNil(why, "詞表位元組不是 \(name) 的映射 → 被整份讀進記憶體了：\(why ?? "")")
+
+            let heap = try XCTUnwrap(PhraseAssociations(data: try Data(contentsOf: url)))
+            let whyHeap = heap.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: url) }
+            XCTAssertNotNil(whyHeap, "整份讀進 heap 的詞表被判成 \(name) 的映射 → 結構檢查是空心的")
+            XCTAssertTrue(whyHeap?.contains("不是檔案映射") ?? false, "理由應該是匿名記憶體，實際：\(whyHeap ?? "nil")")
+        }
+    }
+
     func testAssociationLookupIsFast() throws {
         let a = try XCTUnwrap(Self.hant)
         let start = Date()

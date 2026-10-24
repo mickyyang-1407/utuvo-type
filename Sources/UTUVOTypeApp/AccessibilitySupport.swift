@@ -43,17 +43,20 @@ enum AccessibilitySupport {
         let lookup: ContextBounds.PageLookup = (includeSurrounding || !blockedSites.isEmpty) ? webAreaURL(above: focused) : .notWeb
         var page: String?
         if case .webArea(let url) = lookup { page = url.flatMap(ContextBounds.pageLocation(from:)) }
-        if ContextBounds.shouldBlock(lookup, isBrowser: ContextBounds.isBrowser(bundleIdentifier: app?.bundleIdentifier),
-                                     blockedSites: blockedSites) {
+        if let reason = ContextBounds.blockReason(lookup, isBrowser: ContextBounds.isBrowser(bundleIdentifier: app?.bundleIdentifier),
+                                                  blockedSites: blockedSites) {
             return LimitedAppContext(foregroundBundleIdentifier: context.foregroundBundleIdentifier,
                                      appName: context.appName, focusedFieldRole: context.focusedFieldRole,
-                                     contextBlocked: true)
+                                     contextBlocked: true, contextBlockReason: reason)
         }
         if let selected = copyAttribute(focused, kAXSelectedTextAttribute) as? String {
             context.selectedText = ContextBounds.boundedSelectedText(selected)
+            if ContextBounds.selectionExceedsLimit(selected) { context.selectedTextTruncated = true }
         }
         if includeSurrounding {
-            context.surroundingText = boundedSurroundingText(of: focused)
+            let around = cursorText(of: focused)
+            context.surroundingText = around.before
+            context.textAfterCursor = around.after
             // 2026-10-13 對齊 Typeless：視窗標題、網頁（網域＋路徑）、欄位提示文字。
             if let placeholder = copyAttribute(focused, kAXPlaceholderValueAttribute) as? String {
                 context.fieldPlaceholder = nonEmpty(ContextBounds.bounded(placeholder, limit: ContextBounds.titleLimit))
@@ -82,9 +85,28 @@ enum AccessibilitySupport {
         return (value as! AXUIElement)
     }
 
-    private static func nonEmpty(_ s: String) -> String? {
-        let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
-        return t.isEmpty ? nil : t
+    private static func nonEmpty(_ s: String?) -> String? {
+        guard let t = s?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty else { return nil }
+        return t
+    }
+
+    /// 投遞前看一眼焦點（delivery-learning-2）：沒有焦點元素、或焦點是按鈕／清單這類非文字元素時，
+    /// ⌘V 多半沒進去。只讀角色與「值可不可寫」，不讀欄位內容。分類規則在 core 的 `DeliveryTarget`。
+    static func deliveryFocus() -> DeliveryTarget.Focus {
+        guard isTrusted() else { return .unreadable }
+        let system = AXUIElementCreateSystemWide()
+        AXUIElementSetMessagingTimeout(system, 0.2)
+        var value: CFTypeRef?
+        let status = AXUIElementCopyAttributeValue(system, kAXFocusedUIElementAttribute as CFString, &value)
+        if status == .noValue { return .noFocusedElement }
+        guard status == .success, let value, CFGetTypeID(value) == AXUIElementGetTypeID() else { return .unreadable }
+        let element = unsafeDowncast(value, to: AXUIElement.self)
+        AXUIElementSetMessagingTimeout(element, 0.2)
+        var settable = DarwinBoolean(false)
+        let settableStatus = AXUIElementIsAttributeSettable(element, kAXValueAttribute as CFString, &settable)
+        return .element(role: copyAttribute(element, kAXRoleAttribute) as? String,
+                        subrole: copyAttribute(element, kAXSubroleAttribute) as? String,
+                        valueSettable: settableStatus == .success ? settable.boolValue : nil)
     }
 
     /// 從焦點欄位往上找網頁區塊（AXWebArea），讀它的網址。最多 40 層、總共 150 毫秒，每次 AX 呼叫最多等 0.1 秒
@@ -123,24 +145,23 @@ enum AccessibilitySupport {
         return copyAttribute(element, kAXSelectedTextAttribute) as? String
     }
 
-    private static func boundedSurroundingText(of element: AXUIElement) -> String? {
-        guard let selectedRangeValue = copyAttribute(element, kAXSelectedTextRangeAttribute) else {
-            return nil
-        }
-        let axSelectedRange = selectedRangeValue as! AXValue
-        var selectedRange = CFRange(location: 0, length: 0)
-        guard AXValueGetType(axSelectedRange) == .cfRange,
-              AXValueGetValue(axSelectedRange, .cfRange, &selectedRange) else {
-            return nil
-        }
+    /// 游標前後的文字（context-awareness-1）：範圍由 `ContextBounds.cursorWindows` 算，
+    /// 游標前一定合法、不需要欄位總長度；拿不到總長度只少了游標後那段。
+    private static func cursorText(of element: AXUIElement) -> (before: String?, after: String?) {
+        guard let selection = selectedRange(of: element) else { return (nil, nil) }
+        let count = copyAttribute(element, kAXNumberOfCharactersAttribute) as? Int
+        let windows = ContextBounds.cursorWindows(location: selection.location, selectionLength: selection.length,
+                                                  count: count)
+        let before = string(of: element, in: windows.before).map { ContextBounds.clampBeforeCursor($0) }
+        let after = windows.after.flatMap { string(of: element, in: $0) }.map { ContextBounds.clampAfterCursor($0) }
+        return (nonEmpty(before), nonEmpty(after))
+    }
 
-        // Ask Accessibility for only a small range around the selection. This
-        // avoids reading an entire document or a whole text field into Type.
-        let radius = ContextBounds.surroundingRadius
-        let requestedStart = max(0, selectedRange.location - radius)
-        let requestedLength = selectedRange.length + radius * 2
-        var requestedRange = CFRange(location: requestedStart, length: requestedLength)
-        guard let rangeValue = AXValueCreate(.cfRange, &requestedRange) else { return nil }
+    /// 只讀一小段（AXStringForRange），不讀整個欄位。
+    private static func string(of element: AXUIElement, in range: NSRange) -> String? {
+        guard range.length > 0 else { return nil }
+        var requested = CFRange(location: range.location, length: range.length)
+        guard let rangeValue = AXValueCreate(.cfRange, &requested) else { return nil }
         var result: CFTypeRef?
         let status = AXUIElementCopyParameterizedAttributeValue(
             element,
@@ -149,7 +170,7 @@ enum AccessibilitySupport {
             &result
         )
         guard status == .success, let text = result as? String else { return nil }
-        return ContextBounds.boundedSurroundingText(text)
+        return text
     }
 
     private static func copyAttribute(_ element: AXUIElement, _ attribute: String) -> Any? {
@@ -196,20 +217,16 @@ enum ClipboardPaster {
             Dictionary(item.types.compactMap { type in item.data(forType: type).map { (type, $0) } },
                        uniquingKeysWith: { first, _ in first })
         }
-        pasteboard.clearContents()
-        guard pasteboard.setString(text, forType: .string) else {
+        guard writeForPaste(text, to: pasteboard, handling: handling) else {
             throw PasteError.eventUnavailable
-        }
-        // 2026-10-13 對齊 Typeless：有條列時另附 HTML，富文字編輯器（Docs／Notion／Gmail／備忘錄）變真正的清單；
-        // 純文字欄位照舊拿上面那份純文字。
-        if let html = RichTextShape.html(for: text) {
-            pasteboard.setString(html, forType: .html)
         }
         let pastedChangeCount = pasteboard.changeCount
 
         let source = CGEventSource(stateID: .combinedSessionState)
-        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: true),
-              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: CGKeyCode(kVK_ANSI_V), keyDown: false) else {
+        // delivery-learning-6：按目前鍵盤配置上的 V（Dvorak 等配置的 keycode 9 不是 V）。
+        let vKey = KeyboardLayoutKeyCode.commandV()
+        guard let keyDown = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: true),
+              let keyUp = CGEvent(keyboardEventSource: source, virtualKey: vKey, keyDown: false) else {
             throw PasteError.eventUnavailable
         }
         keyDown.flags = .maskCommand
@@ -231,6 +248,32 @@ enum ClipboardPaster {
                 if !restored.isEmpty { pasteboard.writeObjects(restored) }
             }
         }
+    }
+
+    /// 剪貼簿管理工具（Maccy、Raycast、Paste……）的慣例：有這個型別的內容是暫時的，不記進歷史。
+    static let transientType = NSPasteboard.PasteboardType("org.nspasteboard.TransientType")
+
+    /// delivery-learning-6（2026-10-22）：把要貼的字寫進剪貼簿。
+    /// - `.restore`（貼完會還原原本內容）：`prepareForNewContents(.currentHostOnly)`——不同步到同 Apple ID 的其他裝置；
+    ///   另加 `org.nspasteboard.TransientType`，剪貼簿管理工具不會把每一句聽寫都記下來。
+    ///   不加 `org.nspasteboard.ConcealedType`：那是「這是密碼」的標記，聽寫內容不是。
+    /// - `.keep`（使用者要留在剪貼簿）：照一般複製，不加任何標記。
+    /// 有條列時另附 HTML（2026-10-13 對齊 Typeless：富文字編輯器變真正的清單；純文字欄位照舊拿純文字）。
+    @discardableResult
+    static func writeForPaste(_ text: String, to pasteboard: NSPasteboard, handling: ClipboardHandling) -> Bool {
+        if handling == .restore {
+            pasteboard.prepareForNewContents(with: .currentHostOnly)
+        } else {
+            pasteboard.clearContents()
+        }
+        guard pasteboard.setString(text, forType: .string) else { return false }
+        if let html = RichTextShape.html(for: text) {
+            pasteboard.setString(html, forType: .html)
+        }
+        if handling == .restore {
+            pasteboard.setData(Data(), forType: transientType)
+        }
+        return true
     }
 
     private static func replaceFocusedSelection(with text: String) -> Bool {

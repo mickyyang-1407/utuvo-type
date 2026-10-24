@@ -80,6 +80,17 @@ final class SentenceMoodTests: XCTestCase {
         XCTAssertEqual(SentenceMood.finish("I will be there."), "I will be there.")   // 英文句點照英文習慣留著
     }
 
+    /// 句尾吊著的逗號／頓號（Groq 講到一半停住）一起拿掉；句中的不動，英文逗號不動。
+    func testFinishDropsDanglingComma() {
+        XCTAssertEqual(SentenceMood.finish("幫我準備四樣東西，播放器、耳機、線材、還有轉接頭，"),
+                       "幫我準備四樣東西，播放器、耳機、線材、還有轉接頭")
+        XCTAssertEqual(SentenceMood.finish("取樣率用96k，"), "取樣率用96k")
+        XCTAssertEqual(SentenceMood.finish("轉寄給小雅跟小潘、 "), "轉寄給小雅跟小潘 ")
+        XCTAssertEqual(SentenceMood.finish("，"), "，")
+        XCTAssertEqual(SentenceMood.finish("Hello world,"), "Hello world,")
+        XCTAssertEqual(SentenceMood.finish("第一段，\n\n第二段，"), "第一段，\n\n第二段，")
+    }
+
     /// Micky 原話：這段辨識出來每句都是句號——整理後至少最後一句不再有句號。
     func testMickysOwnExample() {
         let raw = "我覺得現在越來越棒，但我一直想修改的是不要每個句子或最後都用句點，偶爾可以有問號、驚歎號等。你還是要稍微了解前後的意思再下判斷，因為一直使用句點會顯得很 AI。就像現在這樣，幾乎都會有句點。"

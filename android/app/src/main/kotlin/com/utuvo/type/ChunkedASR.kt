@@ -249,8 +249,11 @@ object ChunkedASR {
     /** 一段辨識的結果；要分得出「被限流」（429），因為那要立刻改回舊做法。 */
     enum class SegmentOutcome { OK, RATE_LIMITED, FAILED }
 
-    /** 一段辨識的結果＋文字。 */
-    data class SegmentResult(val outcome: SegmentOutcome, val text: String = "")
+    /**
+     * 一段辨識的結果＋文字。`network`＝失敗是因為網路（逾時、連不上），不是服務回了錯誤或壞資料——
+     * 有裝置端文字可退時，同一條慢網路上不再整段重送（capture-latency-v1）。
+     */
+    data class SegmentResult(val outcome: SegmentOutcome, val text: String = "", val network: Boolean = false)
 
     /**
      * 邊錄邊傳的最後一步：各段結果依序接起來。
@@ -295,16 +298,19 @@ object ChunkedASR {
 
     /**
      * 送一段。[context]＝前一段的文字（Whisper prompt）。逾時、回 null 都不算被限流。
+     * [maxBudgetMs]＝這一段最多能用多久（總時限剩下的時間）；預設只受這一段自己的 [CloudASR.timeLimit] 限制。
      */
     @JvmStatic
+    @JvmOverloads
     fun transcribeSegment(segment: FloatArray, language: String, hotwords: List<String>,
                           provider: SmartCleanup.Provider, key: String, context: String?,
                           transport: CloudASR.Transport = CloudASR.HttpTransport,
-                          guard: CloudASR.Guard = CloudASR.Guard(CloudASR::trimGuard)): SegmentResult {
+                          guard: CloudASR.Guard = CloudASR.Guard(CloudASR::trimGuard),
+                          maxBudgetMs: Long = Long.MAX_VALUE): SegmentResult {
         val seconds = segment.size / 16_000.0
         if (seconds < 0.25) return SegmentResult(SegmentOutcome.FAILED)
         if (key.isEmpty()) return SegmentResult(SegmentOutcome.FAILED)
-        val budgetMs = (CloudASR.timeLimit(seconds) * 1000).toLong().coerceAtLeast(1)
+        val budgetMs = minOf((CloudASR.timeLimit(seconds) * 1000).toLong(), maxBudgetMs).coerceAtLeast(1)
         val deadlineNanos = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(budgetMs)
         val audio = CloudASR.wav(CloudASR.trimSilence(segment))
         val response: CloudASR.Response
@@ -313,7 +319,8 @@ object ChunkedASR {
                 CloudASR.makeRequest(provider, key, audio, language, hotwords, context = context),
                 remainingMs(deadlineNanos))
         } catch (e: Exception) {
-            return SegmentResult(SegmentOutcome.FAILED)
+            // 逾時、連不上、被中斷（總時限到了）：網路問題。
+            return SegmentResult(SegmentOutcome.FAILED, network = true)
         }
         if (response.code != 200) {
             val outcome = if (response.code == 429) SegmentOutcome.RATE_LIMITED else SegmentOutcome.FAILED
@@ -350,6 +357,8 @@ class LiveCloudASR(
     private val lock = Any()
     private val texts = ArrayList<String>()
     private var degraded = false
+    /** 降級的原因是網路（某段逾時／連不上），不是服務回錯誤或限流。 */
+    private var degradedByNetwork = false
 
     /** 已排進 worker、還沒跑完的段數。降級要靠它把佇列裡剩下的段作廢（2026-10-14 Q3-repair1 review-agy ④）。 */
     private val inFlight = java.util.concurrent.atomic.AtomicInteger(0)
@@ -378,8 +387,11 @@ class LiveCloudASR(
                     synchronized(lock) {
                         when (result.outcome) {
                             ChunkedASR.SegmentOutcome.OK -> texts.add(result.text)
-                            // 任一段不順 → 整段重送（舊做法）
-                            ChunkedASR.SegmentOutcome.RATE_LIMITED, ChunkedASR.SegmentOutcome.FAILED -> degraded = true
+                            // 任一段不順 → 整段重送（舊做法）；網路造成的另外記下（有總時限時不在同一條慢網路上重送）
+                            ChunkedASR.SegmentOutcome.RATE_LIMITED, ChunkedASR.SegmentOutcome.FAILED -> {
+                                degraded = true
+                                if (result.network) degradedByNetwork = true
+                            }
                         }
                     }
                 } finally {
@@ -401,17 +413,80 @@ class LiveCloudASR(
      * 講完：等前面都送完，送最後一段，接起來。
      * `last`＝還沒講完的最後一段；`whole`＝整段錄音（任何退路都用它走舊做法）。
      * 阻塞：呼叫端本來就在背景執行緒上等雲端。
+     *
+     * [stoppedAtNanos]（`System.nanoTime()`）＝使用者按停的時間（capture-latency-v1）。從這一刻起算一個總時限
+     * [CloudASR.timeLimit]（整段秒數，最多 6 秒），涵蓋「等前面幾段、送最後一段、整段退路」三件事；
+     * 時間到就回 null，呼叫端貼裝置端（系統辨識器）的文字。以前一段逾時就在同一條慢網路上整段重送，
+     * 最差約 22 秒什麼都不貼。有總時限時：
+     * - 網路造成的失敗（逾時、連不上）不整段重送——同一條網路只會更慢；
+     * - 最後一段被限流（429，剛剛才送的）不整段重送——同一把 key 馬上再送大概還是 429；
+     * - 服務回錯誤或壞資料（HTTP 4xx/5xx、解析失敗、空字、迴圈），或錄音中途（較早）被限流，才在剩下的時間內整段重送。
+     *
+     * `stoppedAtNanos = null`＝沒有總時限、照舊做法：給「系統什麼都沒聽到、只能靠雲端救」的情況用——
+     * 那時沒有裝置端文字可以退，不能為了快把唯一的結果也丟掉。
      */
     fun finish(last: FloatArray?, whole: FloatArray, log: CloudASR.Log = CloudASR.NO_LOG,
-              guard: CloudASR.Guard = this.guard): String? {
+               guard: CloudASR.Guard = this.guard, stoppedAtNanos: Long? = System.nanoTime()): String? {
+        if (stoppedAtNanos == null) return finishWithin(last, whole, log, guard, deadline = null)
+        val seconds = whole.size / 16_000.0
+        val deadline = stoppedAtNanos + TimeUnit.MILLISECONDS.toNanos(budgetMs(seconds))
+        // 放棄之後背景還在跑的那一份不准再寫 log（不然同一次會記兩筆）。
+        val gaveUp = java.util.concurrent.atomic.AtomicBoolean(false)
+        val quiet = CloudASR.Log { start, elapsed, p, outcome, audio, chars ->
+            if (!gaveUp.get()) log.record(start, elapsed, p, outcome, audio, chars)
+        }
+        val task = java.util.concurrent.FutureTask<String?>(java.util.concurrent.Callable {
+            finishWithin(last, whole, quiet, guard, deadline)
+        })
+        Thread(task, "live-cloud-finish").apply { isDaemon = true; start() }
+        return try {
+            // 每一步本身都被剩下的時間綁住；這裡的上限只防傳輸層不守逾時（再寬限一點讓它自己收尾寫 log）。
+            task.get(TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime()) + FINISH_GRACE_MS, TimeUnit.MILLISECONDS)
+        } catch (e: java.util.concurrent.TimeoutException) {
+            gaveUp.set(true)
+            task.cancel(true)
+            abandon()
+            val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - stoppedAtNanos)
+            log.record(System.currentTimeMillis() - elapsedMs, elapsedMs, provider.id, "timeout", seconds, 0)
+            null
+        } catch (e: Exception) {
+            gaveUp.set(true)
+            abandon()
+            null
+        }
+    }
+
+    private fun finishWithin(last: FloatArray?, whole: FloatArray, log: CloudASR.Log,
+                             guard: CloudASR.Guard, deadline: Long?): String? {
+        val seconds = whole.size / 16_000.0
+        val startedAt = System.currentTimeMillis()
+        fun leftMs(): Long? = deadline?.let { TimeUnit.NANOSECONDS.toMillis(it - System.nanoTime()) }
+        fun expired() = deadline != null && System.nanoTime() >= deadline
+        fun giveUp(outcome: String): String? {
+            log.record(startedAt, System.currentTimeMillis() - startedAt, provider.id, outcome, seconds, 0)
+            return null
+        }
+        fun wholeFallback(): String? {
+            val left = leftMs()
+            if (left != null && left <= 0) return giveUp("timeout")
+            return CloudASR.transcribe(whole, language, hotwords, provider, key, transport, log, guard, maxBudgetMs = left)
+        }
+
         // 2026-10-14（Q3-repair1 review-agy ④）：原本用 `worker.submit{}.get(10, SECONDS)` 空等佇列排乾，
         // 一旦降級就白白等滿 10 秒才重送整段。改成：降級就立刻走整段；沒降級才等前面幾段跑完
         // （有上限，仍是保險不是保證 —— 正常情況每一段都有 CloudASR.timeLimit 兜底）。
-        if (!synchronized(lock) { degraded }) awaitQueued(10_000)
-        fun wholeFallback(): String? =
-            CloudASR.transcribe(whole, language, hotwords, provider, key, transport, log, guard)
-
-        if (synchronized(lock) { degraded }) { worker.shutdownNow(); return wholeFallback() }
+        if (!synchronized(lock) { degraded }) awaitQueued(leftMs()?.coerceAtLeast(0) ?: 10_000)
+        // 總時限內前面還有段沒回來：接不出完整的文字（少一段＝少一句話），這次用裝置端的結果。
+        if (deadline != null && inFlight.get() > 0 && !synchronized(lock) { degraded }) {
+            abandon()
+            return giveUp("timeout")
+        }
+        val (isDegraded, byNetwork) = synchronized(lock) { degraded to degradedByNetwork }
+        if (isDegraded) {
+            worker.shutdownNow()
+            if (deadline != null && byNetwork) return giveUp("transport")
+            return wholeFallback()
+        }
         // 收工：這次的分段工作階段結束，執行緒不要留著空等（下面每個 return 之前都不再各自 shutdown）。
         worker.shutdown()
         val done = synchronized(lock) { ArrayList(texts) }
@@ -419,11 +494,20 @@ class LiveCloudASR(
         // 上限守門：段數超過就整段一次送（正常情況切段時已經卡住，這裡只是保險）。
         if (done.size >= ChunkedASR.MAX_CHUNKS) return wholeFallback()
         if (last == null || last.size / 16_000.0 < ChunkedASR.MIN_CHUNK_SECONDS) return ChunkedASR.join(done)
+        if (expired()) return giveUp("timeout")
         val context = ChunkedASR.contextPrompt(done.last())
-        val result = ChunkedASR.transcribeSegment(last, language, hotwords, provider, key, context, transport, guard)
+        val result = ChunkedASR.transcribeSegment(last, language, hotwords, provider, key, context, transport, guard,
+            maxBudgetMs = leftMs() ?: Long.MAX_VALUE)
         return when (result.outcome) {
             ChunkedASR.SegmentOutcome.OK -> ChunkedASR.join(done + result.text)
-            ChunkedASR.SegmentOutcome.RATE_LIMITED, ChunkedASR.SegmentOutcome.FAILED -> wholeFallback()
+            ChunkedASR.SegmentOutcome.RATE_LIMITED ->
+                if (deadline != null) giveUp("http:429") else wholeFallback()
+            ChunkedASR.SegmentOutcome.FAILED -> when {
+                deadline == null -> wholeFallback()
+                expired() -> giveUp("timeout")
+                result.network -> giveUp("transport")
+                else -> wholeFallback()
+            }
         }
     }
 
@@ -442,6 +526,13 @@ class LiveCloudASR(
             if (remain <= 0) return
             Thread.sleep(minOf(remain, 50))
         }
+    }
+
+    private companion object {
+        /** 總時限到了之後再等背景收尾、寫 log 的寬限。 */
+        const val FINISH_GRACE_MS = 100L
+
+        fun budgetMs(seconds: Double) = (CloudASR.timeLimit(seconds) * 1000).toLong().coerceAtLeast(1)
     }
 
     /** 使用者中途放棄 → 丟掉背景工作。 */

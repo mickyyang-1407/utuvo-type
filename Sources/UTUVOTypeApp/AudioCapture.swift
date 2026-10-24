@@ -182,12 +182,17 @@ final class AudioCaptureSession: @unchecked Sendable {
     private let transcriptionLanguageIdentifier: String
     private let outputDeviceUID: String?
     private let muteWhileRecording: Bool
+    /// 開始提示音也開著時，靜音延後到提示音播完才做（capture-latency-5）：start() 不靜音，
+    /// 由 AppModel 依 `RecordingCues` 的時間呼叫 `applyDeferredOutputMute()`。
+    var defersOutputMute = false
     var conversionInputFormat: AVAudioFormat?
     private var mutedOutputDeviceUID: String?
     private var previousOutputMute: Bool?
     private let voiceActivityDetection: Bool
     private var detectedVoice = false
     private var lastVoiceAt: Date?
+    /// 最後一次電平高過 `longSilenceActivityRMS`（忘記關麥的「很久沒聲音」用，repair-batch1）。
+    private var lastSoundAt: Date?
     private var silenceTriggered = false
 
     init(
@@ -207,12 +212,29 @@ final class AudioCaptureSession: @unchecked Sendable {
     }
 
     var onPartial: (@Sendable (String) -> Void)?
+    /// Apple 語音退路的提示詞（asr-vocab-v3）：AppModel 在 start 前放進來，跟 Qwen／Groq 同一份排序。
+    var speechHints: [String] = []
+    /// Apple 建議 contextualStrings 不超過 100 條（iOS 舊引擎同上限）。
+    static let speechHintLimit = 100
     var onSilenceDetected: (@Sendable () -> Void)?
     /// 錄音中輸入裝置被換掉（例如 AirPods 連上）：AVAudioEngine 會停，之後的聲音收不到。
     var onInputDeviceChanged: (@Sendable () -> Void)?
     private var peakLinear: Float = 0
     private var framesWritten: Int64 = 0
+    /// 這次錄音的輸入取樣率與已送出的 16 kHz PCM bytes：算「實際錄到多長」（`capturedSeconds`）用。
+    private var captureSampleRate: Double = 0
+    private var pcmBytesYielded = 0
     private var configurationObserver: NSObjectProtocol?
+    /// 錄音長度的硬上限（秒，按**實際錄到的樣本數**算；nil＝不限）。`start` 前設定（repair round 2）。
+    /// 到了上限，tap 那一格只收到剛好上限為止，之後的音訊不寫檔、不送 16 kHz PCM、不給語音預覽，
+    /// 並通知一次 `onCaptureLimitReached`。不靠 MainActor 每秒一次的檢查：主執行緒卡住幾秒，
+    /// 送給 Groq 的錄音（與存下來、重試時重新解碼的 .caf）也不會超過上限。
+    var captureLimitSeconds: TimeInterval?
+    /// 錄到硬上限的那一刻（tap thread 上，一次錄音只呼叫一次）。
+    var onCaptureLimitReached: (@Sendable () -> Void)?
+    /// 這次錄音生效的上限（`prepareCapture` 從 `captureLimitSeconds` 鎖進來）與是否已經到了。
+    private var activeCaptureLimit: TimeInterval?
+    private var captureLimitReached = false
 
     /// 目前（最近一次 start）使用的輸入裝置名稱。
     private(set) var inputDeviceName = ""
@@ -233,10 +255,10 @@ final class AudioCaptureSession: @unchecked Sendable {
            !AudioDeviceCatalog.setCurrentInputDevice(uid: inputDeviceUID, on: engine.inputNode.audioUnit) {
             throw AudioCaptureError.noInputDevice
         }
-        muteOutputIfRequested()
+        if !defersOutputMute { muteOutputIfRequested() }
         let effectiveUID = (inputDeviceUID?.isEmpty == false ? inputDeviceUID : nil) ?? AudioDeviceCatalog.defaultInputUID()
         inputDeviceName = effectiveUID.flatMap { uid in AudioDeviceCatalog.inputDevices().first { $0.id == uid }?.name } ?? ""
-        lock.lock(); peakLinear = 0; framesWritten = 0; lock.unlock()
+        lock.lock(); peakLinear = 0; framesWritten = 0; pcmBytesYielded = 0; captureSampleRate = 0; lock.unlock()
         let format = resolveInputFormat(deviceUID: effectiveUID)
         let input = engine.inputNode
         guard format.sampleRate > 0, format.channelCount > 0 else {
@@ -252,60 +274,17 @@ final class AudioCaptureSession: @unchecked Sendable {
             throw AudioCaptureError.audioFileFailed(error.localizedDescription)
         }
 
-        let outputFormat = AVAudioFormat(
-            commonFormat: .pcmFormatInt16,
-            sampleRate: 16_000,
-            channels: 1,
-            interleaved: true
-        )
-        conversionInputFormat = makeConversionInputFormat(from: format)
-        converter = outputFormat.flatMap {
-            AVAudioConverter(from: conversionInputFormat ?? format, to: $0)
-        }
-        prepareConversionBuffers(for: format)
         audioURL = url
         startedAt = Date()
         speechText = ""
-        detectedVoice = false
-        silenceTriggered = false
-        lastVoiceAt = Date()
-
-        let stream = AsyncThrowingStream<Data, Error> { continuation in
-            self.lock.lock()
-            self.continuation = continuation
-            self.lock.unlock()
-        }
+        let stream = prepareCapture(format: format)
 
         if enableSpeechFallback {
             startOnDeviceSpeechIfAvailable(languageIdentifier: transcriptionLanguageIdentifier)
         }
 
         input.installTap(onBus: 0, bufferSize: Self.tapBufferSize, format: format) { [weak self] buffer, _ in
-            guard let self else { return }
-            // 一次掃描，全錄音共用：黏性集合 → downmix、電平表、安靜偵測。
-            self.channelActivity.measure(buffer)
-            self.voiceLevel.publish(rms: self.channelActivity.averageRMS)
-            do {
-                try file.write(from: buffer)
-            } catch {
-                self.finishStream(throwing: error)
-                return
-            }
-            self.lock.lock()
-            self.peakLinear = max(self.peakLinear, self.peak(of: buffer))
-            self.framesWritten += Int64(buffer.frameLength)
-            self.lock.unlock()
-
-            if let data = self.convertToPCM16Mono(self.bufferForConversion(buffer)) {
-                self.lock.lock()
-                self.continuation?.yield(data)
-                let request = self.speechRequest
-                self.lock.unlock()
-                request?.append(buffer)
-            }
-            if self.voiceActivityDetection, self.shouldFinishForSilence() {
-                self.onSilenceDetected?()
-            }
+            self?.ingest(buffer, into: file)
         }
 
         configurationObserver = NotificationCenter.default.addObserver(
@@ -329,6 +308,127 @@ final class AudioCaptureSession: @unchecked Sendable {
     /// tap 的 bufferSize。單軌化與轉換輸出的緩衝都依它一次配好，
     /// tap thread 上才不會每格都在配置記憶體。
     static let tapBufferSize: AVAudioFrameCount = 2_048
+
+    /// `start` 裡不碰音訊裝置的那一段：裝好 16 kHz 轉換、歸零這次錄音的計數、鎖進長度上限、開 PCM 串流。
+    /// 測試直接呼叫它再用 `ingest` 一格一格餵（跟 tap 走同一條路），不開麥克風。
+    func prepareCapture(format: AVAudioFormat) -> AsyncThrowingStream<Data, Error> {
+        let outputFormat = AVAudioFormat(
+            commonFormat: .pcmFormatInt16,
+            sampleRate: 16_000,
+            channels: 1,
+            interleaved: true
+        )
+        conversionInputFormat = makeConversionInputFormat(from: format)
+        converter = outputFormat.flatMap {
+            AVAudioConverter(from: conversionInputFormat ?? format, to: $0)
+        }
+        prepareConversionBuffers(for: format)
+        lock.lock()
+        peakLinear = 0
+        framesWritten = 0
+        pcmBytesYielded = 0
+        detectedVoice = false
+        silenceTriggered = false
+        lastVoiceAt = Date()
+        lastSoundAt = nil
+        captureSampleRate = format.sampleRate
+        activeCaptureLimit = captureLimitSeconds
+        captureLimitReached = false
+        lock.unlock()
+
+        return AsyncThrowingStream<Data, Error> { continuation in
+            self.lock.lock()
+            self.continuation = continuation
+            self.lock.unlock()
+        }
+    }
+
+    /// tap 收到的一格（`start` 的 tap 與測試共用）：電平 → 長度硬上限 → 寫檔 → 16 kHz PCM 串流 → 安靜偵測。
+    func ingest(_ buffer: AVAudioPCMBuffer, into file: AVAudioFile?, at now: Date = Date()) {
+        // 一次掃描，全錄音共用：黏性集合 → downmix、電平表、安靜偵測。
+        channelActivity.measure(buffer)
+        voiceLevel.publish(rms: channelActivity.averageRMS)
+        let admission = admitFrames(buffer.frameLength)
+        if admission.frames > 0 {
+            let chunk = admission.frames < buffer.frameLength
+                ? Self.prefix(of: buffer, frames: admission.frames) : buffer
+            if let chunk {
+                do {
+                    try file?.write(from: chunk)
+                } catch {
+                    finishStream(throwing: error)
+                    return
+                }
+                lock.lock()
+                peakLinear = max(peakLinear, peak(of: chunk))
+                framesWritten += Int64(chunk.frameLength)
+                lock.unlock()
+
+                if let data = convertToPCM16Mono(bufferForConversion(chunk)) {
+                    lock.lock()
+                    // 不管 resampler 怎麼進位，PCM 都不超過上限：照位元組再截一次（格數那一關之外的第二關）。
+                    let allowed = Self.pcmAllowance(count: data.count, yielded: pcmBytesYielded, limit: activeCaptureLimit)
+                    if allowed > 0 {
+                        pcmBytesYielded += allowed
+                        continuation?.yield(allowed == data.count ? data : data.prefix(allowed))
+                    }
+                    let request = speechRequest
+                    lock.unlock()
+                    request?.append(chunk)
+                }
+            }
+        }
+        // 最後有聲音的時間一律更新（忘記關麥的保護用比較低的門檻那一份，capture-latency-v3／repair-batch1）；
+        // 3 秒「安靜時自動結束」照舊只在開了選項時才停。
+        let silenceReached = noteVoiceLevel(rms: channelActivity.averageRMS, at: now)
+        if voiceActivityDetection, silenceReached {
+            onSilenceDetected?()
+        }
+        if admission.reachedLimit { onCaptureLimitReached?() }
+    }
+
+    /// 這一格能收幾格（長度硬上限）；`reachedLimit`＝這一格剛好收滿上限（一次錄音只回一次 true）。
+    private func admitFrames(_ frames: AVAudioFrameCount) -> (frames: AVAudioFrameCount, reachedLimit: Bool) {
+        lock.lock(); defer { lock.unlock() }
+        guard let limit = activeCaptureLimit, captureSampleRate > 0 else { return (frames, false) }
+        if captureLimitReached { return (0, false) }
+        let limitFrames = Int64((limit * captureSampleRate).rounded(.down))
+        let room = max(0, limitFrames - framesWritten)
+        guard Int64(frames) >= room else { return (frames, false) }
+        captureLimitReached = true
+        return (AVAudioFrameCount(room), true)
+    }
+
+    /// 這一段 16 kHz PCM（`count` bytes，之前已送 `yielded` bytes）還能送幾個位元組；沒有上限＝全部。
+    /// 一律是偶數（不切半個樣本）。
+    static func pcmAllowance(count: Int, yielded: Int, limit: TimeInterval?) -> Int {
+        guard let limit else { return count }
+        let limitBytes = Int((limit * 32_000).rounded(.down)) & ~1
+        return min(count, max(0, limitBytes - yielded)) & ~1
+    }
+
+    /// 前 `frames` 格的複本（只在剛好碰到上限的那一格用一次；tap 給的 buffer 不動）。
+    static func prefix(of buffer: AVAudioPCMBuffer, frames: AVAudioFrameCount) -> AVAudioPCMBuffer? {
+        guard frames > 0, frames <= buffer.frameLength,
+              let copy = AVAudioPCMBuffer(pcmFormat: buffer.format, frameCapacity: frames) else { return nil }
+        copy.frameLength = frames
+        let bytesPerFrame = Int(buffer.format.streamDescription.pointee.mBytesPerFrame)
+        let source = UnsafeMutableAudioBufferListPointer(UnsafeMutablePointer(mutating: buffer.audioBufferList))
+        let destination = UnsafeMutableAudioBufferListPointer(copy.mutableAudioBufferList)
+        for (from, to) in zip(source, destination) {
+            guard let fromData = from.mData, let toData = to.mData else { continue }
+            memcpy(toData, fromData, Int(frames) * bytesPerFrame)
+        }
+        return copy
+    }
+
+    /// 收掉 16 kHz PCM 串流（`stop` 以外：測試餵完資料後用）。
+    func finishPCMStream() {
+        lock.lock()
+        continuation?.finish()
+        continuation = nil
+        lock.unlock()
+    }
 
     /// 這個 buffer 的峰值（線性）。不配置任何記憶體。
     private func peak(of buffer: AVAudioPCMBuffer) -> Float {
@@ -473,14 +573,46 @@ final class AudioCaptureSession: @unchecked Sendable {
     /// 開了「安靜時自動結束」才用：要安靜這麼久才停。原本 0.9 秒，講長句時想下一句就被切斷（2026-09-24 實機）。
     static let autoStopSilenceSeconds: TimeInterval = 3.0
 
+    /// 「有聲音」的門檻（RMS）：安靜時自動結束與忘記關麥的保護共用。
+    static let voiceRMSThreshold: Double = 0.015
+
+    /// 「很久沒聲音」（忘記關麥的保護，`RecordingLimits`）的門檻（RMS，約 −54 dBFS）。repair-batch1：以前跟
+    /// 「安靜時自動結束」共用 0.015（約 −36.5 dBFS），小聲講話、麥克風離得遠、介面增益低（−40～−50 dBFS）
+    /// 整段都算安靜，講到一半被停掉。現在只有比這個還低的才算安靜——一般麥克風的雜訊峰值在 −60 dBFS 以下
+    /// （`AudioChannelDownmix.activePeakThreshold`），數位靜音／麥克風被搶走更低。寧可不停（還有長度上限），不要切到人。
+    static let longSilenceActivityRMS: Double = 0.002
+
+    /// 最後一次聽到聲音（過「安靜時自動結束」門檻）的時間（這次錄音還沒聽到聲音＝nil）。
+    var lastVoiceActivity: Date? {
+        lock.lock(); defer { lock.unlock() }
+        return lastVoiceAt
+    }
+
+    /// 最後一次電平高過 `longSilenceActivityRMS` 的時間（這次錄音還沒有＝nil）。忘記關麥的保護（`RecordingLimits`）讀這個。
+    var lastSoundActivity: Date? {
+        lock.lock(); defer { lock.unlock() }
+        return lastSoundAt
+    }
+
+    /// 這次錄音實際錄到多長（秒）：寫進檔案的格數、送出去的 16 kHz PCM，取長的那個。
+    /// 錄音長度上限按這個算（不是按牆上時鐘）：引擎比上限計時早開始，送給 Groq／存成錄音的是錄到的全部。
+    var capturedSeconds: TimeInterval {
+        lock.lock(); defer { lock.unlock() }
+        return Self.capturedSeconds(frames: framesWritten, sampleRate: captureSampleRate, pcmBytes: pcmBytesYielded)
+    }
+
+    static func capturedSeconds(frames: Int64, sampleRate: Double, pcmBytes: Int) -> TimeInterval {
+        max(sampleRate > 0 ? Double(frames) / sampleRate : 0, Double(pcmBytes) / 32_000)
+    }
+
+    /// 餵一格的電平：過門檻就記下「最後有聲音的時間」；回傳「已經安靜滿 `autoStopSilenceSeconds`」（每次錄音只回一次 true）。
     /// 用的是與球的電平表同一份黏性集合（`channelActivity`），不會各講各的：
     /// 64 軌只接 1 支麥克風時，全軌平均會讓 0.015 的門檻永遠達不到＝「安靜自動結束」形同關閉。
-    private func shouldFinishForSilence() -> Bool {
-        let rms = channelActivity.averageRMS
-        let now = Date()
+    func noteVoiceLevel(rms: Double, at now: Date) -> Bool {
         lock.lock()
         defer { lock.unlock() }
-        if rms > 0.015 {
+        if rms > Self.longSilenceActivityRMS { lastSoundAt = now }
+        if rms > Self.voiceRMSThreshold {
             detectedVoice = true
             lastVoiceAt = now
             return false
@@ -499,6 +631,7 @@ final class AudioCaptureSession: @unchecked Sendable {
         lock.lock()
         detectedVoice = false
         lastVoiceAt = nil
+        lastSoundAt = nil
         silenceTriggered = false
         lock.unlock()
     }
@@ -512,6 +645,7 @@ final class AudioCaptureSession: @unchecked Sendable {
         guard let recognizer, recognizer.supportsOnDeviceRecognition else { return }
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.requiresOnDeviceRecognition = true
+        Self.applySpeechHints(speechHints, to: request)
         speechRecognizer = recognizer
         speechRequest = request
         speechTask = recognizer.recognitionTask(with: request) { [weak self] result, _ in
@@ -523,6 +657,12 @@ final class AudioCaptureSession: @unchecked Sendable {
             self.lock.unlock()
             if !text.isEmpty { callback?(text) }
         }
+    }
+
+    /// 提示詞照順序取前 `speechHintLimit` 條（空字串、重複的不送）。
+    static func applySpeechHints(_ hints: [String], to request: SFSpeechRecognitionRequest) {
+        var seen = Set<String>()
+        request.contextualStrings = Array(hints.filter { !$0.isEmpty && seen.insert($0).inserted }.prefix(speechHintLimit))
     }
 
     private func currentSpeechText() -> String {
@@ -549,6 +689,13 @@ final class AudioCaptureSession: @unchecked Sendable {
         continuation?.finish(throwing: error)
         continuation = nil
         lock.unlock()
+    }
+
+    /// 延後的「錄音時靜音」：只在錄音還在跑、而且還沒靜音過時做；錄音已經停了（stop／cancel 已還原）就不做，
+    /// 否則喇叭會被留在靜音。
+    func applyDeferredOutputMute() {
+        guard defersOutputMute, isRunning, mutedOutputDeviceUID == nil else { return }
+        muteOutputIfRequested()
     }
 
     private func muteOutputIfRequested() {
@@ -665,5 +812,38 @@ final class AudioCaptureSession: @unchecked Sendable {
             return nil
         }
         return Data(bytes: channel, count: Int(output.frameLength) * MemoryLayout<Int16>.size)
+    }
+}
+
+extension AudioCaptureSession {
+    enum RecordingDecodeError: Error, LocalizedError {
+        case unsupportedFormat
+        var errorDescription: String? { "錄音檔格式無法轉換" }
+    }
+
+    /// 重新辨識（delivery-learning-1）：把存下來的 .caf 轉成 16 kHz 單聲道 PCM16，給 Groq 用。
+    /// 走的是錄音當下**同一條**整流（`channelActivity` 黏性聲道、指定聲道或平均）＋轉換（`convertToPCM16Mono`），
+    /// 一格一格餵，結果跟錄音時串流出去的那份一致。不碰任何音訊裝置：只用 session 的轉換部分，不 start。
+    static func pcm16Mono16k(fromRecording url: URL, inputChannel: AudioInputChannel) throws -> Data {
+        let file = try AVAudioFile(forReading: url)
+        let format = file.processingFormat
+        guard format.sampleRate > 0, format.channelCount > 0,
+              let output = AVAudioFormat(commonFormat: .pcmFormatInt16, sampleRate: 16_000, channels: 1, interleaved: true),
+              let buffer = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: tapBufferSize) else {
+            throw RecordingDecodeError.unsupportedFormat
+        }
+        let session = AudioCaptureSession(inputChannel: inputChannel)
+        session.conversionInputFormat = session.makeConversionInputFormat(from: format)
+        session.converter = AVAudioConverter(from: session.conversionInputFormat ?? format, to: output)
+        guard session.converter != nil else { throw RecordingDecodeError.unsupportedFormat }
+        session.prepareConversionBuffers(for: format)
+        var pcm = Data()
+        while file.framePosition < file.length {
+            try file.read(into: buffer, frameCount: tapBufferSize)
+            guard buffer.frameLength > 0 else { break }
+            session.channelActivity.measure(buffer)
+            if let chunk = session.convertToPCM16Mono(session.bufferForConversion(buffer)) { pcm.append(chunk) }
+        }
+        return pcm
     }
 }

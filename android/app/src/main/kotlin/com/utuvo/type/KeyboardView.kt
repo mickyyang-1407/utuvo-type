@@ -64,6 +64,12 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         fun onAnswerInsert(text: String) {}
         fun onAnswerCopy(text: String) {}
         fun onAnswerDismiss() {}
+        /** 錄音中或整理中按 ✕：這一次作廢，什麼都不貼（mobile-keyboard-1）。 */
+        fun onVoiceCancel() {}
+        /** 頂列「復原」：收回剛才一般聽寫／翻譯貼上的文字（delivery-learning-5）。 */
+        fun onInsertUndo() {}
+        /** 按住光球不動、在光球上放開：提示「不用按住，點一下」（mobile-keyboard-2）。 */
+        fun onHoldTip() {}
         // ── 收回（手指滑開超過 20dp、或系統取消觸控時）──
         fun onUndoInsert(text: String)
         fun onUndoCompose()
@@ -102,6 +108,10 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     private val switchKey = TextView(context)
     /** 語音區右上的聽寫語言徽章（同 iOS `languageButton`）。 */
     private val langBadge = TextView(context)
+    /** 錄音中／整理中的 ✕：放在徽章的位置，期間徽章藏起來（同 Typeless 與 iOS 的取消鈕）。 */
+    private val cancelKey = TextView(context)
+    /** 一般聽寫／翻譯貼上之後的「復原」小鈕（同 iOS 頂列的復原 chip）。 */
+    private val undoChip = TextView(context)
     /** 四個語音模式的切換列（聽寫／Help me write／Speak to edit／Ask anything）。 */
     private val modeRow = LinearLayout(context)
     private val modeChips = LinkedHashMap<com.utuvo.type.core.VoiceMode, TextView>()
@@ -372,6 +382,25 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         applyModeRowVisibility()
     }
 
+    /**
+     * ✕ 鍵：錄音中與整理中顯示，期間把聽寫語言徽章藏起來（✕ 就放在徽章的位置）。
+     * 復原小鈕跟 ✕ 不會同時出現：開始錄音時復原就作廢了。
+     */
+    fun setCancelVisible(on: Boolean) {
+        cancelKey.visibility = if (on) VISIBLE else GONE
+        langBadge.visibility = if (on) GONE else VISIBLE
+        if (on) undoChip.visibility = GONE
+    }
+
+    fun isCancelVisible(): Boolean = cancelKey.visibility == VISIBLE
+
+    /** 一般聽寫／翻譯剛貼上：頂列出現「復原」；錄音中（✕ 在）不顯示。 */
+    fun showInsertUndo(on: Boolean) {
+        undoChip.visibility = if (on && cancelKey.visibility != VISIBLE) VISIBLE else GONE
+    }
+
+    fun isInsertUndoVisible(): Boolean = undoChip.visibility == VISIBLE
+
     /** 說出要怎麼改：光球轉薰衣草（同 iOS `micButton.setTint(edit:)`）。 */
     fun setEditMode(on: Boolean) { orb.editPalette = on }
 
@@ -639,10 +668,35 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             background = roundedRect(if (dark) 0xFF323235.toInt() else 0xFFEBEDF2.toInt(), dpi(15))
             contentDescription = context.getString(R.string.key_dictation_language)
         }
+        undoChip.apply {
+            text = context.getString(R.string.answer_undo)
+            gravity = Gravity.CENTER
+            maxLines = 1
+            isSingleLine = true
+            setTextColor(accent); textSize = 13f; typeface = Typeface.DEFAULT_BOLD
+            background = roundedRect(if (dark) 0xFF323235.toInt() else 0xFFEBEDF2.toInt(), dpi(15))
+            setPadding(dpi(12), 0, dpi(12), 0)
+            contentDescription = context.getString(R.string.undo_insert_desc)
+            visibility = GONE
+            KeyFeedback.attach(this, KeyFeedback.Kind.SPECIAL)
+            setOnClickListener { listener.onInsertUndo() }
+        }
+        top.addView(undoChip, LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, dpi(30)).apply { rightMargin = dpi(6) })
         val badgeLp = LinearLayout.LayoutParams(dpi(52), dpi(30)).apply { rightMargin = dpi(6) }
         top.addView(langBadge, badgeLp)
         setLanguageBadge(DictationLanguage.current(context))
         langBadge.setOnClickListener { showLanguageMenu() }
+        cancelKey.apply {
+            text = "✕"
+            gravity = Gravity.CENTER
+            setTextColor(ink); textSize = 15f; typeface = Typeface.DEFAULT_BOLD
+            background = roundedRect(if (dark) 0xFF323235.toInt() else 0xFFEBEDF2.toInt(), dpi(15))
+            contentDescription = context.getString(R.string.key_cancel_voice)
+            visibility = GONE
+            KeyFeedback.attach(this, KeyFeedback.Kind.SPECIAL)
+            setOnClickListener { listener.onVoiceCancel() }
+        }
+        top.addView(cancelKey, LinearLayout.LayoutParams(dpi(52), dpi(30)).apply { rightMargin = dpi(6) })
         switchKey.apply {
             text = "🌐"; textSize = 18f; gravity = Gravity.CENTER
             setOnClickListener { listener.onSwitchKeyboard() }
@@ -656,11 +710,12 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         KeyFeedback.attach(orb, KeyFeedback.Kind.SPECIAL)
         orb.setOnClickListener { listener.onOrbTap() }
         // 長按＝翻譯（同 iOS）：按住出現弧形語言點，滑到語言放開就開始錄；放開在弧以外取消。
+        // mobile-keyboard-2：不預選任何一顆。以前一長按就亮中間那顆、提示寫「再點一下完成，翻成X」，
+        // 習慣「按住說話」的人會以為正在錄音（其實放開才開始）。
         orb.setOnLongClickListener {
             if (orb.listening) return@setOnLongClickListener false
             it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
             setArcVisible(true)
-            highlight(arcDots.size / 2)
             listener.onTranslateArm()
             true
         }
@@ -686,9 +741,17 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
                 MotionEvent.ACTION_MOVE -> highlight(nearestDot(e.rawX, e.rawY))
                 MotionEvent.ACTION_UP -> {
                     val nearest = nearestDot(e.rawX, e.rawY)
+                    val onOrb = fingerOnOrb(e.rawX, e.rawY)
                     endArc(v)
                     when {
-                        nearest == null -> listener.onTranslateCancel()
+                        nearest == null -> {
+                            listener.onTranslateCancel()
+                            // 按住不動、在光球上放開＝以為要按住說話：告訴他點一下就好（拖到空白處放開維持一般取消）。
+                            if (com.utuvo.type.core.ArcPick.showsHoldTip(null, onOrb, e.eventTime - e.downTime)) {
+                                v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                                listener.onHoldTip()
+                            }
+                        }
                         nearest == arcTargets.size -> {
                             v.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
                             showAddLanguageMenu()
@@ -891,7 +954,8 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     }
 
     private fun highlight(index: Int?) {
-        if (index != highlighted && index != null && arcVisible) performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
+        val changed = index != highlighted
+        if (changed && index != null && arcVisible) performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         highlighted = index
         arcDots.forEachIndexed { i, d ->
             val on = i == index
@@ -899,14 +963,14 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             d.setTextColor(if (on) Color.WHITE else ink)
             d.scaleX = if (on) 1.15f else 1f; d.scaleY = d.scaleX
         }
-        if (index != null && arcVisible) {
-            if (index == arcTargets.size) {
-                setHint(context.getString(R.string.translate_add_language), error = false)
-            } else {
-                val t = arcTargets.getOrNull(index)
-                if (t != null) {
-                    setHint(context.getString(R.string.hint_listening_translate, context.getString(t.labelRes)), error = false)
-                }
+        if (!arcVisible || !changed) return
+        // 按住期間還沒在錄音：提示講「放開就翻成X」，不是錄音中的「再點一下完成」（mobile-keyboard-2）。
+        // 手指移回光球或弧外（沒選到）→ 回到「滑到語言…」。
+        when {
+            index == null -> setHint(context.getString(R.string.hint_translate_arm), error = false)
+            index == arcTargets.size -> setHint(context.getString(R.string.translate_add_language), error = false)
+            else -> arcTargets.getOrNull(index)?.let { t ->
+                setHint(context.getString(R.string.hint_translate_release, context.getString(t.labelRes)), error = false)
             }
         }
     }
@@ -950,19 +1014,35 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     }
 
 
-    /** 手指離哪顆最近；離所有點都超過 56dp（大約在弧外）就是 null＝放開取消。 */
+    /**
+     * 手指選到哪一顆（規則在 core [com.utuvo.type.core.ArcPick]）：在光球圓內、或離所有點都超過 56dp 就是 null＝放開取消。
+     * 以前沒有「光球圓內」這一條：手指留在光球上緣也會選到最近那顆。
+     */
     private fun nearestDot(rawX: Float, rawY: Float): Int? {
         val loc = IntArray(2)
-        var best: Int? = null
-        var bestD = dp(56f)
-        arcDots.forEachIndexed { i, d ->
+        val centers = arcDots.map { d ->
             d.getLocationOnScreen(loc)
-            val cx = loc[0] + d.width / 2f
-            val cy = loc[1] + d.height / 2f
-            val dist = Math.hypot((rawX - cx).toDouble(), (rawY - cy).toDouble()).toFloat()
-            if (dist < bestD) { bestD = dist; best = i }
+            // 選中的點放大 1.15 倍（以中心為軸）：螢幕上的左上角跟著移，中心＝左上角＋縮放後的半寬。
+            com.utuvo.type.core.ArcPick.Point(loc[0] + d.width * d.scaleX / 2f, loc[1] + d.height * d.scaleY / 2f)
         }
-        return best
+        val (center, radius) = orbCircle()
+        return com.utuvo.type.core.ArcPick.resolve(
+            com.utuvo.type.core.ArcPick.Point(rawX, rawY), centers, center, radius,
+            dp(com.utuvo.type.core.ArcPick.MAX_DISTANCE_DP))
+    }
+
+    /** 手指是不是在光球畫出來的圓裡（螢幕座標）。 */
+    private fun fingerOnOrb(rawX: Float, rawY: Float): Boolean {
+        val (center, radius) = orbCircle()
+        return com.utuvo.type.core.ArcPick.insideOrb(com.utuvo.type.core.ArcPick.Point(rawX, rawY), center, radius)
+    }
+
+    /** 光球圓心（螢幕座標）與畫出來的半徑。按下時光球縮到 0.93 倍，半徑照縮放後的大小算。 */
+    private fun orbCircle(): Pair<com.utuvo.type.core.ArcPick.Point, Float> {
+        val loc = IntArray(2)
+        orb.getLocationOnScreen(loc)
+        val center = com.utuvo.type.core.ArcPick.Point(loc[0] + orb.width * orb.scaleX / 2f, loc[1] + orb.height * orb.scaleY / 2f)
+        return center to orb.visualRadius * orb.scaleX
     }
 
     // ── 打字區 ──
@@ -1308,10 +1388,13 @@ class OrbView(context: Context) : View(context) {
 
     init { isClickable = true }
 
+    /** 沒在錄音時畫出來的圓半徑（view 自己的座標；長按選語言用它判斷手指還在不在光球上）。 */
+    val visualRadius: Float get() = minOf(width, height) / 2f * RADIUS_RATIO
+
     override fun onDraw(canvas: Canvas) {
         val cx = width / 2f
         val cy = height / 2f
-        val r = minOf(width, height) / 2f * 0.82f * scale * (1f + level * 0.06f)
+        val r = minOf(width, height) / 2f * RADIUS_RATIO * scale * (1f + level * 0.06f)
         paint.shader = RadialGradient(cx - r * 0.35f, cy - r * 0.4f, r * 1.6f,
             if (editPalette) LAVENDER else VOICE,
             floatArrayOf(0f, 0.35f, 0.7f, 1f), Shader.TileMode.CLAMP)
@@ -1319,6 +1402,7 @@ class OrbView(context: Context) : View(context) {
     }
 
     private companion object {
+        const val RADIUS_RATIO = 0.82f
         val VOICE = intArrayOf(0xFFFFD08A.toInt(), 0xFFFB8B24.toInt(), 0xFFE8620C.toInt(), 0xFFC2410C.toInt())
         val LAVENDER = intArrayOf(0xFFE4DBFB.toInt(), 0xFFB49BEE.toInt(), 0xFF8A6BD1.toInt(), 0xFF5F44A0.toInt())
     }

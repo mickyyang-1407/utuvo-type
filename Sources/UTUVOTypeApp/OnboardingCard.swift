@@ -121,7 +121,8 @@ struct OnboardingCard: View {
 
     private var permissionsDone: Bool { model.microphonePermissionReady && model.accessibilityPermissionReady }
     private var engineDone: Bool { installer.installed || preferences.backend == .bailian }
-    private var triedDone: Bool { !model.lastOutput.isEmpty || !preferences.historyRecords.isEmpty }
+    /// 辨識失敗／取消的紀錄不算「試過」（delivery-learning-1）。
+    private var triedDone: Bool { !model.lastOutput.isEmpty || preferences.historyRecords.contains { $0.status == nil } }
     private var allDone: Bool { permissionsDone && engineDone && triedDone }
 
     var body: some View {

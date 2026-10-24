@@ -328,6 +328,15 @@ struct AppPreset: Identifiable, Codable, Hashable, Sendable {
     }
 }
 
+/// 這筆聽寫沒有完成的狀態（delivery-learning-1／app-shell-3，2026-10-22）。紀錄上 nil＝正常完成；
+/// 舊紀錄沒有這欄＝nil。失敗與取消的紀錄不算使用數據，錄音留著可以重試。
+enum HistoryStatus: String, Codable, Hashable, Sendable {
+    /// 有錄到聲音但辨識沒有出字（斷網、key 錯、引擎壞了）：沒有逐字稿，錄音留著重新辨識。
+    case failed
+    /// 按了停止、還在處理時取消：沒有貼上；逐字稿（有的話）和錄音留著，可以重試。
+    case cancelled
+}
+
 struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
     var id: UUID
     var date: Date
@@ -341,6 +350,20 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
     var isStarred: Bool
     /// 這筆沒有照正常路徑完成時的原因（例如智慧整理逾時、改用剪貼簿貼上）。舊紀錄沒有這欄＝nil。
     var note: String?
+    /// nil＝正常完成；`.failed`／`.cancelled` 見 `HistoryStatus`。舊紀錄沒有這欄＝nil。
+    var status: HistoryStatus?
+    /// 這段聽寫要翻成的語言（FX-4）：重試照這個再翻一次。nil＝沒翻譯；舊紀錄沒有這欄＝nil。
+    var translation: TranslationTarget?
+
+    /// 紀錄要存的翻譯目標（FX-4）：關閉＝nil（寫回去不帶這欄）。Edit Selection 的紀錄不能從歷史重試，照舊不存。
+    static func storedTranslation(_ target: TranslationTarget, mode: FormatterMode) -> TranslationTarget? {
+        target == .off || mode == .editSelection ? nil : target
+    }
+
+    /// Ask anything 的紀錄用這個 note 標記（中英介面同一個字串）。
+    static let askAnythingNote = "Ask anything"
+    /// Ask anything 的紀錄：逐字稿是指令、輸出是回答，不是聽寫（不能重試，app-shell-v1）。
+    var isAskAnything: Bool { note == Self.askAnythingNote }
 
     init(
         id: UUID = UUID(),
@@ -353,7 +376,9 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
         bundleIdentifier: String? = nil,
         audioPath: String? = nil,
         isStarred: Bool = false,
-        note: String? = nil
+        note: String? = nil,
+        status: HistoryStatus? = nil,
+        translation: TranslationTarget? = nil
     ) {
         self.id = id
         self.date = date
@@ -366,5 +391,74 @@ struct HistoryRecord: Identifiable, Codable, Hashable, Sendable {
         self.audioPath = audioPath
         self.isStarred = isStarred
         self.note = note
+        self.status = status
+        self.translation = translation
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, date, rawTranscript, output, duration, mode, appName, bundleIdentifier, audioPath, isStarred, note, status
+        case translation
+    }
+
+    /// 跟自動產生的解碼一樣，只有 `status`／`translation` 寬鬆：舊紀錄沒有這欄、或是之後版本寫了這版不認得的值，都當 nil。
+    /// 整份歷史是一個陣列一起解，一筆解不開就全部讀不出來（app-shell-1 risk）。
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        date = try c.decode(Date.self, forKey: .date)
+        rawTranscript = try c.decode(String.self, forKey: .rawTranscript)
+        output = try c.decode(String.self, forKey: .output)
+        duration = try c.decode(TimeInterval.self, forKey: .duration)
+        mode = try c.decode(FormatterMode.self, forKey: .mode)
+        appName = try c.decodeIfPresent(String.self, forKey: .appName)
+        bundleIdentifier = try c.decodeIfPresent(String.self, forKey: .bundleIdentifier)
+        audioPath = try c.decodeIfPresent(String.self, forKey: .audioPath)
+        isStarred = try c.decode(Bool.self, forKey: .isStarred)
+        note = try c.decodeIfPresent(String.self, forKey: .note)
+        status = (try? c.decodeIfPresent(String.self, forKey: .status)).flatMap { $0.flatMap(HistoryStatus.init(rawValue:)) }
+        translation = (try? c.decodeIfPresent(String.self, forKey: .translation))
+            .flatMap { $0.flatMap(TranslationTarget.init(rawValue:)) }
+    }
+
+    /// 只有錄音、沒有逐字稿（辨識失敗或轉錄前就取消）：錄音是這段話唯一的一份。
+    var isAudioOnly: Bool { rawTranscript.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+
+    /// 不忙的時候從歷史按「重試」有沒有東西可以跑（跟 `AppModel.retryHistory` 同一個 `RetryPolicy` 決策）。
+    /// Edit Selection（要重新選取原文字）與 Ask anything 的紀錄不行；沒逐字稿又沒錄音的也不行。
+    func isRetryable(hasAudio: Bool) -> Bool {
+        switch RetryPolicy.decide(mode: mode, isRecording: false, isProcessing: false, isAskAnything: isAskAnything,
+                                  rawTranscript: rawTranscript, hasAudio: hasAudio) {
+        case .reformatFromRawTranscript, .retranscribeFromAudio: return true
+        case .ignoreBusy, .needsReselection, .notDictation, .nothingToRetry: return false
+        }
+    }
+
+    /// 還沒重試、有錄音、可以重新辨識的「辨識失敗」紀錄（repair-batch1）：保留規則不刪它、也不刪它的錄音——
+    /// 錄音是那段話唯一的一份。重試成功（狀態清掉）後照一般規則；不能重試的（Edit Selection）沒有這個例外。
+    /// 這裡只看路徑；錄音檔是不是真的還在由 `HistoryRetention.plan` 檢查（被外部刪掉的照一般文字規則，repair round 2）。
+    var holdsRetryableAudio: Bool {
+        status == .failed && audioPath != nil && isRetryable(hasAudio: true)
+    }
+
+    /// 設定頁的「重試」按鈕能不能按。正常完成的紀錄規則不變（Ask anything、錄音已刪的只有錄音紀錄不能按）；
+    /// 失敗／取消的紀錄另外看這個模式能不能從歷史重試（Edit Selection 不行，repair-batch1）。
+    func retryAvailable(audioExists: Bool) -> Bool {
+        if isAskAnything || (isAudioOnly && !audioExists) { return false }
+        guard status != nil else { return true }
+        return isRetryable(hasAudio: audioExists)
+    }
+}
+
+extension CleanupVariant {
+    /// 設定頁顯示名稱（app-shell-7）。
+    func displayName(zh: Bool) -> String {
+        switch self {
+        case .none: return zh ? "預設" : "Default"
+        case .zhTW: return zh ? "台灣繁體" : "Traditional (Taiwan)"
+        case .zhHK: return zh ? "香港繁體" : "Traditional (Hong Kong)"
+        case .zhCN: return zh ? "簡體（中國大陸）" : "Simplified (Mainland China)"
+        case .enUS: return zh ? "美式英文" : "American English"
+        case .enGB: return zh ? "英式英文" : "British English"
+        }
     }
 }
