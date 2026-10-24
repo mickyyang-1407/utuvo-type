@@ -53,3 +53,8 @@ f504d9937487087491560998861516be3b6159664c1f73e8a7d5f15ea7cd98d7  # 2026-10-24 P
 12485cb873bcd0194960a959bba2f0f4f24031cf43f0388c285f8131b9017cc4  # 2026-10-24 build 36: reviewed PBXBuildFile identifier on line 21, not an IBAN
 
 949eb3d4c65edabe6525339f9463c44aa282839ae6c920682a9dabf62f5d2ae4  # 2026-10-24 portable parity SmartCleanupTests: unchanged pre-approved synthetic phone formatting fixture, verified against baseline
+
+# Auto-list fix: unchanged source literals / generated test file ID, verified locally.
+a0286d73b8b2cb262407926d04fe316ecfa7c13833562fbe407353e00e31e2e2
+95751fd87075ff8f083ed0f75dd1b761db5354d09fa28bbd48cd763d49626bfc
+6de1946e6d5ab13304e24cede127747e71382cd6e094ad22f5c99ec46363db9c
