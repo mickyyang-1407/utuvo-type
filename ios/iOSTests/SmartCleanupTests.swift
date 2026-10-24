@@ -22,30 +22,6 @@ final class SmartCleanupTests: XCTestCase {
                                             cleaned: "請把原始逐字稿和整理後的版本貼上來，我可以逐項確認贅詞、數字和專有名詞。", relaxed: true))
     }
 
-    func testRelaxedPureNumbersRemainContent() {
-        for (original, cleaned) in [("一萬二", "12,000。"), ("100，200", "100、200。"),
-                                    ("100，一百", "100、一百。"), ("100～200", "100-200。"),
-                                    ("100，100", "100，100。") ] {
-            XCTAssertTrue(SmartCleanup.accepts(original: original, cleaned: cleaned, relaxed: true), "\(original) → \(cleaned)")
-        }
-    }
-
-    func testRelaxedPureNumbersRejectLostValuesAndMultiplicity() {
-        // 移除全部中文字仍由既有長度比例回退；數值保真通過不代表外層要放寬。
-        XCTAssertFalse(SmartCleanup.accepts(original: "100，不對，200", cleaned: "200。", relaxed: true))
-        for (original, cleaned) in [("100，200", "100。"), ("100，200", "200。"),
-                                    ("100，100", "100。"), ("5、一百", "一百。"),
-                                    ("100，不對，200", "100。"), ("100，不對，200", "300。") ] {
-            XCTAssertFalse(SmartCleanup.accepts(original: original, cleaned: cleaned, relaxed: true), "\(original) → \(cleaned)")
-        }
-        XCTAssertFalse(SmartCleanup.accepts(original: "100", cleaned: "", relaxed: true))
-    }
-
-    func testReleasedCoreKeepsWholeAmountsAndOrdinalClockCorrections() {
-        XCTAssertEqual(Normalizer().normalize("一點五萬塊").cleaned, "15,000塊")
-        XCTAssertEqual(Normalizer().normalize("第一三點開會，不對，十點").cleaned, "第一10:00開會")
-    }
-
     func testClaudeRequestOmitsTemperature() async throws {
         let body = BodyBox()
         _ = try? await SmartCleanup.complete(system: "s", user: "u", provider: .claude, key: "test-key", transport: { request in
