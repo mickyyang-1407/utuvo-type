@@ -1,10 +1,15 @@
 package com.utuvo.type
 
 import android.content.Context
+import com.utuvo.type.core.AsrHints
+import com.utuvo.type.core.HintScript
+import com.utuvo.type.core.TraditionalFixer
 
 /**
  * 詞庫包（同 iOS VocabularyPacks；2026-09-20 Micky：「像百度、搜狗那樣有專門字典可以加」；
  * 實測 Gemini→Jamin、ChatGPT→Chit GPT、Claude Code→cloudcoate）。
+ * 內建三包（[all]）的詞表跟 Swift core `BuiltInVocabulary` 逐詞相同（Mac 用那份）；
+ * `Tests/UTUVOTypeCoreTests/BuiltInVocabularyTests.swift` 會讀這個檔比對，改一邊就要改另一邊。
  *
  * 2026-09-20 runtime 票（CONTRACT-V2）：
  * - 內建三包（ai／tw／audio）保留；
@@ -49,7 +54,9 @@ object VocabularyPacks {
         Pack("audio", R.string.pack_audio, "Atmos、Pro Tools、stem、LUFS…", listOf(
             "Dolby Atmos", "Atmos", "Pro Tools", "Logic Pro", "Ableton", "Cubase", "Nuendo", "DaVinci Resolve",
             "ADM", "BWF", "binaural", "stem", "stems", "LUFS", "True Peak", "bed", "object", "renderer",
-            "mixing", "mastering", "混音", "母帶", "分軌", "錄音室", "Tonmeister", "Apple Music", "Spotify"), false),
+            "mixing", "mastering", "混音", "母帶", "分軌", "錄音室", "Tonmeister", "Apple Music", "Spotify",
+            // 2026-10-22 bench：Claude 把 AIFC 改成 AIFF、辨識聽成 ToneMaster／Special Audio（同 Swift core BuiltInVocabulary）
+            "Spatial Audio", "AIFF", "AIFC"), false),
     )
 
     private const val PREF = "vocabularyPacks"
@@ -168,25 +175,53 @@ object VocabularyPacks {
      * 改為【內建三包 terms + 六新包 seed】公平輪流。
      */
     /**
-     * 雲端辨識（Whisper prompt，約 200 字放得下 30 幾個詞）用的提示詞：個人字典 → 音訊包 → AI 包 → 其他內建包 → 目錄包。
+     * 雲端辨識（Whisper prompt，約 200 字放得下 30 幾個詞）用的提示詞：個人字典 → 產品名 → 音訊包 → AI 包 → 其他內建包 → 目錄包
+     * （排序與字形規則在 core [AsrHints]，同 Mac `BuiltInVocabulary.asrHints`；包內的 Typeless 不送，pn05）。
      * 2026-10-20 實測（真人 44 句，Groq whisper-large-v3）：[biasing] 的公平輪流把心肌梗塞、憲法、鋼筋混凝土排進前 36 個，
      * 專名命中 22/39、27 句回簡體；只放個人字典＋音訊詞 30/39、0 句簡體。系統辨識器（上限 200 詞）照用 [biasing]。
-     * `traditional`：繁中時把詞轉成繁體（字典裡存成簡體的詞會把 Whisper 帶去輸出簡體）。
+     * 字形跟聽寫變體走（[hintScript]）：繁中只把簡體寫的個人詞按詞轉繁體（字典裡存成簡體的詞會把 Whisper 帶去輸出簡體），
+     * 已經是繁體的詞（周杰倫、奇岩站）不動；簡體變體把內建包的繁體詞轉簡體。
      */
-    @JvmStatic fun cloudHints(c: Context, traditional: Boolean = true): List<String> {
-        val out = LinkedHashSet<String>()
-        for ((k, v) in DictionaryStore.entries(c)) {
-            val term = if (v.isNotEmpty()) v else k
-            if (term.isNotEmpty()) out.add(term)
-        }
+    @JvmStatic fun cloudHints(c: Context, script: HintScript = currentHintScript(c)): List<String> =
+        cloudHints(DictionaryStore.entries(c), all.filter { isEnabled(c, it) },
+                   enabledCatalogPacks(c).flatMap { it.seedTerms }, script,
+                   // OpenCC 詞表只在真的有簡體寫的個人詞時才載（同 Mac `MacCloudASR.taiwanTraditional`）
+                   toTraditional = { ChineseFixers.configure(c); TraditionalFixer.fix(it) },
+                   toSimplified = { icuSimplified(it) })
+
+    /** [cloudHints] 的純函式版本（JVM 測得到）：`builtIns`＝已開的內建包（照 [all] 的順序）。 */
+    @JvmStatic fun cloudHints(dictionary: Map<String, String>, builtIns: List<Pack>, catalogSeeds: List<String>,
+                              script: HintScript, toTraditional: (String) -> String,
+                              toSimplified: (String) -> String): List<String> {
         val order = listOf("audio", "ai")
-        val builtIns = all.filter { isEnabled(c, it) }.sortedBy { p -> order.indexOf(p.id).let { if (it < 0) order.size else it } }
-        for (p in builtIns) out.addAll(p.terms)
-        for (p in enabledCatalogPacks(c)) out.addAll(p.seedTerms)
-        val list = out.toList().take(200)
-        if (!traditional) return list
-        return list.map { t -> runCatching { android.icu.text.Transliterator.getInstance("Hans-Hant").transliterate(t) }.getOrDefault(t) }
+        val packTerms = builtIns.sortedBy { p -> order.indexOf(p.id).let { if (it < 0) order.size else it } }
+            .flatMap { it.terms } + catalogSeeds
+        return AsrHints.hints(personalTerms(dictionary), productNames, packTerms, script, limit = 200,
+                              toTraditional = toTraditional, toSimplified = toSimplified)
     }
+
+    /** 目前聽寫語言／變體的提示詞字形。 */
+    @JvmStatic fun currentHintScript(c: Context): HintScript {
+        val language = DictationLanguage.current(c)
+        return hintScript(language, DictationLanguage.currentVariant(c, language))
+    }
+
+    /**
+     * 提示詞字形跟最後貼出去的字一致（同 `UserData.localize`）：簡體變體 → 簡體；台灣／香港繁體 → 繁體；
+     * 沒選變體就看語言；英文、日文、韓文照原樣。Mac 是 `BuiltInVocabulary.hintScript`（輸出選簡體 → 簡體）。
+     */
+    @JvmStatic fun hintScript(language: DictationLanguage, variant: LanguageVariant): HintScript = when {
+        language != DictationLanguage.TRADITIONAL_CHINESE && language != DictationLanguage.SIMPLIFIED_CHINESE -> HintScript.AS_IS
+        variant == LanguageVariant.ZH_CN -> HintScript.SIMPLIFIED
+        variant == LanguageVariant.ZH_TW || variant == LanguageVariant.ZH_HK -> HintScript.TRADITIONAL
+        language == DictationLanguage.SIMPLIFIED_CHINESE -> HintScript.SIMPLIFIED
+        else -> HintScript.TRADITIONAL
+    }
+
+    /** 繁轉簡（同 `UserData.localize` 簡體變體的轉法；沒有轉換器就原樣）。 */
+    private fun icuSimplified(text: String): String = runCatching {
+        android.icu.text.Transliterator.getInstance("Hant-Hans").transliterate(text)
+    }.getOrDefault(text)
 
     @JvmStatic fun biasing(c: Context): ArrayList<String> {
         val out = ArrayList<String>(200)
@@ -194,8 +229,7 @@ object VocabularyPacks {
         // 個人字典優先（Kimi review round 1：原 dead loop 只送 DictionaryStore.biasing 的 values，
         // vocabulary-only 條目（output 空）的 source 詞不會進提示詞，與 iOS contextualHints 不一致）：
         // output 非空用 output（不送 source 錯誤拼字）、output 空送 source 本身；濾空、去重、上限 200。
-        for ((k, v) in DictionaryStore.entries(c)) {
-            val term = if (v.isNotEmpty()) v else k
+        for (term in personalTerms(DictionaryStore.entries(c))) {
             if (term.isNotEmpty() && seen.add(term)) out.add(term)
             if (out.size >= 200) return out
         }
@@ -225,11 +259,64 @@ object VocabularyPacks {
      * 給英文專名修正（LatinNameFixer）的比對目標：個人字典＋內建三包＋catalog 各包 seedTerms。
      * **不**載入 catalog 包的 terms（避免幾萬詞灌進 fuzzy 比對）。
      */
-    @JvmStatic fun latinTermsForFixer(c: Context, dictionary: Map<String, String> = DictionaryStore.entries(c)): List<String> {
-        val catalogSeeds = VocabularySelector.latinSeedTerms(enabledCatalogPacks(c))
-        return (dictionary.values + enabledTerms(c) + catalogSeeds)
+    @JvmStatic fun latinTermsForFixer(c: Context, dictionary: Map<String, String> = DictionaryStore.entries(c)): List<String> =
+        latinTermsForFixer(dictionary, enabledTerms(c), VocabularySelector.latinSeedTerms(enabledCatalogPacks(c)))
+
+    /**
+     * [latinTermsForFixer] 的純函式版本（JVM 測得到）。個人字典用 [personalTerms]：以前用 `dictionary.values`，
+     * 「詞彙」模式（輸出寫法留空，例如匯入的單詞）的 Atmos、LemonSqueezy 全被當成空字串濾掉，從沒進過這張表
+     * （asr-vocab-v2；iOS 09-25 已修，同 `ios/Shared/VocabularyPacks.swift` latinTermsForFixer）。
+     */
+    @JvmStatic fun latinTermsForFixer(dictionary: Map<String, String>, packTerms: List<String>,
+                                      catalogSeeds: List<String>): List<String> =
+        (personalTermsInKeyOrder(dictionary) + packTerms + catalogSeeds)
             .filter { t -> t.any { it.code < 128 && it.isLetter() } }
             .distinct()
+
+    /** 自家產品名：不屬於任何一包、不受開關影響（同 Swift core `BuiltInVocabulary.productNames`、iOS `cloudHints`）。 */
+    val productNames = listOf("UTUVO Type", "UTUVO")
+
+    /**
+     * 智慧整理回來的文字（已過把關）補套用的英文專名目標（asr-vocab-2，2026-10-22）：個人字典的寫法＋產品名全留，
+     * 詞庫包只留多字詞。規則在 core `Normalizer.latinTermsForCleanedText`（Mac 同一條）：單字的包內詞太短，
+     * 會把模型寫對的英文改掉（glad／cloud→Claude、phone→iPhone、types→Typeless）。
+     */
+    @JvmStatic fun latinTermsForCleanedText(c: Context, dictionary: Map<String, String> = DictionaryStore.entries(c)): List<String> =
+        latinTermsForCleanedText(dictionary, enabledTerms(c), VocabularySelector.latinSeedTerms(enabledCatalogPacks(c)))
+
+    /** [latinTermsForCleanedText] 的純函式版本（JVM 測得到）。 */
+    @JvmStatic fun latinTermsForCleanedText(dictionary: Map<String, String>, packTerms: List<String>,
+                                            catalogSeeds: List<String>): List<String> =
+        com.utuvo.type.core.Normalizer.latinTermsForCleanedText(personalTermsInKeyOrder(dictionary) + productNames, packTerms + catalogSeeds)
+
+    /**
+     * 個人字典裡使用者要的寫法：有輸出寫法用輸出寫法；「詞彙」模式（輸出是空字串）用詞本身。
+     * 提示詞（[biasing]、[cloudHints]）與英文專名修正（[latinTermsForFixer]）共用這一條規則
+     * （同 iOS `VocabularyPacks.personalTerms`）。
+     */
+    @JvmStatic fun personalTerms(dictionary: Map<String, String>): List<String> =
+        dictionary.map { (source, output) -> if (output.isNotEmpty()) output else source }
+
+    /**
+     * 英文專名修正用的個人詞：同 [personalTerms]，照 key 的 Unicode code point 排（Mac `VocabularyPacks.personalTerms` 同一個順序）。
+     * 兩個詞折成同一個寫法（Dami Music／DAMI music）時修正器先到先得；Mac 的 Dictionary 沒有插入順序，
+     * 兩邊都照 key 排才會結果固定、而且一致（W2-1 verifier，2026-10-22）。
+     */
+    @JvmStatic fun personalTermsInKeyOrder(dictionary: Map<String, String>): List<String> =
+        personalTerms(dictionary.toSortedMap(codePointOrder))
+
+    /** 照 Unicode code point 比（Swift `unicodeScalars.lexicographicallyPrecedes`；String.compareTo 是 UTF-16，補充平面的字順序不同）。 */
+    private val codePointOrder = Comparator<String> { a, b ->
+        var i = 0
+        var j = 0
+        while (i < a.length && j < b.length) {
+            val ca = a.codePointAt(i)
+            val cb = b.codePointAt(j)
+            if (ca != cb) return@Comparator ca.compareTo(cb)
+            i += Character.charCount(ca)
+            j += Character.charCount(cb)
+        }
+        (a.length - i).compareTo(b.length - j)
     }
 
     /** RUNTIME-INTEGRATION-FINDINGS #2：只用「已開啟」的內建包；關掉的 audio 不得進 cleanup 提示詞。 */

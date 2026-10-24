@@ -20,6 +20,16 @@ enum MacCloudASR {
 
     static func supports(language: String) -> Bool { WhisperAudio.languageCode(for: language) != nil }
 
+    /// 按詞轉台灣繁體（OpenCC，同雲端辨識結果的轉法）：辨識提示詞裡簡體寫的個人詞用這個
+    /// （周杰伦→周杰倫、干扰→干擾；ICU 逐字會給周傑倫、乾擾）。字典讀不到就原樣回傳。
+    static func taiwanTraditional(_ text: String) -> String {
+        _ = configureFixer
+        return TraditionalFixer.shared.fix(text)
+    }
+
+    /// Groq 一次收的錄音上限（秒）；更長的直接跳過（"too-long"）。錄音長度上限也照這個（`RecordingLimits`）。
+    static let maxSeconds: TimeInterval = 300
+
     /// 環境變數 `UTUVO_TYPE_GROQ_API_KEY` 優先（量測工具用 `open --env` 帶入，跟百鍊 key 的環境變數同一套），
     /// 否則用智慧整理頁存的 Groq key。
     static func key(environment: [String: String] = ProcessInfo.processInfo.environment) -> String {
@@ -42,9 +52,20 @@ enum MacCloudASR {
 
     /// 雲端文字 → 可交給整理的逐字稿；nil＝不採用（空、整段是幻覺、迴圈）。
     static func accept(_ raw: String, language: String, outputScript: OutputScript, seconds: Double) -> String? {
+        accept(raw, language: language, outputScript: outputScript, seconds: seconds, taiwanFixes: true)
+    }
+
+    /// `taiwanFixes == false`（語言變體選香港繁體，app-shell-7）：一樣轉成繁體字形，但不套 s2tw 字典與台灣慣用寫法——
+    /// 那兩步會把港式用字改成台灣用字。
+    static func accept(_ raw: String, language: String, outputScript: OutputScript, seconds: Double,
+                       taiwanFixes: Bool) -> String? {
         _ = configureFixer
         var text: String
         switch outputScript {
+        case .traditional where !taiwanFixes:
+            text = WhisperHallucination.normalizeSmallFormPunctuation(raw)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            text = text.applyingTransform(StringTransform("Hans-Hant"), reverse: false) ?? text
         case .traditional:
             guard let cleaned = TranscriptGuard.clean(raw, language: language) else { return nil }
             text = cleaned
@@ -69,10 +90,11 @@ enum MacCloudASR {
 
     /// 一次送整段。`transport` 測試可注入；正式走拒絕跨 host redirect 的 session。
     static func transcribe(pcm16: Data, language: String, hotwords: [String], outputScript: OutputScript,
-                           key: String, transport: CleanupTransport = StrictCleanupSession.shared) async -> Outcome {
+                           key: String, transport: CleanupTransport = StrictCleanupSession.shared,
+                           taiwanFixes: Bool = true) async -> Outcome {
         let samples = samples(fromPCM16: pcm16)
         let seconds = Double(samples.count) / 16_000
-        let skip: String? = seconds < 0.25 ? "too-short" : seconds > 300 ? "too-long"
+        let skip: String? = seconds < 0.25 ? "too-short" : seconds > maxSeconds ? "too-long"
             : key.isEmpty ? "no-key" : !supports(language: language) ? "language" : nil
         if let skip {
             log.error("groq skipped (\(skip, privacy: .public)): \(pcm16.count, privacy: .public) bytes")
@@ -89,7 +111,8 @@ enum MacCloudASR {
                     box.set("http:\(http.statusCode)"); return nil
                 }
                 guard let raw = WhisperAudio.parseGroq(data) else { box.set("malformed"); return nil }
-                guard let accepted = accept(raw, language: language, outputScript: outputScript, seconds: seconds) else {
+                guard let accepted = accept(raw, language: language, outputScript: outputScript, seconds: seconds,
+                                            taiwanFixes: taiwanFixes) else {
                     box.set("empty"); return nil
                 }
                 return accepted

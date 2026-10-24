@@ -25,3 +25,27 @@ f788f14c418f63131195b1c0a85b1da47e6c01c239364a56466425081d1dd004  # OnDeviceLlm.
 8d98edaa63bdf380d2830c8642f2495f9d806e0a78cae153ff4b9cdcfaf3bef4  # android/app/src/main/assets/zc/zc-d512-slim-w4.onnx：0c 選字模型（Funmula/0c-sequence-d512 MIT 衍生，改輸出層＋4-bit），超過掃描上限的二進位權重，非憑證（2026-10-13）
 d32a69e9470760ad889ae92062d58647c1021b27e9060542e97e0b2a84b89991  # android/app/src/main/assets/zc/zc-d512-slim-w4.ort：0c 選字模型的 ORT 格式版（由 android/ort/zc-d512-slim-w4.onnx 經 build-ort.sh 轉出），超過掃描上限的二進位權重；已親查字串只有運算名稱與權重雜訊，非憑證（2026-10-13）
 f852d3a2f3dacf6e48186793559a928ea098cd19be10359c6767358766e2fece  # SmartCleanupTest.kt：10-18 加 liveCleanupThroughClaude 後版本，同一把 sk-utuv…not-a-real-key 假 key
+2d64d15dd9037c0e48a146a713659a45902c8b5afbedf7bb49a829aee1324d55  # CleanupFidelity.kt（FX-3 各輪）：token = token.substring(prefix.length) 變數名 token 的誤判（2026-10-23）
+7ce7bc3a2e35b96fe2099298de020c8e874971a50a1d9fae776344a0498ef33f  # CleanupFidelity.kt（FX-3 各輪）：token = token.substring(prefix.length) 變數名 token 的誤判（2026-10-23）
+a378630721ca898b1d201a50e4bd9820937dc62e67d4e404d6fae6da983da7d7  # CleanupFidelity.kt（FX-3 各輪）：token = token.substring(prefix.length) 變數名 token 的誤判（2026-10-23）
+5cbde546cdb0c50a39350ee53f894232c10474b3503ac9cd36846720cfa8d6c8  # CleanupFidelity.kt（FX-7）：token = token.substring(prefix.length) 變數名 token 的誤判（2026-10-23）
+d692b105a8f00d715bc7a50813429bdd4aef4d77ce00e2e8558c2b4bf4f18bd9  # CleanupFidelity.kt（FX-9）：token = token.substring(prefix.length) 變數名 token 的誤判（2026-10-23）
+
+# 2026-10-23 FX13 R3/R4/R5: unchanged computed token.substring variable; exact reviewed blob hashes.
+6cd71f1aeff5d9dfb4575139d12acc8dbea49c86319b11f9559e4d883bd06c0c
+e4410e15ef54a4e3bf6e0a67cca233497486f29720f5f6d9f990edc8a4a9baaf
+4a4147ecb86d21e54aa14b55a1e6466f65bb105556eb25e1cf9f9edd0922c5ed
+5a0e43db4535bec2e5dda01f4f6bac9861458a3e19d664a08f257bd1b54fcd31  # 2026-10-24 PII reviewed: Sources/UTUVOTypeCore/CleanupFidelity.swift; synthetic sequential phone fixture / formatting example
+9c4e0a5bd412d9e5a6c791990cb0f4e1755baee72ce597d050cd26f0f6f9ace7  # 2026-10-24 PII reviewed: Sources/UTUVOTypeCore/Normalizer.swift; synthetic sequential phone fixture / formatting example
+d574e2d1c87602501f519df4cdcfd3a148fc1d036fe06ad2af171d17fa505eb9  # 2026-10-24 PII reviewed: THIRD_PARTY_NOTICES.md; mandatory upstream SCOWL / 12Dicts license attribution
+b859f1a9d6dfc672a2a525b7fd15292cc37a5542e2133e51ae8dfc211d5feecf  # 2026-10-24 PII reviewed: Tests/UTUVOTypeAppTests/SmartCleanupTests.swift; synthetic sequential phone fixture / formatting example
+87ed30ad100f7747d1732959a20fc6b9e8f24e4d11993a5915727dbd610891b3  # 2026-10-24 PII reviewed: Tests/UTUVOTypeCoreTests/CleanupFidelityTests.swift; synthetic sequential phone fixture / formatting example
+fb647e33e2b9c4941bf5c6e16eaceb723c10cc9598ef7a9420b2a12fb0ee216f  # 2026-10-24 PII reviewed: Tests/UTUVOTypeCoreTests/FormatRulesTests.swift; synthetic sequential phone fixture / formatting example
+f203a95c3ce404866d7f5d7baf634307f40ac447508cd1ec7f0c293eb3047b2a  # 2026-10-24 PII reviewed: Tests/UTUVOTypeCoreTests/NumberNormalizationTests.swift; synthetic sequential phone fixture / formatting example
+e1c315ebc3707af753176517123631e09204627f8a307e5c1c2c78fa405ac632  # 2026-10-24 PII reviewed: android/app/src/test/kotlin/com/utuvo/type/SmartCleanupFidelityTest.kt; synthetic sequential phone fixture / formatting example
+e3d883b4e84c9c89bdb67ca9f7292d387b11323a3d415acdf9e0af8ecce415c8  # 2026-10-24 PII reviewed: android/core/src/main/kotlin/com/utuvo/type/core/Normalizer.kt; synthetic sequential phone fixture / formatting example
+f00c094a536c8916d052033eee9d2bbc16560cd3bd4792880eed5ae75b0c0709  # 2026-10-24 PII reviewed: android/core/src/test/kotlin/com/utuvo/type/core/CleanupFidelityTest.kt; synthetic sequential phone fixture / formatting example
+a620360cf0fbb3f504e1f5f673cc9e0df61998c38607aff3337efec95ba47b2c  # 2026-10-24 PII reviewed: android/core/src/test/kotlin/com/utuvo/type/core/FormatRulesTest.kt; synthetic sequential phone fixture / formatting example
+f504d9937487087491560998861516be3b6159664c1f73e8a7d5f15ea7cd98d7  # 2026-10-24 PII reviewed: android/core/src/test/resources/golden/normalizer.json; synthetic sequential phone fixture / formatting example
+5bb5afd41d5a4bb799b5e00f1f86ec510a0aa7e0688c1de01fabcc4b0fd8686d  # 2026-10-24 PII reviewed: android/core/src/test/resources/structure-probes.json; synthetic sequential phone fixture / formatting example
+8d6cd4e5a8fb087678a4517a745b229bb9f0fd5e1f13791fbda7b8d545e345ed  # 2026-10-24 PII reviewed: ios/UTUVO Type.xcodeproj/project.pbxproj; Xcode PBXBuildFile identifier; not a bank account

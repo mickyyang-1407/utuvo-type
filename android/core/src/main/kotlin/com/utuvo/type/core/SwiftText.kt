@@ -67,6 +67,32 @@ internal object SwiftText {
         return true
     }
 
+    /**
+     * Swift `Character.isWhitespace`：看第一個 scalar 的 Unicode White_Space 屬性（跟 [isWhitespaceOrNewline] 同一組字）。
+     * 空白後面黏著組合記號（「 \u0301」）在 Swift 是一個字、而且算空白；Kotlin 的 `Char.isWhitespace` 只看最後一個 UTF-16 單位，
+     * 還多算 U+001C–001F、少算 U+0085。
+     */
+    fun isWhitespace(g: String): Boolean = g.isNotEmpty() && isWhitespaceOrNewline(firstCodePoint(g))
+
+    /** Swift 兩個 `Character` 相等：標準等價（「é」＝「e\u0301」），不是逐 UTF-16 單位比。 */
+    fun sameCharacter(a: String, b: String): Boolean =
+        a == b || java.text.Normalizer.normalize(a, java.text.Normalizer.Form.NFC) ==
+            java.text.Normalizer.normalize(b, java.text.Normalizer.Form.NFC)
+
+    /**
+     * 等同 Swift `text.hasSuffix(suffix)`：逐字形叢集從尾巴比、標準等價。
+     * 跟 Kotlin `endsWith` 不同的地方：結尾從字形叢集中間切開的不算（「xe\u0301」不以「\u0301」結尾，
+     * 「a\r\nb」不以「\nb」結尾），標準等價的算（「xé」以「e\u0301」結尾）。
+     */
+    fun hasSuffix(text: String, suffix: String): Boolean {
+        if (suffix.isEmpty()) return true
+        val t = graphemes(text)
+        val s = graphemes(suffix)
+        if (s.size > t.size) return false
+        val offset = t.size - s.size
+        return s.indices.all { sameCharacter(t[offset + it], s[it]) }
+    }
+
     /** Foundation `CharacterSet.whitespacesAndNewlines`：Zs＋Tab＋換行類（含不換行空白 U+00A0，Java 的 trim 不含）。 */
     private fun isWhitespaceOrNewline(cp: Int): Boolean {
         if (cp == 0x09 || cp in 0x0A..0x0D || cp == 0x85 || cp == 0x2028 || cp == 0x2029) return true

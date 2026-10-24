@@ -91,6 +91,33 @@ final class LatinNameFixerTests: XCTestCase {
         XCTAssertEqual(LatinNameFixer.fix("kimee", terms: ambiguous), "kimee")
     }
 
+    /// asr-vocab-v1（2026-10-22）：骨架比對先回傳，比較接近的詞沒機會——「Protus」被改成「Uber Eats」。
+    /// 現在距離內最接近的詞優先；只有骨架對得上時，首字要同類（同為母音，或子音骨架首字相同）。
+    func testDistanceCandidateBeatsSkeletonOnlyCandidate() {
+        XCTAssertEqual(LatinNameFixer.fix("更新 Protus", terms: ["Uber Eats", "Pro Tools"]), "更新 Pro Tools")
+        XCTAssertEqual(LatinNameFixer.fix("更新 Protus", terms: ["Pro Tools", "Uber Eats"]), "更新 Pro Tools")
+        XCTAssertEqual(LatinNameFixer.fix("1. 更新 Protus", terms: ["Uber Eats", "Pro Tools"]), "1. 更新 Pro Tools")
+    }
+
+    func testSkeletonOnlyCandidateNeedsSameOnset() {
+        // 骨架 prts 撞上 Uber Eats（b→p），但首字一個是子音 p、一個是母音 u：不換。
+        XCTAssertEqual(LatinNameFixer.fix("更新 Protus", terms: ["Uber Eats"]), "更新 Protus")
+        // 首字同類的骨架比對照舊（只靠骨架的 Jamin→Gemini、分開講的 clote coate→Claude Code）。
+        XCTAssertEqual(fix("Jamin"), "Gemini")
+        XCTAssertEqual(fix("jeman"), "Gemini")
+        XCTAssertEqual(fix("grook"), "Grok")
+        XCTAssertEqual(fix("clote coate"), "Claude Code")
+        XCTAssertEqual(LatinNameFixer.fix("clotecoate", terms: terms), "Claude Code")
+    }
+
+    /// 聽成好幾個字的（中間有空白），骨架比對只認字數相同的詞；黏成一個字的（clotecoate）字數本來就不可靠，不擋。
+    func testSkeletonOnlyCandidateNeedsSameWordCountWhenWordsWereHeard() {
+        XCTAssertEqual(LatinNameFixer.Table(terms: ["Gemini"]).match("ja min", heardWords: 2), nil)
+        XCTAssertEqual(LatinNameFixer.Table(terms: ["Gemini"]).match("jamin", heardWords: 1), "Gemini")
+        XCTAssertEqual(LatinNameFixer.Table(terms: ["Claude Code"]).match("clotecoate", heardWords: 3), nil)
+        XCTAssertEqual(LatinNameFixer.Table(terms: ["Claude Code"]).match("clote coate", heardWords: 2), "Claude Code")
+    }
+
     func testNormalizerRunsTheStepWithTerms() {
         let n = Normalizer(options: NormalizerOptions(latinTerms: terms))
         let out = n.normalize("我在測試 Gimani 的東西")

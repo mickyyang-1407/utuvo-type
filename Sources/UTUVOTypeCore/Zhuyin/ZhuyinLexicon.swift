@@ -66,6 +66,11 @@ public final class ZhuyinLexicon: Sendable {
 
     public var syllableCount: Int { syllables.count }
 
+    /// 測試用：詞庫位元組本身（驗它是 .dat 檔的映射、不是 heap 複本）。不改任何行為。
+    func withBackingBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+        try data.withUnsafeBytes(body)
+    }
+
     /// 這個音節（含聲調記號，例「ㄋㄧˇ」）是否存在於詞庫。
     public func isValidSyllable(_ syllable: String) -> Bool { syllableIDs[syllable] != nil }
 

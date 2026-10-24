@@ -1,0 +1,1531 @@
+[
+  {
+    "cases" : [
+      {
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "twice" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "twice" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "twice" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。",
+        "twice" : "這兩個 protocols 不相容。"
+      },
+      {
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "twice" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "twice" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works.",
+        "twice" : "I'm glad the cloud sync works."
+      },
+      {
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works.",
+        "twice" : "I'm glad it works."
+      },
+      {
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "twice" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？",
+        "twice" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "twice" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "twice" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。",
+        "twice" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "twice" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "twice" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 spatial audio 混音有點太寬。",
+        "twice" : "這個 spatial audio 混音有點太寬。"
+      },
+      {
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。",
+        "twice" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。",
+        "twice" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。",
+        "twice" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。",
+        "twice" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。",
+        "twice" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 vibe coding 的愛好者。",
+        "twice" : "他是 vibe coding 的愛好者。"
+      },
+      {
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "twice" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。",
+        "twice" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？",
+        "twice" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。",
+        "twice" : "Micky 老師下週要上課。"
+      },
+      {
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "twice" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "twice" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。",
+        "twice" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday.",
+        "twice" : "Please send me the stems by Friday."
+      },
+      {
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit.",
+        "twice" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop.",
+        "twice" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet.",
+        "twice" : "The phone types are listed in the sheet."
+      },
+      {
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?",
+        "twice" : "Can you check the true peak on the master?"
+      },
+      {
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "twice" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "twice" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better.",
+        "twice" : "The cloud version is better."
+      },
+      {
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "twice" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。",
+        "twice" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？",
+        "twice" : "這個 glad 是什麼意思？"
+      },
+      {
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。",
+        "twice" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。",
+        "twice" : "這個 prototype 下週給你。"
+      },
+      {
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。",
+        "twice" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today.",
+        "twice" : "The stock market is down today."
+      },
+      {
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "twice" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。",
+        "twice" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "twice" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。",
+        "twice" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。",
+        "twice" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。",
+        "twice" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。",
+        "twice" : "這個 password 太短。"
+      },
+      {
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。",
+        "twice" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。",
+        "twice" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。",
+        "twice" : "照片都在 iCloud 裡。"
+      },
+      {
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。",
+        "twice" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。",
+        "twice" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。",
+        "twice" : "我用 Perplexity 查資料。"
+      },
+      {
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。",
+        "twice" : "我用 Codex 寫程式。"
+      },
+      {
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。",
+        "twice" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。",
+        "twice" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。",
+        "twice" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。",
+        "twice" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。",
+        "twice" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。",
+        "twice" : "mix bites 是一個系列。"
+      },
+      {
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。",
+        "twice" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。",
+        "twice" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。",
+        "twice" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。"
+      },
+      {
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "twice" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "twice" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI music 的 logo 要改。",
+        "twice" : "DAMI music 的 logo 要改。"
+      },
+      {
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Pro Tools 之後再匯出 stems。",
+        "twice" : "更新 Pro Tools 之後再匯出 stems。"
+      },
+      {
+        "input" : "我在用 Jemini 跟 cloud",
+        "output" : "我在用 Jemini 跟 cloud",
+        "twice" : "我在用 Jemini 跟 cloud"
+      },
+      {
+        "input" : "1. 用優土佛 Type 匯出\n2. 更新 Protus",
+        "output" : "1. 用優土佛 Type 匯出\n2. 更新 Pro Tools",
+        "twice" : "1. 用優土佛 Type 匯出\n2. 更新 Pro Tools"
+      }
+    ],
+    "dictionary" : {
+      "1Password" : "",
+      "3Coins" : "3Coins",
+      "7-Eleven" : "",
+      "Claude" : "",
+      "Codex" : "",
+      "Daiso" : "",
+      "DAMI music" : "",
+      "Eva" : "",
+      "iCloud" : "iCloud",
+      "Micky" : "",
+      "Mix Bites" : "",
+      "Morten" : "",
+      "Perplexity" : "",
+      "Tonmeister" : "",
+      "UTUVO Type" : ""
+    },
+    "latinTerms" : [
+      "1Password",
+      "3Coins",
+      "7-Eleven",
+      "Claude",
+      "Codex",
+      "DAMI music",
+      "Daiso",
+      "Eva",
+      "Micky",
+      "Mix Bites",
+      "Morten",
+      "Perplexity",
+      "Tonmeister",
+      "UTUVO Type",
+      "iCloud",
+      "UTUVO",
+      "Google Gemini",
+      "Claude Code",
+      "Hugging Face",
+      "Stable Diffusion",
+      "Apple Intelligence",
+      "Vibe Coding",
+      "Dolby Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "DaVinci Resolve",
+      "True Peak",
+      "Apple Music",
+      "Spatial Audio"
+    ],
+    "set" : "real-like",
+    "speechTerms" : [
+      "1Password",
+      "3Coins",
+      "7-Eleven",
+      "Claude",
+      "Codex",
+      "DAMI music",
+      "Daiso",
+      "Eva",
+      "Micky",
+      "Mix Bites",
+      "Morten",
+      "Perplexity",
+      "Tonmeister",
+      "UTUVO Type",
+      "iCloud",
+      "UTUVO",
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude Code",
+      "Anthropic",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding",
+      "Dolby Atmos",
+      "Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "Ableton",
+      "Cubase",
+      "Nuendo",
+      "DaVinci Resolve",
+      "ADM",
+      "BWF",
+      "binaural",
+      "stem",
+      "stems",
+      "LUFS",
+      "True Peak",
+      "bed",
+      "object",
+      "renderer",
+      "mixing",
+      "mastering",
+      "Apple Music",
+      "Spotify",
+      "Spatial Audio",
+      "AIFF",
+      "AIFC"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "twice" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "twice" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "twice" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。",
+        "twice" : "這兩個 protocols 不相容。"
+      },
+      {
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "twice" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "twice" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the Claude sync works.",
+        "twice" : "I'm glad the Claude sync works."
+      },
+      {
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works.",
+        "twice" : "I'm glad it works."
+      },
+      {
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 Claude，我等一下用 phone 看。",
+        "twice" : "請把檔案上傳到 Claude，我等一下用 phone 看。"
+      },
+      {
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？",
+        "twice" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "twice" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "twice" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。",
+        "twice" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "twice" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "twice" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 spatial audio 混音有點太寬。",
+        "twice" : "這個 spatial audio 混音有點太寬。"
+      },
+      {
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。",
+        "twice" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。",
+        "twice" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。",
+        "twice" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。",
+        "twice" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。",
+        "twice" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 vibe coding 的愛好者。",
+        "twice" : "他是 vibe coding 的愛好者。"
+      },
+      {
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "twice" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。",
+        "twice" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？",
+        "twice" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。",
+        "twice" : "Micky 老師下週要上課。"
+      },
+      {
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "twice" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "twice" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。",
+        "twice" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday.",
+        "twice" : "Please send me the stems by Friday."
+      },
+      {
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit.",
+        "twice" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop.",
+        "twice" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet.",
+        "twice" : "The phone types are listed in the sheet."
+      },
+      {
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?",
+        "twice" : "Can you check the true peak on the master?"
+      },
+      {
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "twice" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "twice" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "input" : "The cloud version is better.",
+        "output" : "The Claude version is better.",
+        "twice" : "The Claude version is better."
+      },
+      {
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "twice" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。",
+        "twice" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？",
+        "twice" : "這個 glad 是什麼意思？"
+      },
+      {
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。",
+        "twice" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。",
+        "twice" : "這個 prototype 下週給你。"
+      },
+      {
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。",
+        "twice" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today.",
+        "twice" : "The stock market is down today."
+      },
+      {
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "twice" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。",
+        "twice" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "twice" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。",
+        "twice" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。",
+        "twice" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。",
+        "twice" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。",
+        "twice" : "這個 password 太短。"
+      },
+      {
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。",
+        "twice" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。",
+        "twice" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。",
+        "twice" : "照片都在 iCloud 裡。"
+      },
+      {
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 Claude 上。",
+        "twice" : "我把檔案放在 Claude 上。"
+      },
+      {
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。",
+        "twice" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。",
+        "twice" : "我用 Perplexity 查資料。"
+      },
+      {
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。",
+        "twice" : "我用 Codex 寫程式。"
+      },
+      {
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。",
+        "twice" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 Claude storage 滿了。",
+        "twice" : "我們的 Claude storage 滿了。"
+      },
+      {
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。",
+        "twice" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。",
+        "twice" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。",
+        "twice" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。",
+        "twice" : "mix bites 是一個系列。"
+      },
+      {
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。",
+        "twice" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。",
+        "twice" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。",
+        "twice" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。"
+      },
+      {
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "twice" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "twice" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI music 的 logo 要改。",
+        "twice" : "DAMI music 的 logo 要改。"
+      },
+      {
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Protus 之後再匯出 stems。",
+        "twice" : "更新 Protus 之後再匯出 stems。"
+      },
+      {
+        "input" : "我在用 Jemini 跟 cloud",
+        "output" : "我在用 Gemini 2.5 跟 Claude",
+        "twice" : "我在用 Gemini 2.5 跟 Claude"
+      },
+      {
+        "input" : "1. 用優土佛 Type 匯出\n2. 更新 Protus",
+        "output" : "1. 用UTUVO Type 匯出\n2. 更新 Protus",
+        "twice" : "1. 用UTUVO Type 匯出\n2. 更新 Protus"
+      }
+    ],
+    "dictionary" : {
+      "Claude" : "",
+      "cloud" : "Claude",
+      "DAMI music" : "",
+      "Eva" : "",
+      "Jemini" : "Gemini 2.5",
+      "Micky" : "",
+      "Morten" : "",
+      "Tonmeister" : "",
+      "UTUVO Type" : "",
+      "優土佛" : "UTUVO"
+    },
+    "latinTerms" : [
+      "Claude",
+      "DAMI music",
+      "Eva",
+      "Gemini 2.5",
+      "Micky",
+      "Morten",
+      "Tonmeister",
+      "UTUVO Type",
+      "UTUVO",
+      "Google Gemini",
+      "Claude Code",
+      "Hugging Face",
+      "Stable Diffusion",
+      "Apple Intelligence",
+      "Vibe Coding"
+    ],
+    "set" : "rules-ai-tw",
+    "speechTerms" : [
+      "Claude",
+      "DAMI music",
+      "Eva",
+      "Gemini 2.5",
+      "Micky",
+      "Morten",
+      "Tonmeister",
+      "UTUVO Type",
+      "UTUVO",
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Codex",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding",
+      "7-Eleven"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "twice" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "twice" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "twice" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。",
+        "twice" : "這兩個 protocols 不相容。"
+      },
+      {
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "twice" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "twice" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works.",
+        "twice" : "I'm glad the cloud sync works."
+      },
+      {
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works.",
+        "twice" : "I'm glad it works."
+      },
+      {
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "twice" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？",
+        "twice" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "twice" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "twice" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。",
+        "twice" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "twice" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "twice" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 spatial audio 混音有點太寬。",
+        "twice" : "這個 spatial audio 混音有點太寬。"
+      },
+      {
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。",
+        "twice" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。",
+        "twice" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。",
+        "twice" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。",
+        "twice" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。",
+        "twice" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 vibe coding 的愛好者。",
+        "twice" : "他是 vibe coding 的愛好者。"
+      },
+      {
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "twice" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。",
+        "twice" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？",
+        "twice" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。",
+        "twice" : "Micky 老師下週要上課。"
+      },
+      {
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "twice" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "twice" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。",
+        "twice" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday.",
+        "twice" : "Please send me the stems by Friday."
+      },
+      {
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit.",
+        "twice" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop.",
+        "twice" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet.",
+        "twice" : "The phone types are listed in the sheet."
+      },
+      {
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?",
+        "twice" : "Can you check the true peak on the master?"
+      },
+      {
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "twice" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "twice" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better.",
+        "twice" : "The cloud version is better."
+      },
+      {
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "twice" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。",
+        "twice" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？",
+        "twice" : "這個 glad 是什麼意思？"
+      },
+      {
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。",
+        "twice" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。",
+        "twice" : "這個 prototype 下週給你。"
+      },
+      {
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。",
+        "twice" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today.",
+        "twice" : "The stock market is down today."
+      },
+      {
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "twice" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。",
+        "twice" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "twice" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。",
+        "twice" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。",
+        "twice" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。",
+        "twice" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。",
+        "twice" : "這個 password 太短。"
+      },
+      {
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。",
+        "twice" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。",
+        "twice" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。",
+        "twice" : "照片都在 iCloud 裡。"
+      },
+      {
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。",
+        "twice" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。",
+        "twice" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。",
+        "twice" : "我用 Perplexity 查資料。"
+      },
+      {
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。",
+        "twice" : "我用 Codex 寫程式。"
+      },
+      {
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。",
+        "twice" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。",
+        "twice" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。",
+        "twice" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。",
+        "twice" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。",
+        "twice" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。",
+        "twice" : "mix bites 是一個系列。"
+      },
+      {
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。",
+        "twice" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。",
+        "twice" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "twice" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "twice" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "twice" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。",
+        "twice" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。",
+        "twice" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Protus 之後再匯出 stems。",
+        "twice" : "更新 Protus 之後再匯出 stems。"
+      },
+      {
+        "input" : "我在用 Jemini 跟 cloud",
+        "output" : "我在用 Jemini 跟 cloud",
+        "twice" : "我在用 Jemini 跟 cloud"
+      },
+      {
+        "input" : "1. 用優土佛 Type 匯出\n2. 更新 Protus",
+        "output" : "1. 用優土佛 Type 匯出\n2. 更新 Protus",
+        "twice" : "1. 用優土佛 Type 匯出\n2. 更新 Protus"
+      }
+    ],
+    "dictionary" : {
+
+    },
+    "latinTerms" : [
+      "UTUVO Type",
+      "UTUVO",
+      "Google Gemini",
+      "Claude Code",
+      "Hugging Face",
+      "Stable Diffusion",
+      "Apple Intelligence",
+      "Vibe Coding"
+    ],
+    "set" : "products-default",
+    "speechTerms" : [
+      "UTUVO Type",
+      "UTUVO",
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Codex",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding",
+      "7-Eleven"
+    ]
+  }
+]

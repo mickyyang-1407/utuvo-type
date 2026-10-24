@@ -1,11 +1,13 @@
 import Foundation
+import UTUVOTypeCore
 
 /// 詞庫包設定（Mac 端 2026-09-22）：iOS 已上線六個 catalog 詞庫，Mac 補上相同機制。
 ///
 /// 對齊重點：
 /// - 同樣六包（資訊、醫療、財經、法律、工程、音樂音訊）由 catalog.json 提供；
-/// - 內建三包（ai／tw／audio）保留 Mac 既有的 `dictionary.values` 行為（Mac 沒有用 Pack 形式裝載，
-///   透過個人字典的 latin 詞當作 LatinNameFixer 目標），所以這裡只暴露 catalog 6 包；
+/// - 內建三包（ai／tw／audio，2026-10-22 asr-vocab-1）：詞表與提示詞排序的正本在 core `BuiltInVocabulary`，
+///   開關跟 catalog 六包存在同一份 enabled 集合（預設 ai、tw 開，audio 關，同 iOS／Android）；
+///   整理選詞時用 iOS 那種「每包一個假 catalog 包」的方式併進去；
 /// - 啟動時只讀 metadata；terms 透過 `BundlePackTermsSource` 延遲載入（cleanup 選詞／UI 搜尋時才讀）；
 /// - cleanup 提示詞上限 200，個人字典優先，再用 bigram／latin token 相關度篩入；
 /// - LatinNameFixer 只用 seeds（不載 400k 詞）避免幾萬詞灌進 fuzzy 比對。
@@ -14,10 +16,6 @@ import Foundation
 /// 在 AppPreferences 內存讀。
 enum VocabularyPacks {
     static let resourceBundle = Bundle.module
-    // Small mobile AI/name lexicon, traced to ios/Shared/VocabularyPacks.swift (2026-09-22).
-    // Academic catalog seedTerms are Chinese; do not claim they provide these English names.
-    static let builtInLatinTerms = ["Gemini", "Google Gemini", "ChatGPT", "OpenAI", "GPT", "Claude", "Claude Code",
-        "Anthropic", "Perplexity", "Apple", "NVIDIA", "MiniMax", "GLM", "Kimi", "UTUVO", "UTUVO Type"]
 
     /// 注入測試 seam：合成 pack terms（id -> terms）。
     nonisolated(unsafe) static var termsSource: PackTermsSource = BundlePackTermsSource()
@@ -85,36 +83,59 @@ enum VocabularyPacks {
         return pack
     }
 
-    /// 給英文專名修正（LatinNameFixer）的比對目標：
-    /// 個人字典的寫法 + catalog 各包 seedTerms（拉丁字母子集）。
+    /// 個人字典一筆要的寫法：有輸出寫法用輸出寫法；「詞彙」模式（輸出是空字串，例如從 iPhone／Android 同步或匯入的單詞）
+    /// 用詞本身。contextualHints、termsForCleanup、LatinNameFixer 詞表共用這一條（iOS `VocabularyPacks.personalTerms` 同規則）。
+    static func personalTerm(source: String, output: String) -> String { output.isEmpty ? source : output }
+
+    /// 照 key 的 Unicode code point 排（Android `VocabularyPacks.personalTermsInKeyOrder` 同一個順序）：
+    /// Dictionary 的順序每個 process 都不一樣，兩個詞折成同一個寫法（Dami Music／DAMI music）時，
+    /// LatinNameFixer 先到先得，Mac 每次啟動結果可能不同、也跟 Android 對不上（W2-1 verifier，2026-10-22）。
+    static func personalTerms(_ dictionary: [String: String]) -> [String] {
+        dictionary.sorted { $0.key.unicodeScalars.lexicographicallyPrecedes($1.key.unicodeScalars) }
+            .map { personalTerm(source: $0.key, output: $0.value) }
+    }
+
+    /// 2026-10-22 asr-vocab-v2：Mac 原本只傳 `dictionary.values`，輸出寫法留空的詞（Atmos: ""）被當空字串濾掉，
+    /// 從沒進過 LatinNameFixer 的詞表；iOS 09-25 已修。
+    static func latinTermsForFixer(personal: [String: String], enabled: Set<String>) -> [String] {
+        latinTermsForFixer(personalValues: personalTerms(personal), enabled: enabled)
+    }
+
+    /// 給英文專名修正（LatinNameFixer）的比對目標（本機整理版）：
+    /// 個人字典的寫法 + 產品名 + 已開內建包的修正詞（core `BuiltInVocabulary.fixerTerms`：ai 開著時那 12 個 AI 名稱＋
+    /// 各包多字詞）+ catalog 各包 seedTerms（拉丁字母子集）。
     /// 不載入 catalog 包的 terms（避免幾萬詞灌進 fuzzy 比對，CONTRACT-V2 §RUNTIME）。
     static func latinTermsForFixer(personalValues: [String], enabled: Set<String>) -> [String] {
         var seen = Set<String>()
         let catalogSeeds = VocabularySelector.latinSeedTerms(enabled: enabledCatalogPacks(enabled: enabled))
-        var out: [String] = []
-        for t in personalValues where t.contains(where: { $0.isASCII && $0.isLetter }) {
-            if seen.insert(t).inserted { out.append(t) }
-        }
-        for t in builtInLatinTerms + catalogSeeds where seen.insert(t).inserted { out.append(t) }
-        return out
+        let candidates = personalValues + BuiltInVocabulary.productNames
+            + BuiltInVocabulary.fixerTerms(enabled) + catalogSeeds
+        return candidates.filter { t in t.contains(where: { $0.isASCII && $0.isLetter }) && seen.insert(t).inserted }
     }
 
-    /// Bounded ASR hints use canonical personal spelling and metadata seeds only.
-    static func contextualHints(personal: [String: String], enabled: Set<String>, limit: Int = 200) -> [String] {
-        var seen = Set<String>(), result: [String] = []
-        for (source, output) in personal.sorted(by: { $0.key < $1.key }) {
-            let term = output.isEmpty ? source : output
-            if !term.isEmpty, seen.insert(term).inserted { result.append(term) }
-            if result.count >= limit { return Array(result.prefix(max(0, limit))) }
-        }
-        let streams = [builtInLatinTerms] + enabledCatalogPacks(enabled: enabled).map(\.seedTerms)
-        for index in 0..<(streams.map(\.count).max() ?? 0) {
-            for stream in streams where stream.indices.contains(index) {
-                if seen.insert(stream[index]).inserted { result.append(stream[index]) }
-                if result.count >= limit { return Array(result.prefix(max(0, limit))) }
-            }
-        }
-        return result
+    /// 智慧整理回來的文字（已過把關）補套用的英文專名目標：個人字典的寫法 + 產品名全留，詞庫包只留多字詞
+    /// （規則在 core `Normalizer.latinTermsForCleanedText`，Android 同一條）。
+    static func latinTermsForCleanedText(personal: [String: String], enabled: Set<String>) -> [String] {
+        let catalogSeeds = VocabularySelector.latinSeedTerms(enabled: enabledCatalogPacks(enabled: enabled))
+        return Normalizer.latinTermsForCleanedText(personal: personalTerms(personal) + BuiltInVocabulary.productNames,
+                                                   packTerms: BuiltInVocabulary.enabledTerms(enabled) + catalogSeeds)
+    }
+
+    /// 辨識提示詞（Qwen hotwords、Groq、百鍊、Apple 語音退路共用同一份）：
+    /// 個人字典（照詞排序）→ 產品名 → 音訊包 → AI 包 → 其他內建包 → catalog seed，排序與字形規則在 core
+    /// `BuiltInVocabulary.asrHints`（同 Android `VocabularyPacks.cloudHints`）。`traditional` true＝`.traditional`。
+    static func contextualHints(personal: [String: String], enabled: Set<String>, limit: Int = 200,
+                                traditional: Bool = false) -> [String] {
+        contextualHints(personal: personal, enabled: enabled, limit: limit, script: traditional ? .traditional : .asIs)
+    }
+
+    /// 同上，指定字形：台灣繁體時只有簡體寫的個人詞按詞轉繁體（OpenCC，同雲端辨識結果的轉法）；
+    /// 已經是繁體或兩邊通用的詞（周杰倫、奇岩站、于美人）跟內建包原樣送。簡體時有繁體專用字的詞轉簡體。
+    static func contextualHints(personal: [String: String], enabled: Set<String>, limit: Int, script: HintScript) -> [String] {
+        let personalTerms = personal.sorted(by: { $0.key < $1.key }).map { personalTerm(source: $0.key, output: $0.value) }
+        return BuiltInVocabulary.asrHints(personal: personalTerms, enabled: enabled,
+                                          catalogSeeds: enabledCatalogPacks(enabled: enabled).flatMap(\.seedTerms),
+                                          script: script, limit: limit, toTraditional: MacCloudASR.taiwanTraditional)
     }
 
     /// 給搜尋 UI：先比對 seed，再比對已載入的 terms；未載入時顯示提示。
@@ -131,9 +152,21 @@ enum VocabularyPacks {
         let stations = Set(TaiwanPlaces.contextualStrings)
         let enabledPacks = enabledCatalogPacks(enabled: enabled, ensureLoaded: true)
         return VocabularySelector.termsForCleanup(text: text,
-                                                  enabled: enabledPacks,
+                                                  enabled: enabledPacks + builtInPseudoPacks(enabled: enabled, stations: stations),
                                                   personal: personal,
                                                   stations: stations)
+    }
+
+    /// 已開的內建包併入整理選詞（同 iOS `pseudoPacks`）：每包一個假 catalog 包，terms＝整包、
+    /// seedTerms＝站名以外前 seedCount 個代表詞；關掉的包（audio 預設關）不進提示詞。
+    static func builtInPseudoPacks(enabled: Set<String>, stations: Set<String>) -> [VocabularyCatalog.Pack] {
+        BuiltInVocabulary.enabledPacks(enabled).map { builtIn in
+            VocabularyCatalog.Pack(id: "__builtin_\(builtIn.id)", name: builtIn.id, summary: builtIn.summary,
+                                   sourceName: "UTUVO Type", sourceURL: "", licenseName: "", licenseURL: "",
+                                   attribution: "2026-09-20 整理", version: "builtin", defaultOn: builtIn.defaultOn,
+                                   seedTerms: Array(builtIn.terms.lazy.filter { !stations.contains($0) }.prefix(builtIn.seedCount)),
+                                   termCount: builtIn.terms.count, termsSHA256: "", terms: builtIn.terms, termsFile: "")
+        }
     }
 
     // MARK: - 私有的快取與同步
@@ -219,7 +252,7 @@ enum VocabularySelector {
         var personalTerms: [String] = []
         var seen = Set<String>()
         for (k, v) in personal {
-            let candidates = v.isEmpty ? [k] : [v]
+            let candidates = [VocabularyPacks.personalTerm(source: k, output: v)]
             for c in candidates where !c.isEmpty && seen.insert(c).inserted {
                 personalTerms.append(c)
             }

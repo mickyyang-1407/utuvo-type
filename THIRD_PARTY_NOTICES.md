@@ -422,9 +422,11 @@ The following is the license text from rime-pinyin-simp's `LICENSE`, reproduced 
    limitations under the License.
 ```
 
-## SCOWL（Android 英文鍵盤建議列詞表）
+## SCOWL（Android 英文鍵盤建議列詞表、英文專名修正的常用字表）
 
-`android/app/src/main/assets/english-words.txt` 由 `scripts/build-english-words.py` 從 SCOWL 2020.12.07（http://wordlist.aspell.net/）產生（大小級 ≤ 50 的 english／american words、upper、contractions）。以下為 SCOWL 的 Copyright 全文：
+`android/app/src/main/assets/english-words.txt` 由 `scripts/build-english-words.py` 從 SCOWL 2020.12.07（http://wordlist.aspell.net/）產生（大小級 ≤ 50 的 english／american words、upper、contractions）。
+
+`Sources/UTUVOTypeCore/CommonEnglishWords.swift` 與 `android/core/src/main/kotlin/com/utuvo/type/core/CommonEnglishWords.kt`（Mac、iOS、Android 都會帶）由 `scripts/build-common-english-words.py` 從上面那份檔案的前 49,877 行（SCOWL 大小級 10＋20＋35）取純英文字母的字、轉小寫去重產生（39,235 字），給英文專名修正當「常用英文字」護欄。以下為 SCOWL 的 Copyright 全文：
 
 ```
 The collective work is Copyright 2000-2018 by Kevin Atkinson as well
@@ -676,3 +678,11 @@ and Australian word list.  It is under the following copyright:
   OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
   SUCH DAMAGE.
 ```
+
+## OpenCC（辨識提示詞的簡繁判斷字表）
+
+`Sources/UTUVOTypeCore/HanScriptData.swift` 與 `android/core/src/main/kotlin/com/utuvo/type/core/HanScriptData.kt`
+（判斷個人字典的詞是簡體還是繁體寫的）由 `scripts/build-han-script.py` 從 OpenCC 1.4.2
+（https://github.com/BYVoid/OpenCC，Apache License 2.0：https://www.apache.org/licenses/LICENSE-2.0）的
+STCharacters、TSCharacters、TWVariants 衍生，只保留字元清單、不含轉換對應；台灣常用字的排除依據是上方
+McBopomofo 詞庫（MIT）。OpenCC 簡繁轉換字典本身的聲明見 `ios/Shared/Resources/OpenCC/NOTICE.txt`。

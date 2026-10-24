@@ -10,6 +10,8 @@ final class VoiceOrbView: NSView, MTKViewDelegate {
     var phase: Phase = .listening { didSet { updateActivity() } }
     var levelProvider: (() -> Float?)?
     var accessibilityStatus: String? { didSet { updateActivity() } }
+    /// 快到錄音上限／很久沒聲音快要停（`OverlayWindowController.showsLimitWarning`）：球變灰、每秒閃一下。
+    var limitWarning = false { didSet { if limitWarning != oldValue { updateActivity() } } }
     var isActive = false { didSet { updateActivity() } }
     var reduceMotionOverride: Bool? { didSet { updateActivity() } }
     var appearanceOverride: Bool? { didSet { updateActivity() } }
@@ -84,7 +86,10 @@ final class VoiceOrbView: NSView, MTKViewDelegate {
     private func updateActivity() {
         let dark = appearanceOverride ?? (effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua)
         CATransaction.begin(); CATransaction.setDisableActions(true)
-        fallback.colors = phase == .listening
+        fallback.colors = limitWarning
+            ? [NSColor(white: 0.86, alpha: 1).cgColor, NSColor(white: 0.58, alpha: 1).cgColor,
+               NSColor(white: 0.32, alpha: 1).cgColor]
+            : phase == .listening
             ? [NSColor(red: 1, green: 0.84, blue: 0.55, alpha: 1).cgColor,
                NSColor(red: 0.98, green: 0.45, blue: 0.09, alpha: 1).cgColor,
                NSColor(red: 0.62, green: 0.16, blue: 0.04, alpha: 1).cgColor]
@@ -98,6 +103,13 @@ final class VoiceOrbView: NSView, MTKViewDelegate {
         metal.isPaused = !visible || reducedMotion || OrbRenderer.shared.pipeline == nil
         if !visible { lastFrameTime = 0; normalizer = VoiceLevel.Normalizer(); return }
         if metal.isPaused { metal.draw() }
+    }
+    /// 「快停了」的灰度（著色器 `dim`：0＝原色，1＝全灰變暗）。每秒閃一下（0.45–0.85，最亮時也明顯比平常灰）；
+    /// 減少動態效果時固定 0.65。
+    static func warningDim(time: Float, reduceMotion: Bool) -> Float {
+        guard !reduceMotion else { return 0.65 }
+        let pulse = 0.5 + 0.5 * cos(2 * Float.pi * time)
+        return 0.45 + 0.4 * pulse
     }
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         if isActive && view.isPaused { view.draw() }
@@ -133,6 +145,7 @@ final class VoiceOrbView: NSView, MTKViewDelegate {
             state.spin = (state.spin + dt * 3.2 * state.thinking).truncatingRemainder(dividingBy: 2 * .pi * 64)
         }
         state.ripple = reduce ? 0 : 1
+        state.dim = limitWarning ? Self.warningDim(time: state.time, reduceMotion: reduce) : 0
         state.radius = 0.62
         state.aa = 3 / Float(max(1, min(metal.drawableSize.width, metal.drawableSize.height)))
         state.dark = (appearanceOverride ?? (effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua)) ? 1 : 0
@@ -145,12 +158,14 @@ struct OrbPreviewSurface: NSViewRepresentable {
     var db: Float
     var reduceMotion: Bool = false
     var dark: Bool = false
+    var limitWarning: Bool = false
     func makeNSView(context: Context) -> VoiceOrbView { VoiceOrbView(frame: .zero) }
     func updateNSView(_ view: VoiceOrbView, context: Context) {
         view.levelProvider = { db }
         view.phase = phase
         view.reduceMotionOverride = reduceMotion
         view.appearanceOverride = dark
+        view.limitWarning = limitWarning
         view.isActive = true
     }
     static func dismantleNSView(_ view: VoiceOrbView, coordinator: ()) { view.isActive = false }

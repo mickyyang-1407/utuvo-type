@@ -69,6 +69,11 @@ public final class PinyinLexicon: Sendable {
 
     public var syllableCount: Int { syllables.count }
 
+    /// 測試用：詞庫位元組本身（驗它是 .dat 檔的映射、不是 heap 複本）。不改任何行為。
+    func withBackingBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+        try data.withUnsafeBytes(body)
+    }
+
     // MARK: - 查詢（字串介面）
 
     /// 精確拼音查詢（完整音節，例 ["ni", "hao"]），最佳分數在前。分數是 log10 機率（越大越常用）。

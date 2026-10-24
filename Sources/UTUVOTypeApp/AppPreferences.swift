@@ -208,6 +208,31 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    /// 語言變體（app-shell-7，對齊 iOS／Typeless）：每個聽寫語言各記一個（語言 rawValue → 變體 rawValue），沒記＝`.none`。
+    @Published private(set) var languageVariants: [String: String] {
+        didSet { defaults.set(languageVariants, forKey: Keys.languageVariants) }
+    }
+
+    func languageVariant(for language: TranscriptionLanguage) -> CleanupVariant {
+        let stored = languageVariants[language.rawValue].flatMap(CleanupVariant.init(rawValue:)) ?? .none
+        return CleanupVariant.options(forLanguage: language.rawValue).contains(stored) ? stored : .none
+    }
+
+    /// 選中文變體時順便把輸出字形對上（台灣／香港＝繁體、中國大陸＝簡體），提示詞與後處理才不會打架。
+    func setLanguageVariant(_ variant: CleanupVariant, for language: TranscriptionLanguage) {
+        guard CleanupVariant.options(forLanguage: language.rawValue).contains(variant) else { return }
+        languageVariants[language.rawValue] = variant.rawValue
+        if let script = variant.outputScriptRawValue.flatMap(OutputScript.init(rawValue:)), script != outputScript {
+            outputScript = script
+        }
+    }
+
+    /// 這次聽寫真正套用的變體（選了但跟目前輸出字形對不上＝`.none`）。
+    var effectiveLanguageVariant: CleanupVariant {
+        CleanupVariant.effective(languageVariant(for: transcriptionLanguage),
+                                 language: transcriptionLanguage.rawValue, outputScript: outputScript.rawValue)
+    }
+
     // 即時翻譯：⇧／⌘／⌥＋聽寫快捷鍵各對應一個語言 slot；
     // 改 slot 要重掛變體熱鍵，走 onShortcutChange。
     @Published var translationSlotShift: TranslationTarget {
@@ -277,7 +302,8 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(contextBlockedSites, forKey: Keys.contextBlockedSites) }
     }
 
-    /// 插入後追蹤修改（2026-10-13）：只在本機比對，留下「原字→改後」短詞當字典建議。
+    /// 插入後追蹤修改（2026-10-13）：只在本機比對，留下「原字→改後」短詞當字典建議；
+    /// 2026-10-22 起過得了讀音／拼法關的直接加進字典（標成自動、可復原），見 `learn(fromEdits:)`。關掉就兩種都不做。
     @Published var learnFromEdits: Bool {
         didSet { defaults.set(learnFromEdits, forKey: Keys.learnFromEdits) }
     }
@@ -305,9 +331,85 @@ final class AppPreferences: ObservableObject {
     }
 
     func ignoreSuggestion(_ c: EditTracker.Correction) {
-        ignoredSuggestions.insert("\(c.from)→\(c.to)")
+        ignoredSuggestions.insert(Self.ignoreKey(c.from, c.to))
         dictionarySuggestions.removeAll { $0 == c }
     }
+
+    // MARK: - 從修改自動學字（2026-10-22 delivery-learning-4、asr-vocab-4）
+
+    /// 忽略清單的 key：「原字→改後」；詞彙模式的詞用「詞→詞」（EditTracker 不會產生原字＝改後的配對，不會撞）。
+    static func ignoreKey(_ from: String, _ to: String) -> String { "\(from)→\(to)" }
+
+    private func isIgnored(_ c: EditTracker.Correction) -> Bool {
+        ignoredSuggestions.contains(Self.ignoreKey(c.from, c.to)) || ignoredSuggestions.contains(Self.ignoreKey(c.to, c.to))
+    }
+
+    /// 自動加進字典的一筆（提示卡的「復原」用）。詞彙模式＝聽到和輸出都是那個詞。
+    struct LearnedTerm: Equatable {
+        let correction: EditTracker.Correction
+        let source: String
+        let output: String
+        var isVocabulary: Bool { source == output }
+    }
+
+    struct EditLearningResult: Equatable {
+        /// 這次自動加進字典的（標成「自動」）。
+        var added: [LearnedTerm] = []
+        /// 這次新進建議清單、等使用者決定的。
+        var suggested: [EditTracker.Correction] = []
+        var isEmpty: Bool { added.isEmpty && suggested.isEmpty }
+    }
+
+    /// 修改追蹤找到的配對：過得了讀音／拼法關的自動加（`EditLearning.decide`），其他照舊進建議清單。
+    /// 已經在字典裡的詞不覆蓋（使用者自己設定的寫法優先）；忽略過的不再出現；關掉「從你的修改學字典」就什麼都不做。
+    @discardableResult
+    func learn(fromEdits found: [EditTracker.Correction]) -> EditLearningResult {
+        guard learnFromEdits else { return EditLearningResult() }
+        var result = EditLearningResult()
+        var state = dictionarySync
+        var live = state.live
+        var toSuggest: [EditTracker.Correction] = []
+        let now = Date().timeIntervalSince1970
+        // 英文只有改成「詞庫包的詞」或品牌寫法才自動加（2026-10-22 修補）；全大寫是不是常用字另外問系統拼字字典。
+        let knownTerms = Set(VocabularyPacks.latinTermsForFixer(personalValues: [], enabled: enabledVocabularyPackIDs))
+        for c in found where !isIgnored(c) {
+            switch EditLearning.decide(c, knownTerms: knownTerms, isCommonWord: EnglishSpelling.isCommonWord) {
+            case let .replacement(from, to) where live[from] == nil:
+                state.set(from, to, at: now, origin: .auto)
+                live[from] = to
+                result.added.append(LearnedTerm(correction: c, source: from, output: to))
+            case let .vocabulary(term) where live[term] == nil && !live.values.contains(term):
+                state.set(term, "", at: now, origin: .auto)
+                live[term] = term
+                result.added.append(LearnedTerm(correction: c, source: term, output: term))
+            default:
+                toSuggest.append(c)
+            }
+        }
+        if !result.added.isEmpty { writeDictionarySync(state) }
+        let before = dictionarySuggestions
+        addSuggestions(toSuggest)
+        result.suggested = dictionarySuggestions.filter { !before.contains($0) }
+        return result
+    }
+
+    /// 提示卡的「復原」：還是自動、寫法沒被改過的就刪掉，並記進忽略清單（同一組修正不會馬上又被學回來）。
+    func undoLearned(_ terms: [LearnedTerm]) {
+        guard !terms.isEmpty else { return }
+        let now = Date().timeIntervalSince1970
+        updateDictionarySync { state in
+            for t in terms where state.source(of: t.source) == .auto && state.live[t.source] == t.output {
+                state.remove(t.source, at: now)
+            }
+        }
+        for t in terms {
+            ignoredSuggestions.insert(Self.ignoreKey(t.correction.from, t.correction.to))
+            if t.isVocabulary { ignoredSuggestions.insert(Self.ignoreKey(t.output, t.output)) }
+        }
+    }
+
+    /// 自動加入的詞（字典頁「自動」分頁與標籤）。
+    var dictionaryAutoTerms: Set<String> { dictionarySync.autoTerms }
 
     /// 使用數據（只存每天的字數／秒數／次數，不存文字）。
     @Published private(set) var usageStats: UsageStats {
@@ -352,17 +454,44 @@ final class AppPreferences: ObservableObject {
 
     @Published var historyLimit: Int {
         didSet {
-            defaults.set(max(1, min(historyLimit, 500)), forKey: Keys.historyLimit)
+            // app-shell-1：記憶體裡也夾值。以前只有寫進 defaults 時才夾成 1…500，欄位打 0 會用 0 去刪。
+            let clamped = Self.clampLimit(historyLimit)
+            if historyLimit != clamped { historyLimit = clamped }
+            defaults.set(historyLimit, forKey: Keys.historyLimit)
             trimHistoryIfNeeded()
         }
     }
 
+    /// 文字歷史紀錄的保留期限（設定頁「歷史紀錄保留」）。從沒動過的人預設「全部保留」（app-shell-1）。
     @Published var autoDeletePolicy: AutoDeletePolicy {
         didSet {
             defaults.set(autoDeletePolicy.rawValue, forKey: Keys.autoDeletePolicy)
             trimHistoryIfNeeded()
         }
     }
+
+    /// 錄音檔的保留期限（app-shell-1）：超出時只刪錄音、文字留著。
+    @Published var audioRetentionPolicy: AutoDeletePolicy {
+        didSet {
+            defaults.set(audioRetentionPolicy.rawValue, forKey: Keys.audioRetentionPolicy)
+            trimHistoryIfNeeded()
+        }
+    }
+
+    /// 錄音保留「只留最新上限」時的筆數（1…500）。
+    @Published var audioRetentionLimit: Int {
+        didSet {
+            let clamped = Self.clampLimit(audioRetentionLimit)
+            if audioRetentionLimit != clamped { audioRetentionLimit = clamped }
+            defaults.set(audioRetentionLimit, forKey: Keys.audioRetentionLimit)
+            trimHistoryIfNeeded()
+        }
+    }
+
+    static func clampLimit(_ value: Int) -> Int { max(1, min(value, 500)) }
+
+    /// 設定頁要不要顯示「文字紀錄筆數上限」那一列（全部保留時筆數沒有作用，不顯示）。
+    var showsTextHistoryLimit: Bool { autoDeletePolicy != .keepAll }
 
     @Published var formatterPromptPath: String {
         didSet { defaults.set(formatterPromptPath, forKey: Keys.formatterPromptPath) }
@@ -404,8 +533,8 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(dictionaryJSON, forKey: Keys.dictionaryJSON) }
     }
 
-    /// 開啟的 catalog 詞庫包 id（iOS 同款鍵名，方便測試互通）。
-    /// 預設空集合：所有 catalog 詞庫預設全關，使用者必須明確開啟才生效。
+    /// 開啟的詞庫包 id（iOS 同款鍵名，方便測試互通）：catalog 六包＋內建三包（ai／tw／audio，core `BuiltInVocabulary`）。
+    /// catalog 預設全關，使用者必須明確開啟才生效；內建包預設 ai、tw 開，audio 關（同 iOS／Android）。
     @Published var enabledVocabularyPackIDs: Set<String> {
         didSet {
             defaults.set(Array(enabledVocabularyPackIDs), forKey: Keys.enabledVocabularyPackIDs)
@@ -544,6 +673,7 @@ final class AppPreferences: ObservableObject {
         self.outputScript = OutputScript(
             rawValue: defaults.string(forKey: Keys.outputScript) ?? OutputScript.traditional.rawValue
         ) ?? .traditional
+        self.languageVariants = defaults.dictionary(forKey: Keys.languageVariants) as? [String: String] ?? [:]
         self.unloadPolicy = UnloadPolicy(
             rawValue: defaults.string(forKey: Keys.unloadPolicy) ?? UnloadPolicy.afterFiveMinutes.rawValue
         ) ?? .afterFiveMinutes
@@ -579,10 +709,32 @@ final class AppPreferences: ObservableObject {
         ) ?? .system
         self.appTheme = storedTheme
         AppBrand.themeChoice = storedTheme
-        self.historyLimit = max(1, min(defaults.object(forKey: Keys.historyLimit) as? Int ?? 20, 500))
-        self.autoDeletePolicy = AutoDeletePolicy(
-            rawValue: defaults.string(forKey: Keys.autoDeletePolicy) ?? AutoDeletePolicy.latestLimit.rawValue
-        ) ?? .latestLimit
+        let storedLimit = Self.clampLimit(defaults.object(forKey: Keys.historyLimit) as? Int ?? 20)
+        self.historyLimit = storedLimit
+        // app-shell-1：從沒動過這個設定（兩個 key 都不存在）＝文字紀錄全部保留（Typeless 預設永遠）；
+        // 明確選過的（包括「只留最新上限」）照原設定。不寫回 defaults：沒動過的人永遠吃目前的預設。
+        // repair-batch1：b8817d8 的「歷史筆數上限」欄位一直顯示、不用先選期限——只打過筆數（期限 key 沒寫過）的人，
+        // 當時生效的是「只留最新 N 筆」，升級後照舊（不能悄悄變成全部保留）。
+        let textPolicyTouched = defaults.object(forKey: Keys.autoDeletePolicy) != nil
+        let limitTouched = defaults.object(forKey: Keys.historyLimit) != nil
+        let textPolicy: AutoDeletePolicy = textPolicyTouched
+            ? AutoDeletePolicy(rawValue: defaults.string(forKey: Keys.autoDeletePolicy) ?? "") ?? .latestLimit
+            : limitTouched ? .latestLimit : .keepAll
+        self.autoDeletePolicy = textPolicy
+        // 錄音保留第一次出現時轉換一次並寫回（之後改文字的期限不會連帶改到錄音）：
+        // - 明確設定過文字保留的人：錄音跟以前一樣（同一個期限、同一個筆數），一個錄音都不多刪；
+        // - 沒動過的人：以前文字＋錄音都只留最新 N 筆（預設 20），錄音照舊只留最新 N 筆，文字改成全部保留。
+        if defaults.object(forKey: Keys.audioRetentionPolicy) == nil {
+            let migrated: AutoDeletePolicy = textPolicyTouched || limitTouched ? textPolicy : .latestLimit
+            self.audioRetentionPolicy = migrated
+            self.audioRetentionLimit = storedLimit
+            defaults.set(migrated.rawValue, forKey: Keys.audioRetentionPolicy)
+            defaults.set(storedLimit, forKey: Keys.audioRetentionLimit)
+        } else {
+            self.audioRetentionPolicy = AutoDeletePolicy(
+                rawValue: defaults.string(forKey: Keys.audioRetentionPolicy) ?? "") ?? .latestLimit
+            self.audioRetentionLimit = Self.clampLimit(defaults.object(forKey: Keys.audioRetentionLimit) as? Int ?? storedLimit)
+        }
         self.formatterPromptPath = defaults.string(forKey: Keys.formatterPromptPath) ?? ""
         self.bailianASREndpoint = defaults.string(forKey: Keys.bailianASREndpoint)
             ?? "wss://dashscope.aliyuncs.com/api-ws/v1/inference"
@@ -603,7 +755,7 @@ final class AppPreferences: ObservableObject {
         self.dictionaryJSON = defaults.string(forKey: Keys.dictionaryJSON) ?? "{}"
         // 詞庫包預設空（所有 catalog 詞庫預設全關；使用者必須明確開啟才生效）。
         let storedPacks = defaults.stringArray(forKey: Keys.enabledVocabularyPackIDs) ?? []
-        self.enabledVocabularyPackIDs = Set(storedPacks)
+        self.enabledVocabularyPackIDs = Self.migratingBuiltInPacks(Set(storedPacks), defaults: defaults)
         // 智慧整理服務預設關閉，使用者須明確開啟。
         self.cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? false
         self.cleanupAutoList = defaults.object(forKey: Keys.cleanupAutoList) as? Bool ?? true
@@ -624,7 +776,9 @@ final class AppPreferences: ObservableObject {
         self.translateSelectionShortcut = defaults.string(forKey: Keys.translateSelectionShortcut) ?? "⌃⌥T"
         self.deepMinCharacters = defaults.object(forKey: Keys.deepMinCharacters) as? Int ?? 400
         self.deepMinAudioSeconds = defaults.object(forKey: Keys.deepMinAudioSeconds) as? Int ?? 90
-        self.historyRecords = Self.decode([HistoryRecord].self, from: defaults.string(forKey: Keys.historyJSON))
+        let historyFile = (isolation?.applicationSupportDirectory ?? Self.liveApplicationSupportDirectory)
+            .appendingPathComponent(Self.historyFileName)
+        self.historyRecords = HistoryStorage.load(fileURL: historyFile, defaults: defaults, legacyKey: Keys.historyJSON)
         self.appPresets = Self.decode([AppPreset].self, from: defaults.string(forKey: Keys.appPresetsJSON))
         trimHistoryIfNeeded()
     }
@@ -648,6 +802,11 @@ final class AppPreferences: ObservableObject {
     }
 
     func removeDictionaryTerm(source: String) {
+        // 刪掉自動學到的詞＝不要它：記進忽略清單，同一組修正之後不會又被自動加回來（同 iOS LearnedVocabulary.removeFromDictionary）。
+        let state = dictionarySync
+        if state.source(of: source) == .auto, let output = state.live[source] {
+            ignoredSuggestions.insert(Self.ignoreKey(source, output))
+        }
         updateDictionarySync { $0.remove(source, at: Date().timeIntervalSince1970) }
     }
 
@@ -686,6 +845,85 @@ final class AppPreferences: ObservableObject {
         return Set(before.keys).union(after.keys).filter { before[$0] != after[$0] }.count
     }
 
+    // MARK: - 字典頁確認／復原／詞表匯入（2026-10-22 app-shell-2、app-shell-6）
+
+    /// 「清空全部」的確認文案：寫出筆數，並說明會經 iCloud 一起刪掉其他裝置的詞、無法復原。
+    struct DictionaryClearPrompt: Equatable {
+        let count: Int
+        let title: String
+        let message: String
+    }
+
+    /// 字典是空的就不必確認（按鈕也不會出現）。只產生文案，不動字典。
+    func dictionaryClearPrompt() -> DictionaryClearPrompt? {
+        let n = dictionary.count
+        guard n > 0 else { return nil }
+        return DictionaryClearPrompt(
+            count: n,
+            title: tr("刪除個人字典的全部 \(n) 個詞？", "Delete all \(n) dictionary terms?"),
+            message: tr("登入同一個 iCloud 帳號的 iPhone 和其他 Mac 也會一起刪掉這些詞。這個動作無法復原。",
+                        "iPhones and other Macs signed in to the same iCloud account lose them too. This can't be undone.")
+        )
+    }
+
+    /// 單字移除後的「復原」：把剛刪掉的那筆原樣放回（時間取現在，同步時蓋過刪除紀錄）。
+    func restoreDictionaryTerm(source: String, output: String) {
+        restoreDictionaryTerm(source: source, output: output, origin: .manual)
+    }
+
+    /// 復原時連來源一起放回；放回的是自動詞就把剛才記的忽略拿掉。
+    func restoreDictionaryTerm(source: String, output: String, origin: DictionarySync.Source) {
+        updateDictionarySync {
+            $0.entries[source] = DictionarySync.Entry(output: output, at: Date().timeIntervalSince1970, source: origin)
+        }
+        if origin == .auto { ignoredSuggestions.remove(Self.ignoreKey(source, output)) }
+    }
+
+    /// 匯入純詞表前的確認文案：找到幾個詞、其中幾個是新的。
+    struct WordListImportPrompt: Equatable {
+        let words: [String]
+        let newCount: Int
+        let title: String
+        let message: String
+    }
+
+    enum DictionaryImportResult: Equatable {
+        /// 字典檔（JSON）：照舊直接合併，回傳有幾個詞變動。
+        case merged(Int)
+        /// 一行一詞的詞表：還沒動字典，要先問使用者。
+        case confirmWords(WordListImportPrompt)
+    }
+
+    /// 匯入檔案：看起來像 JSON 的走原本的字典檔合併（壞掉的 JSON 照舊丟 notDictionaryFile）；
+    /// 其他內容當成一行一詞的詞表，先回傳確認文案，使用者按「加入」才呼叫 `addDictionaryWords`。
+    func prepareDictionaryImport(_ data: Data, fileName: String) throws -> DictionaryImportResult {
+        if DictionarySync.looksLikeJSON(data) {
+            return .merged(mergeDictionary(try DictionarySync.decode(data)))
+        }
+        let words = try DictionarySync.parseWordList(data)
+        let n = words.count, k = dictionarySync.newWords(words).count
+        let message: String
+        if k == n {
+            message = tr("會加入 \(k) 個新詞，輸出寫法就是詞本身。", "\(k) new words will be added, each spelled as written.")
+        } else {
+            message = tr("會加入 \(k) 個新詞；已經在字典裡的 \(n - k) 個不會變動。",
+                         "\(k) new words will be added; the \(n - k) already in the dictionary stay unchanged.")
+        }
+        return .confirmWords(WordListImportPrompt(
+            words: words, newCount: k,
+            title: tr("在「\(fileName)」找到 \(n) 個詞，要加入字典嗎？", "Found \(n) words in “\(fileName)”. Add them to the dictionary?"),
+            message: message
+        ))
+    }
+
+    /// 把詞表加進字典：只加字典裡沒有的詞（寫法＝詞本身、時間取現在），已經有的不動。回傳加了幾個。
+    @discardableResult
+    func addDictionaryWords(_ words: [String]) -> Int {
+        var added: [String] = []
+        updateDictionarySync { added = $0.addWords(words, at: Date().timeIntervalSince1970) }
+        return added.count
+    }
+
     private func saveDictionary(_ entries: [String: String]) {
         guard let data = try? JSONEncoder().encode(entries),
               let value = String(data: data, encoding: .utf8) else { return }
@@ -696,10 +934,18 @@ final class AppPreferences: ObservableObject {
         if let isolation {
             return isolation.applicationSupportDirectory
         }
+        return Self.liveApplicationSupportDirectory
+    }
+
+    private static var liveApplicationSupportDirectory: URL {
         let base = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support")
         return base.appendingPathComponent(AppBrand.displayName, isDirectory: true)
     }
+
+    /// 歷史紀錄的檔案（app-shell-1）：文字紀錄預設不限筆數，不能再整份塞在 UserDefaults 的一個字串裡。
+    static let historyFileName = "history.json"
+    var historyFileURL: URL { applicationSupportDirectory.appendingPathComponent(Self.historyFileName) }
 
     var recordingsDirectory: URL {
         applicationSupportDirectory.appendingPathComponent("Recordings", isDirectory: true)
@@ -733,8 +979,7 @@ final class AppPreferences: ObservableObject {
             usageStats.record(text: record.output, seconds: record.duration, on: record.date)
         }
         historyRecords.insert(record, at: 0)
-        trimHistoryIfNeeded()
-        saveHistory()
+        if !trimHistoryIfNeeded() { saveHistory() }
     }
 
     func toggleHistoryStar(id: UUID) {
@@ -755,6 +1000,12 @@ final class AppPreferences: ObservableObject {
         historyRecords.removeAll()
         for record in records { deleteRecording(for: record) }
         saveHistory()
+        // 讀不出來而改名留著的舊歷史檔（HistoryStorage）也是歷史文字：清空歷史一起刪。
+        let folder = applicationSupportDirectory
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        for name in names where name.hasPrefix("history.unreadable-") && name.hasSuffix(".json") {
+            try? FileManager.default.removeItem(at: folder.appendingPathComponent(name))
+        }
     }
 
     /// 背景 cleanup 完成時用：只更新對應 history 的 output（不改 rawTranscript /
@@ -776,6 +1027,33 @@ final class AppPreferences: ObservableObject {
             note: historyRecords[index].note
         )
         historyRecords[index] = updated
+        saveHistory()
+    }
+
+    /// 歷史重試（app-shell-v1）：就地更新同一筆的輸出與原因；不新增一筆、不碰使用數據，
+    /// id／日期／逐字稿／錄音／模式／App／星標都不變。不存在的 id 靜默忽略。
+    func replaceHistoryEntry(id: UUID, output: String, note: String?) {
+        replaceHistoryEntry(id: id, output: output, note: note, rawTranscript: nil, countsTowardStats: false)
+    }
+
+    /// 同上，重試有了結果＝這筆完成了：狀態清掉（失敗／取消 → 正常）。重新辨識（delivery-learning-1）時
+    /// 連逐字稿一起換；`countsTowardStats`＝這筆當初沒算過使用數據（失敗／取消的紀錄），現在算一次。
+    func replaceHistoryEntry(id: UUID, output: String, note: String?, rawTranscript: String?, countsTowardStats: Bool) {
+        guard let index = historyRecords.firstIndex(where: { $0.id == id }) else { return }
+        historyRecords[index].output = output
+        historyRecords[index].note = note
+        if let rawTranscript { historyRecords[index].rawTranscript = rawTranscript }
+        historyRecords[index].status = nil
+        if countsTowardStats {
+            usageStats.record(text: output, seconds: historyRecords[index].duration, on: historyRecords[index].date)
+        }
+        saveHistory()
+    }
+
+    /// 只改那一筆的原因（例如結果沒送到輸入欄位，delivery-learning-2）。不存在的 id 靜默忽略。
+    func setHistoryNote(id: UUID, note: String?) {
+        guard let index = historyRecords.firstIndex(where: { $0.id == id }) else { return }
+        historyRecords[index].note = note
         saveHistory()
     }
 
@@ -819,50 +1097,80 @@ final class AppPreferences: ObservableObject {
         }
     }
 
-    private func trimHistoryIfNeeded() {
-        let before = historyRecords
-        let now = Date()
-        let cutoff: Date?
-        switch autoDeletePolicy {
-        case .keepAll, .latestLimit:
-            cutoff = nil
-        case .afterOneDay:
-            cutoff = now.addingTimeInterval(-86_400)
-        case .afterOneWeek:
-            cutoff = now.addingTimeInterval(-604_800)
-        case .afterOneMonth:
-            cutoff = now.addingTimeInterval(-2_592_000)
-        }
+    /// 保留設定（文字＋錄音）。設定頁改短之前先用 `retentionImpact` 算要刪多少、問過再套用。
+    struct RetentionSettings: Equatable {
+        var text: AutoDeletePolicy
+        var textLimit: Int
+        var audio: AutoDeletePolicy
+        var audioLimit: Int
+    }
 
-        var filtered = historyRecords
-        if let cutoff {
-            filtered = filtered.filter { $0.isStarred || $0.date >= cutoff }
-        }
-        if autoDeletePolicy != .keepAll {
-            let starred = filtered.filter(\.isStarred)
-            let unstarred = filtered.filter { !$0.isStarred }
-            let remaining = max(0, historyLimit - starred.count)
-            filtered = starred + Array(unstarred.prefix(remaining))
-                .sorted { $0.date > $1.date }
-        }
-        historyRecords = filtered.sorted { $0.date > $1.date }
-        let retainedIDs = Set(historyRecords.map(\.id))
-        for record in before where !retainedIDs.contains(record.id) {
-            deleteRecording(for: record)
-        }
+    struct RetentionImpact: Equatable {
+        /// 會整筆刪掉的紀錄數（錄音一起刪）。
+        var removedEntries: Int
+        /// 會刪掉的錄音檔數（含整筆刪的）。
+        var removedRecordings: Int
+        var isEmpty: Bool { removedEntries == 0 && removedRecordings == 0 }
+    }
+
+    var retentionSettings: RetentionSettings {
+        RetentionSettings(text: autoDeletePolicy, textLimit: historyLimit,
+                          audio: audioRetentionPolicy, audioLimit: audioRetentionLimit)
+    }
+
+    /// 套用 `settings` 會刪掉多少（只算、不刪）。
+    func retentionImpact(of settings: RetentionSettings, now: Date = Date()) -> RetentionImpact {
+        let plan = HistoryRetention.plan(historyRecords, text: settings.text, textLimit: Self.clampLimit(settings.textLimit),
+                                         audio: settings.audio, audioLimit: Self.clampLimit(settings.audioLimit), now: now)
+        return RetentionImpact(removedEntries: plan.removed.count, removedRecordings: plan.deletedAudioPaths.count)
+    }
+
+    /// 一次套用四個值、只 trim 一次：一個一個設的話，中間狀態（例如筆數先變小、期限還沒改成全部保留）會先刪掉紀錄。
+    func applyRetention(_ settings: RetentionSettings) {
+        retentionBatch = true
+        historyLimit = Self.clampLimit(settings.textLimit)
+        autoDeletePolicy = settings.text
+        audioRetentionLimit = Self.clampLimit(settings.audioLimit)
+        audioRetentionPolicy = settings.audio
+        retentionBatch = false
+        trimHistoryIfNeeded()
+    }
+
+    private var retentionBatch = false
+
+    /// 依保留設定刪紀錄／錄音；有變就寫回（以前整筆刪掉後沒寫回，重開 App 紀錄又回來、錄音卻已刪）。
+    /// 回傳有沒有寫回。
+    @discardableResult
+    private func trimHistoryIfNeeded() -> Bool {
+        guard !retentionBatch else { return false }
+        let plan = HistoryRetention.plan(historyRecords, text: autoDeletePolicy, textLimit: historyLimit,
+                                         audio: audioRetentionPolicy, audioLimit: audioRetentionLimit, now: Date())
+        guard plan.kept != historyRecords else { return false }
+        historyRecords = plan.kept
+        for path in plan.deletedAudioPaths { deleteRecording(atPath: path) }
+        saveHistory()
+        return true
     }
 
     private func deleteRecording(for record: HistoryRecord) {
         guard let audioPath = record.audioPath else { return }
+        deleteRecording(atPath: audioPath)
+    }
+
+    private func deleteRecording(atPath audioPath: String) {
         let path = URL(fileURLWithPath: audioPath).standardizedFileURL
         if let isolation, !path.path.hasPrefix(isolation.recordingsDirectory.standardizedFileURL.path + "/") { return }
         try? FileManager.default.removeItem(at: path)
     }
 
+    /// 存下來、但最後沒有任何一筆紀錄指著它的錄音（Ask 失敗、這次沒寫紀錄…）：刪掉，不留孤兒檔（app-shell-3）。
+    func discardRecordingIfUnreferenced(_ audioPath: String?) {
+        guard let audioPath, !historyRecords.contains(where: { $0.audioPath == audioPath }) else { return }
+        deleteRecording(atPath: audioPath)
+    }
+
     private func saveHistory() {
-        guard let data = try? JSONEncoder().encode(historyRecords),
-              let value = String(data: data, encoding: .utf8) else { return }
-        defaults.set(value, forKey: Keys.historyJSON)
+        HistoryStorage.save(historyRecords, to: historyFileURL)
     }
 
     private func savePresets() {
@@ -880,6 +1188,17 @@ final class AppPreferences: ObservableObject {
             fatalError("Unsupported preference decode type")
         }
         return decoded
+    }
+
+    /// 一次性 migration（asr-vocab-1，2026-10-22）：舊版 Mac 只存 catalog id，AI 名稱是寫死、一直開著的。
+    /// 內建三包改成跟 iOS／Android 一樣存在同一份集合後，第一次升級把預設開的包（ai、tw）補進去，
+    /// 否則已經存過 catalog 的使用者會默默失去 AI 名稱。之後使用者自己關掉就不再補。
+    static func migratingBuiltInPacks(_ stored: Set<String>, defaults: UserDefaults) -> Set<String> {
+        guard !defaults.bool(forKey: Keys.builtInVocabularyPacksMigrated) else { return stored }
+        let migrated = stored.union(BuiltInVocabulary.defaultOnIDs)
+        defaults.set(Array(migrated).sorted(), forKey: Keys.enabledVocabularyPackIDs)
+        defaults.set(true, forKey: Keys.builtInVocabularyPacksMigrated)
+        return migrated
     }
 
     private static func defaultRuntimeExecutable(named name: String) -> String {
@@ -904,6 +1223,7 @@ final class AppPreferences: ObservableObject {
         static let mode = "utuvo.type.mode"
         static let pushToTalkEnabled = "utuvo.type.pushToTalkEnabled"
         static let transcriptionLanguage = "utuvo.type.transcriptionLanguage"
+        static let languageVariants = "utuvo.type.languageVariants"
         static let inputDeviceUID = "utuvo.type.audio.inputDeviceUID"
         static let inputChannel = "utuvo.type.audio.inputChannel"
         static let outputDeviceUID = "utuvo.type.audio.outputDeviceUID"
@@ -952,6 +1272,7 @@ final class AppPreferences: ObservableObject {
         static let dictionaryJSON = "utuvo.type.dictionaryJSON"
         static let dictionarySync = "utuvo.type.dictionarySync"
         static let enabledVocabularyPackIDs = "utuvo.type.vocabularyPacks.enabled"
+        static let builtInVocabularyPacksMigrated = "utuvo.type.vocabularyPacks.builtInMigrated"
         static let cleanupEnabled = "utuvo.type.smart.enabled"
         static let cleanupAutoList = "utuvo.type.smart.autoList"
         static let cleanupProvider = "utuvo.type.smart.provider"
@@ -964,7 +1285,10 @@ final class AppPreferences: ObservableObject {
         static let translateSelectionShortcut = "utuvo.type.translateSelectionShortcut"
         static let deepMinCharacters = "utuvo.type.deepMinCharacters"
         static let deepMinAudioSeconds = "utuvo.type.deepMinAudioSeconds"
+        /// 舊版整份歷史存在這個 UserDefaults 字串；現在只用來搬一次到 history.json（app-shell-1）。
         static let historyJSON = "utuvo.type.history.json"
+        static let audioRetentionPolicy = "utuvo.type.history.audioRetention"
+        static let audioRetentionLimit = "utuvo.type.history.audioLimit"
         static let appPresetsJSON = "utuvo.type.appPresets.json"
     }
 }

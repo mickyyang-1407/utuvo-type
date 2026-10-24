@@ -77,6 +77,39 @@ final class NormalizerTests: XCTestCase {
         XCTAssertEqual(Normalizer().normalize("我要用这个 app 记笔记").cleaned, "我要用这个 app 记笔记")
     }
 
+    /// 2026-10-22 bench fl03／ml02：「這個／那個」後面接英文或數字是限定詞，句首也要留。
+    func testKeepsDemonstrativeBeforeLatinOrDigitAtClauseStart() {
+        XCTAssertEqual(Normalizer().normalize("這個 delay 的尾巴是不是太長了？").cleaned, "這個 delay 的尾巴是不是太長了？")
+        XCTAssertEqual(Normalizer().normalize("那個 compressor 的 ratio 調低一點").cleaned, "那個 compressor 的 ratio 調低一點")
+        XCTAssertEqual(Normalizer().normalize("UTUVO 這個 App 很好用").cleaned, "UTUVO 這個 App 很好用")
+        XCTAssertEqual(Normalizer().normalize("嗯，那個 compressor 的 ratio 調低一點").cleaned, "那個 compressor 的 ratio 調低一點")
+        // 被逗號隔開的「那個」還是停頓贅詞，照刪。
+        XCTAssertEqual(Normalizer().normalize("嗯，我覺得那個，就是，這個 low end 可以再收一點").cleaned,
+                       "我覺得，就是，這個 low end 可以再收一點")
+    }
+
+    /// 句首贅詞串：有猶豫詞（嗯／呃／恩）或「就是說」、或「然後」後面緊接逗號才拿掉。
+    func testStripsLeadingHesitationChains() {
+        XCTAssertEqual(Normalizer().normalize("嗯嗯，然後就是說，我這邊沒有收到你的檔案喔。").cleaned, "我這邊沒有收到你的檔案喔。")
+        XCTAssertEqual(Normalizer().normalize("然後然後，呃，高頻再收一點").cleaned, "高頻再收一點")
+        XCTAssertEqual(Normalizer().normalize("然後然後呃高頻再收一點").cleaned, "高頻再收一點")
+        XCTAssertEqual(Normalizer().normalize("恩恩，然後就是說，我這邊沒有收到你的檔案喔。").cleaned, "我這邊沒有收到你的檔案喔。")
+        XCTAssertEqual(Normalizer().normalize("然後就是這樣。").cleaned, "然後就是這樣。", "沒有猶豫詞的「然後就是」不動")
+    }
+
+    /// 「恩」是「嗯」的錯字，但「感恩」「恩人」是實詞。
+    func testEnIsAFillerOnlyWhenStandalone() {
+        XCTAssertEqual(Normalizer().normalize("恩，我知道了").cleaned, "我知道了")
+        XCTAssertEqual(Normalizer().normalize("感恩，謝謝").cleaned, "感恩，謝謝")
+        XCTAssertEqual(Normalizer().normalize("恩人很好").cleaned, "恩人很好")
+    }
+
+    /// 贅詞和逗號中間隔著空白（iOS 停頓標點）也不留孤兒標點。
+    func testNoOrphanCommaWhenWhitespaceSitsBetweenFillerAndComma() {
+        XCTAssertEqual(Normalizer().normalize("嗯 ，我覺得那個就是這個 low end").cleaned, "我覺得那個就是這個 low end")
+        XCTAssertEqual(Normalizer().normalize("好， 嗯，我覺得可以").cleaned, "好，我覺得可以")
+    }
+
     func testFillerStageIsRecorded() {
         let n = Normalizer()
         let out = n.normalize("那個我今天很累")
@@ -215,11 +248,18 @@ final class NormalizerTests: XCTestCase {
 
     func testListCueFirstSecondThird() {
         let n = Normalizer()
-        let out = n.normalize("第一買牛奶第二回email第三寫報告")
+        // 2026-10-22 W2-6 第三輪：第N 直接接動詞、又沒有「N件事／以下」引言＝不算清單，原文照留
+        // （不換行、不編號）；有數量引言且數量對得上才編號。
+        XCTAssertEqual(n.normalize("第一買牛奶第二回email第三寫報告").cleaned, "第一買牛奶第二回email第三寫報告")
+        // 第四輪（2026-10-22）政策 (A)：每個「第N」要在子句開頭（前面是分隔或清單引言）——沒有標點連著講的序數串原樣
+        //（第三輪這句會編號）；同一句有逗號就編號。
+        XCTAssertEqual(n.normalize("今天有三件事第一買牛奶第二回email第三寫報告").cleaned, "今天有三件事第一買牛奶第二回email第三寫報告")
+        let out = n.normalize("今天有三件事，第一買牛奶，第二回email，第三寫報告")
         XCTAssertTrue(out.cleaned.contains("\n"))
-        XCTAssertTrue(out.cleaned.contains("第一買牛奶"))
-        XCTAssertTrue(out.cleaned.contains("第二回email"))
-        XCTAssertTrue(out.cleaned.contains("第三寫報告"))
+        // 2026-10-22 W2-6：連續的序數行改成編號清單（「第一」→「1. 」）。
+        XCTAssertTrue(out.cleaned.contains("1. 買牛奶"))
+        XCTAssertTrue(out.cleaned.contains("2. 回email"))
+        XCTAssertTrue(out.cleaned.contains("3. 寫報告"))
     }
 
     func testListCueSkippedWhenMarkdown() {
@@ -334,5 +374,30 @@ final class NormalizerTests: XCTestCase {
         XCTAssertEqual(n.normalize("我們約禮拜三，不是，禮拜四下午三點在公司見。").cleaned, "我們約禮拜四下午3點在公司見。")
         XCTAssertEqual(n.normalize("我是剛上去，喔不對，剛出門要搭937。").cleaned, "我是剛出門要搭937。")
         XCTAssertEqual(n.normalize("但是不是應該都是 500嗎？").cleaned, "但是不是應該都是 500嗎？", "句中的「不是」不算")
+    }
+
+    /// 改口詞後面沒停頓、Groq 小型標點（2026-10-22 sc03／sc04／sc05 真人錄音）：補逗號後對得齊才改。
+    func testCorrectionsWithoutPauseAfterMarker() {
+        let n = Normalizer()
+        func done(_ s: String) -> String { SentenceMood.finish(s) }
+        XCTAssertEqual(done(n.normalize("取樣利用48k﹐不對是96k﹐").cleaned), "取樣利用96k")
+        XCTAssertEqual(done(n.normalize("幫我轉寄給小雅跟小柏﹑不是，是小雅跟小潘﹑").cleaned), "幫我轉寄給小雅跟小潘")
+        XCTAssertEqual(done(n.normalize("檔名叫做Final V3，不對是Final V4").cleaned), "檔名叫做Final V4")
+        XCTAssertEqual(done(n.normalize("明天三點不對四點開會").cleaned), "明天4:00開會")
+        XCTAssertEqual(done(n.normalize("1200不對是12000").cleaned), "12000")
+    }
+
+    /// 對不齊、或「不對／不是」是在描述事情、或是對比句：一個字都不能動，也不能多出逗號。
+    func testNonCorrectionsStayUntouched() {
+        let n = Normalizer()
+        for s in ["這樣不對是因為他沒來", "我覺得不對是正常的", "我住三樓，不是四樓", "萬一不是三點呢",
+                  "我要的是48K不是96K", "我覺得這樣不對", "他說的不是，是我說的"] {
+            XCTAssertEqual(n.normalize(s).cleaned, s, s)
+        }
+        // 對比句照樣不刪；同一句的兩個鐘點寫法一致（2026-10-22 W2-6 規則 8c，原本後一個留「四點」）。
+        XCTAssertEqual(n.normalize("我們約三點開會，不是四點").cleaned, "我們約3:00開會，不是4:00")
+        XCTAssertEqual(n.normalize("預算100萬，不是200萬").cleaned, "預算1,000,000，不是2,000,000")
+        // 「不是 B 而是 A」是對比，不是改口（FX-3 第四輪 G3：原本切成「星期三而」）。
+        XCTAssertEqual(n.normalize("不是星期四而是星期三").cleaned, "不是星期四而是星期三")
     }
 }

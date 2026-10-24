@@ -32,6 +32,11 @@
     <string name="hint_listening_translate">再點一下完成，翻成%1$s</string>
     <string name="hint_translate_download">再點一下完成，翻成%1$s・第一次要下載翻譯模型</string>
     <string name="hint_translating">翻譯中…</string>
+    <string name="hint_translate_release">放開就翻成%1$s</string>
+    <string name="hint_hold_tip">不用按住：點一下開始說，說完再點一下</string>
+    <string name="key_cancel_voice">取消，不貼上文字</string>
+    <string name="hint_voice_cancelled">已取消，沒有貼上文字</string>
+    <string name="undo_insert_desc">復原剛才貼上的文字</string>
 
     <!-- 說出要怎麼改（A3）＋引擎標示。錯誤訊息照 iPhone 的短句：兩行內、含補救方法。 -->
     <string name="hint_edit_idle">說出要怎麼改</string>
@@ -176,6 +181,10 @@
     <string name="hint_refining">整理中…</string>
     <string name="hint_cloud_listening">用你的 key 重新辨識中…</string>
     <string name="hint_refined">已整理</string>
+    <string name="hint_cloud_slow_fallback">網路較慢，先用裝置端辨識的結果</string>
+    <string name="hint_cloud_failed_fallback">雲端辨識失敗，已改用裝置端辨識的結果</string>
+    <string name="hint_limit_warning">再 %1$d 秒會自動送出（單次最長 %2$d 分鐘）</string>
+    <string name="hint_limit_reached">已錄滿 %1$d 分鐘，自動送出</string>
 
     <string name="smart_title">智慧整理（選配）</string>
     <string name="smart_toggle">智慧整理</string>
@@ -387,7 +396,7 @@
     <string name="history_retention_week">1 週</string>
     <string name="history_retention_month">1 個月</string>
     <string name="history_retention_year">1 年</string>
-    <string name="history_retention_forever">永遠</string>
+    <string name="history_retention_forever">永遠（最多保留最近 500 筆）</string>
     <string name="history_retention_none">不保留</string>
     <string name="history_retention_confirm">會刪掉 %1$d 筆超過期限的聽寫紀錄。首頁的使用數據不會受影響。</string>
     <string name="history_retention_apply">刪除</string>

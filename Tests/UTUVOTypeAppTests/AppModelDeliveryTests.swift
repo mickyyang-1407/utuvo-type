@@ -91,6 +91,19 @@ final class AppModelDeliveryTests: XCTestCase {
         model.cancelProcessing()
     }
 
+    /// asr-vocab-v2：字典裡輸出寫法留空的詞（從 iPhone／Android 同步來的「詞彙」模式）也要拿來修英文專名。
+    func testVocabularyModeDictionaryWordFixesLatinMishearing() async throws {
+        let context = try IsolatedContext.make(); defer { context.tearDown() }
+        let target = CapturedFixture(), model = model(context, target: target)
+        model.captureDestination = { _ in target }
+        model.preferences.dictionaryJSON = #"{"Atmos":""}"#
+        model.startRecording(mode: .smart)
+        await model.completeSyntheticDictation("我用 Atmus 混")
+        XCTAssertEqual(target.replacements, 0, "先貼的是本機整理版")
+        XCTAssertTrue(target.text.hasPrefix("我用 Atmos 混"), "got: \(target.text)")
+        model.cancelProcessing()
+    }
+
     func testLocalSmartFormatterRefinesAfterImmediateInsertion() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         let preferences = AppPreferences(isolation: context)

@@ -257,7 +257,7 @@ object SmartCleanup {
         一定要做：
         - 刪掉口語贅詞：嗯、呃、啊、欸、那個、這個（當語助詞時）、就是、就是說、然後（句首或沒有承接意思時）、對對、重複的詞（然後然後）。
         - 改口時只留最後的說法：「三點，不對，四點」→「四點」，句子其他部分保留（「我們約三點開會，不對，四點」→「我們約四點開會」）。
-        - 「不對」「不是」「呃不是」「我是說」後面緊接著另一個說法＝改口：不管有沒有標點、連說幾次「不對」，被改掉的那個說法（連同「不對」）一律刪掉，只留最後的說法，接回原句：「我昨天是要四點不對不對三點出發」→「我昨天是要三點出發」、「我應該要去找 Claude Code 不對是要去搞 Codex」→「我應該要去搞 Codex」、「取樣率用四十八K不對是九十六K」→「取樣率用九十六K」。只有「不對」是在描述事情（「這樣不對」「聽起來不對勁」）時才保留。
+        - 「不對」「不是」「呃不是」「我是說」後面緊接著另一個說法＝改口：不管有沒有標點、連說幾次「不對」，被改掉的那個說法（連同「不對」）一律刪掉，只留最後的說法，接回原句：「我昨天是要四點不對不對三點出發」→「我昨天是要三點出發」、「我應該要去找 Claude Code 不對是要去搞 Codex」→「我應該要去搞 Codex」、「取樣率用四十八K不對是九十六K」→「取樣率用九十六K」。只有「不對」是在描述事情（「這樣不對」「聽起來不對勁」）時才保留。「不是」只有後面接著「是」、或前後都停頓（「三點，不是，四點」）才算改口；「是A不是B」「A，不是B」是對比（前面那個才對），照原樣保留：「我們約三點開會，不是四點」→「我們約三點開會，不是四點。」
         - 後面才推翻前面說過的某一項，也算改口（常用「喔對」「啊對」「對了」「還是」開頭，例：前面說「收大行李」，後面說「行李只住兩晚，帶登機箱就好」）：把那一項直接改成最後的決定，被推翻的說法（收大行李）刪掉，理由留著；清單裡那一項就寫成最後的決定（「帶登機箱（只住兩晚）」），不要新舊兩個都留。改口改的是順序（「不對，先訂停車」）時，那一項移到最前面當第 1 項。句首當應答或接話的「好，」「喔對，」「哦，對，」也算贅詞，要刪掉。
         - 說話者列舉三項以上的「短項目」（每項大約一句話以內），或明說「第一…第二…第三」「有幾件事／幾個重點／清單」時，改成編號清單，每項一行（1. 2. 3.），引言保留在第一行。
         - 長段落（用「首先、另外、對了、接著、總之」串起來的說明）不要改成清單：**這些轉折詞一個都不能刪**，只在轉折處分段（空一行）。
@@ -449,12 +449,33 @@ object SmartCleanup {
                        relaxed: Boolean = false): String {
         // 雲端回來的中文可能是逐字硬轉的繁體（同 iOS normalize）：按詞轉台灣繁體、救回讀音相同的錯字站名。
         // 只在台灣繁體時做——簡體／香港用字照模型寫的留著（同 iOS traditionalFixerTarget）。
-        val out = if (LanguageVariant.traditionalFixerTarget(variant, "zh-TW")) {
+        val fixed = if (LanguageVariant.traditionalFixerTarget(variant, "zh-TW")) {
             ChineseFixers.configure(c)
             ChineseFixers.fix(content.trim())
         } else content.trim()
+        // asr-vocab-2：個人字典跟本機整理版（Dictation.clean）同一份 DictionaryStore；英文專名只留個人詞＋產品名＋包內多字詞。
+        val dictionary = DictionaryStore.entries(c)
+        return finishCleaned(fixed, validationSource, relaxed, dictionary,
+            VocabularyPacks.latinTermsForCleanedText(c, dictionary))
+    }
+
+    /**
+     * finish 不需要 Context 的部分（測試用）：模型輸出先轉成跟第一次貼上一樣的數字寫法（同 Mac／iOS），再過把關。
+     * 第一次貼上走完整 Normalizer（「12,000塊」），模型照原樣留「一萬兩千塊」的話，替換回去就變回中文數字。
+     */
+    internal fun finishCleaned(fixed: String, validationSource: String, relaxed: Boolean): String =
+        finishCleaned(fixed, validationSource, relaxed, emptyMap(), emptyList())
+
+    /**
+     * 同上，過了把關之後再補套使用者的「英文專名＋個人字典」（asr-vocab-2，2026-10-22；同 Mac `AppModel.applyingVocabulary`）：
+     * 模型讀的是原始逐字稿，本機版已經修成「DAMI music」的地方，模型會寫回「Darmy Music」。
+     * 只跑 core `Normalizer.applyVocabulary` 那兩關、冪等：寫對的一個字都不動，整理好的格式也不動。
+     */
+    internal fun finishCleaned(fixed: String, validationSource: String, relaxed: Boolean,
+                               dictionary: Map<String, String>, latinTerms: List<String>): String {
+        val out = com.utuvo.type.core.Normalizer.normalizeNumbers(fixed)
         if (!accepts(validationSource, out, relaxed)) throw Rejected(out)
-        return out
+        return com.utuvo.type.core.Normalizer.applyVocabulary(out, dictionary, latinTerms)
     }
 
     /**
@@ -564,26 +585,37 @@ object SmartCleanup {
         // 寬鬆把關：整套檢查（含字數比例）都用轉成同一種數字寫法的兩邊（同 Swift）。
         val original = if (relaxed) com.utuvo.type.core.Normalizer.normalizeNumbers(rawOriginal) else rawOriginal
         val cleaned = if (relaxed) com.utuvo.type.core.Normalizer.normalizeNumbers(rawCleaned) else rawCleaned
-        fun counts(s: String): Pair<Int, Int> {
-            var cjk = 0; var latin = 0
+        fun counts(s: String): Triple<Int, Int, Int> {
+            var cjk = 0; var latin = 0; var digits = 0
             for (c in s) {
                 // 寬鬆把關：阿拉伯數字不算進英數比例（數字由 introducesDigits 把關）。同 Swift。
-                if (c.code < 128) { if (Character.isLetter(c) || (!relaxed && Character.isDigit(c))) latin++ }
+                if (c.code < 128) { if (Character.isLetter(c) || (!relaxed && Character.isDigit(c))) latin++ else if (Character.isDigit(c)) digits++ }
                 else if (Character.isLetterOrDigit(c)) cjk++
             }
-            return cjk to latin
+            return Triple(cjk, latin, digits)
         }
         if (cleaned.contains("<<<") || cleaned.contains(">>>")) return false
         if (relaxed) {
-            // 先轉成同一種數字寫法再比（「三十萬」對「300,000」），同 Swift CleanupFidelity.passesRelaxed。
-            val o = com.utuvo.type.core.Normalizer.normalizeNumbers(original)
-            val n = com.utuvo.type.core.Normalizer.normalizeNumbers(cleaned)
+            // 先轉成同一種數字寫法再比（「三十萬」對「300,000」；英文拼出來的「minus fourteen」對「-14」，FX-3 第四輪 G4），
+            // 同 Swift CleanupFidelity.passesRelaxed。
+            val o = CleanupFidelity.spelledNumbers(com.utuvo.type.core.Normalizer.normalizeNumbers(original))
+            val n = CleanupFidelity.spelledNumbers(com.utuvo.type.core.Normalizer.normalizeNumbers(cleaned))
             if (bigramRecall(n, o) < 0.35 || novelBigramShare(n, o) > 0.6 || introducesDigits(o, n)) return false
+            // 數值錯十倍（「1,250」→「12,500」）、數值換主人（「預算100、訂金200」→「預算200、訂金100」，FX-3）、
+            // 對比句翻轉（「是三點不是四點」→「是四點」）與誰對誰對調（「王經理寄給李律師」→「李律師寄給王經理」）：
+            // core 共用規則，同 Swift passesRelaxed。
+            if (CleanupFidelity.introducesNumberValues(o, n) || CleanupFidelity.reordersNumberValues(o, n) ||
+                CleanupFidelity.dropsNumberValues(o, n) ||
+                CleanupFidelity.invertsContrast(o, n) || CleanupFidelity.swapsAroundSharedMiddle(o, n)) return false
         } else if (!CleanupFidelity.preservesContent(original, cleaned, cjkReadings)) return false
+        // 人稱不能被翻轉（core 共用，同 iOS／Mac；寬鬆與嚴格都檢查）。
+        if (!CleanupFidelity.keepsPerson(original, cleaned)) return false
         if (original.length > 12 && !hasMeaningfulOverlap(cleaned, original)) return false
-        val (beforeCjk, beforeLatin) = counts(original)
-        val (afterCjk, afterLatin) = counts(cleaned)
-        if (beforeCjk + beforeLatin == 0 || afterCjk + afterLatin == 0) return false
+        val (beforeCjk, beforeLatin, beforeDigits) = counts(original)
+        val (afterCjk, afterLatin, afterDigits) = counts(cleaned)
+        // 只有數字的一句（「一萬二」→「12,000」）兩邊照樣有內容（FX-9）：寬鬆把關不把數字算進比例，但空不空要算；
+        // 數值對不對由上面的數值檢查把關（「12,000」→「21,000」擋）。同 Swift。
+        if (beforeCjk + beforeLatin + beforeDigits == 0 || afterCjk + afterLatin + afterDigits == 0) return false
         if (beforeCjk > 0) {
             if (afterCjk.toDouble() / beforeCjk !in 0.3..1.55) return false
         } else if (afterCjk > 3) return false

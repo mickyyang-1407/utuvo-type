@@ -10,11 +10,11 @@
 {"id": "corr-01", "category": "self-correction", "transcript": "明天不是週一，是週二開會。", "expected": "明天週二開會。", "assertions": ["self-correction-applied"]}
 {"id": "corr-02", "category": "self-correction", "transcript": "不是今天做，是明天做。", "expected": "明天做。", "assertions": ["self-correction-applied"]}
 {"id": "corr-03", "category": "self-correction", "transcript": "改成下週三開會。", "expected": "下週三開會。", "assertions": ["prefix-stripped"]}
-{"id": "list-01", "category": "list-cue", "transcript": "今天有三件事第一買牛奶第二回email第三寫報告。", "expected": "今天有三件事\n第一買牛奶\n第二回email\n第三寫報告。", "assertions": ["list-broken-into-lines"]}
+{"id": "list-01", "category": "list-cue", "transcript": "今天有三件事第一買牛奶第二回email第三寫報告。", "expected": "今天有三件事：\n1. 買牛奶\n2. 回email\n3. 寫報告", "assertions": ["list-broken-into-lines"]}
 {"id": "list-02", "category": "list-cue", "transcript": "首先整理桌面其次回信最後趕稿。", "expected": "首先整理桌面\n其次回信\n最後趕稿。", "assertions": ["list-broken-into-lines"]}
 {"id": "list-03", "category": "list-cue", "transcript": "接下來是測試然後是驗收最後是上線。", "expected": "接下來是測試\n然後是驗收\n最後是上線。", "assertions": ["list-broken-into-lines"]}
 {"id": "todo-01", "category": "todo", "transcript": "幫我記一下買牛奶跟回email跟寫報告。", "expected": "幫我記一下買牛奶跟回email跟寫報告。", "assertions": ["no-list-broken-but-kept-cue"]}
-{"id": "todo-02", "category": "todo", "transcript": "記一下第一繳電費第二預約洗車第三買貓砂。", "expected": "記一下\n第一繳電費\n第二預約洗車\n第三買貓砂。", "assertions": ["list-broken-into-lines"]}
+{"id": "todo-02", "category": "todo", "transcript": "記一下第一繳電費第二預約洗車第三買貓砂。", "expected": "記一下：\n1. 繳電費\n2. 預約洗車\n3. 買貓砂", "assertions": ["list-broken-into-lines"]}
 {"id": "todo-03", "category": "todo", "transcript": "明天的待辦是繳電費預約洗車還有買貓砂。", "expected": "明天的待辦是繳電費預約洗車還有買貓砂。", "assertions": ["no-list-broken"]}
 {"id": "long-01", "category": "long-paragraph", "transcript": "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。", "expected": "今天的會議主要討論了第二季的產品規劃包括 UTUVO Type 的排程以及百鍊 formatter 的 fallback 鏈最後決議是先跑 benchmark 再決定 UI 的時間表。", "assertions": ["paragraph-preserved", "english-preserved"]}
 {"id": "long-02", "category": "long-paragraph", "transcript": "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。", "expected": "這份文件是 UTUVO Type 的 benchmark first scaffold 內容涵蓋 SwiftPM 設定 deterministic normalizer 路由策略 三十題 fixtures verify 腳本與 run-benchmark 腳本。", "assertions": ["paragraph-preserved", "english-preserved"]}

@@ -1,0 +1,34 @@
+{
+  "entries" : {
+    "Atmus" : {
+      "at" : 1789000000,
+      "output" : "Atmos",
+      "source" : "AUTO"
+    },
+    "UTUVO" : {
+      "at" : 1789000001,
+      "output" : "UTUVO",
+      "source" : "AUTO"
+    },
+    "cloud code" : {
+      "at" : 1789000002,
+      "output" : "Claude Code",
+      "source" : "MANUAL"
+    },
+    "gone" : {
+      "at" : 1789000005,
+      "source" : "AUTO"
+    },
+    "odd" : {
+      "at" : 1789000004,
+      "output" : "Odd",
+      "source" : "SOMETHING_NEW"
+    },
+    "pik" : {
+      "at" : 1789000003,
+      "output" : "Pik"
+    }
+  },
+  "format" : "utuvo-type-dictionary",
+  "version" : 1
+}

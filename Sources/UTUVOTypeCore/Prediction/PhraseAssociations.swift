@@ -42,6 +42,11 @@ public final class PhraseAssociations: Sendable {
     /// 詞數（僅供資訊）。
     public var phraseCount: Int { count }
 
+    /// 測試用：詞表位元組本身（驗它是 .dat 檔的映射、不是 heap 複本）。不改任何行為。
+    func withBackingBytes<R>(_ body: (UnsafeRawBufferPointer) throws -> R) rethrows -> R {
+        try data.withUnsafeBytes(body)
+    }
+
     /// 以 `text` 結尾的前文可以接什麼。先用最長的前文（最多 `maximumContextLength` 字）找，
     /// 再用較短的前文補滿；同一段接續只出現一次。回傳的是「要接著插入的字」，不含前文本身。
     public func continuations(after text: String, limit: Int) -> [String] {

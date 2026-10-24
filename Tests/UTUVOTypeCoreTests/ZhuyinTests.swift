@@ -1,9 +1,6 @@
 import Foundation
 import XCTest
 @testable import UTUVOTypeCore
-#if canImport(Darwin)
-import Darwin
-#endif
 
 /// 注音引擎：組字器、詞庫（mmap 二分搜尋）、整句轉換、候選、效能與記憶體。
 /// 詞庫走 repo 裡真正出貨的 ios/Keyboard/Resources/zhuyin.dat（以 #filePath 定位），
@@ -262,48 +259,53 @@ final class ZhuyinTests: XCTestCase {
     // MARK: - 記憶體
 
     /// 設計上：詞庫以 .alwaysMapped 開檔，常駐 Swift 物件只有音節表（約 1,400 筆），
-    /// 13 萬把讀音鍵與 17 萬筆詞條都留在映射的檔案裡。這裡同時驗「結構」與「實測 footprint」。
+    /// 13 萬把讀音鍵與 17 萬筆詞條都留在映射的檔案裡。
+    /// 主檢查是結構：詞庫位元組就是 zhuyin.dat 的映射（跟 heap 歷史、測試順序無關）。
+    /// footprint 前後差只在同一狀態下的整檔讀入對照看得見時才斷言（FootprintGate），看不見會印原因。
     func testLexiconDoesNotLoadWholeFileIntoMemory() throws {
-        let before = Self.physFootprint()
-        let lex = try XCTUnwrap(ZhuyinLexicon(url: Self.dataURL))
-        for r in ["ㄕˋ", "ㄋㄧˇ", "ㄏㄠˇ", "ㄊㄞˊ", "ㄅㄟˇ"] {
-            _ = lex.lookup(readings: [r][...])
+        try MappedFileProbe.requireAvailable()
+        let fileSize = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: Self.dataURL.path)[.size] as? Int)
+        let (lex, delta) = try FootprintGate.measure("ZhuyinLexicon(url:)", wholeFileReadOf: Self.dataURL) {
+            let lex = try XCTUnwrap(ZhuyinLexicon(url: Self.dataURL))
+            for r in ["ㄕˋ", "ㄋㄧˇ", "ㄏㄠˇ", "ㄊㄞˊ", "ㄅㄟˇ"] {
+                _ = lex.lookup(readings: [r][...])
+            }
+            return lex
         }
-        let after = Self.physFootprint()
         XCTAssertLessThan(lex.syllableCount, 2_000, "常駐表只能是音節表，不是整份詞庫")
         XCTAssertGreaterThan(lex.entryCount, 150_000, "詞條確實在檔案裡")
-        let fileSize = try XCTUnwrap(try FileManager.default.attributesOfItem(atPath: Self.dataURL.path)[.size] as? Int)
-        if let before, let after {
-            let delta = after - before
+        let why = lex.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: Self.dataURL) }
+        XCTAssertNil(why, "詞庫位元組不是 zhuyin.dat 的映射 → 被整份讀進記憶體了：\(why ?? "")")
+        if let delta {
             XCTAssertLessThan(delta, fileSize / 2,
                               "開詞庫後 footprint 增加 \(delta) bytes，接近整檔 \(fileSize) bytes → 疑似被整份讀進記憶體")
         }
     }
 
-    /// 上一條的反面對照：同一個儀器量「真的整份讀進記憶體」要看得到。量不到＝上一條永遠綠、沒在檢查。
-    func testFootprintInstrumentSeesAWholeFileRead() throws {
-        guard let before = Self.physFootprint() else { throw XCTSkip("此平台沒有 phys_footprint") }
-        let copy = try Data(contentsOf: Self.dataURL)          // 不映射：整份複製進 heap
-        let bytes = copy.withUnsafeBytes { Array($0) }        // 再逐位元組碰一次，確保頁面真的進實體記憶體
-        let after = try XCTUnwrap(Self.physFootprint())
-        XCTAssertEqual(bytes.count, copy.count)
-        XCTAssertGreaterThan(after - before, copy.count / 2,
-                             "整份讀進記憶體卻只增加 \(after - before) bytes → footprint 儀器量不到，記憶體測試是空心的")
-    }
+    /// 上一條結構檢查的反面對照，每種測試順序都必須成立：
+    /// - 整份讀進 heap 的詞庫（拿掉 .alwaysMapped 的退化）一定被判「不是檔案映射」；
+    /// - 映射了、但映的是另一個檔（內容一模一樣的複製檔）也不算。
+    /// 舊版的對照是 footprint 量整檔讀入，完整測試後段 heap 重用已釋放記憶體時量到 0、紅綠看順序；
+    /// 那個對照改在 FootprintGate 裡、跟受測量測同一狀態下跑，看不見就印原因、不斷言。
+    func testMappingProbeRejectsHeapCopyAndOtherFile() throws {
+        try MappedFileProbe.requireAvailable()
+        let heap = try XCTUnwrap(ZhuyinLexicon(data: try Data(contentsOf: Self.dataURL)))
+        let whyHeap = heap.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: Self.dataURL) }
+        XCTAssertNotNil(whyHeap, "整份讀進 heap 的詞庫被判成 zhuyin.dat 的映射 → 結構檢查是空心的")
+        XCTAssertTrue(whyHeap?.contains("不是檔案映射") ?? false, "理由應該是匿名記憶體，實際：\(whyHeap ?? "nil")")
 
-    /// 行程的 phys_footprint（Jetsam 用來判定鍵盤 extension 記憶體上限的同一個數字）。
-    static func physFootprint() -> Int? {
-        #if canImport(Darwin)
-        var info = task_vm_info_data_t()
-        var count = mach_msg_type_number_t(MemoryLayout<task_vm_info_data_t>.size / MemoryLayout<natural_t>.size)
-        let kr = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
-                task_info(mach_task_self_, task_flavor_t(TASK_VM_INFO), $0, &count)
-            }
-        }
-        return kr == KERN_SUCCESS ? Int(info.phys_footprint) : nil
-        #else
-        return nil
-        #endif
+        let dir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("fx10-mapping-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let twin = dir.appendingPathComponent("zhuyin.dat")
+        try FileManager.default.copyItem(at: Self.dataURL, to: twin)
+        // 直接映射，不經 ZhuyinLexicon(url:)：這條驗的是儀器本身，不能跟著受測的產品程式碼一起壞
+        let mappedTwin = try XCTUnwrap(ZhuyinLexicon(data: try Data(contentsOf: twin, options: .alwaysMapped)))
+        let whyTwinOK = mappedTwin.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: twin) }
+        XCTAssertNil(whyTwinOK, "正面對照：複製檔自己的映射要被認出：\(whyTwinOK ?? "")")
+        let whyTwin = mappedTwin.withBackingBytes { MappedFileProbe.mismatch($0, wholeFile: Self.dataURL) }
+        XCTAssertNotNil(whyTwin, "映射的是另一個檔卻被判成 zhuyin.dat → 只看「有沒有映射」、沒看是哪個檔")
+        XCTAssertTrue(whyTwin?.contains("別的檔") ?? false, "理由應該是別的檔，實際：\(whyTwin ?? "nil")")
     }
 }

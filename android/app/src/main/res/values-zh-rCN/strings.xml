@@ -34,6 +34,11 @@
     <string name="hint_listening_translate">再点一下完成，翻成%1$s</string>
     <string name="hint_translate_download">再点一下完成，翻成%1$s・第一次要下载翻译模型</string>
     <string name="hint_translating">翻译中…</string>
+    <string name="hint_translate_release">松开就翻成%1$s</string>
+    <string name="hint_hold_tip">不用按住：点一下开始说，说完再点一下</string>
+    <string name="key_cancel_voice">取消，不粘贴文字</string>
+    <string name="hint_voice_cancelled">已取消，没有粘贴文字</string>
+    <string name="undo_insert_desc">还原刚才粘贴的文字</string>
     <string name="hint_edit_idle">说出要怎么改</string>
     <string name="hint_translate_idle">说中文，粘贴%1$s</string>
     <string name="hint_editing">改写中…（%1$s）</string>
@@ -166,6 +171,10 @@
     <string name="hint_refining">整理中…</string>
     <string name="hint_cloud_listening">用你的 key 重新识别中…</string>
     <string name="hint_refined">已整理</string>
+    <string name="hint_cloud_slow_fallback">网络较慢，先用设备端识别的结果</string>
+    <string name="hint_cloud_failed_fallback">云端识别失败，已改用设备端识别的结果</string>
+    <string name="hint_limit_warning">再 %1$d 秒会自动发送（单次最长 %2$d 分钟）</string>
+    <string name="hint_limit_reached">已录满 %1$d 分钟，自动发送</string>
     <string name="smart_title">智能整理（可选）</string>
     <string name="smart_toggle">智能整理</string>
     <string name="smart_explain">识别完成后先贴出可用结果，再由你选的服务整理改口、赘词和错字。云端语音偏好与字段上下文默认关闭；如果没有可用的设备端中文语音包，系统服务会作为备用并显示云端提示。</string>
@@ -372,7 +381,7 @@
     <string name="history_retention_week">1 周</string>
     <string name="history_retention_month">1 个月</string>
     <string name="history_retention_year">1 年</string>
-    <string name="history_retention_forever">永远</string>
+    <string name="history_retention_forever">永远（最多保留最近 500 笔）</string>
     <string name="history_retention_none">不保留</string>
     <string name="history_retention_confirm">会删掉 %1$d 笔超过期限的听写记录。首页的使用数据不会受影响。</string>
     <string name="history_retention_apply">删除</string>

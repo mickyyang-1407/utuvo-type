@@ -194,13 +194,24 @@ object HistoryRetentionSetting {
 object Dictation {
     fun clean(c: Context, raw: String,
               language: DictationLanguage = DictationLanguage.TRADITIONAL_CHINESE,
-              variant: LanguageVariant = language.defaultVariant): String {
+              variant: LanguageVariant = language.defaultVariant,
+              numberedLists: Boolean = true): String {
         val localized = localize(c, raw, language, variant)
-        return Normalizer(NormalizerOptions(
-            dictionary = DictionaryStore.entries(c).filter { it.key != it.value },
-            latinTerms = VocabularyPacks.latinTermsForFixer(c),
-        )).normalize(localized).cleaned
+        val dictionary = DictionaryStore.entries(c)
+        return cleanLocalized(localized, dictionary, VocabularyPacks.latinTermsForFixer(c, dictionary), numberedLists)
     }
+
+    /**
+     * [clean] 不需要 Context 的部分（測試用）：個人字典＋英文專名（core `LatinNameFixer`，常用英文字護欄在 core 裡，
+     * FX-5）→ 贅詞／重複／自我修正／數字／標點。
+     */
+    internal fun cleanLocalized(localized: String, dictionary: Map<String, String>, latinTerms: List<String>,
+                                numberedLists: Boolean = true): String =
+        Normalizer(NormalizerOptions(
+            dictionary = dictionary.filter { it.key != it.value },
+            latinTerms = latinTerms,
+            numberedLists = numberedLists,
+        )).normalize(localized).cleaned
 
     /**
      * 照聽寫語言／變體決定用字（10-18 Micky：Pixel 選簡體，出來還是繁體——原本不分語言一律轉台灣繁體）。
@@ -223,6 +234,12 @@ object Dictation {
 
 /** 輸入框能不能放換行：文字類、而且標了多行才可以（單行框插換行可能直接觸發送出）。 */
 object FieldShape {
+    /**
+     * 編號清單（1. 2. 3.）只在能換行的框裡出：單行框收成一行會變成「1. 買菜 2. 煮飯」，
+     * 那時保留整理前的頓號寫法（2026-10-22 W2-6 修正）。沒有欄位資訊（null）照多行處理。
+     */
+    fun allowsNumberedLists(inputType: Int?): Boolean = inputType == null || allowsLineBreaks(inputType)
+
     fun allowsLineBreaks(inputType: Int): Boolean =
         (inputType and android.text.InputType.TYPE_MASK_CLASS) == android.text.InputType.TYPE_CLASS_TEXT &&
             (inputType and (android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or android.text.InputType.TYPE_TEXT_FLAG_IME_MULTI_LINE)) != 0

@@ -19,6 +19,7 @@ struct OrbPreviewGallery: View {
                 sample("安靜聆聽", phase: .listening, db: -85)
                 sample("說話中", phase: .listening, db: -24)
                 sample("整理中", phase: .processing, db: -85)
+                sample("快停了（倒數）", phase: .listening, db: -85, limitWarning: true)
             }
             HStack {
                 Button("顯示聆聽光球") { overlay.showPreview(model: model, listening: true, position: .bottom); refresh() }
@@ -29,13 +30,13 @@ struct OrbPreviewGallery: View {
             Text(diagnostics).font(.system(.caption, design: .monospaced))
             Text("隔離預覽・合成音量，不使用麥克風或個人資料").font(.caption).foregroundStyle(.secondary)
         }
-        .padding(28).frame(width: 660, height: 340)
+        .padding(28).frame(width: 860, height: 340)
         .background(dark ? Color(red: 0.055, green: 0.065, blue: 0.085) : Color(red: 0.96, green: 0.95, blue: 0.93))
         .environment(\.colorScheme, dark ? .dark : .light)
     }
-    private func sample(_ name: String, phase: VoiceOrbView.Phase, db: Float) -> some View {
+    private func sample(_ name: String, phase: VoiceOrbView.Phase, db: Float, limitWarning: Bool = false) -> some View {
         VStack(spacing: 0) {
-            OrbPreviewSurface(phase: phase, db: db, reduceMotion: reduced, dark: dark)
+            OrbPreviewSurface(phase: phase, db: db, reduceMotion: reduced, dark: dark, limitWarning: limitWarning)
                 .frame(width: 170, height: 170)
             Text(name).font(.callout)
         }.frame(maxWidth: .infinity)

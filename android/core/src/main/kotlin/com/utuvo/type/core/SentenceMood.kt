@@ -6,7 +6,8 @@ package com.utuvo.type.core
  * 2026-10-02 Micky：「不要每個句子或最後都用句點，偶爾可以有問號、驚嘆號……一直使用句點會顯得很 AI」。
  * - 問句 →「？」、明確的感嘆 →「！」；拿不準就維持句號。只改「。」結尾的句子。
  * - [finish]：再把最後一句的「。」拿掉（整段沒有換行時）。
- * - [continuationPrefix]：緊接著上一段再講時，把拿掉的句號補回去。
+ * - [continuationPrefix]：緊接著上一段再講時，把拿掉的句號補回去（舊規則，Android 鍵盤 W2-7 起改用 [joinPrefix]）。
+ * - [joinPrefix]／[finishDroppedMark]：接續聽寫（同 Mac）——永遠不補「。」，只補英數字之間的空白與上一段被拿掉的「，」「、」。
  */
 object SentenceMood {
 
@@ -19,15 +20,27 @@ object SentenceMood {
         return out.toString()
     }
 
+    /**
+     * 最後一句的句號拿掉（同 Swift：只拿「。」，句尾吊著的「，」「、」也拿；有換行＝分段長文，照原樣）。
+     * W2-7（2026-10-22）改成逐字形叢集看，跟 Swift 的 `Character` 一致：`contains("\n")` 比的是字（「\r\n」是一個字、不算換行）、
+     * 尾巴的空白一個字一個字剝（「 \u0301」也是空白）、「有沒有字」看 Alphabetic／數字（「①」「Ⅻ」也算）。
+     * [finishDroppedMark] 回報的就是這裡拿掉的那個標點，兩邊要逐字一樣。
+     */
     fun dropFinalPeriod(text: String): String {
-        if (text.contains("\n")) return text
-        var end = text.length
-        while (end > 0 && text[end - 1].isWhitespace()) end--
-        if (end == 0 || text[end - 1] != '。') return text
-        val without = text.substring(0, end - 1)
-        if (without.none { it.isLetterOrDigit() }) return text
-        return without + text.substring(end)
+        val g = SwiftText.graphemes(text)
+        if ("\n" in g) return text
+        var end = g.size
+        while (end > 0 && SwiftText.isWhitespace(g[end - 1])) end--
+        if (end == 0 || g[end - 1] !in finalMarks) return text
+        val without = g.subList(0, end - 1)
+        if (without.none { isLetterOrNumber(it) }) return text
+        return without.joinToString("") + g.subList(end, g.size).joinToString("")
     }
+
+    private val finalMarks = setOf("。", "，", "、")
+
+    /** Swift `Character.isLetter || .isNumber`：第一個 scalar 有 Alphabetic 屬性、或是數字類。 */
+    private fun isLetterOrNumber(g: String): Boolean = Character.isAlphabetic(g.codePointAt(0)) || SwiftText.isNumber(g)
 
     fun continuationPrefix(before: String?, previous: String?): String {
         if (before == null || previous.isNullOrEmpty()) return ""
@@ -35,6 +48,44 @@ object SentenceMood {
         if (!trimmedBefore.endsWith(previous)) return ""
         return if (isCJKLetter(previous.last())) "。" else ""
     }
+
+    /**
+     * 接續聽寫（W2-7，2026-10-22；Swift `SentenceMood.joinPrefix` 的逐條移植，Mac 第三輪審查的保守規則）：
+     * 游標前正好是上一段聽寫的結尾（同一個欄位、游標沒動）時，這一段前面要先插什麼。
+     * - 永遠不插「。」（或任何句末標點）：辨識器幾乎每段都收在「。」，話講到一半停住也一樣，
+     *   插句號會把一句話切成兩句（「我要。一杯咖啡」「我的老闆。明天要來」）。
+     * - 中文接中文：什麼都不插（「我要」＋「一杯咖啡」→「我要一杯咖啡」）。
+     * - 英數字接英數字（上一段尾是英數字或 .!?,;:，這一段頭是英數字）：插一個空白，免得黏成一個字。
+     * - [droppedMark]（[finish] 拿掉的句尾標點，見 [finishDroppedMark]）是「，」「、」就原樣補回；拿掉的是「。」不補。
+     * - 游標前最後一個字是空白、讀不到游標前（null）、游標前不是上一段的結尾：什麼都不插。
+     * 「字」一律照 Swift 的 `Character`（字形叢集）：emoji、組合記號在交界上跟 Swift 逐字一樣（golden sentence-mood-join.json）。
+     */
+    fun joinPrefix(before: String?, previous: String?, next: String, droppedMark: String? = null): String {
+        if (before == null || previous.isNullOrEmpty()) return ""
+        val lastBefore = SwiftText.graphemes(before).lastOrNull() ?: return ""
+        if (SwiftText.isWhitespace(lastBefore)) return ""
+        if (!SwiftText.hasSuffix(before, previous)) return ""
+        if (droppedMark == "，" || droppedMark == "、") return droppedMark
+        val tail = SwiftText.graphemes(previous).last()
+        val head = SwiftText.graphemes(next).firstOrNull() ?: return ""
+        if ((isASCIIWordCharacter(tail) || tail in asciiJoiners) && isASCIIWordCharacter(head)) return " "
+        return ""
+    }
+
+    /**
+     * [finish] 會拿掉的句尾標點（「。」「，」「、」）；不拿就回空字串（Swift `SentenceMood.finishDroppedMark`）。
+     * 接續聽寫把它記下來當 [joinPrefix] 的 `droppedMark`：下一段緊接著講時，「，」「、」原樣補回（「。」不補）。
+     */
+    fun finishDroppedMark(text: String): String {
+        val applied = apply(text)
+        if (dropFinalPeriod(applied) == applied) return ""
+        return SwiftText.graphemes(applied).lastOrNull { !SwiftText.isWhitespace(it) } ?: ""
+    }
+
+    private val asciiJoiners = setOf(".", "!", "?", ",", ";", ":")
+
+    /** Swift `c.isASCII && (c.isLetter || c.isNumber)`：單一個 ASCII 英數字（後面黏組合記號的「a\u0301」不算）。 */
+    private fun isASCIIWordCharacter(g: String): Boolean = g.length == 1 && g[0].code < 0x80 && g[0].isLetterOrDigit()
 
     private fun isCJKLetter(c: Char): Boolean = c.code in 0x3400..0x9FFF || c.code in 0xF900..0xFAFF
 

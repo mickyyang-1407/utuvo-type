@@ -37,6 +37,9 @@ public enum OutputShape: Sendable {
                 let after = j < chars.count ? chars[j] : nil
                 if let b = before, let a = after, b.isASCII, !b.isWhitespace, a.isASCII, a.isLetter || a.isNumber {
                     out.append(" ")
+                } else if let b = before, b.isLetter || b.isNumber, startsNumberedItem(chars, at: j) {
+                    // 編號清單接成一行（本機整理也會出「1. 」了，2026-10-22 W2-6）：「買牛奶\n2. 回信」→「買牛奶 2. 回信」，不要黏成「買牛奶2. 回信」。
+                    out.append(" ")
                 }
                 i = j
                 continue
@@ -45,5 +48,12 @@ public enum OutputShape: Sendable {
             i += 1
         }
         return out
+    }
+
+    /// 從 `index` 開始是「數字＋. ＋空白」（編號清單的一項）。
+    static func startsNumberedItem(_ chars: [Character], at index: Int) -> Bool {
+        var k = index
+        while k < chars.count, chars[k].isASCII, chars[k].isNumber { k += 1 }
+        return k > index && k + 1 < chars.count && chars[k] == "." && chars[k + 1] == " "
     }
 }

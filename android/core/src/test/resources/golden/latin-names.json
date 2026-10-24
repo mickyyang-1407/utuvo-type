@@ -1,0 +1,8751 @@
+[
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "Apple NVIDIA",
+        "input" : "AppleNVidia",
+        "output" : "Apple NVIDIA"
+      },
+      {
+        "cleanupOutput" : "OpenAI ChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAI ChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "grook"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "MiniMax",
+        "input" : "minimax",
+        "output" : "MiniMax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Coldex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "promt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "sesion"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gemini 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。"
+      },
+      {
+        "cleanupOutput" : "這個 GLM Kimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLM Kimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "ChatGPT 跟 OpenAI",
+        "input" : "chatgpt 跟 openai",
+        "output" : "ChatGPT 跟 OpenAI"
+      },
+      {
+        "cleanupOutput" : "NVIDIA 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "NVIDIA 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "Kimi"
+      },
+      {
+        "cleanupOutput" : "更新 Protus",
+        "input" : "更新 Protus",
+        "output" : "更新 Protus"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Protus",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Protus"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 radar",
+        "input" : "打開 radar",
+        "output" : "打開 radar"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 rader"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iphone",
+        "input" : "我的 iphone",
+        "output" : "我的 iphone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolbe Edmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolbe Edmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 Darmy Music 上班"
+      },
+      {
+        "cleanupOutput" : "用 UTUVO Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 UTUVO Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Special Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Special Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemini 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 ChatGPT",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 ChatGPT"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Largec Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Large C Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Largec Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tone Master"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Coldex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 ToneMaster",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 ToneMaster"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 spatial audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 vibe coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI Music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Protus 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Protus 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+
+    ],
+    "set" : "oldMac16",
+    "sweepChanges" : [
+      [
+        "kaput",
+        "GPT"
+      ],
+      [
+        "gelled",
+        "Claude"
+      ],
+      [
+        "gypped",
+        "GPT"
+      ],
+      [
+        "nonfat",
+        "NVIDIA"
+      ],
+      [
+        "celluloid",
+        "Claude"
+      ],
+      [
+        "celluloid's",
+        "Claude's"
+      ],
+      [
+        "Celt",
+        "Claude"
+      ],
+      [
+        "clit",
+        "Claude"
+      ],
+      [
+        "Cabot",
+        "GPT"
+      ],
+      [
+        "Capet",
+        "GPT"
+      ],
+      [
+        "Clyde",
+        "Claude"
+      ],
+      [
+        "cubit",
+        "GPT"
+      ],
+      [
+        "cumin",
+        "Gemini"
+      ],
+      [
+        "Cupid",
+        "GPT"
+      ],
+      [
+        "gamin",
+        "Gemini"
+      ],
+      [
+        "gelid",
+        "Claude"
+      ],
+      [
+        "Gould",
+        "Claude"
+      ],
+      [
+        "jabot",
+        "GPT"
+      ],
+      [
+        "japed",
+        "GPT"
+      ],
+      [
+        "Celt's",
+        "Claude's"
+      ],
+      [
+        "clit's",
+        "Claude's"
+      ],
+      [
+        "cloyed",
+        "Claude"
+      ],
+      [
+        "gamine",
+        "Gemini"
+      ],
+      [
+        "gibbet",
+        "GPT"
+      ],
+      [
+        "Gilead",
+        "Claude"
+      ],
+      [
+        "jibbed",
+        "GPT"
+      ],
+      [
+        "Juliet",
+        "Claude"
+      ],
+      [
+        "minims",
+        "MiniMax"
+      ],
+      [
+        "Nevada",
+        "NVIDIA"
+      ],
+      [
+        "Cabot's",
+        "GPT's"
+      ],
+      [
+        "Capet's",
+        "GPT's"
+      ],
+      [
+        "Clyde's",
+        "Claude's"
+      ],
+      [
+        "Colette",
+        "Claude"
+      ],
+      [
+        "colloid",
+        "Claude"
+      ],
+      [
+        "collude",
+        "Claude"
+      ],
+      [
+        "cubit's",
+        "GPT's"
+      ],
+      [
+        "cuckold",
+        "Claude"
+      ],
+      [
+        "culotte",
+        "Claude"
+      ],
+      [
+        "cumin's",
+        "Gemini's"
+      ],
+      [
+        "Cupid's",
+        "GPT's"
+      ],
+      [
+        "Galatea",
+        "Claude"
+      ],
+      [
+        "Galatia",
+        "Claude"
+      ],
+      [
+        "gamin's",
+        "Gemini's"
+      ],
+      [
+        "goggled",
+        "Claude"
+      ],
+      [
+        "googled",
+        "Claude"
+      ],
+      [
+        "Gould's",
+        "Claude's"
+      ],
+      [
+        "jabot's",
+        "GPT's"
+      ],
+      [
+        "joggled",
+        "Claude"
+      ],
+      [
+        "jollity",
+        "Claude"
+      ],
+      [
+        "occlude",
+        "Claude"
+      ],
+      [
+        "colluded",
+        "Claude"
+      ],
+      [
+        "gamine's",
+        "Gemini's"
+      ],
+      [
+        "gibbet's",
+        "GPT's"
+      ],
+      [
+        "Gilead's",
+        "Claude's"
+      ],
+      [
+        "Juliet's",
+        "Claude's"
+      ],
+      [
+        "Nevada's",
+        "NVIDIA's"
+      ],
+      [
+        "Quaalude",
+        "Claude"
+      ],
+      [
+        "cellulite",
+        "Claude"
+      ],
+      [
+        "Colette's",
+        "Claude's"
+      ],
+      [
+        "colloid's",
+        "Claude's"
+      ],
+      [
+        "cuckold's",
+        "Claude's"
+      ],
+      [
+        "cuckolded",
+        "Claude"
+      ],
+      [
+        "culotte's",
+        "Claude's"
+      ],
+      [
+        "Galatea's",
+        "Claude's"
+      ],
+      [
+        "Galatia's",
+        "Claude's"
+      ],
+      [
+        "jollity's",
+        "Claude's"
+      ],
+      [
+        "prolixity",
+        "Perplexity"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "NVIDIA",
+      "MiniMax",
+      "GLM",
+      "Kimi",
+      "UTUVO",
+      "UTUVO Type"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "Apple NVIDIA",
+        "input" : "AppleNVidia",
+        "output" : "Apple NVIDIA"
+      },
+      {
+        "cleanupOutput" : "OpenAI ChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAI ChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "Grok"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "MiniMax",
+        "input" : "minimax",
+        "output" : "MiniMax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Codex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "Prompt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "session"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gemini 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 Prompt，在 coate 裡面開 session。"
+      },
+      {
+        "cleanupOutput" : "這個 GLM Kimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLM Kimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "ChatGPT 跟 OpenAI",
+        "input" : "chatgpt 跟 openai",
+        "output" : "ChatGPT 跟 OpenAI"
+      },
+      {
+        "cleanupOutput" : "NVIDIA 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "NVIDIA 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "Kimi"
+      },
+      {
+        "cleanupOutput" : "更新 Protus",
+        "input" : "更新 Protus",
+        "output" : "更新 Protus"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Protus",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Protus"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 radar",
+        "input" : "打開 radar",
+        "output" : "打開 radar"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 rader"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iPhone",
+        "input" : "我的 iphone",
+        "output" : "我的 iPhone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolbe Edmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolbe Edmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 Darmy Music 上班"
+      },
+      {
+        "cleanupOutput" : "用 Utuvo Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 Utuvo Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Special Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Special Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemini 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 ChatGPT",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 ChatGPT"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Largec Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Large C Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Largec Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tone Master"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Codex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 ToneMaster",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 ToneMaster"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 spatial audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 Vibe Coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 Codex 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 Codex 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI Music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Protus 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Protus 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 Darmy Music 用 Utuvo Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+
+    ],
+    "set" : "aiPack",
+    "sweepChanges" : [
+      [
+        "crick",
+        "Grok"
+      ],
+      [
+        "kaput",
+        "GPT"
+      ],
+      [
+        "silky",
+        "Slack"
+      ],
+      [
+        "stoic",
+        "SDK"
+      ],
+      [
+        "gaggle",
+        "Google"
+      ],
+      [
+        "gelled",
+        "Claude"
+      ],
+      [
+        "giblet",
+        "Copilot"
+      ],
+      [
+        "gypped",
+        "GPT"
+      ],
+      [
+        "nonfat",
+        "NVIDIA"
+      ],
+      [
+        "carjack",
+        "Grok"
+      ],
+      [
+        "connive",
+        "Canva"
+      ],
+      [
+        "crick's",
+        "Grok's"
+      ],
+      [
+        "deploys",
+        "Typeless"
+      ],
+      [
+        "discoed",
+        "Discord"
+      ],
+      [
+        "doggone",
+        "token"
+      ],
+      [
+        "gaucher",
+        "Cohere"
+      ],
+      [
+        "sassing",
+        "Samsung"
+      ],
+      [
+        "stoic's",
+        "SDK's"
+      ],
+      [
+        "topless",
+        "Typeless"
+      ],
+      [
+        "untried",
+        "Android"
+      ],
+      [
+        "farcical",
+        "Vercel"
+      ],
+      [
+        "gaggle's",
+        "Google's"
+      ],
+      [
+        "giblet's",
+        "Copilot's"
+      ],
+      [
+        "mistreat",
+        "Mistral"
+      ],
+      [
+        "mistrial",
+        "Mistral"
+      ],
+      [
+        "celluloid",
+        "Claude"
+      ],
+      [
+        "copulated",
+        "Copilot"
+      ],
+      [
+        "mistrials",
+        "Mistral"
+      ],
+      [
+        "gargantuan",
+        "Grok Notion"
+      ],
+      [
+        "mistrial's",
+        "Mistral's"
+      ],
+      [
+        "celluloid's",
+        "Claude's"
+      ],
+      [
+        "Apia",
+        "API"
+      ],
+      [
+        "Cali",
+        "CLI"
+      ],
+      [
+        "Celt",
+        "Claude"
+      ],
+      [
+        "Clio",
+        "CLI"
+      ],
+      [
+        "clit",
+        "Claude"
+      ],
+      [
+        "Elam",
+        "Ollama"
+      ],
+      [
+        "grog",
+        "Grok"
+      ],
+      [
+        "Gwyn",
+        "Qwen"
+      ],
+      [
+        "Kali",
+        "CLI"
+      ],
+      [
+        "Kirk",
+        "Grok"
+      ],
+      [
+        "lama",
+        "Llama"
+      ],
+      [
+        "Lima",
+        "Llama"
+      ],
+      [
+        "Salk",
+        "Slack"
+      ],
+      [
+        "toke",
+        "token"
+      ],
+      [
+        "Alamo",
+        "Ollama"
+      ],
+      [
+        "Cabot",
+        "GPT"
+      ],
+      [
+        "Capet",
+        "GPT"
+      ],
+      [
+        "chary",
+        "Cohere"
+      ],
+      [
+        "Circe",
+        "Grok"
+      ],
+      [
+        "Clyde",
+        "Claude"
+      ],
+      [
+        "Comte",
+        "commit"
+      ],
+      [
+        "Craig",
+        "Grok"
+      ],
+      [
+        "Croce",
+        "Grok"
+      ],
+      [
+        "cubit",
+        "GPT"
+      ],
+      [
+        "cumin",
+        "Gemini"
+      ],
+      [
+        "Cupid",
+        "GPT"
+      ],
+      [
+        "Dijon",
+        "token"
+      ],
+      [
+        "Dubai",
+        "Doubao"
+      ],
+      [
+        "gamin",
+        "Gemini"
+      ],
+      [
+        "gelid",
+        "Claude"
+      ],
+      [
+        "Gogol",
+        "Google"
+      ],
+      [
+        "Golgi",
+        "Google"
+      ],
+      [
+        "Gorky",
+        "Grok"
+      ],
+      [
+        "Gould",
+        "Claude"
+      ],
+      [
+        "Grieg",
+        "Grok"
+      ],
+      [
+        "jabot",
+        "GPT"
+      ],
+      [
+        "japed",
+        "GPT"
+      ],
+      [
+        "knave",
+        "Canva"
+      ],
+      [
+        "lemma",
+        "Llama"
+      ],
+      [
+        "loamy",
+        "Ollama"
+      ],
+      [
+        "ocher",
+        "Cohere"
+      ],
+      [
+        "sahib",
+        "Zhipu"
+      ],
+      [
+        "sedge",
+        "SDK"
+      ],
+      [
+        "Sheba",
+        "Zhipu"
+      ],
+      [
+        "toked",
+        "token"
+      ],
+      [
+        "tokes",
+        "token"
+      ],
+      [
+        "Zelig",
+        "Slack"
+      ],
+      [
+        "Apia's",
+        "API's"
+      ],
+      [
+        "astral",
+        "Mistral"
+      ],
+      [
+        "Bunyan",
+        "Hunyuan"
+      ],
+      [
+        "cadges",
+        "Codex"
+      ],
+      [
+        "Cali's",
+        "CLI's"
+      ],
+      [
+        "caplet",
+        "Copilot"
+      ],
+      [
+        "Celt's",
+        "Claude's"
+      ],
+      [
+        "Clio's",
+        "CLI's"
+      ],
+      [
+        "clit's",
+        "Claude's"
+      ],
+      [
+        "cloyed",
+        "Claude"
+      ],
+      [
+        "comity",
+        "commit"
+      ],
+      [
+        "curacy",
+        "Grok"
+      ],
+      [
+        "Deccan",
+        "token"
+      ],
+      [
+        "Elam's",
+        "Ollama's"
+      ],
+      [
+        "gabled",
+        "Copilot"
+      ],
+      [
+        "gamete",
+        "commit"
+      ],
+      [
+        "gamine",
+        "Gemini"
+      ],
+      [
+        "Gawain",
+        "Qwen"
+      ],
+      [
+        "Geneva",
+        "Canva"
+      ],
+      [
+        "George",
+        "Grok"
+      ],
+      [
+        "gibbet",
+        "GPT"
+      ],
+      [
+        "giggly",
+        "Google"
+      ],
+      [
+        "Gilead",
+        "Claude"
+      ],
+      [
+        "Greece",
+        "Grok"
+      ],
+      [
+        "grog's",
+        "Grok's"
+      ],
+      [
+        "Gwyn's",
+        "Qwen's"
+      ],
+      [
+        "jibbed",
+        "GPT"
+      ],
+      [
+        "joggle",
+        "Google"
+      ],
+      [
+        "Juliet",
+        "Claude"
+      ],
+      [
+        "Kali's",
+        "CLI's"
+      ],
+      [
+        "Kirk's",
+        "Grok's"
+      ],
+      [
+        "lama's",
+        "Llama's"
+      ],
+      [
+        "Lima's",
+        "Llama's"
+      ],
+      [
+        "lintel",
+        "Intel"
+      ],
+      [
+        "minims",
+        "MiniMax"
+      ],
+      [
+        "Nevada",
+        "NVIDIA"
+      ],
+      [
+        "Salk's",
+        "Slack's"
+      ],
+      [
+        "Samson",
+        "Samsung"
+      ],
+      [
+        "Seljuk",
+        "Slack"
+      ],
+      [
+        "sepsis",
+        "Supabase"
+      ],
+      [
+        "silage",
+        "Slack"
+      ],
+      [
+        "silica",
+        "Slack"
+      ],
+      [
+        "slough",
+        "Slack"
+      ],
+      [
+        "stooge",
+        "SDK"
+      ],
+      [
+        "stucco",
+        "SDK"
+      ],
+      [
+        "Taejon",
+        "token"
+      ],
+      [
+        "teasel",
+        "Tesla"
+      ],
+      [
+        "toke's",
+        "token's"
+      ],
+      [
+        "triads",
+        "Threads"
+      ],
+      [
+        "Virgil",
+        "Vercel"
+      ],
+      [
+        "wisher",
+        "Whisper"
+      ],
+      [
+        "Alamo's",
+        "Ollama's"
+      ],
+      [
+        "Cabot's",
+        "GPT's"
+      ],
+      [
+        "Capet's",
+        "GPT's"
+      ],
+      [
+        "Catalan",
+        "Kotlin"
+      ],
+      [
+        "cession",
+        "session"
+      ],
+      [
+        "charier",
+        "Cohere"
+      ],
+      [
+        "Circe's",
+        "Grok's"
+      ],
+      [
+        "Clinton",
+        "CLI Notion"
+      ],
+      [
+        "Clyde's",
+        "Claude's"
+      ],
+      [
+        "cobbled",
+        "Copilot"
+      ],
+      [
+        "codices",
+        "Codex"
+      ],
+      [
+        "cohered",
+        "Cohere"
+      ],
+      [
+        "Colette",
+        "Claude"
+      ],
+      [
+        "colloid",
+        "Claude"
+      ],
+      [
+        "collude",
+        "Claude"
+      ],
+      [
+        "commode",
+        "commit"
+      ],
+      [
+        "Comte's",
+        "commit's"
+      ],
+      [
+        "corsair",
+        "Cursor"
+      ],
+      [
+        "couplet",
+        "Copilot"
+      ],
+      [
+        "Craig's",
+        "Grok's"
+      ],
+      [
+        "Croce's",
+        "Grok's"
+      ],
+      [
+        "crosier",
+        "Cursor"
+      ],
+      [
+        "cubit's",
+        "GPT's"
+      ],
+      [
+        "cuckold",
+        "Claude"
+      ],
+      [
+        "culotte",
+        "Claude"
+      ],
+      [
+        "cumin's",
+        "Gemini's"
+      ],
+      [
+        "Cupid's",
+        "GPT's"
+      ],
+      [
+        "dapples",
+        "Typeless"
+      ],
+      [
+        "dibbles",
+        "Typeless"
+      ],
+      [
+        "Dijon's",
+        "token's"
+      ],
+      [
+        "dizzily",
+        "Tesla"
+      ],
+      [
+        "Dubai's",
+        "Doubao's"
+      ],
+      [
+        "dudgeon",
+        "token"
+      ],
+      [
+        "gabbled",
+        "Copilot"
+      ],
+      [
+        "Galatea",
+        "Claude"
+      ],
+      [
+        "Galatia",
+        "Claude"
+      ],
+      [
+        "gamin's",
+        "Gemini's"
+      ],
+      [
+        "Garrick",
+        "Grok"
+      ],
+      [
+        "goggled",
+        "Google"
+      ],
+      [
+        "Gogol's",
+        "Google's"
+      ],
+      [
+        "Golgi's",
+        "Google's"
+      ],
+      [
+        "googled",
+        "Google"
+      ],
+      [
+        "Gorky's",
+        "Grok's"
+      ],
+      [
+        "Gould's",
+        "Claude's"
+      ],
+      [
+        "Grieg's",
+        "Grok's"
+      ],
+      [
+        "jabot's",
+        "GPT's"
+      ],
+      [
+        "jimmied",
+        "commit"
+      ],
+      [
+        "joggled",
+        "Claude"
+      ],
+      [
+        "jollity",
+        "Claude"
+      ],
+      [
+        "knave's",
+        "Canva's"
+      ],
+      [
+        "kopecks",
+        "Codex"
+      ],
+      [
+        "needn't",
+        "Notion't"
+      ],
+      [
+        "occlude",
+        "Claude"
+      ],
+      [
+        "ocher's",
+        "Cohere's"
+      ],
+      [
+        "sahib's",
+        "Zhipu's"
+      ],
+      [
+        "Sassoon",
+        "session"
+      ],
+      [
+        "sedge's",
+        "SDK's"
+      ],
+      [
+        "Sheba's",
+        "Zhipu's"
+      ],
+      [
+        "Tabasco",
+        "DeepSeek"
+      ],
+      [
+        "Tbilisi",
+        "Typeless"
+      ],
+      [
+        "thralls",
+        "Threads"
+      ],
+      [
+        "Tijuana",
+        "token"
+      ],
+      [
+        "tipples",
+        "Typeless"
+      ],
+      [
+        "virgule",
+        "Vercel"
+      ],
+      [
+        "Zelig's",
+        "Slack's"
+      ],
+      [
+        "Bunyan's",
+        "Hunyuan's"
+      ],
+      [
+        "caduceus",
+        "Codex"
+      ],
+      [
+        "caplet's",
+        "Copilot's"
+      ],
+      [
+        "carouser",
+        "Cursor"
+      ],
+      [
+        "Catiline",
+        "Kotlin"
+      ],
+      [
+        "colluded",
+        "Claude"
+      ],
+      [
+        "comity's",
+        "commit's"
+      ],
+      [
+        "curacy's",
+        "Grok's"
+      ],
+      [
+        "Deccan's",
+        "token's"
+      ],
+      [
+        "descried",
+        "Discord"
+      ],
+      [
+        "didactic",
+        "TikTok"
+      ],
+      [
+        "gamete's",
+        "commit's"
+      ],
+      [
+        "gamine's",
+        "Gemini's"
+      ],
+      [
+        "Gawain's",
+        "Qwen's"
+      ],
+      [
+        "Geneva's",
+        "Canva's"
+      ],
+      [
+        "George's",
+        "Grok's"
+      ],
+      [
+        "gibbet's",
+        "GPT's"
+      ],
+      [
+        "Gilead's",
+        "Claude's"
+      ],
+      [
+        "Godthaab",
+        "GitHub"
+      ],
+      [
+        "Greece's",
+        "Grok's"
+      ],
+      [
+        "innately",
+        "Intel"
+      ],
+      [
+        "joggle's",
+        "Google's"
+      ],
+      [
+        "Juliet's",
+        "Claude's"
+      ],
+      [
+        "lintel's",
+        "Intel's"
+      ],
+      [
+        "Nevada's",
+        "NVIDIA's"
+      ],
+      [
+        "Olympiad",
+        "Ollama iPad"
+      ],
+      [
+        "Quaalude",
+        "Claude"
+      ],
+      [
+        "Samson's",
+        "Samsung's"
+      ],
+      [
+        "Seljuk's",
+        "Slack's"
+      ],
+      [
+        "sepsis's",
+        "Supabase's"
+      ],
+      [
+        "silage's",
+        "Slack's"
+      ],
+      [
+        "silica's",
+        "Slack's"
+      ],
+      [
+        "slough's",
+        "Slack's"
+      ],
+      [
+        "stooge's",
+        "SDK's"
+      ],
+      [
+        "stucco's",
+        "SDK's"
+      ],
+      [
+        "Taejon's",
+        "token's"
+      ],
+      [
+        "teasel's",
+        "Tesla's"
+      ],
+      [
+        "toneless",
+        "Typeless"
+      ],
+      [
+        "treeless",
+        "Typeless"
+      ],
+      [
+        "tubeless",
+        "Typeless"
+      ],
+      [
+        "tuneless",
+        "Typeless"
+      ],
+      [
+        "Virgil's",
+        "Vercel's"
+      ],
+      [
+        "wisher's",
+        "Whisper's"
+      ],
+      [
+        "Catalan's",
+        "Kotlin's"
+      ],
+      [
+        "cavalcade",
+        "Canva Claude"
+      ],
+      [
+        "cellulite",
+        "Claude"
+      ],
+      [
+        "cession's",
+        "session's"
+      ],
+      [
+        "clickbait",
+        "CLI GPT"
+      ],
+      [
+        "Clinton's",
+        "CLI Notion's"
+      ],
+      [
+        "Colette's",
+        "Claude's"
+      ],
+      [
+        "colloid's",
+        "Claude's"
+      ],
+      [
+        "commode's",
+        "commit's"
+      ],
+      [
+        "corsair's",
+        "Cursor's"
+      ],
+      [
+        "cotillion",
+        "Kotlin"
+      ],
+      [
+        "couplet's",
+        "Copilot's"
+      ],
+      [
+        "crosier's",
+        "Cursor's"
+      ],
+      [
+        "cuckold's",
+        "Claude's"
+      ],
+      [
+        "cuckolded",
+        "Claude"
+      ],
+      [
+        "culotte's",
+        "Claude's"
+      ],
+      [
+        "dudgeon's",
+        "token's"
+      ],
+      [
+        "Galatea's",
+        "Claude's"
+      ],
+      [
+        "Galatia's",
+        "Claude's"
+      ],
+      [
+        "Garrick's",
+        "Grok's"
+      ],
+      [
+        "Giorgione",
+        "Grok iPhone"
+      ],
+      [
+        "gymnastic",
+        "Gemini SDK"
+      ],
+      [
+        "jollity's",
+        "Claude's"
+      ],
+      [
+        "megapixel",
+        "MCP Pixel"
+      ],
+      [
+        "prolixity",
+        "Perplexity"
+      ],
+      [
+        "repainted",
+        "repo Intel"
+      ],
+      [
+        "Sassoon's",
+        "session's"
+      ],
+      [
+        "Tabasco's",
+        "DeepSeek's"
+      ],
+      [
+        "Tbilisi's",
+        "Typeless's"
+      ],
+      [
+        "Tijuana's",
+        "token's"
+      ],
+      [
+        "untreated",
+        "Android"
+      ],
+      [
+        "untutored",
+        "Android"
+      ],
+      [
+        "virgule's",
+        "Vercel's"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Codex",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "Apple NVIDIA",
+        "input" : "AppleNVidia",
+        "output" : "Apple NVIDIA"
+      },
+      {
+        "cleanupOutput" : "OpenAI ChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAI ChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "Grok"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "MiniMax",
+        "input" : "minimax",
+        "output" : "MiniMax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Codex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "Prompt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "session"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gemini 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 Prompt，在 coate 裡面開 session。"
+      },
+      {
+        "cleanupOutput" : "這個 GLM Kimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLM Kimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "ChatGPT 跟 OpenAI",
+        "input" : "chatgpt 跟 openai",
+        "output" : "ChatGPT 跟 OpenAI"
+      },
+      {
+        "cleanupOutput" : "NVIDIA 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "NVIDIA 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "Kimi"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools",
+        "input" : "更新 Protus",
+        "output" : "更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Pro Tools",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 radar",
+        "input" : "打開 radar",
+        "output" : "打開 radar"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 rader"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iPhone",
+        "input" : "我的 iphone",
+        "output" : "我的 iPhone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolby Atmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolby Atmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 Darmy Music 上班"
+      },
+      {
+        "cleanupOutput" : "用 Utuvo Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 Utuvo Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Spatial Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Spatial Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemini 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 ChatGPT",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 ChatGPT"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Logic Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tonmeister"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Codex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 Tonmeister",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 Tonmeister"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 True Peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 Spatial Audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 Vibe Coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tonmeister 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 Codex 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 Codex 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI Music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Pro Tools 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 Darmy Music 用 Utuvo Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "set" : "aiTwAudio",
+    "sweepChanges" : [
+      [
+        "gyps",
+        "Cubase"
+      ],
+      [
+        "crick",
+        "Grok"
+      ],
+      [
+        "gypsy",
+        "Cubase"
+      ],
+      [
+        "kaput",
+        "GPT"
+      ],
+      [
+        "silky",
+        "Slack"
+      ],
+      [
+        "stoic",
+        "SDK"
+      ],
+      [
+        "gaggle",
+        "Google"
+      ],
+      [
+        "gelled",
+        "Claude"
+      ],
+      [
+        "giblet",
+        "Copilot"
+      ],
+      [
+        "gypped",
+        "GPT"
+      ],
+      [
+        "nonfat",
+        "NVIDIA"
+      ],
+      [
+        "renter",
+        "renderer"
+      ],
+      [
+        "spiffy",
+        "Spotify"
+      ],
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "cabbies",
+        "Cubase"
+      ],
+      [
+        "carjack",
+        "Grok"
+      ],
+      [
+        "connive",
+        "Canva"
+      ],
+      [
+        "crick's",
+        "Grok's"
+      ],
+      [
+        "deploys",
+        "Typeless"
+      ],
+      [
+        "discoed",
+        "Discord"
+      ],
+      [
+        "doggone",
+        "token"
+      ],
+      [
+        "gaucher",
+        "Cohere"
+      ],
+      [
+        "gypsies",
+        "Cubase"
+      ],
+      [
+        "gypsy's",
+        "Cubase's"
+      ],
+      [
+        "layoffs",
+        "LUFS"
+      ],
+      [
+        "reentry",
+        "renderer"
+      ],
+      [
+        "sassing",
+        "Samsung"
+      ],
+      [
+        "stoic's",
+        "SDK's"
+      ],
+      [
+        "stymies",
+        "stems"
+      ],
+      [
+        "topless",
+        "Typeless"
+      ],
+      [
+        "untried",
+        "Android"
+      ],
+      [
+        "farcical",
+        "Vercel"
+      ],
+      [
+        "gaggle's",
+        "Google's"
+      ],
+      [
+        "giblet's",
+        "Copilot's"
+      ],
+      [
+        "mistreat",
+        "Mistral"
+      ],
+      [
+        "mistrial",
+        "Mistral"
+      ],
+      [
+        "renter's",
+        "renderer's"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "adamantly",
+        "ADM Intel"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "celluloid",
+        "Claude"
+      ],
+      [
+        "copulated",
+        "Copilot"
+      ],
+      [
+        "mistrials",
+        "Mistral"
+      ],
+      [
+        "reentry's",
+        "renderer's"
+      ],
+      [
+        "gargantuan",
+        "Grok Notion"
+      ],
+      [
+        "mistrial's",
+        "Mistral's"
+      ],
+      [
+        "celluloid's",
+        "Claude's"
+      ],
+      [
+        "Adam",
+        "ADM"
+      ],
+      [
+        "Amos",
+        "Atmos"
+      ],
+      [
+        "Apia",
+        "API"
+      ],
+      [
+        "Cali",
+        "CLI"
+      ],
+      [
+        "Celt",
+        "Claude"
+      ],
+      [
+        "Clio",
+        "CLI"
+      ],
+      [
+        "clit",
+        "Claude"
+      ],
+      [
+        "Elam",
+        "Ollama"
+      ],
+      [
+        "grog",
+        "Grok"
+      ],
+      [
+        "Gwyn",
+        "Qwen"
+      ],
+      [
+        "jibs",
+        "Cubase"
+      ],
+      [
+        "Kali",
+        "CLI"
+      ],
+      [
+        "Kirk",
+        "Grok"
+      ],
+      [
+        "lama",
+        "Llama"
+      ],
+      [
+        "Lima",
+        "Llama"
+      ],
+      [
+        "Salk",
+        "Slack"
+      ],
+      [
+        "tams",
+        "Atmos"
+      ],
+      [
+        "toke",
+        "token"
+      ],
+      [
+        "toms",
+        "Atmos"
+      ],
+      [
+        "Adams",
+        "Atmos"
+      ],
+      [
+        "Alamo",
+        "Ollama"
+      ],
+      [
+        "Cabot",
+        "GPT"
+      ],
+      [
+        "Capet",
+        "GPT"
+      ],
+      [
+        "chary",
+        "Cohere"
+      ],
+      [
+        "Circe",
+        "Grok"
+      ],
+      [
+        "Clyde",
+        "Claude"
+      ],
+      [
+        "Comte",
+        "commit"
+      ],
+      [
+        "copse",
+        "Cubase"
+      ],
+      [
+        "Craig",
+        "Grok"
+      ],
+      [
+        "Croce",
+        "Grok"
+      ],
+      [
+        "cubit",
+        "GPT"
+      ],
+      [
+        "cumin",
+        "Gemini"
+      ],
+      [
+        "Cupid",
+        "GPT"
+      ],
+      [
+        "Dijon",
+        "token"
+      ],
+      [
+        "Dubai",
+        "Doubao"
+      ],
+      [
+        "Edams",
+        "Atmos"
+      ],
+      [
+        "gamin",
+        "Gemini"
+      ],
+      [
+        "gelid",
+        "Claude"
+      ],
+      [
+        "Gogol",
+        "Google"
+      ],
+      [
+        "Golgi",
+        "Google"
+      ],
+      [
+        "Gorky",
+        "Grok"
+      ],
+      [
+        "Gould",
+        "Claude"
+      ],
+      [
+        "Grieg",
+        "Grok"
+      ],
+      [
+        "jabot",
+        "GPT"
+      ],
+      [
+        "japed",
+        "GPT"
+      ],
+      [
+        "japes",
+        "Cubase"
+      ],
+      [
+        "jeeps",
+        "Cubase"
+      ],
+      [
+        "knave",
+        "Canva"
+      ],
+      [
+        "lemma",
+        "Llama"
+      ],
+      [
+        "loamy",
+        "Ollama"
+      ],
+      [
+        "ocher",
+        "Cohere"
+      ],
+      [
+        "sahib",
+        "Zhipu"
+      ],
+      [
+        "sedge",
+        "SDK"
+      ],
+      [
+        "Sheba",
+        "Zhipu"
+      ],
+      [
+        "toked",
+        "token"
+      ],
+      [
+        "tokes",
+        "token"
+      ],
+      [
+        "Zelig",
+        "Slack"
+      ],
+      [
+        "Adam's",
+        "ADM's"
+      ],
+      [
+        "Addams",
+        "Atmos"
+      ],
+      [
+        "Amos's",
+        "Atmos's"
+      ],
+      [
+        "Apia's",
+        "API's"
+      ],
+      [
+        "astral",
+        "Mistral"
+      ],
+      [
+        "Bolton",
+        "Ableton"
+      ],
+      [
+        "Breton",
+        "Ableton"
+      ],
+      [
+        "Bunyan",
+        "Hunyuan"
+      ],
+      [
+        "cadges",
+        "Codex"
+      ],
+      [
+        "Cali's",
+        "CLI's"
+      ],
+      [
+        "caplet",
+        "Copilot"
+      ],
+      [
+        "Celt's",
+        "Claude's"
+      ],
+      [
+        "Clio's",
+        "CLI's"
+      ],
+      [
+        "clit's",
+        "Claude's"
+      ],
+      [
+        "cloyed",
+        "Claude"
+      ],
+      [
+        "comity",
+        "commit"
+      ],
+      [
+        "copses",
+        "Cubase"
+      ],
+      [
+        "coupes",
+        "Cubase"
+      ],
+      [
+        "curacy",
+        "Grok"
+      ],
+      [
+        "Deccan",
+        "token"
+      ],
+      [
+        "Elam's",
+        "Ollama's"
+      ],
+      [
+        "gabled",
+        "Copilot"
+      ],
+      [
+        "gamete",
+        "commit"
+      ],
+      [
+        "gamine",
+        "Gemini"
+      ],
+      [
+        "Gawain",
+        "Qwen"
+      ],
+      [
+        "Geneva",
+        "Canva"
+      ],
+      [
+        "George",
+        "Grok"
+      ],
+      [
+        "gibbet",
+        "GPT"
+      ],
+      [
+        "giggly",
+        "Google"
+      ],
+      [
+        "Gilead",
+        "Claude"
+      ],
+      [
+        "Greece",
+        "Grok"
+      ],
+      [
+        "grog's",
+        "Grok's"
+      ],
+      [
+        "Gwyn's",
+        "Qwen's"
+      ],
+      [
+        "Jacobs",
+        "Cubase"
+      ],
+      [
+        "jibbed",
+        "GPT"
+      ],
+      [
+        "joggle",
+        "Google"
+      ],
+      [
+        "Juliet",
+        "Claude"
+      ],
+      [
+        "Kali's",
+        "CLI's"
+      ],
+      [
+        "kebabs",
+        "Cubase"
+      ],
+      [
+        "Kirk's",
+        "Grok's"
+      ],
+      [
+        "lama's",
+        "Llama's"
+      ],
+      [
+        "Lima's",
+        "Llama's"
+      ],
+      [
+        "lintel",
+        "Intel"
+      ],
+      [
+        "minims",
+        "MiniMax"
+      ],
+      [
+        "Nevada",
+        "NVIDIA"
+      ],
+      [
+        "ranter",
+        "renderer"
+      ],
+      [
+        "Salk's",
+        "Slack's"
+      ],
+      [
+        "Samson",
+        "Samsung"
+      ],
+      [
+        "Seljuk",
+        "Slack"
+      ],
+      [
+        "sepsis",
+        "Supabase"
+      ],
+      [
+        "silage",
+        "Slack"
+      ],
+      [
+        "silica",
+        "Slack"
+      ],
+      [
+        "slough",
+        "Slack"
+      ],
+      [
+        "steeds",
+        "stems"
+      ],
+      [
+        "stooge",
+        "SDK"
+      ],
+      [
+        "stucco",
+        "SDK"
+      ],
+      [
+        "Taejon",
+        "token"
+      ],
+      [
+        "teasel",
+        "Tesla"
+      ],
+      [
+        "toke's",
+        "token's"
+      ],
+      [
+        "triads",
+        "Threads"
+      ],
+      [
+        "Virgil",
+        "Vercel"
+      ],
+      [
+        "wisher",
+        "Whisper"
+      ],
+      [
+        "Adams's",
+        "Atmos's"
+      ],
+      [
+        "Alamo's",
+        "Ollama's"
+      ],
+      [
+        "Balaton",
+        "Ableton"
+      ],
+      [
+        "Cabot's",
+        "GPT's"
+      ],
+      [
+        "Capet's",
+        "GPT's"
+      ],
+      [
+        "Catalan",
+        "Kotlin"
+      ],
+      [
+        "cession",
+        "session"
+      ],
+      [
+        "charier",
+        "Cohere"
+      ],
+      [
+        "Circe's",
+        "Grok's"
+      ],
+      [
+        "Clinton",
+        "CLI Notion"
+      ],
+      [
+        "Clyde's",
+        "Claude's"
+      ],
+      [
+        "cobbled",
+        "Copilot"
+      ],
+      [
+        "codices",
+        "Codex"
+      ],
+      [
+        "cohered",
+        "Cohere"
+      ],
+      [
+        "Colette",
+        "Claude"
+      ],
+      [
+        "colloid",
+        "Claude"
+      ],
+      [
+        "collude",
+        "Claude"
+      ],
+      [
+        "commode",
+        "commit"
+      ],
+      [
+        "Comte's",
+        "commit's"
+      ],
+      [
+        "copse's",
+        "Cubase's"
+      ],
+      [
+        "corsair",
+        "Cursor"
+      ],
+      [
+        "couplet",
+        "Copilot"
+      ],
+      [
+        "Craig's",
+        "Grok's"
+      ],
+      [
+        "Croce's",
+        "Grok's"
+      ],
+      [
+        "crosier",
+        "Cursor"
+      ],
+      [
+        "cubit's",
+        "GPT's"
+      ],
+      [
+        "cuckold",
+        "Claude"
+      ],
+      [
+        "culotte",
+        "Claude"
+      ],
+      [
+        "cumin's",
+        "Gemini's"
+      ],
+      [
+        "Cupid's",
+        "GPT's"
+      ],
+      [
+        "dapples",
+        "Typeless"
+      ],
+      [
+        "dibbles",
+        "Typeless"
+      ],
+      [
+        "Dijon's",
+        "token's"
+      ],
+      [
+        "dizzily",
+        "Tesla"
+      ],
+      [
+        "Dubai's",
+        "Doubao's"
+      ],
+      [
+        "dudgeon",
+        "token"
+      ],
+      [
+        "gabbled",
+        "Copilot"
+      ],
+      [
+        "Galatea",
+        "Claude"
+      ],
+      [
+        "Galatia",
+        "Claude"
+      ],
+      [
+        "gamin's",
+        "Gemini's"
+      ],
+      [
+        "Garrick",
+        "Grok"
+      ],
+      [
+        "goggled",
+        "Google"
+      ],
+      [
+        "Gogol's",
+        "Google's"
+      ],
+      [
+        "Golgi's",
+        "Google's"
+      ],
+      [
+        "googled",
+        "Google"
+      ],
+      [
+        "Gorky's",
+        "Grok's"
+      ],
+      [
+        "Gould's",
+        "Claude's"
+      ],
+      [
+        "Grieg's",
+        "Grok's"
+      ],
+      [
+        "jabot's",
+        "GPT's"
+      ],
+      [
+        "jimmied",
+        "commit"
+      ],
+      [
+        "joggled",
+        "Claude"
+      ],
+      [
+        "jollity",
+        "Claude"
+      ],
+      [
+        "jujubes",
+        "Cubase"
+      ],
+      [
+        "knave's",
+        "Canva's"
+      ],
+      [
+        "kopecks",
+        "Codex"
+      ],
+      [
+        "needn't",
+        "Notion't"
+      ],
+      [
+        "occlude",
+        "Claude"
+      ],
+      [
+        "ocher's",
+        "Cohere's"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "randier",
+        "renderer"
+      ],
+      [
+        "reenter",
+        "renderer"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "sahib's",
+        "Zhipu's"
+      ],
+      [
+        "Sassoon",
+        "session"
+      ],
+      [
+        "sedge's",
+        "SDK's"
+      ],
+      [
+        "Sheba's",
+        "Zhipu's"
+      ],
+      [
+        "Tabasco",
+        "DeepSeek"
+      ],
+      [
+        "Tbilisi",
+        "Typeless"
+      ],
+      [
+        "thralls",
+        "Threads"
+      ],
+      [
+        "Tijuana",
+        "token"
+      ],
+      [
+        "tipples",
+        "Typeless"
+      ],
+      [
+        "virgule",
+        "Vercel"
+      ],
+      [
+        "Zelig's",
+        "Slack's"
+      ],
+      [
+        "ablution",
+        "Ableton"
+      ],
+      [
+        "Addams's",
+        "Atmos's"
+      ],
+      [
+        "Appleton",
+        "Ableton"
+      ],
+      [
+        "biannual",
+        "binaural"
+      ],
+      [
+        "Bolton's",
+        "Ableton's"
+      ],
+      [
+        "Breton's",
+        "Ableton's"
+      ],
+      [
+        "Bunyan's",
+        "Hunyuan's"
+      ],
+      [
+        "caduceus",
+        "Codex"
+      ],
+      [
+        "caplet's",
+        "Copilot's"
+      ],
+      [
+        "carouser",
+        "Cursor"
+      ],
+      [
+        "Catiline",
+        "Kotlin"
+      ],
+      [
+        "colluded",
+        "Claude"
+      ],
+      [
+        "comity's",
+        "commit's"
+      ],
+      [
+        "crackups",
+        "Grok Cubase"
+      ],
+      [
+        "curacy's",
+        "Grok's"
+      ],
+      [
+        "Deccan's",
+        "token's"
+      ],
+      [
+        "descried",
+        "Discord"
+      ],
+      [
+        "didactic",
+        "TikTok"
+      ],
+      [
+        "gamete's",
+        "commit's"
+      ],
+      [
+        "gamine's",
+        "Gemini's"
+      ],
+      [
+        "Gawain's",
+        "Qwen's"
+      ],
+      [
+        "Geneva's",
+        "Canva's"
+      ],
+      [
+        "George's",
+        "Grok's"
+      ],
+      [
+        "gibbet's",
+        "GPT's"
+      ],
+      [
+        "Gilead's",
+        "Claude's"
+      ],
+      [
+        "Godthaab",
+        "GitHub"
+      ],
+      [
+        "Greece's",
+        "Grok's"
+      ],
+      [
+        "innately",
+        "Intel"
+      ],
+      [
+        "Jacobs's",
+        "Cubase's"
+      ],
+      [
+        "joggle's",
+        "Google's"
+      ],
+      [
+        "Juliet's",
+        "Claude's"
+      ],
+      [
+        "lintel's",
+        "Intel's"
+      ],
+      [
+        "mitering",
+        "mastering"
+      ],
+      [
+        "monaural",
+        "binaural"
+      ],
+      [
+        "Nevada's",
+        "NVIDIA's"
+      ],
+      [
+        "oblation",
+        "Ableton"
+      ],
+      [
+        "Olympiad",
+        "Ollama iPad"
+      ],
+      [
+        "panderer",
+        "renderer"
+      ],
+      [
+        "Quaalude",
+        "Claude"
+      ],
+      [
+        "ripostes",
+        "repo stems"
+      ],
+      [
+        "Samson's",
+        "Samsung's"
+      ],
+      [
+        "Seljuk's",
+        "Slack's"
+      ],
+      [
+        "sepsis's",
+        "Supabase's"
+      ],
+      [
+        "silage's",
+        "Slack's"
+      ],
+      [
+        "silica's",
+        "Slack's"
+      ],
+      [
+        "slough's",
+        "Slack's"
+      ],
+      [
+        "stickups",
+        "SDK Cubase"
+      ],
+      [
+        "stooge's",
+        "SDK's"
+      ],
+      [
+        "stucco's",
+        "SDK's"
+      ],
+      [
+        "Taejon's",
+        "token's"
+      ],
+      [
+        "teasel's",
+        "Tesla's"
+      ],
+      [
+        "toneless",
+        "Typeless"
+      ],
+      [
+        "treeless",
+        "Typeless"
+      ],
+      [
+        "tubeless",
+        "Typeless"
+      ],
+      [
+        "tuneless",
+        "Typeless"
+      ],
+      [
+        "Virgil's",
+        "Vercel's"
+      ],
+      [
+        "wisher's",
+        "Whisper's"
+      ],
+      [
+        "Balaton's",
+        "Ableton's"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Catalan's",
+        "Kotlin's"
+      ],
+      [
+        "cavalcade",
+        "Canva Claude"
+      ],
+      [
+        "cellulite",
+        "Claude"
+      ],
+      [
+        "cession's",
+        "session's"
+      ],
+      [
+        "clickbait",
+        "CLI GPT"
+      ],
+      [
+        "Clinton's",
+        "CLI Notion's"
+      ],
+      [
+        "Colette's",
+        "Claude's"
+      ],
+      [
+        "colloid's",
+        "Claude's"
+      ],
+      [
+        "commode's",
+        "commit's"
+      ],
+      [
+        "corsair's",
+        "Cursor's"
+      ],
+      [
+        "cotillion",
+        "Kotlin"
+      ],
+      [
+        "couplet's",
+        "Copilot's"
+      ],
+      [
+        "crosier's",
+        "Cursor's"
+      ],
+      [
+        "cuckold's",
+        "Claude's"
+      ],
+      [
+        "cuckolded",
+        "Claude"
+      ],
+      [
+        "culotte's",
+        "Claude's"
+      ],
+      [
+        "dudgeon's",
+        "token's"
+      ],
+      [
+        "Galatea's",
+        "Claude's"
+      ],
+      [
+        "Galatia's",
+        "Claude's"
+      ],
+      [
+        "Garrick's",
+        "Grok's"
+      ],
+      [
+        "Giorgione",
+        "Grok iPhone"
+      ],
+      [
+        "gymnastic",
+        "Gemini SDK"
+      ],
+      [
+        "jollity's",
+        "Claude's"
+      ],
+      [
+        "megapixel",
+        "MCP Pixel"
+      ],
+      [
+        "prolixity",
+        "Perplexity"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "repainted",
+        "repo Intel"
+      ],
+      [
+        "Sassoon's",
+        "session's"
+      ],
+      [
+        "staccatos",
+        "SDK Atmos"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ],
+      [
+        "Tabasco's",
+        "DeepSeek's"
+      ],
+      [
+        "Tbilisi's",
+        "Typeless's"
+      ],
+      [
+        "Tijuana's",
+        "token's"
+      ],
+      [
+        "untreated",
+        "Android"
+      ],
+      [
+        "untutored",
+        "Android"
+      ],
+      [
+        "virgule's",
+        "Vercel's"
+      ],
+      [
+        "ablution's",
+        "Ableton's"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Codex",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding",
+      "7-Eleven",
+      "Dolby Atmos",
+      "Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "Ableton",
+      "Cubase",
+      "Nuendo",
+      "DaVinci Resolve",
+      "ADM",
+      "BWF",
+      "binaural",
+      "stem",
+      "stems",
+      "LUFS",
+      "True Peak",
+      "bed",
+      "object",
+      "renderer",
+      "mixing",
+      "mastering",
+      "Tonmeister",
+      "Apple Music",
+      "Spotify",
+      "Spatial Audio",
+      "AIFF",
+      "AIFC"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "AppleNVidia",
+        "input" : "AppleNVidia",
+        "output" : "AppleNVidia"
+      },
+      {
+        "cleanupOutput" : "OpenAIChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAIChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "grook"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "minimax",
+        "input" : "minimax",
+        "output" : "minimax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gimani"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Coldex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "promt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "sesion"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gimani 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。"
+      },
+      {
+        "cleanupOutput" : "這個 GLMKimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLMKimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "chatgpt 跟 openai",
+        "input" : "chatgpt 跟 openai",
+        "output" : "chatgpt 跟 openai"
+      },
+      {
+        "cleanupOutput" : "nvidia 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "nvidia 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "kimee"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools",
+        "input" : "更新 Protus",
+        "output" : "更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Pro Tools",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Jamin"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "jeman"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 radar",
+        "input" : "打開 radar",
+        "output" : "打開 radar"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 rader"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iphone",
+        "input" : "我的 iphone",
+        "output" : "我的 iphone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolby Atmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolby Atmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 Darmy Music 上班"
+      },
+      {
+        "cleanupOutput" : "用 UTUVO Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 UTUVO Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Spatial Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Spatial Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemeni 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 chat gpt",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 chat gpt"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Logic Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tone Master"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Coldex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 ToneMaster",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 ToneMaster"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 True Peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 Spatial Audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 Vibe Coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI Music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Pro Tools 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "set" : "cleanedTextRule",
+    "sweepChanges" : [
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "UTUVO Type",
+      "UTUVO",
+      "Google Gemini",
+      "Claude Code",
+      "Hugging Face",
+      "Stable Diffusion",
+      "Apple Intelligence",
+      "Vibe Coding",
+      "Dolby Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "DaVinci Resolve",
+      "True Peak",
+      "Apple Music",
+      "Spatial Audio"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "Apple NVIDIA",
+        "input" : "AppleNVidia",
+        "output" : "Apple NVIDIA"
+      },
+      {
+        "cleanupOutput" : "OpenAI ChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAI ChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "grook"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "MiniMax",
+        "input" : "minimax",
+        "output" : "MiniMax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Coldex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "promt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "sesion"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gemini 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。"
+      },
+      {
+        "cleanupOutput" : "這個 GLM Kimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLM Kimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "ChatGPT 跟 OpenAI",
+        "input" : "chatgpt 跟 openai",
+        "output" : "ChatGPT 跟 OpenAI"
+      },
+      {
+        "cleanupOutput" : "NVIDIA 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "NVIDIA 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "Kimi"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools",
+        "input" : "更新 Protus",
+        "output" : "更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Pro Tools",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 radar",
+        "input" : "打開 radar",
+        "output" : "打開 radar"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 rader"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iphone",
+        "input" : "我的 iphone",
+        "output" : "我的 iphone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolby Atmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolby Atmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 Darmy Music 上班"
+      },
+      {
+        "cleanupOutput" : "用 UTUVO Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 UTUVO Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Spatial Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Spatial Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemini 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 ChatGPT",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 ChatGPT"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Logic Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tone Master"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Coldex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 ToneMaster",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 ToneMaster"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 True Peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 Spatial Audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 Vibe Coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tone Master 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 codec 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 codecs 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI Music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI Music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Pro Tools 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 Darmy Music 用 UTUVO Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 Darmy Music 用 UTUVO Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "set" : "macDeterministic",
+    "sweepChanges" : [
+      [
+        "kaput",
+        "GPT"
+      ],
+      [
+        "gelled",
+        "Claude"
+      ],
+      [
+        "gypped",
+        "GPT"
+      ],
+      [
+        "nonfat",
+        "NVIDIA"
+      ],
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "celluloid",
+        "Claude"
+      ],
+      [
+        "celluloid's",
+        "Claude's"
+      ],
+      [
+        "Celt",
+        "Claude"
+      ],
+      [
+        "clit",
+        "Claude"
+      ],
+      [
+        "Cabot",
+        "GPT"
+      ],
+      [
+        "Capet",
+        "GPT"
+      ],
+      [
+        "Clyde",
+        "Claude"
+      ],
+      [
+        "cubit",
+        "GPT"
+      ],
+      [
+        "cumin",
+        "Gemini"
+      ],
+      [
+        "Cupid",
+        "GPT"
+      ],
+      [
+        "gamin",
+        "Gemini"
+      ],
+      [
+        "gelid",
+        "Claude"
+      ],
+      [
+        "Gould",
+        "Claude"
+      ],
+      [
+        "jabot",
+        "GPT"
+      ],
+      [
+        "japed",
+        "GPT"
+      ],
+      [
+        "Celt's",
+        "Claude's"
+      ],
+      [
+        "clit's",
+        "Claude's"
+      ],
+      [
+        "cloyed",
+        "Claude"
+      ],
+      [
+        "gamine",
+        "Gemini"
+      ],
+      [
+        "gibbet",
+        "GPT"
+      ],
+      [
+        "Gilead",
+        "Claude"
+      ],
+      [
+        "jibbed",
+        "GPT"
+      ],
+      [
+        "Juliet",
+        "Claude"
+      ],
+      [
+        "minims",
+        "MiniMax"
+      ],
+      [
+        "Nevada",
+        "NVIDIA"
+      ],
+      [
+        "Cabot's",
+        "GPT's"
+      ],
+      [
+        "Capet's",
+        "GPT's"
+      ],
+      [
+        "Clyde's",
+        "Claude's"
+      ],
+      [
+        "Colette",
+        "Claude"
+      ],
+      [
+        "colloid",
+        "Claude"
+      ],
+      [
+        "collude",
+        "Claude"
+      ],
+      [
+        "cubit's",
+        "GPT's"
+      ],
+      [
+        "cuckold",
+        "Claude"
+      ],
+      [
+        "culotte",
+        "Claude"
+      ],
+      [
+        "cumin's",
+        "Gemini's"
+      ],
+      [
+        "Cupid's",
+        "GPT's"
+      ],
+      [
+        "Galatea",
+        "Claude"
+      ],
+      [
+        "Galatia",
+        "Claude"
+      ],
+      [
+        "gamin's",
+        "Gemini's"
+      ],
+      [
+        "goggled",
+        "Claude"
+      ],
+      [
+        "googled",
+        "Claude"
+      ],
+      [
+        "Gould's",
+        "Claude's"
+      ],
+      [
+        "jabot's",
+        "GPT's"
+      ],
+      [
+        "joggled",
+        "Claude"
+      ],
+      [
+        "jollity",
+        "Claude"
+      ],
+      [
+        "occlude",
+        "Claude"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "colluded",
+        "Claude"
+      ],
+      [
+        "gamine's",
+        "Gemini's"
+      ],
+      [
+        "gibbet's",
+        "GPT's"
+      ],
+      [
+        "Gilead's",
+        "Claude's"
+      ],
+      [
+        "Juliet's",
+        "Claude's"
+      ],
+      [
+        "Nevada's",
+        "NVIDIA's"
+      ],
+      [
+        "Quaalude",
+        "Claude"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "cellulite",
+        "Claude"
+      ],
+      [
+        "Colette's",
+        "Claude's"
+      ],
+      [
+        "colloid's",
+        "Claude's"
+      ],
+      [
+        "cuckold's",
+        "Claude's"
+      ],
+      [
+        "cuckolded",
+        "Claude"
+      ],
+      [
+        "culotte's",
+        "Claude's"
+      ],
+      [
+        "Galatea's",
+        "Claude's"
+      ],
+      [
+        "Galatia's",
+        "Claude's"
+      ],
+      [
+        "jollity's",
+        "Claude's"
+      ],
+      [
+        "prolixity",
+        "Perplexity"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "UTUVO Type",
+      "UTUVO",
+      "Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "NVIDIA",
+      "MiniMax",
+      "GLM",
+      "Kimi",
+      "Google Gemini",
+      "Claude Code",
+      "Hugging Face",
+      "Stable Diffusion",
+      "Apple Intelligence",
+      "Vibe Coding",
+      "Dolby Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "DaVinci Resolve",
+      "True Peak",
+      "Apple Music",
+      "Spatial Audio"
+    ]
+  },
+  {
+    "cases" : [
+      {
+        "cleanupOutput" : "Apple NVIDIA",
+        "input" : "AppleNVidia",
+        "output" : "Apple NVIDIA"
+      },
+      {
+        "cleanupOutput" : "OpenAI ChatGPT",
+        "input" : "OpenAIChatGPT",
+        "output" : "OpenAI ChatGPT"
+      },
+      {
+        "cleanupOutput" : "grook",
+        "input" : "grook",
+        "output" : "Grok"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clote coate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "MiniMax",
+        "input" : "minimax",
+        "output" : "MiniMax"
+      },
+      {
+        "cleanupOutput" : "Gimani",
+        "input" : "Gimani",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Coldex",
+        "input" : "Coldex",
+        "output" : "Codex"
+      },
+      {
+        "cleanupOutput" : "promt",
+        "input" : "promt",
+        "output" : "Prompt"
+      },
+      {
+        "cleanupOutput" : "sesion",
+        "input" : "sesion",
+        "output" : "session"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "Cloud coat",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "rprecity",
+        "input" : "rprecity",
+        "output" : "rprecity"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gimani 的智慧整理",
+        "input" : "我在測試 Gimani 的智慧整理",
+        "output" : "我在測試 Gemini 的智慧整理"
+      },
+      {
+        "cleanupOutput" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "input" : "然後 chat 完以後打包成 promt，在 coate 裡面開 sesion。",
+        "output" : "然後 chat 完以後打包成 Prompt，在 coate 裡面開 session。"
+      },
+      {
+        "cleanupOutput" : "這個 GLM Kimi 都要測",
+        "input" : "這個 GLMKimi 都要測",
+        "output" : "這個 GLM Kimi 都要測"
+      },
+      {
+        "cleanupOutput" : "Claude Code 很好用",
+        "input" : "Claude Code 很好用",
+        "output" : "Claude Code 很好用"
+      },
+      {
+        "cleanupOutput" : "ChatGPT 跟 OpenAI",
+        "input" : "chatgpt 跟 openai",
+        "output" : "ChatGPT 跟 OpenAI"
+      },
+      {
+        "cleanupOutput" : "NVIDIA 的股價",
+        "input" : "nvidia 的股價",
+        "output" : "NVIDIA 的股價"
+      },
+      {
+        "cleanupOutput" : "I ate an apple",
+        "input" : "I ate an apple",
+        "output" : "I ate an apple"
+      },
+      {
+        "cleanupOutput" : "apple 的股價",
+        "input" : "apple 的股價",
+        "output" : "apple 的股價"
+      },
+      {
+        "cleanupOutput" : "kimee",
+        "input" : "kimee",
+        "output" : "Kimi"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools",
+        "input" : "更新 Protus",
+        "output" : "更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "1. 更新 Pro Tools",
+        "input" : "1. 更新 Protus",
+        "output" : "1. 更新 Pro Tools"
+      },
+      {
+        "cleanupOutput" : "Jamin",
+        "input" : "Jamin",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "jeman",
+        "input" : "jeman",
+        "output" : "Gemini"
+      },
+      {
+        "cleanupOutput" : "Claude Code",
+        "input" : "clotecoate",
+        "output" : "Claude Code"
+      },
+      {
+        "cleanupOutput" : "Christmas",
+        "input" : "Christmas",
+        "output" : "Christmas"
+      },
+      {
+        "cleanupOutput" : "confession",
+        "input" : "confession",
+        "output" : "confession"
+      },
+      {
+        "cleanupOutput" : "打開 RADAR",
+        "input" : "打開 radar",
+        "output" : "打開 RADAR"
+      },
+      {
+        "cleanupOutput" : "打開 rader",
+        "input" : "打開 rader",
+        "output" : "打開 RADAR"
+      },
+      {
+        "cleanupOutput" : "打開 reader",
+        "input" : "打開 reader",
+        "output" : "打開 reader"
+      },
+      {
+        "cleanupOutput" : "我的 iPhone",
+        "input" : "我的 iphone",
+        "output" : "我的 iPhone"
+      },
+      {
+        "cleanupOutput" : "我用 Dolby Atmos 混",
+        "input" : "我用 Dolbe Edmos 混",
+        "output" : "我用 Dolby Atmos 混"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 上班",
+        "input" : "我在 Darmy Music 上班",
+        "output" : "我在 DAMI music 上班"
+      },
+      {
+        "cleanupOutput" : "用 UTUVO Type 打字",
+        "input" : "用 Utuvo Type 打字",
+        "output" : "用 UTUVO Type 打字"
+      },
+      {
+        "cleanupOutput" : "這首要做 Spatial Audio 版本",
+        "input" : "這首要做 Special Audio 版本",
+        "output" : "這首要做 Spatial Audio 版本"
+      },
+      {
+        "cleanupOutput" : "我在測試 Gemeni 的東西",
+        "input" : "我在測試 Gemeni 的東西",
+        "output" : "我在測試 Gemini 的東西"
+      },
+      {
+        "cleanupOutput" : "問一下 ChatGPT",
+        "input" : "問一下 chat gpt",
+        "output" : "問一下 ChatGPT"
+      },
+      {
+        "cleanupOutput" : "我用 Largec Pro 混",
+        "input" : "我用 Largec Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "我用 Large C Pro 混",
+        "input" : "我用 Large C Pro 混",
+        "output" : "我用 Logic Pro 混"
+      },
+      {
+        "cleanupOutput" : "Largec Pro會出的音檔",
+        "input" : "Largec Pro會出的音檔",
+        "output" : "Logic Pro會出的音檔"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen3 的模型",
+        "input" : "我在測 Qwen3 的模型",
+        "output" : "我在測 Qwen3 的模型"
+      },
+      {
+        "cleanupOutput" : "我在測 Qwen 的模型",
+        "input" : "我在測 Qwen 的模型",
+        "output" : "我在測 Qwen 的模型"
+      },
+      {
+        "cleanupOutput" : "我是 Tone Master",
+        "input" : "我是 Tone Master",
+        "output" : "我是 Tonmeister"
+      },
+      {
+        "cleanupOutput" : "用 Coldex 寫",
+        "input" : "用 Coldex 寫",
+        "output" : "用 Codex 寫"
+      },
+      {
+        "cleanupOutput" : "研究 Tonmeister",
+        "input" : "研究 ToneMaster",
+        "output" : "研究 Tonmeister"
+      },
+      {
+        "cleanupOutput" : "這兩個 protocols 不相容。",
+        "input" : "這兩個 protocols 不相容。",
+        "output" : "這兩個 protocols 不相容。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好",
+        "input" : "UTUVO Types 這個名字不好",
+        "output" : "UTUVO Types 這個名字不好"
+      },
+      {
+        "cleanupOutput" : "這些 GPTs 都很好用",
+        "input" : "這些 GPTs 都很好用",
+        "output" : "這些 GPTs 都很好用"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "input" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。",
+        "output" : "這首歌要交 Dolby Atmos 的 ADM BWF，還有 stereo 的 AIFF。"
+      },
+      {
+        "cleanupOutput" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "input" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。",
+        "output" : "明天把 stems 匯出成 AIFF，再丟到 Pro Tools 裡混。"
+      },
+      {
+        "cleanupOutput" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "input" : "這個 protocol 跟舊版不相容，要重新 apply。",
+        "output" : "這個 protocol 跟舊版不相容，要重新 apply。"
+      },
+      {
+        "cleanupOutput" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "input" : "我用 Logic Pro 開 session，再 commit 到 repo。",
+        "output" : "我用 Logic Pro 開 session，再 commit 到 repo。"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works.",
+        "input" : "I'm glad the cloud sync works.",
+        "output" : "I'm glad the cloud sync works."
+      },
+      {
+        "cleanupOutput" : "I'm glad it works.",
+        "input" : "I'm glad it works.",
+        "output" : "I'm glad it works."
+      },
+      {
+        "cleanupOutput" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "input" : "請把檔案上傳到 cloud，我等一下用 phone 看。",
+        "output" : "請把檔案上傳到 cloud，我等一下用 phone 看。"
+      },
+      {
+        "cleanupOutput" : "你可以 apply 這個 patch 嗎？",
+        "input" : "你可以 apply 這個 patch 嗎？",
+        "output" : "你可以 apply 這個 patch 嗎？"
+      },
+      {
+        "cleanupOutput" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "input" : "這版的 true peak 要控制在 -1 dBTP，LUFS 是 -14。",
+        "output" : "這版的 True Peak 要控制在 -1 dBTP，LUFS 是 -14。"
+      },
+      {
+        "cleanupOutput" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "input" : "我們先用 Claude Code 寫，再用 Claude 審。",
+        "output" : "我們先用 Claude Code 寫，再用 Claude 審。"
+      },
+      {
+        "cleanupOutput" : "Tonmeister 這個職位在德國很常見。",
+        "input" : "Tonmeister 這個職位在德國很常見。",
+        "output" : "Tonmeister 這個職位在德國很常見。"
+      },
+      {
+        "cleanupOutput" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "input" : "我是 Tonmeister，也是 DAMI music 的音樂總監。",
+        "output" : "我是 Tonmeister，也是 DAMI music 的音樂總監。"
+      },
+      {
+        "cleanupOutput" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "input" : "用 Spatial Audio 聽聽看 binaural 的版本。",
+        "output" : "用 Spatial Audio 聽聽看 binaural 的版本。"
+      },
+      {
+        "cleanupOutput" : "這個 spatial audio 混音有點太寬。",
+        "input" : "這個 spatial audio 混音有點太寬。",
+        "output" : "這個 Spatial Audio 混音有點太寬。"
+      },
+      {
+        "cleanupOutput" : "Apple Music 的 Atmos 版本已經上架。",
+        "input" : "Apple Music 的 Atmos 版本已經上架。",
+        "output" : "Apple Music 的 Atmos 版本已經上架。"
+      },
+      {
+        "cleanupOutput" : "我昨天在 Apple Store 買了 iPhone。",
+        "input" : "我昨天在 Apple Store 買了 iPhone。",
+        "output" : "我昨天在 Apple Store 買了 iPhone。"
+      },
+      {
+        "cleanupOutput" : "UTUVO 的新產品叫 UTUVO Type。",
+        "input" : "UTUVO 的新產品叫 UTUVO Type。",
+        "output" : "UTUVO 的新產品叫 UTUVO Type。"
+      },
+      {
+        "cleanupOutput" : "Utopia 這首歌的 stem 已經給你了。",
+        "input" : "Utopia 這首歌的 stem 已經給你了。",
+        "output" : "Utopia 這首歌的 stem 已經給你了。"
+      },
+      {
+        "cleanupOutput" : "我想把所有的 types 都改成 enum。",
+        "input" : "我想把所有的 types 都改成 enum。",
+        "output" : "我想把所有的 types 都改成 enum。"
+      },
+      {
+        "cleanupOutput" : "他是 vibe coding 的愛好者。",
+        "input" : "他是 vibe coding 的愛好者。",
+        "output" : "他是 Vibe Coding 的愛好者。"
+      },
+      {
+        "cleanupOutput" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "input" : "Google Gemini 跟 ChatGPT 比起來哪個好？",
+        "output" : "Google Gemini 跟 ChatGPT 比起來哪個好？"
+      },
+      {
+        "cleanupOutput" : "請 commit 之後 push 到 GitHub。",
+        "input" : "請 commit 之後 push 到 GitHub。",
+        "output" : "請 commit 之後 push 到 GitHub。"
+      },
+      {
+        "cleanupOutput" : "Mickey Mouse 的配樂是誰做的？",
+        "input" : "Mickey Mouse 的配樂是誰做的？",
+        "output" : "Mickey Mouse 的配樂是誰做的？"
+      },
+      {
+        "cleanupOutput" : "Micky 老師下週要上課。",
+        "input" : "Micky 老師下週要上課。",
+        "output" : "Micky 老師下週要上課。"
+      },
+      {
+        "cleanupOutput" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "input" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。",
+        "output" : "我今天跟 Eva 開會，討論 Mix Bites 的腳本。"
+      },
+      {
+        "cleanupOutput" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "input" : "Morten 的 renderer 跟 Dolby 的不一樣。",
+        "output" : "Morten 的 renderer 跟 Dolby 的不一樣。"
+      },
+      {
+        "cleanupOutput" : "這個 logic 有問題，要重寫。",
+        "input" : "這個 logic 有問題，要重寫。",
+        "output" : "這個 logic 有問題，要重寫。"
+      },
+      {
+        "cleanupOutput" : "Please send me the stems by Friday.",
+        "input" : "Please send me the stems by Friday.",
+        "output" : "Please send me the stems by Friday."
+      },
+      {
+        "cleanupOutput" : "The protocol says we should apply the patch before the commit.",
+        "input" : "The protocol says we should apply the patch before the commit.",
+        "output" : "The protocol says we should apply the patch before the commit."
+      },
+      {
+        "cleanupOutput" : "We stock AIFF and WAV files in the shop.",
+        "input" : "We stock AIFF and WAV files in the shop.",
+        "output" : "We stock AIFF and WAV files in the shop."
+      },
+      {
+        "cleanupOutput" : "The phone types are listed in the sheet.",
+        "input" : "The phone types are listed in the sheet.",
+        "output" : "The phone types are listed in the sheet."
+      },
+      {
+        "cleanupOutput" : "Can you check the true peak on the master?",
+        "input" : "Can you check the true peak on the master?",
+        "output" : "Can you check the true peak on the master?"
+      },
+      {
+        "cleanupOutput" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "input" : "I mixed it in Pro Tools and mastered it in Logic Pro.",
+        "output" : "I mixed it in Pro Tools and mastered it in Logic Pro."
+      },
+      {
+        "cleanupOutput" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "input" : "Our product is called UTUVO Type, and it runs on Mac.",
+        "output" : "Our product is called UTUVO Type, and it runs on Mac."
+      },
+      {
+        "cleanupOutput" : "The cloud version is better.",
+        "input" : "The cloud version is better.",
+        "output" : "The cloud version is better."
+      },
+      {
+        "cleanupOutput" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "input" : "我在用 Typeless，覺得 UTUVO Type 比較好。",
+        "output" : "我在用 Typeless，覺得 UTUVO Type 比較好。"
+      },
+      {
+        "cleanupOutput" : "用 Waves 的 plugin 做 limiter。",
+        "input" : "用 Waves 的 plugin 做 limiter。",
+        "output" : "用 Waves 的 plugin 做 limiter。"
+      },
+      {
+        "cleanupOutput" : "這個 glad 是什麼意思？",
+        "input" : "這個 glad 是什麼意思？",
+        "output" : "這個 glad 是什麼意思？"
+      },
+      {
+        "cleanupOutput" : "先把 protocol buffer 定義好。",
+        "input" : "先把 protocol buffer 定義好。",
+        "output" : "先把 protocol buffer 定義好。"
+      },
+      {
+        "cleanupOutput" : "這個 prototype 下週給你。",
+        "input" : "這個 prototype 下週給你。",
+        "output" : "這個 prototype 下週給你。"
+      },
+      {
+        "cleanupOutput" : "我把 apply 的按鈕改成灰色。",
+        "input" : "我把 apply 的按鈕改成灰色。",
+        "output" : "我把 apply 的按鈕改成灰色。"
+      },
+      {
+        "cleanupOutput" : "The stock market is down today.",
+        "input" : "The stock market is down today.",
+        "output" : "The stock market is down today."
+      },
+      {
+        "cleanupOutput" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "input" : "Fender 的 Tone Master 是一台吉他音箱。",
+        "output" : "Fender 的 Tonmeister 是一台吉他音箱。"
+      },
+      {
+        "cleanupOutput" : "這個 codec 不支援 Atmos。",
+        "input" : "這個 codec 不支援 Atmos。",
+        "output" : "這個 Codex 不支援 Atmos。"
+      },
+      {
+        "cleanupOutput" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "input" : "AAC 跟 ALAC 這兩種 codecs 都可以。",
+        "output" : "AAC 跟 ALAC 這兩種 Codex 都可以。"
+      },
+      {
+        "cleanupOutput" : "我在 3Coins 買了收納盒。",
+        "input" : "我在 3Coins 買了收納盒。",
+        "output" : "我在 3Coins 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "密碼都存在 1Password 裡。",
+        "input" : "密碼都存在 1Password 裡。",
+        "output" : "密碼都存在 1Password 裡。"
+      },
+      {
+        "cleanupOutput" : "我在 7-Eleven 買咖啡。",
+        "input" : "我在 7-Eleven 買咖啡。",
+        "output" : "我在 7-Eleven 買咖啡。"
+      },
+      {
+        "cleanupOutput" : "這個 password 太短。",
+        "input" : "這個 password 太短。",
+        "output" : "這個 password 太短。"
+      },
+      {
+        "cleanupOutput" : "我在 Daiso 買了收納盒。",
+        "input" : "我在 Daiso 買了收納盒。",
+        "output" : "我在 Daiso 買了收納盒。"
+      },
+      {
+        "cleanupOutput" : "我女兒的同學叫 Daisy。",
+        "input" : "我女兒的同學叫 Daisy。",
+        "output" : "我女兒的同學叫 Daisy。"
+      },
+      {
+        "cleanupOutput" : "照片都在 iCloud 裡。",
+        "input" : "照片都在 iCloud 裡。",
+        "output" : "照片都在 iCloud 裡。"
+      },
+      {
+        "cleanupOutput" : "我把檔案放在 cloud 上。",
+        "input" : "我把檔案放在 cloud 上。",
+        "output" : "我把檔案放在 cloud 上。"
+      },
+      {
+        "cleanupOutput" : "我覺得這個問題很 perplexing。",
+        "input" : "我覺得這個問題很 perplexing。",
+        "output" : "我覺得這個問題很 perplexing。"
+      },
+      {
+        "cleanupOutput" : "我用 Perplexity 查資料。",
+        "input" : "我用 Perplexity 查資料。",
+        "output" : "我用 Perplexity 查資料。"
+      },
+      {
+        "cleanupOutput" : "我用 Codex 寫程式。",
+        "input" : "我用 Codex 寫程式。",
+        "output" : "我用 Codex 寫程式。"
+      },
+      {
+        "cleanupOutput" : "Daisy 跟 Daiso 不一樣。",
+        "input" : "Daisy 跟 Daiso 不一樣。",
+        "output" : "Daisy 跟 Daiso 不一樣。"
+      },
+      {
+        "cleanupOutput" : "我們的 cloud storage 滿了。",
+        "input" : "我們的 cloud storage 滿了。",
+        "output" : "我們的 cloud storage 滿了。"
+      },
+      {
+        "cleanupOutput" : "這是 UTUVO Type 的 types 設定。",
+        "input" : "這是 UTUVO Type 的 types 設定。",
+        "output" : "這是 UTUVO Type 的 types 設定。"
+      },
+      {
+        "cleanupOutput" : "UTUVO Types 這個名字不好。",
+        "input" : "UTUVO Types 這個名字不好。",
+        "output" : "UTUVO Types 這個名字不好。"
+      },
+      {
+        "cleanupOutput" : "Mix Bites 第三集要錄了。",
+        "input" : "Mix Bites 第三集要錄了。",
+        "output" : "Mix Bites 第三集要錄了。"
+      },
+      {
+        "cleanupOutput" : "mix bites 是一個系列。",
+        "input" : "mix bites 是一個系列。",
+        "output" : "mix bites 是一個系列。"
+      },
+      {
+        "cleanupOutput" : "他是 Eva 的同事 Evan。",
+        "input" : "他是 Eva 的同事 Evan。",
+        "output" : "他是 Eva 的同事 Evan。"
+      },
+      {
+        "cleanupOutput" : "Martin 跟 Morten 是兩個人。",
+        "input" : "Martin 跟 Morten 是兩個人。",
+        "output" : "Martin 跟 Morten 是兩個人。"
+      },
+      {
+        "cleanupOutput" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。",
+        "input" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 Darmy Music 的教室去示範。",
+        "output" : "這次的 Dolby Atmos 混音是在 Pro Tools 上面做的，然後送到 DAMI music 的教室去示範。"
+      },
+      {
+        "cleanupOutput" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "input" : "我最近在研究 ToneMaster 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。",
+        "output" : "我最近在研究 Tonmeister 的認證課程，北藝大的那門課用的是 Apple 的 Spatial Audio 工具。"
+      },
+      {
+        "cleanupOutput" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。",
+        "input" : "Type 那個 app 在 Mac 上叫做 Utuvo Type，在手機上面也叫做 Utuvo Type，被搞混了。",
+        "output" : "Type 那個 app 在 Mac 上叫做 UTUVO Type，在手機上面也叫做 UTUVO Type，被搞混了。"
+      },
+      {
+        "cleanupOutput" : "DAMI music 的 logo 要改。",
+        "input" : "DAMI Music 的 logo 要改。",
+        "output" : "DAMI music 的 logo 要改。"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞。",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞。",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞。"
+      },
+      {
+        "cleanupOutput" : "更新 Pro Tools 之後再匯出 stems。",
+        "input" : "更新 Protus 之後再匯出 stems。",
+        "output" : "更新 Pro Tools 之後再匯出 stems。"
+      },
+      {
+        "cleanupOutput" : "I'm glad the cloud sync works",
+        "input" : "I'm glad the cloud sync works",
+        "output" : "I'm glad the cloud sync works"
+      },
+      {
+        "cleanupOutput" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "input" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在",
+        "output" : "我的 phone 拿去 shop 修了，這些 types 的 stock 都還在"
+      },
+      {
+        "cleanupOutput" : "commits are pushed",
+        "input" : "commits are pushed",
+        "output" : "commits are pushed"
+      },
+      {
+        "cleanupOutput" : "我在 DAMI music 用 UTUVO Type 寫歌詞",
+        "input" : "我在 Darmy Music 用 Utuvo Type 寫歌詞",
+        "output" : "我在 DAMI music 用 UTUVO Type 寫歌詞"
+      },
+      {
+        "cleanupOutput" : "nineteen metering partials",
+        "input" : "nineteen metering partials",
+        "output" : "nineteen metering partials"
+      }
+    ],
+    "cleanupSweepChanges" : [
+      [
+        "radar",
+        "RADAR"
+      ],
+      [
+        "radar's",
+        "RADAR's"
+      ],
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ]
+    ],
+    "set" : "personal+aiTwAudio",
+    "sweepChanges" : [
+      [
+        "radar",
+        "RADAR"
+      ],
+      [
+        "radar's",
+        "RADAR's"
+      ],
+      [
+        "gyps",
+        "Cubase"
+      ],
+      [
+        "crick",
+        "Grok"
+      ],
+      [
+        "gypsy",
+        "Cubase"
+      ],
+      [
+        "kaput",
+        "GPT"
+      ],
+      [
+        "silky",
+        "Slack"
+      ],
+      [
+        "stoic",
+        "SDK"
+      ],
+      [
+        "gaggle",
+        "Google"
+      ],
+      [
+        "gelled",
+        "Claude"
+      ],
+      [
+        "giblet",
+        "Copilot"
+      ],
+      [
+        "gypped",
+        "GPT"
+      ],
+      [
+        "nonfat",
+        "NVIDIA"
+      ],
+      [
+        "renter",
+        "renderer"
+      ],
+      [
+        "spiffy",
+        "Spotify"
+      ],
+      [
+        "tropic",
+        "True Peak"
+      ],
+      [
+        "cabbies",
+        "Cubase"
+      ],
+      [
+        "carjack",
+        "Grok"
+      ],
+      [
+        "connive",
+        "Canva"
+      ],
+      [
+        "crick's",
+        "Grok's"
+      ],
+      [
+        "deploys",
+        "Typeless"
+      ],
+      [
+        "discoed",
+        "Discord"
+      ],
+      [
+        "doggone",
+        "token"
+      ],
+      [
+        "gaucher",
+        "Cohere"
+      ],
+      [
+        "gypsies",
+        "Cubase"
+      ],
+      [
+        "gypsy's",
+        "Cubase's"
+      ],
+      [
+        "layoffs",
+        "LUFS"
+      ],
+      [
+        "reentry",
+        "renderer"
+      ],
+      [
+        "retiree",
+        "RADAR"
+      ],
+      [
+        "sassing",
+        "Samsung"
+      ],
+      [
+        "stoic's",
+        "SDK's"
+      ],
+      [
+        "stymies",
+        "stems"
+      ],
+      [
+        "topless",
+        "Typeless"
+      ],
+      [
+        "untried",
+        "Android"
+      ],
+      [
+        "farcical",
+        "Vercel"
+      ],
+      [
+        "gaggle's",
+        "Google's"
+      ],
+      [
+        "giblet's",
+        "Copilot's"
+      ],
+      [
+        "mistreat",
+        "Mistral"
+      ],
+      [
+        "mistrial",
+        "Mistral"
+      ],
+      [
+        "renter's",
+        "renderer's"
+      ],
+      [
+        "tropic's",
+        "True Peak's"
+      ],
+      [
+        "adamantly",
+        "ADM Intel"
+      ],
+      [
+        "brutalize",
+        "Pro Tools"
+      ],
+      [
+        "celluloid",
+        "Claude"
+      ],
+      [
+        "copulated",
+        "Copilot"
+      ],
+      [
+        "mistrials",
+        "Mistral"
+      ],
+      [
+        "reentry's",
+        "renderer's"
+      ],
+      [
+        "retiree's",
+        "RADAR's"
+      ],
+      [
+        "gargantuan",
+        "Grok Notion"
+      ],
+      [
+        "mistrial's",
+        "Mistral's"
+      ],
+      [
+        "celluloid's",
+        "Claude's"
+      ],
+      [
+        "Adam",
+        "ADM"
+      ],
+      [
+        "Adar",
+        "RADAR"
+      ],
+      [
+        "Amos",
+        "Atmos"
+      ],
+      [
+        "Apia",
+        "API"
+      ],
+      [
+        "Cali",
+        "CLI"
+      ],
+      [
+        "Celt",
+        "Claude"
+      ],
+      [
+        "Clio",
+        "CLI"
+      ],
+      [
+        "clit",
+        "Claude"
+      ],
+      [
+        "Elam",
+        "Ollama"
+      ],
+      [
+        "grog",
+        "Grok"
+      ],
+      [
+        "Gwyn",
+        "Qwen"
+      ],
+      [
+        "jibs",
+        "Cubase"
+      ],
+      [
+        "Kali",
+        "CLI"
+      ],
+      [
+        "Kirk",
+        "Grok"
+      ],
+      [
+        "lama",
+        "Llama"
+      ],
+      [
+        "Lima",
+        "Llama"
+      ],
+      [
+        "Salk",
+        "Slack"
+      ],
+      [
+        "tams",
+        "Atmos"
+      ],
+      [
+        "toke",
+        "token"
+      ],
+      [
+        "toms",
+        "Atmos"
+      ],
+      [
+        "Adams",
+        "Atmos"
+      ],
+      [
+        "Alamo",
+        "Ollama"
+      ],
+      [
+        "Cabot",
+        "GPT"
+      ],
+      [
+        "Capet",
+        "GPT"
+      ],
+      [
+        "chary",
+        "Cohere"
+      ],
+      [
+        "Circe",
+        "Grok"
+      ],
+      [
+        "Clyde",
+        "Claude"
+      ],
+      [
+        "Comte",
+        "commit"
+      ],
+      [
+        "copse",
+        "Cubase"
+      ],
+      [
+        "Craig",
+        "Grok"
+      ],
+      [
+        "Croce",
+        "Grok"
+      ],
+      [
+        "cubit",
+        "GPT"
+      ],
+      [
+        "cumin",
+        "Gemini"
+      ],
+      [
+        "Cupid",
+        "GPT"
+      ],
+      [
+        "Dijon",
+        "token"
+      ],
+      [
+        "Dubai",
+        "Doubao"
+      ],
+      [
+        "Edams",
+        "Atmos"
+      ],
+      [
+        "gamin",
+        "Gemini"
+      ],
+      [
+        "gelid",
+        "Claude"
+      ],
+      [
+        "Gogol",
+        "Google"
+      ],
+      [
+        "Golgi",
+        "Google"
+      ],
+      [
+        "Gorky",
+        "Grok"
+      ],
+      [
+        "Gould",
+        "Claude"
+      ],
+      [
+        "Grieg",
+        "Grok"
+      ],
+      [
+        "jabot",
+        "GPT"
+      ],
+      [
+        "japed",
+        "GPT"
+      ],
+      [
+        "japes",
+        "Cubase"
+      ],
+      [
+        "jeeps",
+        "Cubase"
+      ],
+      [
+        "knave",
+        "Canva"
+      ],
+      [
+        "lemma",
+        "Llama"
+      ],
+      [
+        "loamy",
+        "Ollama"
+      ],
+      [
+        "ocher",
+        "Cohere"
+      ],
+      [
+        "Ryder",
+        "RADAR"
+      ],
+      [
+        "sahib",
+        "Zhipu"
+      ],
+      [
+        "sedge",
+        "SDK"
+      ],
+      [
+        "Sheba",
+        "Zhipu"
+      ],
+      [
+        "toked",
+        "token"
+      ],
+      [
+        "tokes",
+        "token"
+      ],
+      [
+        "Zelig",
+        "Slack"
+      ],
+      [
+        "Adam's",
+        "ADM's"
+      ],
+      [
+        "Adar's",
+        "RADAR's"
+      ],
+      [
+        "Addams",
+        "Atmos"
+      ],
+      [
+        "Amos's",
+        "Atmos's"
+      ],
+      [
+        "Apia's",
+        "API's"
+      ],
+      [
+        "astral",
+        "Mistral"
+      ],
+      [
+        "Bolton",
+        "Ableton"
+      ],
+      [
+        "Breton",
+        "Ableton"
+      ],
+      [
+        "Bunyan",
+        "Hunyuan"
+      ],
+      [
+        "cadges",
+        "Codex"
+      ],
+      [
+        "Cali's",
+        "CLI's"
+      ],
+      [
+        "caplet",
+        "Copilot"
+      ],
+      [
+        "Celt's",
+        "Claude's"
+      ],
+      [
+        "Clio's",
+        "CLI's"
+      ],
+      [
+        "clit's",
+        "Claude's"
+      ],
+      [
+        "cloyed",
+        "Claude"
+      ],
+      [
+        "comity",
+        "commit"
+      ],
+      [
+        "copses",
+        "Cubase"
+      ],
+      [
+        "coupes",
+        "Cubase"
+      ],
+      [
+        "curacy",
+        "Grok"
+      ],
+      [
+        "Deccan",
+        "token"
+      ],
+      [
+        "Elam's",
+        "Ollama's"
+      ],
+      [
+        "gabled",
+        "Copilot"
+      ],
+      [
+        "gamete",
+        "commit"
+      ],
+      [
+        "gamine",
+        "Gemini"
+      ],
+      [
+        "Gawain",
+        "Qwen"
+      ],
+      [
+        "Geneva",
+        "Canva"
+      ],
+      [
+        "George",
+        "Grok"
+      ],
+      [
+        "gibbet",
+        "GPT"
+      ],
+      [
+        "giggly",
+        "Google"
+      ],
+      [
+        "Gilead",
+        "Claude"
+      ],
+      [
+        "Greece",
+        "Grok"
+      ],
+      [
+        "grog's",
+        "Grok's"
+      ],
+      [
+        "Gwyn's",
+        "Qwen's"
+      ],
+      [
+        "Jacobs",
+        "Cubase"
+      ],
+      [
+        "jibbed",
+        "GPT"
+      ],
+      [
+        "joggle",
+        "Google"
+      ],
+      [
+        "Juliet",
+        "Claude"
+      ],
+      [
+        "Kali's",
+        "CLI's"
+      ],
+      [
+        "kebabs",
+        "Cubase"
+      ],
+      [
+        "Kirk's",
+        "Grok's"
+      ],
+      [
+        "lama's",
+        "Llama's"
+      ],
+      [
+        "Lima's",
+        "Llama's"
+      ],
+      [
+        "lintel",
+        "Intel"
+      ],
+      [
+        "minims",
+        "MiniMax"
+      ],
+      [
+        "Nevada",
+        "NVIDIA"
+      ],
+      [
+        "ranter",
+        "renderer"
+      ],
+      [
+        "Salk's",
+        "Slack's"
+      ],
+      [
+        "Samson",
+        "Samsung"
+      ],
+      [
+        "Seljuk",
+        "Slack"
+      ],
+      [
+        "sepsis",
+        "Supabase"
+      ],
+      [
+        "silage",
+        "Slack"
+      ],
+      [
+        "silica",
+        "Slack"
+      ],
+      [
+        "slough",
+        "Slack"
+      ],
+      [
+        "steeds",
+        "stems"
+      ],
+      [
+        "stooge",
+        "SDK"
+      ],
+      [
+        "stucco",
+        "SDK"
+      ],
+      [
+        "Taejon",
+        "token"
+      ],
+      [
+        "teasel",
+        "Tesla"
+      ],
+      [
+        "toke's",
+        "token's"
+      ],
+      [
+        "triads",
+        "Threads"
+      ],
+      [
+        "Virgil",
+        "Vercel"
+      ],
+      [
+        "wisher",
+        "Whisper"
+      ],
+      [
+        "Adams's",
+        "Atmos's"
+      ],
+      [
+        "Alamo's",
+        "Ollama's"
+      ],
+      [
+        "Balaton",
+        "Ableton"
+      ],
+      [
+        "Cabot's",
+        "GPT's"
+      ],
+      [
+        "Capet's",
+        "GPT's"
+      ],
+      [
+        "Catalan",
+        "Kotlin"
+      ],
+      [
+        "cession",
+        "session"
+      ],
+      [
+        "charier",
+        "Cohere"
+      ],
+      [
+        "Circe's",
+        "Grok's"
+      ],
+      [
+        "Clinton",
+        "CLI Notion"
+      ],
+      [
+        "Clyde's",
+        "Claude's"
+      ],
+      [
+        "cobbled",
+        "Copilot"
+      ],
+      [
+        "codices",
+        "Codex"
+      ],
+      [
+        "cohered",
+        "Cohere"
+      ],
+      [
+        "Colette",
+        "Claude"
+      ],
+      [
+        "colloid",
+        "Claude"
+      ],
+      [
+        "collude",
+        "Claude"
+      ],
+      [
+        "commode",
+        "commit"
+      ],
+      [
+        "Comte's",
+        "commit's"
+      ],
+      [
+        "copse's",
+        "Cubase's"
+      ],
+      [
+        "corsair",
+        "Cursor"
+      ],
+      [
+        "couplet",
+        "Copilot"
+      ],
+      [
+        "Craig's",
+        "Grok's"
+      ],
+      [
+        "Croce's",
+        "Grok's"
+      ],
+      [
+        "crosier",
+        "Cursor"
+      ],
+      [
+        "cubit's",
+        "GPT's"
+      ],
+      [
+        "cuckold",
+        "Claude"
+      ],
+      [
+        "culotte",
+        "Claude"
+      ],
+      [
+        "cumin's",
+        "Gemini's"
+      ],
+      [
+        "Cupid's",
+        "GPT's"
+      ],
+      [
+        "dapples",
+        "Typeless"
+      ],
+      [
+        "dibbles",
+        "Typeless"
+      ],
+      [
+        "Dijon's",
+        "token's"
+      ],
+      [
+        "dizzily",
+        "Tesla"
+      ],
+      [
+        "Dubai's",
+        "Doubao's"
+      ],
+      [
+        "dudgeon",
+        "token"
+      ],
+      [
+        "gabbled",
+        "Copilot"
+      ],
+      [
+        "Galatea",
+        "Claude"
+      ],
+      [
+        "Galatia",
+        "Claude"
+      ],
+      [
+        "gamin's",
+        "Gemini's"
+      ],
+      [
+        "Garrick",
+        "Grok"
+      ],
+      [
+        "goggled",
+        "Google"
+      ],
+      [
+        "Gogol's",
+        "Google's"
+      ],
+      [
+        "Golgi's",
+        "Google's"
+      ],
+      [
+        "googled",
+        "Google"
+      ],
+      [
+        "Gorky's",
+        "Grok's"
+      ],
+      [
+        "Gould's",
+        "Claude's"
+      ],
+      [
+        "Grieg's",
+        "Grok's"
+      ],
+      [
+        "jabot's",
+        "GPT's"
+      ],
+      [
+        "jimmied",
+        "commit"
+      ],
+      [
+        "joggled",
+        "Claude"
+      ],
+      [
+        "jollity",
+        "Claude"
+      ],
+      [
+        "jujubes",
+        "Cubase"
+      ],
+      [
+        "knave's",
+        "Canva's"
+      ],
+      [
+        "kopecks",
+        "Codex"
+      ],
+      [
+        "needn't",
+        "Notion't"
+      ],
+      [
+        "occlude",
+        "Claude"
+      ],
+      [
+        "ocher's",
+        "Cohere's"
+      ],
+      [
+        "Proteus",
+        "Pro Tools"
+      ],
+      [
+        "randier",
+        "renderer"
+      ],
+      [
+        "rattier",
+        "RADAR"
+      ],
+      [
+        "reedier",
+        "RADAR"
+      ],
+      [
+        "reenter",
+        "renderer"
+      ],
+      [
+        "reorder",
+        "RADAR"
+      ],
+      [
+        "retools",
+        "Pro Tools"
+      ],
+      [
+        "Ryder's",
+        "RADAR's"
+      ],
+      [
+        "sahib's",
+        "Zhipu's"
+      ],
+      [
+        "Sassoon",
+        "session"
+      ],
+      [
+        "sedge's",
+        "SDK's"
+      ],
+      [
+        "Sheba's",
+        "Zhipu's"
+      ],
+      [
+        "Tabasco",
+        "DeepSeek"
+      ],
+      [
+        "Tbilisi",
+        "Typeless"
+      ],
+      [
+        "thralls",
+        "Threads"
+      ],
+      [
+        "Tijuana",
+        "token"
+      ],
+      [
+        "tipples",
+        "Typeless"
+      ],
+      [
+        "virgule",
+        "Vercel"
+      ],
+      [
+        "Zelig's",
+        "Slack's"
+      ],
+      [
+        "ablution",
+        "Ableton"
+      ],
+      [
+        "Addams's",
+        "Atmos's"
+      ],
+      [
+        "Appleton",
+        "Ableton"
+      ],
+      [
+        "biannual",
+        "binaural"
+      ],
+      [
+        "Bolton's",
+        "Ableton's"
+      ],
+      [
+        "Breton's",
+        "Ableton's"
+      ],
+      [
+        "Bunyan's",
+        "Hunyuan's"
+      ],
+      [
+        "caduceus",
+        "Codex"
+      ],
+      [
+        "caplet's",
+        "Copilot's"
+      ],
+      [
+        "carouser",
+        "Cursor"
+      ],
+      [
+        "Catiline",
+        "Kotlin"
+      ],
+      [
+        "colluded",
+        "Claude"
+      ],
+      [
+        "comity's",
+        "commit's"
+      ],
+      [
+        "crackups",
+        "Grok Cubase"
+      ],
+      [
+        "curacy's",
+        "Grok's"
+      ],
+      [
+        "Deccan's",
+        "token's"
+      ],
+      [
+        "descried",
+        "Discord"
+      ],
+      [
+        "didactic",
+        "TikTok"
+      ],
+      [
+        "gamete's",
+        "commit's"
+      ],
+      [
+        "gamine's",
+        "Gemini's"
+      ],
+      [
+        "Gawain's",
+        "Qwen's"
+      ],
+      [
+        "Geneva's",
+        "Canva's"
+      ],
+      [
+        "George's",
+        "Grok's"
+      ],
+      [
+        "gibbet's",
+        "GPT's"
+      ],
+      [
+        "Gilead's",
+        "Claude's"
+      ],
+      [
+        "Godthaab",
+        "GitHub"
+      ],
+      [
+        "Greece's",
+        "Grok's"
+      ],
+      [
+        "innately",
+        "Intel"
+      ],
+      [
+        "Jacobs's",
+        "Cubase's"
+      ],
+      [
+        "joggle's",
+        "Google's"
+      ],
+      [
+        "Juliet's",
+        "Claude's"
+      ],
+      [
+        "lintel's",
+        "Intel's"
+      ],
+      [
+        "mitering",
+        "mastering"
+      ],
+      [
+        "monaural",
+        "binaural"
+      ],
+      [
+        "Nevada's",
+        "NVIDIA's"
+      ],
+      [
+        "oblation",
+        "Ableton"
+      ],
+      [
+        "Olympiad",
+        "Ollama iPad"
+      ],
+      [
+        "panderer",
+        "renderer"
+      ],
+      [
+        "Quaalude",
+        "Claude"
+      ],
+      [
+        "ripostes",
+        "repo stems"
+      ],
+      [
+        "Samson's",
+        "Samsung's"
+      ],
+      [
+        "Seljuk's",
+        "Slack's"
+      ],
+      [
+        "sepsis's",
+        "Supabase's"
+      ],
+      [
+        "silage's",
+        "Slack's"
+      ],
+      [
+        "silica's",
+        "Slack's"
+      ],
+      [
+        "slough's",
+        "Slack's"
+      ],
+      [
+        "stickups",
+        "SDK Cubase"
+      ],
+      [
+        "stooge's",
+        "SDK's"
+      ],
+      [
+        "stucco's",
+        "SDK's"
+      ],
+      [
+        "Taejon's",
+        "token's"
+      ],
+      [
+        "teasel's",
+        "Tesla's"
+      ],
+      [
+        "toneless",
+        "Typeless"
+      ],
+      [
+        "treeless",
+        "Typeless"
+      ],
+      [
+        "tubeless",
+        "Typeless"
+      ],
+      [
+        "tuneless",
+        "Typeless"
+      ],
+      [
+        "Virgil's",
+        "Vercel's"
+      ],
+      [
+        "wisher's",
+        "Whisper's"
+      ],
+      [
+        "Balaton's",
+        "Ableton's"
+      ],
+      [
+        "bordellos",
+        "Pro Tools"
+      ],
+      [
+        "Catalan's",
+        "Kotlin's"
+      ],
+      [
+        "cavalcade",
+        "Canva Claude"
+      ],
+      [
+        "cellulite",
+        "Claude"
+      ],
+      [
+        "cession's",
+        "session's"
+      ],
+      [
+        "clickbait",
+        "CLI GPT"
+      ],
+      [
+        "Clinton's",
+        "CLI Notion's"
+      ],
+      [
+        "Colette's",
+        "Claude's"
+      ],
+      [
+        "colloid's",
+        "Claude's"
+      ],
+      [
+        "commode's",
+        "commit's"
+      ],
+      [
+        "corsair's",
+        "Cursor's"
+      ],
+      [
+        "cotillion",
+        "Kotlin"
+      ],
+      [
+        "couplet's",
+        "Copilot's"
+      ],
+      [
+        "crosier's",
+        "Cursor's"
+      ],
+      [
+        "cuckold's",
+        "Claude's"
+      ],
+      [
+        "cuckolded",
+        "Claude"
+      ],
+      [
+        "culotte's",
+        "Claude's"
+      ],
+      [
+        "dudgeon's",
+        "token's"
+      ],
+      [
+        "Galatea's",
+        "Claude's"
+      ],
+      [
+        "Galatia's",
+        "Claude's"
+      ],
+      [
+        "Garrick's",
+        "Grok's"
+      ],
+      [
+        "Giorgione",
+        "Grok iPhone"
+      ],
+      [
+        "gymnastic",
+        "Gemini SDK"
+      ],
+      [
+        "jollity's",
+        "Claude's"
+      ],
+      [
+        "megapixel",
+        "MCP Pixel"
+      ],
+      [
+        "prolixity",
+        "Perplexity"
+      ],
+      [
+        "Proteus's",
+        "Pro Tools's"
+      ],
+      [
+        "reorder's",
+        "RADAR's"
+      ],
+      [
+        "repainted",
+        "repo Intel"
+      ],
+      [
+        "repertory",
+        "repo RADAR"
+      ],
+      [
+        "Sassoon's",
+        "session's"
+      ],
+      [
+        "staccatos",
+        "SDK Atmos"
+      ],
+      [
+        "subtitled",
+        "Spatial Audio"
+      ],
+      [
+        "Tabasco's",
+        "DeepSeek's"
+      ],
+      [
+        "Tbilisi's",
+        "Typeless's"
+      ],
+      [
+        "Tijuana's",
+        "token's"
+      ],
+      [
+        "untreated",
+        "Android"
+      ],
+      [
+        "untutored",
+        "Android"
+      ],
+      [
+        "virgule's",
+        "Vercel's"
+      ],
+      [
+        "ablution's",
+        "Ableton's"
+      ]
+    ],
+    "sweepRange" : [
+      0,
+      76840
+    ],
+    "terms" : [
+      "DAMI music",
+      "RADAR",
+      "UTUVO Type",
+      "UTUVO",
+      "Gemini",
+      "Google Gemini",
+      "ChatGPT",
+      "OpenAI",
+      "GPT",
+      "Claude",
+      "Claude Code",
+      "Anthropic",
+      "Perplexity",
+      "Apple",
+      "Google",
+      "Microsoft",
+      "Amazon",
+      "Meta",
+      "Tesla",
+      "Samsung",
+      "Intel",
+      "AMD",
+      "Sora",
+      "MiniMax",
+      "GLM",
+      "Zhipu",
+      "Moonshot",
+      "Doubao",
+      "Hunyuan",
+      "Mistral",
+      "Cohere",
+      "Whisper",
+      "Ollama",
+      "Hugging Face",
+      "Vercel",
+      "Cloudflare",
+      "Supabase",
+      "Xcode",
+      "Kotlin",
+      "SwiftUI",
+      "session",
+      "token",
+      "LLM",
+      "MCP",
+      "SDK",
+      "CLI",
+      "repo",
+      "commit",
+      "Copilot",
+      "GitHub",
+      "Cursor",
+      "Codex",
+      "Midjourney",
+      "Stable Diffusion",
+      "DeepSeek",
+      "Qwen",
+      "Llama",
+      "Grok",
+      "Kimi",
+      "Typeless",
+      "Chatterfly",
+      "Notion",
+      "Figma",
+      "Canva",
+      "Slack",
+      "Discord",
+      "Telegram",
+      "LINE",
+      "Threads",
+      "Instagram",
+      "Facebook",
+      "YouTube",
+      "TikTok",
+      "iPhone",
+      "iPad",
+      "MacBook",
+      "Apple Intelligence",
+      "Siri",
+      "Android",
+      "Pixel",
+      "NVIDIA",
+      "TSMC",
+      "API",
+      "Prompt",
+      "Vibe Coding",
+      "7-Eleven",
+      "Dolby Atmos",
+      "Atmos",
+      "Pro Tools",
+      "Logic Pro",
+      "Ableton",
+      "Cubase",
+      "Nuendo",
+      "DaVinci Resolve",
+      "ADM",
+      "BWF",
+      "binaural",
+      "stem",
+      "stems",
+      "LUFS",
+      "True Peak",
+      "bed",
+      "object",
+      "renderer",
+      "mixing",
+      "mastering",
+      "Tonmeister",
+      "Apple Music",
+      "Spotify",
+      "Spatial Audio",
+      "AIFF",
+      "AIFC"
+    ]
+  }
+]

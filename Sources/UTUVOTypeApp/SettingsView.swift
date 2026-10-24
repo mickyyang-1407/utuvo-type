@@ -2,6 +2,11 @@ import SwiftUI
 import AppKit
 import UTUVOTypeCore
 
+extension Notification.Name {
+    /// 設定視窗切到某個分頁（object＝SettingsSection.rawValue）。
+    static let utuvoShowSettingsSection = Notification.Name("utuvo.type.showSettingsSection")
+}
+
 enum SettingsSection: String, CaseIterable, Identifiable {
     case general
     case insights
@@ -58,6 +63,14 @@ enum SettingsSection: String, CaseIterable, Identifiable {
 }
 
 struct SettingsView: View {
+    /// 歷史紀錄卡片下面的說明，跟 `HistoryRetention.plan` 的規則一一對應（repair round 2：以前說「轉錄前取消」的
+    /// 那筆也保留，其實文字保留照樣刪它；只有辨識失敗、錄音還在、還能重試的那筆不被文字保留刪）。
+    static func retentionFootnote(zh: Bool) -> String {
+        zh
+            ? "錄音超過保留期限只刪錄音檔，文字紀錄留著；只剩錄音、還能重試的紀錄不刪錄音。加星號的紀錄不會被自動刪除。辨識失敗、錄音還在、還能重試的紀錄，文字紀錄的期限與筆數也不刪它，方便重試；其他紀錄都照文字紀錄的設定刪除。"
+            : "Recordings past their limit are deleted, but the text stays; entries that only have a recording and can still be retried keep it. Starred entries are never deleted automatically. Failed transcriptions whose recording is still there and can be retried aren't deleted by the text history setting either, so you can retry; everything else follows the text history setting."
+    }
+
     @ObservedObject var model: AppModel
     @ObservedObject private var preferences: AppPreferences
     @State private var selectedSection: SettingsSection = .general
@@ -65,6 +78,13 @@ struct SettingsView: View {
     @State private var dictionaryWord = ""
     @State private var dictionaryOutput = ""
     @State private var dictionaryIOMessage: String?
+    /// 字典頁（2026-10-22 app-shell-2／6）：清空全部要先確認、單字移除可以復原、搜尋、純詞表匯入先確認。
+    @State private var dictionaryClearPrompt: AppPreferences.DictionaryClearPrompt?
+    @State private var pendingWordImport: AppPreferences.WordListImportPrompt?
+    @State private var lastRemovedTerm: RemovedDictionaryTerm?
+    @State private var dictionaryQuery = ""
+    /// 字典頁「全部／自動加入／手動加入」（2026-10-22 delivery-learning-4，同 iOS 的三個分頁）。
+    @State private var dictionarySourceTab: DictionarySync.Tab = .all
     @State private var isCapturingPostProcessingShortcut = false
     @State private var isCapturingAskShortcut = false
     @State private var isCapturingExplainShortcut = false
@@ -73,6 +93,8 @@ struct SettingsView: View {
     @State private var presetDisplayName = ""
     @State private var presetPromptHint = ""
     @State private var showingClearHistoryConfirmation = false
+    /// 改短保留期限前先問（app-shell-1）：要套用的設定＋會刪多少。
+    @State private var pendingRetention: (settings: AppPreferences.RetentionSettings, impact: AppPreferences.RetentionImpact)?
     @State private var expandedHistoryMonths: Set<String> = []
     @State private var deviceRefreshToken = UUID()
     @State private var engineRepoRoot: String? = RuntimeBootstrap.locateRepoRoot()
@@ -105,6 +127,12 @@ struct SettingsView: View {
         self._selectedSection = State(initialValue: initialSection)
     }
 
+    /// 隔離預覽用：一打開就展開指定月份（key 格式 "yyyy-MM"）。
+    init(model: AppModel, initialSection: SettingsSection, expandedHistoryMonths: Set<String>) {
+        self.init(model: model, initialSection: initialSection)
+        self._expandedHistoryMonths = State(initialValue: expandedHistoryMonths)
+    }
+
     var body: some View {
         HStack(spacing: 0) {
             sidebar.disabled(preferences.isolation != nil)
@@ -120,6 +148,10 @@ struct SettingsView: View {
         .background(AmbientBackdrop())
         // 二次元淡色系是固定亮色調；不跟系統深色模式，避免原生控件變深色混搭。
         .colorScheme(AppBrand.colorScheme)
+        // app-shell-5：首頁快捷鍵卡要跳到「快捷鍵」分頁（設定視窗已經開著時）。
+        .onReceive(NotificationCenter.default.publisher(for: .utuvoShowSettingsSection)) { note in
+            if let raw = note.object as? String, let section = SettingsSection(rawValue: raw) { selectedSection = section }
+        }
     }
 
     private var sidebar: some View {
@@ -429,6 +461,19 @@ struct SettingsView: View {
                         options: OutputScript.allCases,
                         name: { $0.localizedName(zh: preferences.isChineseUI) }
                     )
+                    // app-shell-7：語言變體（台灣／香港／中國大陸用字、美式／英式英文）；只有提供變體的語言才顯示。
+                    let variantOptions = CleanupVariant.options(forLanguage: preferences.transcriptionLanguage.rawValue)
+                    if !variantOptions.isEmpty {
+                        settingsPickerRow(
+                            preferences.tr("用字習慣", "Language Variant"),
+                            selection: Binding(
+                                get: { preferences.effectiveLanguageVariant },
+                                set: { preferences.setLanguageVariant($0, for: preferences.transcriptionLanguage) }
+                            ),
+                            options: variantOptions,
+                            name: { $0.displayName(zh: preferences.isChineseUI) }
+                        )
+                    }
                     Text(preferences.tr(
                         "語言、輸出文字與輸入端點會從下一次錄音開始套用。繁體轉換使用台灣用語（軟體、資訊）。",
                         "Language, output script and input endpoint apply from the next recording. Traditional conversion uses Taiwan wording."
@@ -741,12 +786,34 @@ struct SettingsView: View {
             subtitle: "\(record.mode.shortName) · \(record.appName ?? preferences.tr("未知 App", "Unknown App")) · \(Int(record.duration.rounded())) \(preferences.tr("秒", "sec"))",
             icon: record.isStarred ? "star.fill" : "waveform"
         ) {
-            Text(record.output)
-                .font(.callout)
-                .lineLimit(8)
-                .textSelection(.enabled)
+            // 失敗／取消的紀錄沒有輸出（delivery-learning-1／app-shell-3）：有逐字稿就顯示逐字稿。
+            if !record.output.isEmpty {
+                Text(record.output)
+                    .font(.callout)
+                    .lineLimit(8)
+                    .textSelection(.enabled)
+            } else if !record.isAudioOnly {
+                Text(record.rawTranscript)
+                    .font(.callout)
+                    .lineLimit(8)
+                    .textSelection(.enabled)
+            }
 
-            if record.rawTranscript != record.output {
+            if let status = record.status {
+                Label(historyStatusText(status, record: record), systemImage: status == .failed
+                      ? "exclamationmark.triangle" : "xmark.circle")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(status == .failed ? AppBrand.accent : .secondary)
+            }
+
+            // 這筆沒照正常路徑完成的原因（沒送到輸入欄位、翻譯未完成、辨識失敗…，delivery-learning-2）。
+            if let note = record.note, !record.isAskAnything {
+                Label(note, systemImage: "exclamationmark.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if record.rawTranscript != record.output, !record.output.isEmpty {
                 DisclosureGroup(preferences.tr("原始 transcript", "Raw transcript")) {
                     Text(record.rawTranscript)
                         .font(.caption)
@@ -765,10 +832,30 @@ struct SettingsView: View {
                     )
                 }
                 Button(preferences.tr("複製", "Copy")) { model.copyHistory(record) }
+                    .disabled(record.output.isEmpty && record.isAudioOnly)
                 Button(record.isStarred ? preferences.tr("取消星標", "Unstar") : preferences.tr("加星標", "Star")) {
                     model.toggleHistoryStar(record)
                 }
+                // app-shell-v1：就地更新這一筆、結果放剪貼簿；Ask anything 的紀錄不是聽寫，不能重試。
+                // 沒有逐字稿的（辨識失敗）用存下來的錄音重新辨識（delivery-learning-1）。
+                // 失敗／取消的 Edit Selection 紀錄不能從這裡重試（要重新選取原文字）：按鈕關掉（repair-batch1）。
                 Button(preferences.tr("重試", "Retry")) { model.retryHistory(record) }
+                    .disabled(!record.retryAvailable(audioExists: historyAudioExists(record)))
+                    .help(record.isAskAnything
+                          ? preferences.tr("Ask anything 的紀錄不能重試", "Ask anything entries can't be retried")
+                          : record.status != nil && record.mode == .editSelection
+                            ? preferences.tr("Edit Selection 要重新選取原文字，不能從歷史重試",
+                                             "Edit Selection needs the original selection again; it can't be retried from History")
+                          : record.isAudioOnly
+                            ? preferences.tr("用保存的錄音重新辨識，更新這一筆並複製結果",
+                                             "Transcribe the saved recording again, update this entry and copy the result")
+                            : preferences.tr("用原始逐字稿重新整理，更新這一筆並複製結果",
+                                             "Reformat from the raw transcript, update this entry and copy the result"))
+                if model.retriedHistoryID == record.id {
+                    Text(preferences.tr("已更新，已複製", "Updated, copied"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button(role: .destructive) { model.deleteHistory(record) } label: {
                     Image(systemName: "trash")
@@ -776,6 +863,59 @@ struct SettingsView: View {
                 .buttonStyle(.borderless)
             }
             .glassButton()
+        }
+    }
+
+    /// 保留設定的 binding：改了先算會刪多少，會刪就先問（app-shell-1）；不會刪就直接套用。
+    private func retentionBinding<Value>(_ keyPath: WritableKeyPath<AppPreferences.RetentionSettings, Value>) -> Binding<Value> {
+        Binding(
+            get: { preferences.retentionSettings[keyPath: keyPath] },
+            set: { value in
+                var next = preferences.retentionSettings
+                next[keyPath: keyPath] = value
+                next.textLimit = AppPreferences.clampLimit(next.textLimit)
+                next.audioLimit = AppPreferences.clampLimit(next.audioLimit)
+                guard next != preferences.retentionSettings else { return }
+                let impact = preferences.retentionImpact(of: next)
+                if impact.isEmpty {
+                    preferences.applyRetention(next)
+                } else {
+                    pendingRetention = (next, impact)
+                }
+            }
+        )
+    }
+
+    private func retentionImpactMessage(_ impact: AppPreferences.RetentionImpact?) -> String {
+        guard let impact else { return "" }
+        if impact.removedEntries > 0 {
+            return preferences.tr(
+                "會刪掉 \(impact.removedEntries) 筆歷史紀錄（共 \(impact.removedRecordings) 個錄音檔），無法復原。加星號的不會刪。",
+                "This deletes \(impact.removedEntries) history entries (\(impact.removedRecordings) recordings) and cannot be undone. Starred entries are kept.")
+        }
+        return preferences.tr(
+            "會刪掉 \(impact.removedRecordings) 個錄音檔，文字紀錄留著，無法復原。加星號的不會刪。",
+            "This deletes \(impact.removedRecordings) recordings; the text stays. It cannot be undone. Starred entries are kept.")
+    }
+
+    private func historyAudioExists(_ record: HistoryRecord) -> Bool {
+        record.audioPath.map { FileManager.default.fileExists(atPath: $0) } ?? false
+    }
+
+    private func historyStatusText(_ status: HistoryStatus, record: HistoryRecord) -> String {
+        switch status {
+        case .failed:
+            guard historyAudioExists(record) else {
+                return preferences.tr("辨識失敗；錄音已刪除", "Transcription failed; the recording was deleted")
+            }
+            return record.isRetryable(hasAudio: true)
+                ? preferences.tr("辨識失敗；錄音還在，可按「重試」重新辨識", "Transcription failed; the recording is kept — press Retry")
+                : preferences.tr("辨識失敗；錄音還在，可以播放（這個模式不能從歷史重試）",
+                                 "Transcription failed; the recording can be played (this mode can't be retried from History)")
+        case .cancelled:
+            return record.retryAvailable(audioExists: historyAudioExists(record))
+                ? preferences.tr("已取消，沒有貼上；可按「重試」完成這一筆", "Cancelled, nothing was pasted; press Retry to finish it")
+                : preferences.tr("已取消，沒有貼上（這一筆不能從歷史重試）", "Cancelled, nothing was pasted (this entry can't be retried from History)")
         }
     }
 
@@ -1011,8 +1151,8 @@ struct SettingsView: View {
                             .toggleStyle(.switch)
                     }
                     if preferences.includeSurroundingContext {
-                        Text(preferences.tr("開啟時一起送給整理服務：游標前後各最多 1,000 字、視窗標題、網頁的網域＋路徑（不含查詢參數）、欄位提示文字。下面這些網站完全不送（只留 App 名稱）；密碼欄永遠不讀。",
-                                            "When on, cleanup also gets up to 1,000 characters around the cursor, the window title, the page's domain + path (no query), and the field placeholder. The sites below send nothing (app name only); password fields are never read."))
+                        Text(preferences.tr("開啟時一起送給整理服務：游標前最多 500 字、游標後最多 200 字、視窗標題、網頁的網域＋路徑（不含查詢參數）、欄位提示文字。下面這些網站完全不送（只留 App 名稱）；密碼欄永遠不讀。",
+                                            "When on, cleanup also gets up to 500 characters before the cursor and 200 after, the window title, the page's domain + path (no query), and the field placeholder. The sites below send nothing (app name only); password fields are never read."))
                             .font(AppBrand.ui(10))
                             .foregroundStyle(AppBrand.retroMuted)
                         settingsRow(preferences.tr("不讀脈絡的網站", "Sites that never share context")) {
@@ -1035,8 +1175,8 @@ struct SettingsView: View {
                             .toggleStyle(.switch)
                     }
                     Text(preferences.tr(
-                        "周邊 context 只向 AX 請求目前選取附近最多約 2,000 字，不讀取整個螢幕或整份文件。",
-                        "Surrounding context only asks AX for up to about 2,000 characters near the current selection; it never reads the whole screen or document."
+                        "周邊 context 只向 AX 請求游標前 500 字、游標後 200 字，不讀取整個螢幕或整份文件。",
+                        "Surrounding context only asks AX for 500 characters before the cursor and 200 after; it never reads the whole screen or document."
                     ))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -1045,26 +1185,62 @@ struct SettingsView: View {
                 settingsCard(
                     title: preferences.tr("歷史紀錄", "History"),
                     subtitle: preferences.tr(
-                        "控制本機歷史資料與錄音保留期限。",
-                        "Controls local history data and how long recordings are kept."
+                        "文字紀錄與錄音分開設定保留期限；改短之前會先告訴你要刪幾筆。",
+                        "Text history and recordings are kept separately; shortening tells you how much will be deleted first."
                     ),
                     icon: "clock.arrow.circlepath"
                 ) {
-                    settingsRow(preferences.tr("歷史筆數上限", "History Limit")) {
-                        HStack(spacing: 6) {
-                            TextField("20", value: $preferences.historyLimit, format: .number)
-                                .textFieldStyle(.roundedBorder)
-                                .frame(maxWidth: .infinity)
-                            Text(preferences.tr("筆", "entries"))
-                                .foregroundStyle(.secondary)
-                        }
-                    }
+                    // app-shell-1：以前只有一個「自動刪除錄音」，其實連文字紀錄一起刪。
                     settingsPickerRow(
-                        preferences.tr("自動刪除錄音", "Auto-Delete Recordings"),
-                        selection: $preferences.autoDeletePolicy,
+                        preferences.tr("文字紀錄保留", "Keep Text History"),
+                        selection: retentionBinding(\.text),
                         options: AutoDeletePolicy.allCases,
                         name: { $0.localizedName(zh: preferences.isChineseUI) }
                     )
+                    if preferences.showsTextHistoryLimit {
+                        settingsRow(preferences.tr("文字紀錄筆數上限", "Text History Limit")) {
+                            HStack(spacing: 6) {
+                                TextField("20", value: retentionBinding(\.textLimit), format: .number)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(maxWidth: .infinity)
+                                Text(preferences.tr("筆", "entries"))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    settingsPickerRow(
+                        preferences.tr("錄音保留", "Keep Recordings"),
+                        selection: retentionBinding(\.audio),
+                        options: AutoDeletePolicy.allCases,
+                        name: { $0.localizedName(zh: preferences.isChineseUI) }
+                    )
+                    if preferences.audioRetentionPolicy != .keepAll {
+                        settingsRow(preferences.tr("錄音筆數上限", "Recording Limit")) {
+                            HStack(spacing: 6) {
+                                TextField("20", value: retentionBinding(\.audioLimit), format: .number)
+                                    .textFieldStyle(.roundedBorder)
+                                    .frame(maxWidth: .infinity)
+                                Text(preferences.tr("個", "files"))
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    Text(Self.retentionFootnote(zh: preferences.isChineseUI))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .confirmationDialog(
+                    preferences.tr("要縮短保留期限嗎？", "Shorten what's kept?"),
+                    isPresented: Binding(get: { pendingRetention != nil }, set: { if !$0 { pendingRetention = nil } }),
+                    titleVisibility: .visible
+                ) {
+                    Button(preferences.tr("刪除並套用", "Delete and Apply"), role: .destructive) {
+                        if let pending = pendingRetention { preferences.applyRetention(pending.settings) }
+                        pendingRetention = nil
+                    }
+                    Button(preferences.tr("取消", "Cancel"), role: .cancel) { pendingRetention = nil }
+                } message: {
+                    Text(retentionImpactMessage(pendingRetention?.impact))
                 }
 
                 settingsCard(
@@ -1529,8 +1705,8 @@ struct SettingsView: View {
                 settingsCard(
                     title: preferences.tr("從你的修改學字典", "Learn from your edits"),
                     subtitle: preferences.tr(
-                        "貼上後你若只改了幾個詞（例如「元山」改成「圓山」），這裡會建議加進字典。只在這台 Mac 比對，欄位文字不保存、不送出；大幅改寫不會學。",
-                        "If you fix a few words after a paste (e.g. a misheard name), they show up here as dictionary suggestions. Compared only on this Mac; field text is never stored or sent; big rewrites are ignored."
+                        "貼上後你若只改了幾個詞：同音錯字（「元山」改成「圓山」）和英文專名（Protus 改成 Pro Tools）會直接加進字典，畫面右上角會出現提示、可以復原；其他修改留在這裡讓你決定。按 Enter 送出、清空欄位或換到別的欄位時比對。只在這台 Mac 比對，欄位文字不保存、不送出；大幅改寫不會學。",
+                        "If you fix a few words after a paste, misheard homophones and English names (Protus → Pro Tools) are added to the dictionary right away, with a notice you can undo; other edits wait here for you. Checked when you press Return, clear the field or move to another field. Compared only on this Mac; field text is never stored or sent; big rewrites are ignored."
                     ),
                     icon: "lightbulb"
                 ) {
@@ -1569,6 +1745,22 @@ struct SettingsView: View {
                             .disabled(dictionaryWord.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
 
+                    if !preferences.dictionary.isEmpty {
+                        HStack(spacing: 8) {
+                            Picker("", selection: $dictionarySourceTab) {
+                                Text(preferences.tr("全部", "All")).tag(DictionarySync.Tab.all)
+                                Text(preferences.tr("自動加入", "Auto-added")).tag(DictionarySync.Tab.auto)
+                                Text(preferences.tr("手動加入", "Manually added")).tag(DictionarySync.Tab.manual)
+                            }
+                            .labelsHidden()
+                            .pickerStyle(.segmented)
+                            .fixedSize()
+                            .accessibilityIdentifier("dictionarySourceTab")
+                            TextField(preferences.tr("搜尋字典", "Search dictionary"), text: $dictionaryQuery)
+                                .textFieldStyle(.roundedBorder)
+                        }
+                    }
+
                     if preferences.dictionary.isEmpty {
                         HStack(spacing: 8) {
                             Image(systemName: "text.badge.plus")
@@ -1581,14 +1773,40 @@ struct SettingsView: View {
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 8)
+                    } else if dictionaryEntries.isEmpty {
+                        Text(dictionaryQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                             ? (dictionarySourceTab == .auto
+                                ? preferences.tr("還沒有自動加入的詞。", "No auto-added terms yet.")
+                                : preferences.tr("還沒有手動加入的詞。", "No manually added terms yet."))
+                             : preferences.tr("沒有符合「\(dictionaryQuery)」的詞。", "No terms match “\(dictionaryQuery)”."))
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 8)
                     } else {
+                        let autoTerms = preferences.dictionaryAutoTerms
                         LazyVGrid(
                             columns: [GridItem(.adaptive(minimum: 190), spacing: 8)],
                             spacing: 8
                         ) {
                             ForEach(dictionaryEntries, id: \.source) { entry in
-                                dictionaryChip(entry)
+                                dictionaryChip(entry, isAuto: autoTerms.contains(entry.source))
                             }
+                        }
+                    }
+
+                    if let removed = lastRemovedTerm {
+                        HStack(spacing: 8) {
+                            Text(preferences.tr("已移除「\(removed.source)」。", "Removed “\(removed.source)”."))
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                            Button(preferences.tr("復原", "Undo")) {
+                                preferences.restoreDictionaryTerm(source: removed.source, output: removed.output,
+                                                                  origin: removed.wasAuto ? .auto : .manual)
+                                DictionaryCloud.sync(preferences)
+                                lastRemovedTerm = nil
+                            }
+                            .buttonStyle(.borderless)
+                            Spacer()
                         }
                     }
 
@@ -1600,8 +1818,25 @@ struct SettingsView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Button(preferences.tr("清空全部", "Clear All")) { preferences.resetDictionaryToEmpty() }.disabled(preferences.isolation != nil)
+                        Button(preferences.tr("清空全部", "Clear All")) { dictionaryClearPrompt = preferences.dictionaryClearPrompt() }
+                            .disabled(preferences.isolation != nil || preferences.dictionary.isEmpty)
                             .buttonStyle(.borderless)
+                    }
+                    .confirmationDialog(
+                        dictionaryClearPrompt?.title ?? "",
+                        isPresented: Binding(get: { dictionaryClearPrompt != nil }, set: { if !$0 { dictionaryClearPrompt = nil } }),
+                        titleVisibility: .visible,
+                        presenting: dictionaryClearPrompt
+                    ) { _ in
+                        Button(preferences.tr("全部刪除", "Delete All"), role: .destructive) {
+                            preferences.resetDictionaryToEmpty()
+                            DictionaryCloud.sync(preferences)
+                            lastRemovedTerm = nil
+                            dictionaryClearPrompt = nil
+                        }
+                        Button(preferences.tr("取消", "Cancel"), role: .cancel) { dictionaryClearPrompt = nil }
+                    } message: { prompt in
+                        Text(prompt.message)
                     }
 
                     // 跟 iPhone（iCloud 自動）、Android（匯出／匯入字典檔）互通；兩邊都改過的詞留最後改的那個。
@@ -1610,12 +1845,28 @@ struct SettingsView: View {
                         Button(preferences.tr("匯入字典檔…", "Import Dictionary…")) { importDictionary() }.disabled(preferences.isolation != nil)
                         Spacer()
                     }
+                    .confirmationDialog(
+                        pendingWordImport?.title ?? "",
+                        isPresented: Binding(get: { pendingWordImport != nil }, set: { if !$0 { pendingWordImport = nil } }),
+                        titleVisibility: .visible,
+                        presenting: pendingWordImport
+                    ) { prompt in
+                        Button(preferences.tr("加入 \(prompt.newCount) 個詞", "Add \(prompt.newCount) Words")) {
+                            let added = preferences.addDictionaryWords(prompt.words)
+                            DictionaryCloud.sync(preferences)
+                            dictionaryIOMessage = preferences.tr("已加入 \(added) 個詞。", "Added \(added) words.")
+                            pendingWordImport = nil
+                        }
+                        Button(preferences.tr("取消", "Cancel"), role: .cancel) { pendingWordImport = nil }
+                    } message: { prompt in
+                        Text(prompt.message)
+                    }
                     if let dictionaryIOMessage {
                         Text(dictionaryIOMessage).font(.caption).foregroundStyle(.secondary)
                     }
                     Text(preferences.tr(
-                        "登入同一個 iCloud 的 iPhone 會自動同步；Android 用匯出／匯入字典檔。兩邊都改過的詞留最後改的那個。",
-                        "iPhones signed in to the same iCloud sync automatically; use export/import for Android. When both sides changed a term, the latest edit wins."
+                        "登入同一個 iCloud 的 iPhone 會自動同步；Android 用匯出／匯入字典檔。兩邊都改過的詞留最後改的那個。也可以匯入一行一個詞的 .txt 或一欄 CSV（上限 5 MB）。",
+                        "iPhones signed in to the same iCloud sync automatically; use export/import for Android. When both sides changed a term, the latest edit wins. You can also import a .txt or one-column CSV with one word per line (5 MB max)."
                     ))
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -2202,24 +2453,47 @@ struct SettingsView: View {
     }
 
     private var dictionaryEntries: [(source: String, output: String)] {
-        preferences.dictionary
-            .map { (source: $0.key, output: $0.value) }
-            .sorted { $0.source.localizedCaseInsensitiveCompare($1.source) == .orderedAscending }
+        DictionarySync.filter(
+            preferences.dictionary
+                .map { (source: $0.key, output: $0.value) }
+                .sorted { $0.source.localizedCaseInsensitiveCompare($1.source) == .orderedAscending },
+            tab: dictionarySourceTab,
+            autoTerms: dictionarySourceTab == .all ? [] : preferences.dictionaryAutoTerms,
+            query: dictionaryQuery
+        )
     }
 
-    /// 詞庫包卡：六包（資訊／醫療／財經／法律／工程／音樂音訊），預設全關，
+    private struct RemovedDictionaryTerm: Equatable {
+        let source: String
+        let output: String
+        var wasAuto = false
+    }
+
+    /// 詞庫包卡：內建三包（ai／tw／audio，預設同 iOS／Android）＋六包（資訊／醫療／財經／法律／工程／音樂音訊），預設全關，
     /// 開啟後 term 在背景 cleanup／個人字典補字中擴充（cleanup 提示詞上限 200）。
     private var vocabularyPacksCard: some View {
         let zh = preferences.isChineseUI
         return settingsCard(
-            title: preferences.tr("專業詞庫（選配）", "Professional vocabularies (optional)"),
+            title: preferences.tr("詞庫", "Vocabularies"),
             subtitle: preferences.tr(
-                "六個獨立詞庫（國家教育研究院 樂詞網資料），預設全關；開啟後可與個人字典一起幫忙辨識／修正。",
-                "Six optional catalogs (NAER academic terms); off by default. Once enabled they join the personal dictionary in recognition and cleanup."
+                "內建三包跟 iPhone／Android 相同；另有六個專業詞庫（國家教育研究院 樂詞網資料），預設全關。開啟後可與個人字典一起幫忙辨識／修正。",
+                "Three built-in packs shared with iPhone and Android, plus six optional catalogs (NAER academic terms) that are off by default. Enabled packs join the personal dictionary in recognition and cleanup."
             ),
             icon: "books.vertical"
         ) {
             VStack(alignment: .leading, spacing: 8) {
+                // 內建三包（asr-vocab-1）：跟 iPhone／Android 同一套詞與預設（AI、台灣地名開，音訊製作關）。
+                Text(preferences.tr("內建詞庫", "Built-in vocabularies")).font(.subheadline.weight(.semibold))
+                ForEach(BuiltInVocabulary.all) { pack in
+                    builtInPackRow(pack)
+                }
+                Text(preferences.tr(
+                    "開著的詞會優先交給語音辨識，也會用來修正英文專名。",
+                    "Enabled terms go to speech recognition first and are used to fix English names."
+                ))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                Divider()
                 let packs = vocabularyMetadata
                 if packs.isEmpty {
                     Text(preferences.tr("詞庫目錄尚未載入。", "Vocabulary catalog not loaded yet."))
@@ -2240,6 +2514,27 @@ struct SettingsView: View {
         }
         .task {
             vocabularyMetadata = await Task.detached(priority: .utility) { VocabularyPacks.loadCatalog().packs }.value
+        }
+    }
+
+    private func builtInPackRow(_ pack: BuiltInVocabulary.Pack) -> some View {
+        let detail = preferences.tr("\(pack.terms.count) 詞 · \(pack.summary)", "\(pack.terms.count) terms · \(pack.summary)")
+        return Toggle(isOn: vocabularyBinding(for: pack.id)) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(builtInPackName(pack.id)).font(.body.weight(.medium))
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .toggleStyle(.switch)
+        .padding(.vertical, 2)
+    }
+
+    private func builtInPackName(_ id: String) -> String {
+        switch id {
+        case "ai": return preferences.tr("AI 與科技", "AI & tech")
+        case "tw": return preferences.tr("台灣地名與交通", "Taiwan places & transit")
+        case "audio": return preferences.tr("音樂與音訊製作", "Music & audio production")
+        default: return id
         }
     }
 
@@ -2383,15 +2678,26 @@ struct SettingsView: View {
 
     private func importDictionary() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.json, .plainText]
+        panel.allowedContentTypes = [.json, .plainText, .commaSeparatedText]
         panel.allowsMultipleSelection = false
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
-            let changed = preferences.mergeDictionary(try DictionarySync.decode(Data(contentsOf: url)))
-            DictionaryCloud.sync(preferences)
-            dictionaryIOMessage = preferences.tr("已合併，\(changed) 個詞有變動。", "Merged; \(changed) terms changed.")
+            switch try preferences.prepareDictionaryImport(Data(contentsOf: url), fileName: url.lastPathComponent) {
+            case .merged(let changed):
+                DictionaryCloud.sync(preferences)
+                dictionaryIOMessage = preferences.tr("已合併，\(changed) 個詞有變動。", "Merged; \(changed) terms changed.")
+            case .confirmWords(let prompt) where prompt.newCount == 0:
+                dictionaryIOMessage = preferences.tr("找到 \(prompt.words.count) 個詞，都已經在字典裡。",
+                                                     "Found \(prompt.words.count) words; all are already in the dictionary.")
+            case .confirmWords(let prompt):
+                pendingWordImport = prompt
+            }
         } catch DictionarySync.DecodeError.newerVersion {
             dictionaryIOMessage = preferences.tr("這個字典檔來自較新版本的 UTUVO Type，請先更新。", "This file is from a newer UTUVO Type; please update first.")
+        } catch DictionarySync.WordListError.tooLarge {
+            dictionaryIOMessage = preferences.tr("詞表檔太大，上限是 5 MB。", "The word list is too large (5 MB max).")
+        } catch DictionarySync.WordListError.noWords {
+            dictionaryIOMessage = preferences.tr("這個檔案裡沒有找到任何詞。", "No words found in this file.")
         } catch {
             dictionaryIOMessage = preferences.tr("這不是 UTUVO Type 的字典檔。", "This is not a UTUVO Type dictionary file.")
         }
@@ -2406,12 +2712,24 @@ struct SettingsView: View {
         preferences.formatterPromptPath = url.path
     }
 
-    private func dictionaryChip(_ entry: (source: String, output: String)) -> some View {
+    private func dictionaryChip(_ entry: (source: String, output: String), isAuto: Bool = false) -> some View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(entry.source)
-                    .font(.callout.weight(.medium))
-                    .lineLimit(1)
+                HStack(spacing: 5) {
+                    Text(entry.source)
+                        .font(.callout.weight(.medium))
+                        .lineLimit(1)
+                    if isAuto {
+                        // 從你的修改自動加入的（同 Typeless「Auto-added」標籤）。
+                        Text(preferences.tr("自動", "Auto"))
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Capsule().fill(AppBrand.accent.opacity(0.18)))
+                            .help(preferences.tr("從你的修改自動加入", "Auto-added from your edits"))
+                            .accessibilityIdentifier("dictionaryAutoBadge")
+                    }
+                }
                 if entry.output != entry.source {
                     Text("→ \(entry.output)")
                         .font(.caption)
@@ -2423,6 +2741,7 @@ struct SettingsView: View {
             Button {
                 preferences.removeDictionaryTerm(source: entry.source)
                 DictionaryCloud.sync(preferences)
+                lastRemovedTerm = RemovedDictionaryTerm(source: entry.source, output: entry.output, wasAuto: isAuto)
             } label: {
                 Image(systemName: "xmark.circle.fill")
                     .foregroundStyle(.secondary)
