@@ -2,9 +2,10 @@ import Foundation
 
 /// 聽寫語言的**變體**（Typeless 的 language variants）。
 ///
-/// 變體**不換辨識模型**：辨識用的 locale 還是 `DictationLanguage` 本身。變體只影響兩件事：
+/// 變體**不換辨識模型**：辨識用的 locale 還是 `DictationLanguage` 本身。變體控制：
 /// 1. 整理提示詞（`promptInstruction`：要模型用哪一地的用字拼寫寫出結果）。
-/// 2. 介面上的變體名稱（`localizedName`，跟著介面語言走）。
+/// 2. 最終文字清理與驗證（台灣用語只在台灣變體下套用）。
+/// 3. 介面上的變體名稱（跟著介面語言走）。
 ///
 /// 儲存在 App Group（`KeyboardPresence.defaults`）：鍵盤與主 app 共用同一份，跟 `hantInputKey` 同一個路徑。
 enum LanguageVariant: String, CaseIterable, Sendable {

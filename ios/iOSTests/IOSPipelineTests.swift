@@ -5,6 +5,24 @@ import XCTest
 /// iOS 煙霧測試：core normalizer 在 iOS runtime 的真實行為。
 /// macOS 測試線（repo 檔案依賴）不搬過來——那邊照舊在 Mac 上跑。
 final class IOSPipelineTests: XCTestCase {
+    func testTaiwanPresentationAndDictionaryOverride() {
+        let pipeline = TextPipeline(dictionary: ["軟體": "Software", "臺灣大學": "", "品牌": "Project  X 三點"], latinTerms: [], language: "zh-TW", variant: .zhTW)
+        let output = pipeline.clean("这个软件使用API，品牌，在台灣大學。影片存到数据库。").output
+        XCTAssertEqual(output, "這個 Software 使用 API，Project  X 三點，在臺灣大學。影片存到資料庫。")
+    }
+
+    func testOtherVariantsDoNotGetTaiwanTerms() {
+        XCTAssertEqual(TextPipeline(dictionary: [:], latinTerms: [], language: "zh-TW", variant: .zhCN).clean("这个软件使用API。").output, "这个软件使用 API。")
+        XCTAssertEqual(TextPipeline(dictionary: [:], latinTerms: [], language: "zh-TW", variant: .zhHK).clean("搭的士使用軟件API。").output, "搭的士使用軟件 API。")
+    }
+
+    func testTaiwanFormattingPreservesTechnicalLiterals() {
+        let email = "test" + "@example.com"
+        let input = "請看https://example.com/软件?q=API，寄給\(email)。"
+        XCTAssertEqual(TextPipeline(dictionary: [:], latinTerms: [], variant: .zhTW).clean(input).output,
+                       "請看 https://example.com/软件?q=API，寄給 \(email)。")
+    }
+
     func testNormalizerRunsOnIOS() {
         let pipeline = TextPipeline(dictionary: [:])
         let (output, _) = pipeline.clean("嗯我今天下午三點開會，不是三點，是四點。")

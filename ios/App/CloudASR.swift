@@ -32,15 +32,13 @@ enum CloudASR {
         }
     }
 
-    /// 雲端辨識用哪一家：整理選的那家能辨識就用它；不能（Claude、自訂）就找任何一把已存、能辨識的 key。
-    /// 這樣整理改用 Claude 時，原本存好的 Groq key 照樣拿來辨識語音。
+    /// Audio uploads require cloud mode and explicit audio authorization.
+    /// Use only the pinned ASR provider, independently of the text provider.
     static func route() -> (provider: SmartCleanup.Provider, key: String)? {
-        let selected = SmartCleanup.provider
-        for p in [selected] + [SmartCleanup.Provider.groq, .gemini, .dashscope].filter({ $0 != selected }) where supports(p) {
-            let key = SmartCleanup.key(for: p)
-            if !key.isEmpty { return (p, key) }
-        }
-        return nil
+        guard DictationRouteSettings.mode == .cloud, DictationRouteSettings.audioUploadAuthorized else { return nil }
+        let provider = DictationRouteSettings.asrProvider
+        let key = SmartCleanup.key(for: provider)
+        return supports(provider) && !key.isEmpty ? (provider, key) : nil
     }
 
     /// 兩段語音指示（zh 與 en）共用這個語言代碼；其他語言回 nil＝不用雲端。本體在 `WhisperAudio`。
@@ -48,7 +46,7 @@ enum CloudASR {
 
     /// 開了、服務支援、有 key、語言支援。key 用 SmartCleanup.key(for:) 解析（百鍊共用 IOSSecretStore）。
     static func isReady(language: String) -> Bool {
-        guard enabledPreference() else { return false }
+        guard DictationRouteSettings.mode == .cloud else { return false }
         guard languageCode(for: language) != nil else { return false }
         return route() != nil
     }

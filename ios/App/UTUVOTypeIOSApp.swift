@@ -4,6 +4,8 @@ import UTUVOTypeCore
 @main
 struct UTUVOTypeIOSApp: App {
     init() {
+        SmartCleanup.migrateSettings()
+        _ = DictationRouteSettings.mode
         TipJar.startListening()
         // 沒有 Apple Intelligence 的 iPhone：手機上的 Gemma 整理（下載過才會用）。
         GemmaCleanup.install()

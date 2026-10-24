@@ -29,6 +29,11 @@ final class KeyboardVoiceHost: ObservableObject {
     private var lastActivity = Date()
     private var finalizeWatchdog: Task<Void, Never>?
     private let cleanupTasks = CleanupTaskOwner()
+    private var polishingID: UUID?
+    private var cloudRecognitionFailed = false
+    private var shouldPolishDictation = true
+    private var finalizingASRID: UUID?
+    private var hasLocalRecognizer = false
     private var audioObservers: [NSObjectProtocol] = []
     /// 麥克風被拿走了（來電、別的 app 的語音對話、引擎被系統停掉）。工作階段還在，等拿回來；
     /// 這段期間不發心跳，鍵盤點光球就會走「叫起主 app」，而不是把指令送進沒有聲音的麥克風。
@@ -81,7 +86,8 @@ final class KeyboardVoiceHost: ObservableObject {
                 fail(String(localized: "需要麥克風權限：設定 → UTUVO Type → 麥克風"), commandID: commandID)
                 return
             }
-            guard await Self.requestSpeechAuthorization() == .authorized else {
+            let speechAuthorized = await Self.requestSpeechAuthorization() == .authorized
+            guard speechAuthorized || CloudASR.isReady(language: language) else {
                 fail(String(localized: "需要語音辨識權限：設定 → UTUVO Type → 語音辨識"), commandID: commandID)
                 return
             }
@@ -114,7 +120,7 @@ final class KeyboardVoiceHost: ObservableObject {
             startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo,
                              contextText: cmd.contextText, contextAfter: cmd.contextAfter,
                              contextHint: cmd.contextHint, contextBlocked: cmd.contextBlocked == true,
-                             fieldKind: cmd.contextFieldKind)
+                             fieldKind: cmd.contextFieldKind, polishDictation: cmd.polishDictation ?? true)
             returnTarget = hostBundleID
             if let hostBundleID { returnToPreviousApp(hostBundleID) }
         }
@@ -215,12 +221,12 @@ final class KeyboardVoiceHost: ObservableObject {
             startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo,
                              contextText: cmd.contextText, contextAfter: cmd.contextAfter,
                              contextHint: cmd.contextHint, contextBlocked: cmd.contextBlocked == true,
-                             fieldKind: cmd.contextFieldKind)
+                             fieldKind: cmd.contextFieldKind, polishDictation: cmd.polishDictation ?? true)
         case .start:
             startRecognition(id: cmd.id, language: cmd.language, translateTo: cmd.translateTo,
                              contextText: cmd.contextText, contextAfter: cmd.contextAfter,
                              contextHint: cmd.contextHint, contextBlocked: cmd.contextBlocked == true,
-                             fieldKind: cmd.contextFieldKind)
+                             fieldKind: cmd.contextFieldKind, polishDictation: cmd.polishDictation ?? true)
         case .stop: stopRecognition(id: cmd.id)
         case .cancel: cancelRecognition(id: cmd.id)
         case .endSession: endSession()
@@ -262,10 +268,11 @@ final class KeyboardVoiceHost: ObservableObject {
     private func startRecognition(id: UUID, language: String, translateTo: String? = nil,
                                   contextText: String? = nil, contextAfter: String? = nil,
                                   contextHint: String? = nil, contextBlocked: Bool = false,
-                                  fieldKind: VoiceBridge.Command.FieldKind? = nil) {
+                                  fieldKind: VoiceBridge.Command.FieldKind? = nil, polishDictation: Bool = true) {
         // URL 與 Darwin notification 可能把同一個 start 送兩次；保留第一次帶來的 field context。
         if state.commandID == id, state.phase == .recording { return }
         currentLanguage = language
+        shouldPolishDictation = polishDictation
         cleanupContextByCommand[id] = Self.promptContext(
             language: language, before: contextText, after: contextAfter, hint: contextHint,
             contextBlocked: contextBlocked, fieldKind: fieldKind,
@@ -281,49 +288,52 @@ final class KeyboardVoiceHost: ObservableObject {
         if stream != nil { stream?.cancel(); stream = nil; box.end() }
         finalizeWatchdog?.cancel()
 
-        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language)), recognizer.isAvailable else {
+        let recognizer = SFSpeechRecognizer(locale: Locale(identifier: language))
+        let localAvailable = SFSpeechRecognizer.authorizationStatus() == .authorized
+            && SpeechEngine.canAttemptOnDevice(legacy: recognizer)
+        let plan = KeyboardRecognitionPlan.decide(mode: DictationRouteSettings.mode,
+                                                  localAvailable: localAvailable,
+                                                  cloudAvailable: CloudASR.isReady(language: language))
+        guard plan != .unavailable else {
             #if DEBUG && targetEnvironment(simulator)
-            // 模擬器沒有語音辨識：Debug 用假逐字稿把「鍵盤 ↔ 主 app ↔ 插字」整條橋接跑一遍。
             startFakeRecognition(id: id)
             return
             #else
-            fail(String(localized: "這個語言的辨識器目前不可用"), commandID: id)
+            fail(String(localized: "這個語言的裝置端辨識不可用，請確認模型與權限；雲端模式也需要有效的辨識 key。"), commandID: id)
             return
             #endif
         }
-        let onDeviceOnly = UserDefaults.standard.bool(forKey: DictationModel.onDeviceOnlyKey)
-        guard case .allow(let route) = RecognitionRoutePolicy.decide(
-            supportsOnDevice: recognizer.supportsOnDeviceRecognition,
-            onDeviceOnly: onDeviceOnly,
-            preferCloud: UserDefaults.standard.bool(forKey: DictationModel.preferCloudKey)) else {
-            fail(String(localized: "你開了「只用裝置端辨識」，但這個語言在這台裝置沒有裝置端辨識"), commandID: id)
-            return
-        }
-        // 先開始收音（引擎起來前的話先存著），再非同步建引擎：新引擎（SpeechTranscriber）優先、舊引擎備援。
-        // 講完後用哪個引擎重辨識：本機 Qwen3-ASR 優先（不上傳、免費），不行才走雲端；都不行就用 Apple 的結果。
-        let qwenReady = LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: language) != nil
-        let cloudReady = CloudASR.isReady(language: language)
-        let rerecog = Rerecognition.choose(qwenReady: qwenReady, cloudReady: cloudReady)
+        hasLocalRecognizer = plan.usesLocal
+        let cloudReady = plan.usesCloud
+        let route: RecognitionRoute = cloudReady ? .thirdPartyCloud : .onDevice
+        let rerecog: Rerecognition = cloudReady ? .cloud : .none
+        cloudRecognitionFailed = false
+        polishingID = nil
+        finalizingASRID = nil
+        cleanupTasks.cancelAll()
         box.begin(captureAudio: rerecog != .none)
-        if rerecog == .localQwen { LocalQwenASR.shared.prewarm() }
         startLiveCloudIfNeeded(rerecog: rerecog, language: language)
         let contextual = Self.contextualStrings()
-        Task { @MainActor [weak self] in
-            let started = await SpeechEngine.start(language: language, legacy: recognizer, onDevice: route == .onDevice,
-                                                   contextualStrings: contextual) { [weak self] text, isFinal, errorCode, errorText, tokens in
-                self?.ingest(id: id, text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText, tokens: tokens)
+        if plan.usesLocal {
+            Task { @MainActor [weak self] in
+                let started = await SpeechEngine.start(language: language, legacy: recognizer, onDevice: true,
+                                                       contextualStrings: contextual) { [weak self] text, isFinal, errorCode, errorText, tokens in
+                    self?.ingest(id: id, text: text, isFinal: isFinal, errorCode: errorCode, errorText: errorText, tokens: tokens)
+                }
+                guard let self, self.state.commandID == id, self.state.phase == .recording || self.state.phase == .finishing else {
+                    started?.cancel(); return
+                }
+                guard let started else {
+                    self.hasLocalRecognizer = false
+                    if !cloudReady { self.fail(String(localized: "這個語言的辨識器目前不可用"), commandID: id) }
+                    return
+                }
+                self.stream = started
+                self.box.attach(started)
+                self.state.route = (cloudReady ? RecognitionRoute.thirdPartyCloud : .onDevice).rawValue
+                // 引擎還沒好之前就按了停止：存的音訊已補送，現在收尾。
+                if self.state.phase == .finishing { self.box.end(); started.endAudio() }
             }
-            guard let self, self.state.commandID == id, self.state.phase == .recording || self.state.phase == .finishing else {
-                started?.cancel(); return
-            }
-            guard let started else {
-                self.fail(String(localized: "這個語言的辨識器目前不可用"), commandID: id); return
-            }
-            self.stream = started
-            self.box.attach(started)
-            if started.engineName == "analyzer" { self.state.route = RecognitionRoute.onDevice.rawValue }
-            // 引擎還沒好之前就按了停止：存的音訊已補送，現在收尾。
-            if self.state.phase == .finishing { self.box.end(); started.endAudio() }
         }
         AIPunctuator.shared.prewarm()
         lastError = nil
@@ -333,9 +343,12 @@ final class KeyboardVoiceHost: ObservableObject {
         state.commandID = id
         state.partial = ""
         state.final = nil
+        state.rawTranscript = nil
+        state.outputLanguage = nil
+        state.outputVariant = nil
         state.translated = nil
         state.error = nil
-        state.route = route.rawValue
+        state.route = (cloudReady ? RecognitionRoute.thirdPartyCloud : route).rawValue
         lastActivity = Date()
         publish()
     }
@@ -347,6 +360,9 @@ final class KeyboardVoiceHost: ObservableObject {
         state.commandID = id
         state.partial = ""
         state.final = nil
+        state.rawTranscript = nil
+        state.outputLanguage = nil
+        state.outputVariant = nil
         state.error = nil
         state.route = "simulator"
         publish()
@@ -399,11 +415,16 @@ final class KeyboardVoiceHost: ObservableObject {
         if let stream { box.end(); stream.endAudio() }
         state.phase = .finishing
         publish()
-        // 有些情況 final 不會來（沒講話、辨識器卡住）：逾時就拿最後的 partial 定稿。
+        if !hasLocalRecognizer {
+            box.end()
+            ingest(id: id, text: state.partial, isFinal: true, errorCode: nil, errorText: nil)
+            return
+        }
+        // Apple final timeout must still finish cloud ASR, rather than bypass it.
         finalizeWatchdog = Task { [weak self] in
             try? await Task.sleep(for: .seconds(VoiceBridge.finalizeTimeout))
             guard !Task.isCancelled, let self, self.state.commandID == id, self.state.phase == .finishing else { return }
-            self.deliverFinal(id: id, text: self.state.partial)
+            self.ingest(id: id, text: self.state.partial, isFinal: true, errorCode: nil, errorText: nil)
         }
     }
 
@@ -425,19 +446,19 @@ final class KeyboardVoiceHost: ObservableObject {
     }
 
     private func ingest(id: UUID, text: String?, isFinal: Bool, errorCode: Int?, errorText: String?, tokens: [TimedToken] = []) {
-        guard state.commandID == id, state.phase == .recording || state.phase == .finishing else { return }
+        guard state.commandID == id, polishingID != id, finalizingASRID != id, state.phase == .recording || state.phase == .finishing else { return }
         if let text {
             state.partial = text
             if isFinal {
+                finalizingASRID = id
                 // 停頓補標點（零延遲）；片段拼不回原文時保留辨識器原樣。
                 let silences = SilenceDetector.intervals(box.levels.snapshot, quiet: QuietMode.isEnabled)
                 let paused = tokens.isEmpty ? text : PausePunctuator.punctuate(tokens, silences: silences)
                 let base = PunctuationGuard.preservesText(original: text, candidate: paused) ? paused : text
                 let samples = box.pcm.snapshot
                 // 定稿當下再選一次：開始錄音後 App 可能已切到背景，qwenReady 因此會變 false。
-                let qwenReadyNow = LocalQwenASR.shared.isReady && LocalQwenASR.qwenLanguage(for: currentLanguage) != nil
                 let cloudReadyNow = CloudASR.isReady(language: currentLanguage)
-                let rerecog = Rerecognition.choose(qwenReady: qwenReadyNow, cloudReady: cloudReadyNow)
+                let rerecog: Rerecognition = cloudReadyNow ? .cloud : .none
                 // Q3 邊錄邊傳：把還沒講完的最後一段取出來（前面送過的段已經在 live 裡了）。
                 let finalChunk = rerecog == .cloud ? box.pcm.takeFinalChunk() : nil
                 let live = rerecog == .cloud ? liveCloud : nil
@@ -454,8 +475,6 @@ final class KeyboardVoiceHost: ObservableObject {
                     Task { @MainActor [weak self] in
                         let refined: String?
                         switch rerecog {
-                        case .localQwen:
-                            refined = await LocalQwenASR.shared.transcribe(samples, language: language, hotwords: hotwords)
                         case .cloud:
                             if let live {
                                 // 分段：前面幾段錄音中就送完了，這裡只等最後一段。
@@ -472,11 +491,12 @@ final class KeyboardVoiceHost: ObservableObject {
                                     refined = nil
                                 }
                             }
-                        case .none:
+                        case .none, .localQwen:
                             refined = nil
                         }
                         guard let self, self.state.commandID == id, self.state.phase == .finishing else { return }
                         // Whisper 補的「謝謝大家收看」：裝置端逐字稿沒有這句才去掉（說出要怎麼改時，這句會被當成指示）。
+                        self.cloudRecognitionFailed = rerecog == .cloud && (refined?.isEmpty != false)
                         let kept = refined.map { TranscriptGuard.dropOutroHallucination($0, reference: base) }
                         self.deliverFinal(id: id, text: kept.flatMap { $0.isEmpty ? nil : $0 } ?? base)
                     }
@@ -490,7 +510,7 @@ final class KeyboardVoiceHost: ObservableObject {
         if let errorCode {
             // 216＝使用者停止／取消；1110＝沒偵測到語音；301＝請求已取消：都不是錯，照已有文字定稿。
             if [216, 1110, 301].contains(errorCode) || state.phase == .finishing {
-                deliverFinal(id: id, text: state.partial)
+                ingest(id: id, text: state.partial, isFinal: true, errorCode: nil, errorText: nil)
             } else {
                 fail(String(localized: "辨識中斷：\(errorText ?? String(localized: "錯誤 \(errorCode)"))"), commandID: id)
             }
@@ -498,6 +518,10 @@ final class KeyboardVoiceHost: ObservableObject {
     }
 
     private func deliverFinal(id: UUID, text: String, refined: Bool = false) {
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            fail(String(localized: "未取得可用的辨識結果，請確認網路或裝置端模型後再試。"), commandID: id)
+            return
+        }
         diag("final", ["chars": "\(text.count)", "refined": "\(refined)"])
         finalizeWatchdog?.cancel()
         stopLiveCloud()
@@ -521,7 +545,8 @@ final class KeyboardVoiceHost: ObservableObject {
             publish()
             Task { @MainActor [weak self] in
                 // 主 app 翻（已預熱，實測約 0.65 s）；失敗就不帶 translated，鍵盤自己翻。
-                let translated = try? await FastTranslator.shared.translate(text, sourceRaw: pending.source, targetCode: pending.target)
+                let translated = DictationRouteSettings.mode == .local
+                    ? try? await FastTranslator.shared.translate(text, sourceRaw: pending.source, targetCode: pending.target) : nil
                 guard let self, self.state.commandID == id else { return }
                 self.state.translated = translated
                 self.state.final = text
@@ -531,37 +556,40 @@ final class KeyboardVoiceHost: ObservableObject {
             }
             return
         }
+        if !shouldPolishDictation {
+            cleanupContextByCommand.removeValue(forKey: id)
+            state.final = text
+            state.phase = .ready
+            lastActivity = Date()
+            publish()
+            return
+        }
+        guard polishingID != id else { return }
+        polishingID = id
         state.translated = nil
-        state.final = text
-        state.phase = .ready
+        state.final = nil
+        state.partial = text
+        state.phase = .finishing
         lastActivity = Date()
         publish()
-        // 定稿已經送出（鍵盤馬上貼），背景再整理；有改才送 corrected，鍵盤確認游標前還是原文才換。
-        // 有設定智慧整理（使用者自備 key）→ 整理逐字稿；欄位文字只有在 context 開關開啟時才另附。
-        // 沒有雲端整理時，才使用裝置端同音校正。
         let language = currentLanguage
-        let smart = SmartCleanup.isEnabled
-        // 游標前／游標後／欄位提示／語言變體都在這裡組好（密碼欄位在 KeyboardVoiceHost.promptContext 就整份清空）。
-        let promptContext = cleanupContextByCommand.removeValue(forKey: id) ?? SmartCleanup.PromptContext()
-        if smart || (HomophoneCorrector.applies(to: language) && HomophoneCorrector.isAvailable && text.count >= HomophoneCorrector.minimumLength) {
-            state.refining = (state.refining ?? []).filter { $0 != id } + [id]
-            publish()
-            let budget = CleanupBudget(seconds: SmartCleanup.backgroundBudgetSeconds(for: text))
-            cleanupTasks.start(id: id, work: {
-                await SmartCleanup.refine(text, fallbackText: text,
-                                          language: language, smart: smart, budget: budget,
-                                          validationSource: TextPipeline().clean(text).output,
-                                          context: promptContext)
-            }, apply: { [weak self] fixed in
-                guard let self else { return }
-                self.state.refining = (self.state.refining ?? []).filter { $0 != id }
-                if let fixed, fixed != text {
-                    let kept = (self.state.corrections ?? []).filter { $0.id != id }.suffix(5)
-                    self.state.corrections = Array(kept) + [VoiceBridge.State.Correction(id: id, text: fixed)]
-                }
-                self.publish()
-            })
-        }
+        let context = cleanupContextByCommand.removeValue(forKey: id) ?? SmartCleanup.PromptContext()
+        let localFallback = cloudRecognitionFailed
+        cleanupTasks.start(id: id, work: {
+            await SmartCleanup.finalize(text, language: language, context: context, forceLocal: localFallback,
+                                        log: { outcome, start, input, output in
+                                            SmartLog.record(outcome: outcome, start: start, input: input, output: output, traceID: id)
+                                        })
+        }, apply: { [weak self] output in
+            guard let self, self.state.commandID == id, self.state.phase == .finishing, let output else { return }
+            self.state.final = output
+            self.state.rawTranscript = text
+            self.state.outputLanguage = language
+            self.state.outputVariant = context.variant.rawValue
+            self.state.phase = .ready
+            self.lastActivity = Date()
+            self.publish()
+        })
     }
 
     /// 個人字典（來源詞與輸出詞）去重，再補 iPhone 文字替換／聯絡人姓名（鍵盤讀 UILexicon 存下來的），最多 100 條。

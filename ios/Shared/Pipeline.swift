@@ -1,29 +1,69 @@
 import Foundation
 import UTUVOTypeCore
 
-/// iOS 端文字管線：包 UTUVOTypeCore Normalizer（與 macOS 同一正本）。
-/// 範圍：台灣用語詞級轉換（TaiwanPhrases，純 Swift 版的 s2twp 精簡表）、濾語助詞、自我修正、
-/// 字典替換、數字正規化。台灣用語先套、字典後套，使用者字典永遠能覆寫。
+/// Final output policy: selected language variant → deterministic cleanup →
+/// exact personal spellings and CJK/Latin spacing. Technical literals stay intact.
 struct TextPipeline: Sendable {
     private let normalizer: Normalizer
+    private let dictionary: [String: String]
+    private let taiwan: Bool
 
     init(dictionary: [String: String] = DictionaryStore.shared.dictionary,
-         latinTerms: [String] = VocabularyPacks.latinTermsForFixer()) {
+         latinTerms: [String] = VocabularyPacks.latinTermsForFixer(),
+         language: String = "zh-TW", variant: LanguageVariant = .none) {
+        self.dictionary = dictionary
+        self.taiwan = LanguageVariant.traditionalFixerTarget(variant: variant, language: language)
         self.normalizer = Normalizer(options: NormalizerOptions(
-            dictionary: dictionary,
-            fillerSet: NormalizerOptions.defaultFillers,
-            localeIdentifier: "zh_TW",
-            latinTerms: latinTerms
-        ))
+            dictionary: [:], fillerSet: NormalizerOptions.defaultFillers,
+            localeIdentifier: language, latinTerms: latinTerms))
     }
 
-    /// 逐字稿 → 清理後輸出。回傳 (清理結果, 套用步驟)。
+    static func regional(_ text: String, taiwan: Bool,
+                         normalize: (String, Bool) -> String = { text, tw in tw ? TraditionalFixer.shared.fix(text) : text }) -> String {
+        let converted = normalize(text, taiwan)
+        return taiwan ? TaiwanPlaces.fixStations(TaiwanPhrases.apply(converted)) : converted
+    }
+
+    /// Recognizers/models may already have normalized a name (臺→台, 三點→3:00).
+    /// Those aliases restore the user's explicit spelling, never replace an explicit rule.
+    static func aliases(_ dictionary: [String: String], regional: (String) -> String) -> [String: String] {
+        var result = dictionary
+        for source in dictionary.keys.sorted() {
+            let target = dictionary[source].flatMap { $0.isEmpty ? nil : $0 } ?? source
+            for value in [source, target] {
+                let converted = regional(value)
+                let hasNumber = converted.contains { $0.isNumber || "零〇一二三四五六七八九十百千萬億兩两".contains($0) }
+                let variants = hasNumber ? [converted, Normalizer.normalizeNumbers(converted)] : [converted]
+                for alias in variants where !alias.isEmpty && result[alias] == nil {
+                    result[alias] = target
+                }
+            }
+        }
+        return result
+    }
+
+    /// Compare in the selected regional vocabulary and the same user dictionary.
+    /// Do not remove substantive words or run filler/self-correction heuristics here.
+    static func validationText(_ text: String, taiwan: Bool, dictionary: [String: String],
+                               normalize: (String, Bool) -> String) -> String {
+        let replacements = aliases(dictionary) { regional($0, taiwan: taiwan, normalize: normalize) }
+        return TextPresentation.format(text, dictionary: replacements) {
+            Normalizer.normalizeNumbers(regional($0, taiwan: taiwan, normalize: normalize))
+        }
+    }
+
     func clean(_ transcript: String) -> (output: String, steps: [String]) {
-        // 站名救援（元山站→圓山站）：只動「X站」「捷運X」，所以每條路徑都套也安全。
-        let localized = TaiwanPlaces.fixStations(TaiwanPhrases.apply(transcript))
-        let result = normalizer.normalize(localized)
-        var steps = result.appliedSteps
-        if localized != transcript { steps.insert("taiwan-phrases", at: 0) }
-        return (result.cleaned, steps)
+        var steps: [String] = []
+        let region = { Self.regional($0, taiwan: taiwan) }
+        let output = TextPresentation.format(transcript, dictionary: Self.aliases(dictionary, regional: region)) { masked in
+            let localized = region(masked)
+            if localized != masked { steps.append("taiwan-phrases") }
+            let result = normalizer.normalize(localized)
+            steps += result.appliedSteps
+            return result.cleaned
+        }
+        if !dictionary.isEmpty { steps.append("dictionary") }
+        steps.append("mixed-script-spacing")
+        return (output, steps)
     }
 }
