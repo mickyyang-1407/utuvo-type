@@ -346,8 +346,13 @@ enum SmartCleanup {
                                         transport: transport, context: context, variant: variant)
         let result = content.trimmingCharacters(in: .whitespacesAndNewlines)
         // Preserve existing Traditional Chinese. No lossy character-by-character conversion.
-        guard accepts(original: validationSource ?? text, cleaned: result, relaxed: provider.trustsCleanup) else { throw Failure.rejected }
-        return result
+        let terms = VocabularyPacks.latinTermsForCleanedText(personal: personal, enabled: enabledPacks)
+        let source = Normalizer.applyVocabulary(Normalizer.normalizeNumbers(validationSource ?? text),
+                                               dictionary: personal, latinTerms: terms)
+        let candidate = Normalizer.applyVocabulary(Normalizer.normalizeNumbers(result),
+                                                  dictionary: personal, latinTerms: terms)
+        guard accepts(original: source, cleaned: candidate) else { throw Failure.rejected }
+        return candidate
     }
 
     /// Ask anything（2026-10-13）：一般問答／改寫用的 chat completion。跟整理共用端點驗證、key、相容選項，
