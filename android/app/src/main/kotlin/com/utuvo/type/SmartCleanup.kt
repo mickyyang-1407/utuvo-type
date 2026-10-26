@@ -230,12 +230,46 @@ object SmartCleanup {
         p.edit().putString("provider", resolved.id).apply()
         return resolved
     }
-    fun customEndpoint(c: Context) = prefs(c).getString("customEndpoint", "").orEmpty().trim()
+    fun customEndpoint(c: Context): String {
+        val store = prefs(c)
+        return validatedStoredEndpoint(store.getString("customEndpoint", "").orEmpty()) {
+            store.edit().remove("customEndpoint").apply()
+        }
+    }
+    internal fun validatedStoredEndpoint(value: String, discard: () -> Unit): String {
+        if (value.isBlank()) return ""
+        return if (runCatching { validateCustomEndpoint(value) }.isSuccess) value.trim() else { discard(); "" }
+    }
     fun customModel(c: Context) = prefs(c).getString("customModel", "").orEmpty().trim()
-    fun setCustom(c: Context, endpoint: String, model: String) =
-        prefs(c).edit().putString("customEndpoint", endpoint.trim()).putString("customModel", model.trim()).apply()
+    /** Credentials belong in headers, never in a persisted URL. */
+    fun validateCustomEndpoint(raw: String) {
+        val endpoint = raw.trim()
+        require(endpoint.isNotEmpty() && endpoint.none { it.isISOControl() }) { "Invalid endpoint URL" }
+        val url = try { java.net.URI(endpoint) } catch (_: Exception) { throw IllegalArgumentException("Invalid endpoint URL") }
+        require(!url.host.isNullOrEmpty()) { "Invalid endpoint URL" }
+        require(url.scheme.equals("https", ignoreCase = true)) { "Endpoint must use HTTPS" }
+        require(url.rawUserInfo == null && url.rawFragment == null) { "Credentials are not allowed in endpoint URLs" }
+        val secretNames = setOf("key", "api_key", "apikey", "token", "access_token", "authorization")
+        val names = url.rawQuery.orEmpty().split('&').map {
+            java.net.URLDecoder.decode(it.substringBefore('='), "UTF-8").lowercase(java.util.Locale.ROOT)
+        }
+        require(names.none { it in secretNames }) { "Credentials are not allowed in endpoint URLs" }
+    }
 
-    fun endpoint(c: Context, p: Provider) = if (p == Provider.CUSTOM) customEndpoint(c) else p.endpoint
+    fun setCustom(c: Context, endpoint: String, model: String) = setCustom(endpoint, model) { validated, name ->
+        prefs(c).edit().putString("customEndpoint", validated).putString("customModel", name).apply()
+    }
+
+    internal fun setCustom(endpoint: String, model: String, persist: (String, String) -> Unit) {
+        validateCustomEndpoint(endpoint)
+        persist(endpoint.trim(), model.trim())
+    }
+
+    fun endpoint(c: Context, p: Provider): String {
+        if (p != Provider.CUSTOM) return p.endpoint
+        val endpoint = customEndpoint(c)
+        return if (runCatching { validateCustomEndpoint(endpoint) }.isSuccess) endpoint else ""
+    }
     fun model(c: Context, p: Provider) = if (p == Provider.CUSTOM) customModel(c) else p.model
 
     fun key(c: Context, p: Provider): String? = SecretStore.apiKey(c, p.secretField)

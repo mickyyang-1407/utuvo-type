@@ -8,6 +8,15 @@ cd "$(dirname "$0")/.."
 
 APP="$PWD/dist/UTUVO Type.app"
 [[ -d "$APP" ]] || { echo "找不到 $APP，先跑 scripts/build-app.sh" >&2; exit 1; }
+[[ -f "$APP/Contents/embedded.provisionprofile" ]] || {
+  echo '[package] ERROR: Developer ID profile required for the device-only Keychain; release packaging refused.' >&2
+  exit 1
+}
+ENTITLEMENT_DATA="$(codesign -d --entitlements :- "$APP" 2>/dev/null)"
+[[ "$ENTITLEMENT_DATA" == *'<key>com.apple.application-identifier</key>'* ]] || {
+  echo '[package] ERROR: application-identifier entitlement required for the device-only Keychain.' >&2
+  exit 1
+}
 codesign --verify --strict "$APP"
 VERSION=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")
 STEM="UTUVO-Type-$VERSION-macOS-arm64"

@@ -68,11 +68,11 @@ object CloudLlm {
     const val ENDPOINT = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
     const val MODEL = "qwen3.7-flash"
 
-    /** `detail`＝服務回的錯誤本體前 300 字（不含 key；查 400 的原因用，只進 logcat）。 */
-    class HttpError(val code: Int, val retryAfterMillis: Long? = null, val detail: String? = null) : Exception("HTTP $code")
+    /** Never retain a provider error body: it may echo credentials. */
+    class HttpError(val code: Int, val retryAfterMillis: Long? = null) : Exception("HTTP $code")
 
     private val io = Executors.newSingleThreadExecutor()
-    private val main = Handler(Looper.getMainLooper())
+    private val main by lazy { Handler(Looper.getMainLooper()) }
     private val deadlineTimer = Executors.newSingleThreadScheduledExecutor { task ->
         Thread(task, "utuvo-cloud-deadline").apply { isDaemon = true }
     }
@@ -96,9 +96,10 @@ object CloudLlm {
 
     /** 同步送出（呼叫端自己放背景執行緒）；智慧整理也走這裡（不同端點、模型、逾時）。 */
     fun post(endpoint: String, apiKey: String, body: String, connectMs: Int, readMs: Int,
-             deadlineNanos: Long? = null, cancellation: CleanupCancellation? = null): String {
+             deadlineNanos: Long? = null, cancellation: CleanupCancellation? = null,
+             log: (String) -> Unit = { android.util.Log.w("UTUVOCloudLlm", it) }): String {
         cancellation?.throwIfCancelled()
-        val conn = URL(endpoint).openConnection() as HttpURLConnection
+        val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply { instanceFollowRedirects = false }
         cancellation?.attach(conn)
         var abort: ScheduledFuture<*>? = null
         try {
@@ -121,9 +122,10 @@ object CloudLlm {
             val status = conn.responseCode
             if (status != 200) {
                 val retryAfter = if (status == 429) CleanupRetryAfter.milliseconds(conn.getHeaderField("Retry-After")) else null
-                val detail = runCatching { conn.errorStream?.use { String(it.readBytes()).take(300) } }.getOrNull()   // 讀完才能放回連線池
-                android.util.Log.w("UTUVOCloudLlm", "HTTP $status from ${URL(endpoint).host}: $detail")
-                throw HttpError(status, retryAfter, detail)
+                // Discard without decoding or retaining a possibly credential-bearing response.
+                runCatching { conn.errorStream?.close() }
+                log("HTTP $status from ${URL(endpoint).host}")
+                throw HttpError(status, retryAfter)
             }
             val response = parse(conn.inputStream.use { it.bufferedReader().readText() })
             cancellation?.throwIfCancelled()
@@ -145,7 +147,7 @@ object CloudLlm {
 
     /** 先連上（HEAD，回什麼都無所謂），讓之後的 post 直接重用這條連線。 */
     fun warm(endpoint: String) {
-        val conn = URL(endpoint).openConnection() as HttpURLConnection
+        val conn = (URL(endpoint).openConnection() as HttpURLConnection).apply { instanceFollowRedirects = false }
         conn.requestMethod = "HEAD"
         conn.connectTimeout = 5000; conn.readTimeout = 5000
         conn.responseCode

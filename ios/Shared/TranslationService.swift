@@ -61,7 +61,7 @@ struct TranslationService {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await StrictCleanupSession.shared.send(request)
         if let http = response as? HTTPURLResponse, http.statusCode != 200 {
             throw TranslationError.http(http.statusCode)
         }

@@ -446,4 +446,5 @@
     <string name="zc_ai_explain">Reorders Zhuyin whole-sentence candidates using the surrounding text; the model runs on your phone, offline.</string>
     <string name="smart_auto_list">Auto lists</string>
     <string name="smart_auto_list_explain">When you talk through steps or key points, format them as 1. 2. 3.; off keeps paragraphs. Works best with Claude.</string>
+    <string name="smart_endpoint_invalid">Use an HTTPS endpoint without credentials, key parameters or a fragment.</string>
 </resources>

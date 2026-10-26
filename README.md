@@ -102,7 +102,7 @@ UTUVO Type 是 UTUVO 小型工具系列中的語音輸入 App，package slug 仍
 
 > 尚未用真實 provider 宣告 latency／模型指標；本檔不假造數字。
 
-已發布版本與原始碼差異見 [2026-10-21 交接說明](docs/HANDOFF-2026-10-21.md)。
+已發布版本與原始碼差異見 [2026-10-26 交接說明](handoff/HANDOFF-2026-10-26-CLAUDE-SPEED.md)。
 使用手冊：[macOS](docs/USER-GUIDE-macOS.md)｜[iOS](docs/USER-GUIDE-iOS.md)。
 
 ## 快速開始

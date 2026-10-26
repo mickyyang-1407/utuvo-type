@@ -282,7 +282,7 @@ enum ChunkedASR {
     /// 送一段。`context`＝前一段的文字（Whisper prompt）。逾時、回 nil 都不算被限流。
     static func transcribeSegment(_ samples: [Float], language: String, hotwords: [String],
                                   provider: SmartCleanup.Provider, key: String, context: String?,
-                                  transport: @escaping SmartCleanup.Transport = { try await URLSession.shared.data(for: $0) }) async -> SegmentOutcome {
+                                  transport: @escaping SmartCleanup.Transport = { try await StrictCleanupSession.shared.send($0) }) async -> SegmentOutcome {
         let seconds = Double(samples.count) / Double(ChunkStream.sampleRate)
         if seconds < 0.25 { return .failed }
         let budget = CleanupBudget(seconds: CloudASR.timeLimit(seconds: seconds))
@@ -323,7 +323,7 @@ enum ChunkedASR {
     /// 呼叫端照現行行為退回裝置端（Apple／系統 SpeechRecognizer）的結果。
     static func transcribeChunked(segments: [[Float]], whole: [Float], language: String, hotwords: [String],
                                   provider: SmartCleanup.Provider, key: String,
-                                  transport: @escaping SmartCleanup.Transport = { try await URLSession.shared.data(for: $0) },
+                                  transport: @escaping SmartCleanup.Transport = { try await StrictCleanupSession.shared.send($0) },
                                   log: CloudASR.Log = CloudASR.defaultLog) async -> String? {
         guard segments.count > 1 else {
             return await CloudASR.transcribe(whole, language: language, hotwords: hotwords,
@@ -377,7 +377,7 @@ actor LiveCloudASR {
     private var nextSequence = 0
 
     init(provider: SmartCleanup.Provider, key: String, language: String, hotwords: [String],
-         transport: @escaping SmartCleanup.Transport = { try await URLSession.shared.data(for: $0) }) {
+         transport: @escaping SmartCleanup.Transport = { try await StrictCleanupSession.shared.send($0) }) {
         self.provider = provider
         self.key = key
         self.language = language

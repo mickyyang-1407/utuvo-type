@@ -251,7 +251,7 @@ enum CloudASR {
 
     static func transcribe(_ samples: [Float], language: String, hotwords: [String],
                            provider: SmartCleanup.Provider, key: String,
-                           transport: @escaping SmartCleanup.Transport = { try await URLSession.shared.data(for: $0) },
+                           transport: @escaping SmartCleanup.Transport = { try await StrictCleanupSession.shared.send($0) },
                            log: Log = defaultLog) async -> String? {
         let seconds = Double(samples.count) / 16_000
         // 太短（< 0.25 秒）不打網路。
