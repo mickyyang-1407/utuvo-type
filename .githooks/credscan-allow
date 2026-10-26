@@ -64,3 +64,6 @@ a0286d73b8b2cb262407926d04fe316ecfa7c13833562fbe407353e00e31e2e2
 
 # Build 39 only; reviewed unchanged Xcode object identifier at project.pbxproj:22.
 0f7d5ddf88dc4deabcb4fcab21f030809f07f541240cf5b3fd988672c57b3c5d
+
+# Build 39 marketing version 0.3.3 only; same reviewed Xcode object identifier at line 22.
+c76a04cff3446b1479e95a13afab35cedcec98f1a89bb240c4f5e508d1cb619f
