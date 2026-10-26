@@ -2,8 +2,19 @@
 
 ![UTUVO Type — Liquid Glass popover beside the brand mark](docs/assets/hero-readme.png)
 
+**一個還不錯的語音輸入。** 免費、開源（MIT），iPhone、Android、Mac都能用。說話，打出整理好的文字，不用註冊帳號。
 
-> 全本機可用、deterministic-first 的 macOS menu bar 語音輸入 App。
+| 📱 iPhone | 🤖 Android | 💻 Mac |
+|---|---|---|
+| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.2) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
+
+- 🎙 **光球鍵盤**：注音（簡拼、不打聲調）、拼音、聯想詞，點一下光球就能用說的
+- ✍️ **自動整理**：看語意下標點、中英文之間自動留空格
+- 🔒 **本機優先**：Mac 可以完全在本機跑；要用雲端時，用的是你自己填的 key
+- 💬 有問題或想許願，到 [Discussions](https://github.com/mickyyang-1407/utuvo-type/discussions) 留言
+- ⭐ 覺得好用的話，幫我按一顆星，對獨立開發者幫助很大
+
+> **Mac 版**：全本機可用、deterministic-first 的 macOS menu bar 語音輸入 App。
 > 雲端只在你自己選擇雲端 provider 並提供憑證時啟用。
 
 🇹🇼 中文（本檔）｜[English](README.en.md)
