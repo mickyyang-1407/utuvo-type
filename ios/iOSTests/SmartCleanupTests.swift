@@ -1,4 +1,6 @@
 import XCTest
+import UIKit
+import Network
 @testable import UTUVOTypeiOS
 import UTUVOTypeCore
 
@@ -386,4 +388,141 @@ private final class BodyBox: @unchecked Sendable {
     private let lock = NSLock(); private var stored: Data?
     func set(_ d: Data?) { lock.lock(); stored = d; lock.unlock() }
     var value: Data? { lock.lock(); defer { lock.unlock() }; return stored }
+}
+
+
+/// Credential safety uses isolated defaults/pasteboards and synthetic keys only.
+final class CredentialSafetyTests: XCTestCase {
+    func testUnsafeCustomEndpointsNeverPersist() throws {
+        let name = "type-secret-fixture-" + UUID().uuidString
+        let store = UserDefaults(suiteName: name)!
+        defer { store.removePersistentDomain(forName: name) }
+        var credentials = URLComponents(string: "https://example.invalid/v1")!
+        credentials.user = "synthetic-user"
+        credentials.password = ["synthetic", "password"].joined(separator: "-")
+        let invalid = ["", "not a URL", "http://example.invalid/v1", "http://localhost/v1",
+            credentials.string!, "https://example.invalid/v1#fragment",
+            "https://example.invalid/v1?key=fixture", "https://example.invalid/v1?API_KEY=fixture",
+            "https://example.invalid/v1?k%65y=fixture", "https://example.invalid/v1?token=fixture",
+            "https://example.invalid/v1?access_token=fixture", "https://example.invalid/v1?authorization=fixture"]
+        for url in invalid {
+            XCTAssertThrowsError(try SmartCleanup.saveCustom(endpoint: url, model: "fixture-model", to: store))
+            XCTAssertNil(store.object(forKey: SmartCleanup.customEndpointKey))
+            XCTAssertNil(store.object(forKey: SmartCleanup.customModelKey))
+        }
+        try SmartCleanup.saveCustom(endpoint: " https://example.invalid/v1?api-version=fixture ", model: " fixture-model ", to: store)
+        XCTAssertEqual(store.string(forKey: SmartCleanup.customEndpointKey), "https://example.invalid/v1?api-version=fixture")
+        XCTAssertEqual(store.string(forKey: SmartCleanup.customModelKey), "fixture-model")
+        print("B2 iOS: rejected 12 unsafe endpoints; invalid persisted values=0; HTTPS saved")
+        store.set("https://example.invalid/v1?key=synthetic", forKey: SmartCleanup.customEndpointKey)
+        XCTAssertEqual(SmartCleanup.loadCustomEndpoint(from: store), "")
+        XCTAssertNil(store.object(forKey: SmartCleanup.customEndpointKey))
+        print("B2 iOS: unsafe legacy custom endpoint erased on read")
+    }
+
+    func testProductionDelegateRefusesEveryRedirectAndSessionStoresNoCredentials() {
+        let transport = StrictCleanupSession()
+        let configuration = transport.session.configuration
+        XCTAssertNil(configuration.urlCache)
+        XCTAssertNil(configuration.httpCookieStorage)
+        XCTAssertFalse(configuration.httpShouldSetCookies)
+        XCTAssertNil(configuration.urlCredentialStorage)
+        let origin = URL(string: "https://fixture.invalid/completions")!
+        let task = transport.session.dataTask(with: origin) // Never resumed, no network.
+        for code in [301, 302, 303, 307, 308] {
+            for target in ["https://fixture.invalid/other", "https://other.invalid/", "https://fixture.invalid:8443/", "http://fixture.invalid/"] {
+                let response = HTTPURLResponse(url: origin, statusCode: code, httpVersion: nil, headerFields: nil)!
+                var request = URLRequest(url: URL(string: target)!)
+                request.setValue("Bearer synthetic-key", forHTTPHeaderField: "Authorization")
+                var called = false
+                transport.redirectDelegate.urlSession(transport.session, task: task, willPerformHTTPRedirection: response, newRequest: request) { allowed in
+                    called = true
+                    XCTAssertNil(allowed)
+                }
+                XCTAssertTrue(called)
+            }
+        }
+        print("B2 iOS production delegate: 20 redirects denied (301/302/303/307/308, same/cross host, port, downgrade); ephemeral stores=nil")
+    }
+
+    func testReal302StopsBeforeSendingCredentialsToTarget() async throws {
+        let fixture = try LocalRedirectFixture()
+        defer { fixture.stop() }
+        let port = try await fixture.start()
+        var request = URLRequest(url: URL(string: "http://127.0.0.1:\(port)/origin")!)
+        request.setValue("Bearer synthetic-key", forHTTPHeaderField: "Authorization")
+        request.timeoutInterval = 5
+        let (_, response) = try await StrictCleanupSession.shared.send(request)
+        XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 302)
+        XCTAssertTrue(fixture.originalHadAuthorization)
+        XCTAssertEqual(fixture.targetRequests, 0)
+        print("B2 iOS actual HTTP 302: origin Authorization received=true; redirected target requests=0")
+    }
+
+    @MainActor func testOnlyTheSavedKeyIsClearedFromPasteboard() {
+        let board = UIPasteboard.withUniqueName()
+        defer { UIPasteboard.remove(withName: board.name) }
+        board.string = "synthetic-saved-key"
+        XCTAssertTrue(GroqKeyCheck.clearSavedKeyFromPasteboard("synthetic-saved-key", pastedText: "synthetic-saved-key", changeCount: board.changeCount, pasteboard: board))
+        XCTAssertTrue(board.items.isEmpty)
+        board.string = "synthetic-saved-key"
+        let originalCount = board.changeCount
+        board.string = "unrelated fixture text"
+        XCTAssertFalse(GroqKeyCheck.clearSavedKeyFromPasteboard("synthetic-saved-key", pastedText: "synthetic-saved-key", changeCount: originalCount, pasteboard: board))
+        XCTAssertFalse(GroqKeyCheck.clearSavedKeyFromPasteboard("synthetic-saved-key", pastedText: "another-pasted-value", changeCount: board.changeCount, pasteboard: board))
+        XCTAssertEqual(board.string, "unrelated fixture text")
+        print("B4 isolated pasteboard: matching saved key cleared; changed clipboard and mismatched paste preserved; no content reread")
+    }
+}
+
+
+/// Listens only on loopback; records booleans/counters, never credential values.
+private final class LocalRedirectFixture: @unchecked Sendable {
+    private let listener: NWListener
+    private let queue = DispatchQueue(label: "type-secret-loopback-fixture")
+    private let lock = NSLock()
+    private var hits = 0
+    private var hadAuthorization = false
+    var targetRequests: Int { lock.withLock { hits } }
+    var originalHadAuthorization: Bool { lock.withLock { hadAuthorization } }
+
+    init() throws {
+        let parameters = NWParameters.tcp
+        parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
+        listener = try NWListener(using: parameters)
+        listener.newConnectionHandler = { [weak self] connection in
+            guard let self else { connection.cancel(); return }
+            connection.start(queue: self.queue)
+            connection.receive(minimumIncompleteLength: 1, maximumLength: 32768) { data, _, _, _ in
+                let request = String(decoding: data ?? Data(), as: UTF8.self)
+                let target = request.hasPrefix("GET /target ")
+                self.lock.withLock {
+                    if target { self.hits += 1 }
+                    else { self.hadAuthorization = request.lowercased().contains("authorization: bearer synthetic-key") }
+                }
+                let port = self.listener.port!.rawValue
+                let response = target ? "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n" :
+                    "HTTP/1.1 302 Found\r\nLocation: http://localhost:\(port)/target\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
+                connection.send(content: Data(response.utf8), completion: .contentProcessed { _ in connection.cancel() })
+            }
+        }
+    }
+    func start() async throws -> UInt16 {
+        try await withCheckedThrowingContinuation { continuation in
+            listener.stateUpdateHandler = { [weak self] state in
+                guard let self else { return }
+                switch state {
+                case .ready:
+                    self.listener.stateUpdateHandler = nil
+                    continuation.resume(returning: self.listener.port!.rawValue)
+                case .failed(let error):
+                    self.listener.stateUpdateHandler = nil
+                    continuation.resume(throwing: error)
+                default: break
+                }
+            }
+            listener.start(queue: queue)
+        }
+    }
+    func stop() { listener.cancel() }
 }

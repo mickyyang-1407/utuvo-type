@@ -157,8 +157,37 @@ enum SmartCleanup {
         if hasGroqKey { return .groq }
         return hasGeminiKey ? .gemini : recommendedProvider
     }
-    static var customEndpoint: String { defaults.string(forKey: customEndpointKey) ?? "" }
+    static var customEndpoint: String { loadCustomEndpoint(from: defaults) }
+    static func loadCustomEndpoint(from store: UserDefaults) -> String {
+        let value = store.string(forKey: customEndpointKey) ?? ""
+        guard !value.isEmpty else { return "" }
+        guard (try? validateCustomEndpoint(value)) != nil else {
+            store.removeObject(forKey: customEndpointKey)
+            return ""
+        }
+        return value
+    }
     static var customModel: String { defaults.string(forKey: customModelKey) ?? "" }
+
+    enum EndpointError: Error { case invalidURL, httpsRequired, credentialsInURL }
+
+    static func validateCustomEndpoint(_ raw: String) throws {
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !value.isEmpty, value.rangeOfCharacter(from: .controlCharacters) == nil,
+              let url = URL(string: value), let host = url.host, !host.isEmpty else { throw EndpointError.invalidURL }
+        guard url.scheme?.lowercased() == "https" else { throw EndpointError.httpsRequired }
+        guard url.user == nil, url.password == nil, url.fragment == nil else { throw EndpointError.credentialsInURL }
+        let secretNames: Set<String> = ["key", "api_key", "apikey", "token", "access_token", "authorization"]
+        if URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.contains(where: { secretNames.contains($0.name.lowercased()) }) == true {
+            throw EndpointError.credentialsInURL
+        }
+    }
+
+    static func saveCustom(endpoint: String, model: String, to store: UserDefaults = settingsDefaults) throws {
+        try validateCustomEndpoint(endpoint)
+        store.set(endpoint.trimmingCharacters(in: .whitespacesAndNewlines), forKey: customEndpointKey)
+        store.set(model.trimmingCharacters(in: .whitespacesAndNewlines), forKey: customModelKey)
+    }
 
     /// 使用者的開關。沒動過＝開（2026-09-24 對齊 Typeless：開箱就整理，不用先申請 key）。
     static var enabledPreference: Bool {
@@ -293,7 +322,7 @@ enum SmartCleanup {
                       dictionary: [String: String] = DictionaryStore.shared.dictionary,
                       configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                       terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
-                      transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
+                      transport: @escaping Transport = { try await StrictCleanupSession.shared.send($0) },
                       normalize: @escaping Normalization = { text, traditional in traditional ? TraditionalFixer.shared.fix(text) : text },
                       onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
                       log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
@@ -341,7 +370,7 @@ enum SmartCleanup {
                          autoList: Bool? = nil,
                          configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                          terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
-                         transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
+                         transport: @escaping Transport = { try await StrictCleanupSession.shared.send($0) },
                          onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
                          log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
                          cloudTimeout: TimeInterval? = nil, localTimeout: TimeInterval? = nil) async -> String? {
@@ -379,7 +408,7 @@ enum SmartCleanup {
         guard isEnabled, let url = URL(string: provider.endpoint) else { return }
         var request = URLRequest(url: url, timeoutInterval: 5)
         request.httpMethod = "HEAD"
-        URLSession.shared.dataTask(with: request).resume()
+        StrictCleanupSession.shared.session.dataTask(with: request).resume()
     }
 
     static func isRetryable(_ error: Error) -> Bool {
@@ -422,7 +451,7 @@ enum SmartCleanup {
     /// 通用 chat completion（不做逐字稿把關，改寫／翻譯用）。跟整理共用端點、模型、extraBody 相容重送。
     static func complete(system: String, user: String, provider: Provider, key: String,
                          timeout: TimeInterval = 20,
-                         transport: @escaping Transport = { try await URLSession.shared.data(for: $0) }) async throws -> String {
+                         transport: @escaping Transport = { try await StrictCleanupSession.shared.send($0) }) async throws -> String {
         guard !key.isEmpty, let url = URL(string: provider.endpoint), !provider.defaultModel.isEmpty else {
             throw Failure.notConfigured
         }
@@ -454,7 +483,7 @@ enum SmartCleanup {
         return try await budget.run {
             try await perform(text, configuration: config, traditional: traditional, budget: budget, attempts: attempts,
                               terms: { VocabularyPacks.termsForCleanup(text: $0) },
-                              transport: { try await URLSession.shared.data(for: $0) },
+                              transport: { try await StrictCleanupSession.shared.send($0) },
                               normalize: { text, traditional in traditional ? TraditionalFixer.shared.fix(text) : text },
                               context: .init(), validationSource: text, dictionary: DictionaryStore.shared.dictionary)
         }
@@ -853,4 +882,33 @@ final class CleanupTaskOwner {
         previous.forEach { $0.task.cancel() }
     }
     deinit { tasks.values.forEach { $0.task.cancel() } }
+}
+
+/// Ephemeral credential transport. All redirects, including same-host redirects, are refused.
+final class StrictCleanupSession: @unchecked Sendable {
+    static let shared = StrictCleanupSession()
+    let redirectDelegate = CleanupRedirectBlocker()
+    let session: URLSession
+
+    init(configuration: URLSessionConfiguration = .ephemeral) {
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.httpCookieStorage = nil
+        configuration.httpShouldSetCookies = false
+        configuration.urlCredentialStorage = nil
+        session = URLSession(configuration: configuration, delegate: redirectDelegate, delegateQueue: nil)
+    }
+    deinit { session.invalidateAndCancel() }
+    func send(_ request: URLRequest) async throws -> (Data, URLResponse) {
+        try Task.checkCancellation()
+        return try await session.data(for: request)
+    }
+}
+
+final class CleanupRedirectBlocker: NSObject, URLSessionTaskDelegate, Sendable {
+    func urlSession(_ session: URLSession, task: URLSessionTask,
+                    willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest,
+                    completionHandler: @escaping (URLRequest?) -> Void) {
+        completionHandler(nil)
+    }
 }

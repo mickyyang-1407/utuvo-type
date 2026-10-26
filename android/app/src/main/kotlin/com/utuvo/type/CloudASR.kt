@@ -339,6 +339,7 @@ object CloudASR {
     object HttpTransport : Transport {
         override fun send(request: Request, remainingMs: Long): Response {
             val connection = (URL(request.url).openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = false
                 requestMethod = request.method
                 connectTimeout = minOf(3000L, remainingMs).toInt().coerceAtLeast(1)
                 readTimeout = remainingMs.toInt().coerceAtLeast(1)

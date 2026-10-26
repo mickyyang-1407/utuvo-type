@@ -302,7 +302,7 @@ class SmartCleanupTest {
         val out = try {
             SmartCleanup.run(app, app.getString(R.string.smart_sample), SmartCleanup.Provider.CLAUDE, key!!, 15000)
         } catch (e: CloudLlm.HttpError) {
-            throw AssertionError("Claude HTTP ${e.code}: ${e.detail}")
+            throw AssertionError("Claude HTTP ${e.code}")
         }
         android.util.Log.i("UTUVOSmartTest", "claude: $out")
         assertTrue("改口要只留禮拜四：$out", out.contains("禮拜四") && !out.contains("禮拜三"))

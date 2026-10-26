@@ -446,5 +446,6 @@
     <string name="translate_choose_language">選擇翻譯語言</string>
     <string name="smart_auto_list">自動條列</string>
     <string name="smart_auto_list_explain">講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。</string>
+    <string name="smart_endpoint_invalid">端點須為 HTTPS，且不能包含帳密、金鑰參數或 #。</string>
 </resources>
 

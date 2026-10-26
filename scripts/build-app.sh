@@ -6,6 +6,12 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+PROFILE="${UTUVO_TYPE_PROFILE:-$HOME/Library/MobileDevice/Provisioning Profiles/UTUVO_Type_Developer_ID.provisionprofile}"
+if [[ "${UTUVO_TYPE_ALLOW_ADHOC:-0}" != 1 && ! -f "$PROFILE" ]]; then
+  echo '[build-app] ERROR: Developer ID profile required for the device-only Keychain; refusing a profile-free release build.' >&2
+  exit 1
+fi
+
 swift build -c release --product utuvo-type
 BIN_DIR="$(swift build -c release --show-bin-path)"
 APP="$REPO_ROOT/dist/UTUVO Type.app"

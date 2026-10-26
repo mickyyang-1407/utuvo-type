@@ -268,7 +268,8 @@ private struct TutorialActionButton: View {
                 // PasteButton：使用者自己按的貼上，iOS 不會再跳「允許貼上」的詢問。
                 PasteButton(payloadType: String.self) { strings in
                     let pasted = strings.first ?? ""
-                    Task { @MainActor in await save(pasted) }
+                    let changeCount = UIPasteboard.general.changeCount
+                    Task { @MainActor in await save(pasted, pasteboardChangeCount: changeCount) }
                 }
                 .tint(Aurora.orange)
                 .labelStyle(.titleAndIcon)
@@ -299,7 +300,7 @@ private struct TutorialActionButton: View {
         .accessibilityIdentifier(id)
     }
 
-    private func save(_ raw: String) async {
+    private func save(_ raw: String, pasteboardChangeCount: Int) async {
         let key = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard GroqKeyCheck.looksLikeGroqKey(key) else {
             status = String(localized: "剪貼簿裡不是 Groq key（應該是 gsk_ 開頭的一長串）。回 Groq 再按一次「Copy」。")
@@ -311,6 +312,7 @@ private struct TutorialActionButton: View {
             statusIsError = true
             return
         }
+        GroqKeyCheck.clearSavedKeyFromPasteboard(key, pastedText: raw, changeCount: pasteboardChangeCount)
         SmartCleanup.provider = .groq
         cleanupEnabled = true
         checking = true
@@ -328,6 +330,16 @@ private struct TutorialActionButton: View {
 
 /// 貼上的 key 檢查與錯誤說明（純邏輯，可測）。
 enum GroqKeyCheck {
+    /// Called only after the Keychain save succeeds; never erase unrelated clipboard contents.
+    @MainActor @discardableResult
+    static func clearSavedKeyFromPasteboard(_ key: String, pastedText: String, changeCount: Int,
+                                           pasteboard: UIPasteboard = .general) -> Bool {
+        guard !key.isEmpty, pastedText.trimmingCharacters(in: .whitespacesAndNewlines) == key,
+              pasteboard.changeCount == changeCount, pasteboard.numberOfItems == 1 else { return false }
+        pasteboard.items = []
+        return true
+    }
+
     static func looksLikeGroqKey(_ text: String) -> Bool {
         text.hasPrefix("gsk_") && text.count >= 40 && !text.contains(where: \.isWhitespace)
     }

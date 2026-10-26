@@ -934,11 +934,21 @@ class MainSections(private val a: Activity) {
         group.setOnCheckedChangeListener { _, id -> ids[id]?.let { SmartCleanup.setProvider(a, it); applyProvider() } }
         signup.setOnClickListener { current().signupUrl?.let { a.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it))) } }
 
-        fun saveCustom() { if (current() == SmartCleanup.Provider.CUSTOM) SmartCleanup.setCustom(a, endpoint.text.toString(), model.text.toString()) }
+        fun saveCustom(): Boolean {
+            if (current() != SmartCleanup.Provider.CUSTOM) return true
+            return try {
+                SmartCleanup.setCustom(a, endpoint.text.toString(), model.text.toString())
+                true
+            } catch (_: IllegalArgumentException) {
+                smartMessage.setTextColor(0xFFD32F2F.toInt())
+                smartMessage.text = a.getString(R.string.smart_endpoint_invalid)
+                false
+            }
+        }
         save.setOnClickListener {
             val v = field.text.toString().trim()
             if (v.isEmpty()) return@setOnClickListener
-            saveCustom()
+            if (!saveCustom()) return@setOnClickListener
             SecretStore.save(a, v, current().secretField)
             field.setText("")
             SmartCleanup.setEnabled(a, true); smartSwitch.isChecked = true
@@ -951,7 +961,7 @@ class MainSections(private val a: Activity) {
             refreshSmartKey(field)
         }
         smartTest.setOnClickListener {
-            saveCustom()
+            if (!saveCustom()) return@setOnClickListener
             val p = current()
             val key = SmartCleanup.key(a, p).orEmpty()
             smartTest.isEnabled = false

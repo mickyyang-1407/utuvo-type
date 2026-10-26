@@ -19,8 +19,8 @@ struct SmartCleanupScreen: View {
     @State private var cloudMessage: String?
     @State private var cloudMessageIsError = false
     @State private var logSummary: SmartLog.Summary?
-    @AppStorage(SmartCleanup.customEndpointKey, store: SmartCleanup.settingsDefaults) private var customEndpoint = ""
-    @AppStorage(SmartCleanup.customModelKey, store: SmartCleanup.settingsDefaults) private var customModel = ""
+    @State private var customEndpoint = SmartCleanup.customEndpoint
+    @State private var customModel = SmartCleanup.customModel
     @AppStorage(SmartCleanup.includeAppContextKey, store: UserDefaults(suiteName: VoiceBridge.groupID))
     private var includeAppContext = false
 
@@ -87,6 +87,7 @@ struct SmartCleanupScreen: View {
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
                     TextField("模型名稱", text: $customModel)
                         .textInputAutocapitalization(.never).autocorrectionDisabled()
+                    Button("儲存端點") { _ = saveCustomEndpoint() }
                 }
             }
 
@@ -129,6 +130,7 @@ struct SmartCleanupScreen: View {
                     HStack {
                         Button("儲存") {
                             TapPulse.shared.fire()
+                            guard saveCustomEndpoint() else { return }
                             if SmartCleanup.saveKey(keyDraft, for: provider) {
                                 keyDraft = ""
                                 message = String(localized: "已存進這支手機的鑰匙圈。")
@@ -335,7 +337,22 @@ struct SmartCleanupScreen: View {
         }
     }
 
+    private func saveCustomEndpoint() -> Bool {
+        guard provider == .custom else { return true }
+        do {
+            try SmartCleanup.saveCustom(endpoint: customEndpoint, model: customModel)
+            message = String(localized: "端點已儲存。")
+            messageIsError = false
+            return true
+        } catch {
+            message = String(localized: "端點須為 HTTPS，且不能包含帳密、金鑰參數或 #。")
+            messageIsError = true
+            return false
+        }
+    }
+
     private func test() async {
+        guard processingMode == .local || saveCustomEndpoint() else { return }
         testing = true
         defer { testing = false }
         let start = Date()
