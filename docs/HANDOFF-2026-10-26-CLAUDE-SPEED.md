@@ -1,6 +1,6 @@
 # Claude整理等待改善 — build 39
 
-依Micky要求保留Kordan設定，縮短整理前的準備，並交付0.3.2(39)供TestFlight實測。
+依Micky要求保留Kordan設定，縮短整理前的準備，並交付0.3.3(39)供TestFlight實測。
 
 - `SmartCleanup`的本機completion改成lazy求值；Claude成功時不先查Apple／Gemma readiness，雲端失敗才解析本機退路。enabled檢查也先判斷已配置的雲端條件，布林結果不變。
 - 錄音開始時的既有warmUp增加已啟用bundle詞庫的背景預載，沿用原loader cache；不預送逐字稿、不增加模型請求、不改偏好。最終選詞仍取當時的啟用詞庫與個人字典。
@@ -13,3 +13,5 @@ Claude provider／model／endpoint、提示詞文字、thinking／temperature、
 Mac Release六包全開的冷載入情境，停止後準備中位約846→126ms；另約715ms工作提前到錄音期間，沒有消失。這是本機壓力情境，並非Claude生成或實體iPhone改善數字；錄音太短、詞庫未開或快取已暖時不保證同等收益。
 
 沒有重啟Phone工具、操作手機或跑Azure；未改正式商店綁定。TestFlight可用性以workspace `tasks/type-claude-speed-2026-10-26/`的Apple讀回為準，實際按停止到貼字時間與品質由Micky更新後驗收。
+
+Apple核准0.3.2後已關閉該pre-release train；首次0.3.2(39)驗證回90062／90186，因此僅提升marketing version為0.3.3，保留build39與相同產品程式。正式商店仍維持已核准版本，本輪只走內部TestFlight。
