@@ -233,7 +233,7 @@ enum VocabularySelector {
         perPack.reserveCapacity(enabled.count)
         for pack in enabled {
             guard let terms = pack.terms else { continue }
-            var scored: [(term: String, score: Int)] = []
+            var scored: [(term: String, score: Int, length: Int)] = []
             for term in terms where !term.isEmpty {
                 if !needsStations && stations.contains(term) { continue }
                 let s = TermScanner.score(term: term,
@@ -243,11 +243,13 @@ enum VocabularySelector {
                                           checkLatin: checkLatin,
                                           text: text,
                                           exactMatches: exactMatches)
-                if s > 0 { scored.append((term, s)) }
+                // Sorting can compare a matching term many times. Count its graphemes once;
+                // keep the existing score, length and lexical ordering exactly the same.
+                if s > 0 { scored.append((term, s, term.count)) }
             }
             scored.sort { lhs, rhs in
                 if lhs.score != rhs.score { return lhs.score > rhs.score }
-                if lhs.term.count != rhs.term.count { return lhs.term.count < rhs.term.count }
+                if lhs.length != rhs.length { return lhs.length < rhs.length }
                 return lhs.term < rhs.term
             }
             perPack.append(scored.prefix(candidatesPerPack).map(\.term))
@@ -413,7 +415,7 @@ enum TermScanner {
         // 預過濾：純中文詞 vs 本句沒 bigram、純拉丁詞 vs 本句沒 latin
         if hasCJK && !hasLatin && !checkCJK { return 0 }
         if hasLatin && !hasCJK && !checkLatin { return 0 }
-        if hasLatin {
+        if hasLatin && !latin.isEmpty {
             let termTokens = LatinTokens.tokens(of: term)
             s += termTokens.intersection(latin).count
         }

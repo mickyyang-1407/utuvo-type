@@ -120,6 +120,16 @@ enum VocabularyPacks {
         return packs
     }
 
+    /// Fill the existing bundled-file cache while speaking. Final text still runs the
+    /// same selector with the current enabled packs and personal dictionary.
+    /// No transcript, credential or network request is involved.
+    @discardableResult
+    static func prewarm() -> Task<Void, Never> {
+        Task.detached(priority: .utility) {
+            _ = enabledCatalogPacks(ensureLoaded: true)
+        }
+    }
+
     private static func isCatalogPackEnabled(_ id: String, defaultOn: Bool) -> Bool {
         guard let stored = defaults.stringArray(forKey: enabledKey) else { return defaultOn }
         return stored.contains(id)
