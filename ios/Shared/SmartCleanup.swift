@@ -173,7 +173,9 @@ enum SmartCleanup {
 
     /// 開著，而且有 key（雲端）或手機上的模型可用（Apple Intelligence 或 Gemma）。
     static var isEnabled: Bool {
-        enabledPreference && (OnDeviceCleanup.available || (DictationRouteSettings.mode == .cloud && !key(for: provider).isEmpty))
+        // A configured cloud route already answers this question; do not synchronously
+        // query Apple/Gemma readiness on the keyboard's critical path.
+        enabledPreference && ((DictationRouteSettings.mode == .cloud && !key(for: provider).isEmpty) || OnDeviceCleanup.available)
     }
 
     /// Background cleanup gets 4 seconds for a short sentence and scales to at most 10 seconds for longer text.
@@ -293,7 +295,7 @@ enum SmartCleanup {
                       terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                       transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
                       normalize: @escaping Normalization = { text, traditional in traditional ? TraditionalFixer.shared.fix(text) : text },
-                      onDevice: OnDeviceCompletion? = OnDeviceCleanup.completion,
+                      onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
                       log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
                       onRejected: @escaping Rejection = { _ in }) async -> String? {
         let budget = suppliedBudget ?? CleanupBudget(seconds: timeout)
@@ -309,7 +311,7 @@ enum SmartCleanup {
                 guard config.enabled else { throw Failure.notConfigured }
                 if config.key.isEmpty {
                     // 沒 key：Apple Intelligence 裝置端，同一份指示、同一道把關。
-                    guard let onDevice else { throw Failure.notConfigured }
+                    guard let onDevice = onDevice() else { throw Failure.notConfigured }
                     return try await performOnDevice(text, traditional: traditional, budget: budget,
                                                      terms: terms, complete: onDevice, normalize: normalize,
                                                      context: context, validationSource: validationSource ?? text, dictionary: dictionary,
@@ -340,7 +342,7 @@ enum SmartCleanup {
                          configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                          terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                          transport: @escaping Transport = { try await URLSession.shared.data(for: $0) },
-                         onDevice: OnDeviceCompletion? = OnDeviceCleanup.completion,
+                         onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
                          log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
                          cloudTimeout: TimeInterval? = nil, localTimeout: TimeInterval? = nil) async -> String? {
         guard !Task.isCancelled else { return nil }
@@ -356,7 +358,7 @@ enum SmartCleanup {
                                         transport: transport, onDevice: nil, log: log) { return present(output) }
             guard !Task.isCancelled else { return nil }
         }
-        if let onDevice {
+        if let onDevice = onDevice() {
             let local = Configuration(enabled: true, provider: config.provider, endpoint: "", model: "", key: "")
             if let output = await clean(text, language: language, timeout: localTimeout ?? (OnDeviceCleanup.usesFallback ? gemmaTimeout(for: text) : 8),
                                         context: context, configuration: { local }, terms: terms,
@@ -371,6 +373,8 @@ enum SmartCleanup {
 
     /// Existing opt-in warmup. No transcript or authorization is sent.
     static func warmUp() {
+        guard enabledPreference else { return }
+        VocabularyPacks.prewarm()
         if usesOnDevice { OnDeviceCleanup.prewarm(); return }
         guard isEnabled, let url = URL(string: provider.endpoint) else { return }
         var request = URLRequest(url: url, timeoutInterval: 5)

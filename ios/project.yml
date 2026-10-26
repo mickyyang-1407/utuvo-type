@@ -33,7 +33,7 @@ settings:
     DEVELOPMENT_TEAM: "RPNT54P79S"
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: "0.3.2"
-    CURRENT_PROJECT_VERSION: "38"
+    CURRENT_PROJECT_VERSION: "39"
     # LiteRT-LM 官方 xcframework 的模擬器只有 arm64（2026-10-11）；generic 模擬器建置不要再連 x86_64。
     "EXCLUDED_ARCHS[sdk=iphonesimulator*]": x86_64
 
