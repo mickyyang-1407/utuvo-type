@@ -55,7 +55,7 @@ See [iOS routing, screenshots and validation](docs/IOS-DICTATION-ROUTING.md) and
 
 ## Android (APK, beta)
 
-1. Download `UTUVO-Type-0.3.4-android.apk` (with SHA-256) from the [Android 0.3.4 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.4). It is **not on Google Play** yet.
+1. Download `UTUVO-Type-0.3.5-android.apk` (with SHA-256) from the [Android 0.3.5 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.5). It is **not on Google Play** yet.
 2. Allow installing unknown apps, install it, then follow the three steps in the app: allow the microphone → enable the UTUVO Type keyboard in system settings → switch to UTUVO Type.
 3. Needs **Android 10+**. Dictation uses the phone's speech service (usually Google); you can also add your own cloud key under Settings.
 
