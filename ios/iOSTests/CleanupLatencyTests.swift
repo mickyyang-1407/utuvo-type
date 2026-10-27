@@ -214,3 +214,38 @@ private final class CleanupFixtureState: @unchecked Sendable {
     @discardableResult func request(_ request: URLRequest) -> Int { lock.withLock { sent.append(request); return sent.count } }
     func log(_ outcome: String) { lock.withLock { outcomes.append(outcome) } }
 }
+
+
+extension CleanupLatencyTests {
+    func testListOnlyFallbackAndOptOutKeepKordanRequestsUntouched() async throws {
+        let source = "明天要錄音第一個我們要帶耳機，二、普價、三、總普、四、節拍器、五、還有踏板。有沒有聽到？"
+        let expected = "明天要錄音：\n1. 我們要帶耳機\n2. 普價\n3. 總普\n4. 節拍器\n5. 還有踏板。有沒有聽到？"
+        let config = SmartCleanup.Configuration(enabled: true, provider: .claude, endpoint: "https://fixture.invalid/v1/chat/completions", model: "fixture-model", key: "")
+        for enabled in [true, false] {
+            let result = await SmartCleanup.finalize(source, language: "zh-TW", autoList: enabled,
+                configuration: { config }, terms: { _ in [] },
+                transport: { _ in XCTFail("No cloud key: no request"); throw CancellationError() },
+                onDevice: nil, log: { _, _, _, _ in })
+            XCTAssertEqual(result, enabled ? expected : source)
+        }
+        let disabled = SmartCleanup.Configuration(enabled: false, provider: config.provider, endpoint: config.endpoint, model: config.model, key: "")
+        let result = await SmartCleanup.finalize(source, language: "zh-TW", autoList: true, configuration: { disabled }, onDevice: nil, log: { _, _, _, _ in })
+        XCTAssertEqual(result, source)
+    }
+
+    func testListOnlyModelCandidateUsesExactOriginalRequest() async throws {
+        let source = "明天要帶 1.耳機 2.腳架"
+        let config = SmartCleanup.Configuration(enabled: true, provider: .claude, endpoint: "https://fixture.invalid/v1/chat/completions", model: "fixture-model", key: "fixture-key")
+        let result = await SmartCleanup.finalize(source, language: "zh-TW", autoList: true,
+            configuration: { config }, terms: { _ in [] }, transport: { request in
+                let body = try XCTUnwrap(request.httpBody)
+                let json = try XCTUnwrap(JSONSerialization.jsonObject(with: body) as? [String: Any])
+                XCTAssertEqual(json["model"] as? String, "fixture-model")
+                let messages = try XCTUnwrap(json["messages"] as? [[String: String]])
+                XCTAssertTrue(messages.last?["content"]?.contains(source) == true)
+                let data = try JSONSerialization.data(withJSONObject: ["choices": [["message": ["content": source]]]])
+                return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+            }, onDevice: nil, log: { _, _, _, _ in })
+        XCTAssertEqual(result, "明天要帶：\n1. 耳機\n2. 腳架")
+    }
+}

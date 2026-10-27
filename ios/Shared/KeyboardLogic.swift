@@ -321,8 +321,20 @@ enum ToneHint: Equatable, Sendable {
     }
 
     /// Return 鍵是一般換行（或拿不到）才保留分段換行；送出／搜尋／前往／完成等＝單行框，
-    /// 插入換行可能直接觸發送出（2026-09-19 長文分段一起加）。
-    static func allowsLineBreaks(returnKeyType: UIReturnKeyType?) -> Bool {
+    /// 插入換行可能直接觸發送出；完整條列僅在一般文字欄增加例外，其他段落沿用原規則。
+    static func allowsLineBreaks(returnKeyType: UIReturnKeyType?, keyboardType: UIKeyboardType? = nil,
+                                 text: String? = nil) -> Bool {
+        if let text, OutputShape.hasCompleteNumberedList(text) {
+            switch keyboardType {
+            case .URL, .emailAddress, .numberPad, .phonePad, .namePhonePad, .decimalPad, .asciiCapableNumberPad, .webSearch:
+                return false
+            default: break
+            }
+            switch returnKeyType {
+            case .search, .go, .join, .route, .google, .yahoo, .emergencyCall: return false
+            default: return true
+            }
+        }
         guard let returnKeyType else { return true }
         return returnKeyType == .default
     }

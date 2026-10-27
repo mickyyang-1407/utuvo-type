@@ -548,6 +548,9 @@ object SmartCleanup {
         workQueues.warmup { runCatching { CloudLlm.warm(endpoint) } }
     }
 
+    internal fun listForDelivery(text: String, enabled: Boolean, autoList: Boolean): String =
+        if (enabled && autoList) com.utuvo.type.core.OutputShape.expandingInlineNumberedList(text) else text
+
     /** 背景整理；回 null＝不替換（沒設定、失敗、逾時、沒通過把關）。done 在主執行緒。 */
     fun clean(c: Context, text: String, done: (String?) -> Unit, context: CleanupContext = CleanupContext(),
               validationSource: String = text): CleanupCancellation {

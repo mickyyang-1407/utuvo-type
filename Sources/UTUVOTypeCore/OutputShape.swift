@@ -10,6 +10,67 @@ import Foundation
 public enum OutputShape: Sendable {
     private static let bulletMarkers = ["- ", "* ", "• ", "・"]
 
+    // Explicit list markers only. Decimal/version numbers and ordinary ordinals stay prose.
+    private static let inlineOrdinal = try! NSRegularExpression(pattern:
+        #"(?:第([1-9][0-9]{0,2}|[一二三四五六七八九十]{1,3})(?:個(?!人|月|星期|禮拜|礼拜)|項|點|步)[ \t，,、：:]*|(?:^|(?<=[ \t\n，,、：:；;]))([1-9][0-9]{0,2}|[一二三四五六七八九十]{1,3})[.、)](?![0-9])[ \t]*)"#)
+    private static let itemBridge = try! NSRegularExpression(pattern: #"(還有(?:最重要的)?|以及|最重要的)[ \t]*$"#)
+
+    /// Layout only: preserve every item word/value and require all labels to be 1…N.
+    public static func expandingInlineNumberedList(_ text: String) -> String {
+        guard !text.contains("`"), !text.contains("\n\n") else { return text }
+        let ns = text as NSString
+        let markers = inlineOrdinal.matches(in: text, range: NSRange(location: 0, length: ns.length))
+        guard markers.count >= 2, markers.enumerated().allSatisfy({ index, marker in
+            let r = marker.range(at: marker.range(at: 1).location != NSNotFound ? 1 : 2)
+            return listOrdinal(ns.substring(with: r)) == index + 1
+        }) else { return text }
+        let separators = CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: "，,、；;"))
+        var bodies: [String] = []
+        for (index, marker) in markers.enumerated() {
+            let start = NSMaxRange(marker.range)
+            let end = index + 1 < markers.count ? markers[index + 1].range.location : ns.length
+            let body = ns.substring(with: NSRange(location: start, length: end - start)).trimmingCharacters(in: separators)
+            guard !body.isEmpty else { return text }
+            bodies.append(body)
+        }
+        for index in 0..<(bodies.count - 1) {
+            let body = bodies[index] as NSString
+            if let bridge = itemBridge.firstMatch(in: bodies[index], range: NSRange(location: 0, length: body.length)),
+               bridge.range.location > 0 {
+                let before = body.substring(to: bridge.range.location).trimmingCharacters(in: separators)
+                guard !before.isEmpty else { continue }
+                bodies[index] = before
+                bodies[index + 1] = body.substring(with: bridge.range).trimmingCharacters(in: .whitespaces) + bodies[index + 1]
+            }
+        }
+        var intro = ns.substring(to: markers[0].range.location).trimmingCharacters(in: separators)
+        if !intro.isEmpty, !intro.hasSuffix(":"), !intro.hasSuffix("：") { intro += "：" }
+        let lines = bodies.enumerated().map { "\($0.offset + 1). \($0.element)" }
+        return (intro.isEmpty ? lines : [intro] + lines).joined(separator: "\n")
+    }
+
+    /// Restrict the keyboard's newline exception to a complete rendered list.
+    public static func hasCompleteNumberedList(_ text: String) -> Bool {
+        let ordinals = text.split(separator: "\n").compactMap { line -> Int? in
+            let value = line.trimmingCharacters(in: .whitespaces)
+            guard let dot = value.firstIndex(of: "."), value[value.index(after: dot)...].hasPrefix(" ") else { return nil }
+            return Int(value[..<dot])
+        }
+        return ordinals.count >= 2 && ordinals == Array(1...ordinals.count)
+    }
+
+    private static func listOrdinal(_ value: String) -> Int? {
+        if let number = Int(value) { return number }
+        let digits: [Character: Int] = ["一":1,"二":2,"三":3,"四":4,"五":5,"六":6,"七":7,"八":8,"九":9]
+        if value.count == 1 { return value == "十" ? 10 : value.first.flatMap { digits[$0] } }
+        let parts = value.split(separator: "十", omittingEmptySubsequences: false)
+        guard parts.count == 2, parts.allSatisfy({ $0.count <= 1 }) else { return nil }
+        let tens = parts[0].isEmpty ? 1 : parts[0].first.flatMap { digits[$0] }
+        let units = parts[1].isEmpty ? 0 : parts[1].first.flatMap { digits[$0] }
+        guard let tens, let units else { return nil }
+        return tens * 10 + units
+    }
+
     /// 整段輸出恰好一行、而且那行是條列項時，剝掉條列符號。
     /// 兩行以上（真的多項條列）一律原樣返回。
     public static func stripLoneBullet(_ text: String) -> String {

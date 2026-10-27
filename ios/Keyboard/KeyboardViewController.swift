@@ -1717,7 +1717,7 @@ final class KeyboardViewController: UIInputViewController {
             let finalVariant = outputVariant ?? LanguageVariantStore.currentVariant(language: finalLanguage)
             let pipeline = TextPipeline(language: finalLanguage, variant: finalVariant)
             var cleaned = ToneHint.apply(pipeline.clean(raw).output, tone: tone)
-            if !ToneHint.allowsLineBreaks(returnKeyType: returnKey) { cleaned = OutputShape.singleLine(cleaned) }
+            if !ToneHint.allowsLineBreaks(returnKeyType: returnKey, keyboardType: textDocumentProxy.keyboardType, text: SmartCleanup.autoListEnabled ? cleaned : nil) { cleaned = OutputShape.singleLine(cleaned) }
             // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
             if insertedText.isEmpty, !cleaned.isEmpty {
                 let prefix = SentenceMood.continuationPrefix(before: textDocumentProxy.documentContextBeforeInput,
@@ -1926,7 +1926,7 @@ final class KeyboardViewController: UIInputViewController {
             guard correctionChain.contains(where: { $0.id == correction.id && !$0.done }) else { continue }
             let returnKey = chainReturnKeys[correction.id] ?? nil
             var cleaned = ToneHint.apply(TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)).clean(correction.text).output, tone: ToneHint.infer(returnKeyType: returnKey))
-            if !ToneHint.allowsLineBreaks(returnKeyType: returnKey) { cleaned = OutputShape.singleLine(cleaned) }
+            if !ToneHint.allowsLineBreaks(returnKeyType: returnKey, keyboardType: textDocumentProxy.keyboardType, text: SmartCleanup.autoListEnabled ? cleaned : nil) { cleaned = OutputShape.singleLine(cleaned) }
             let before = textDocumentProxy.documentContextBeforeInput ?? ""
             guard let plan = CorrectionChain.plan(entries: correctionChain, id: correction.id, corrected: cleaned, contextBefore: before) else {
                 if let i = correctionChain.firstIndex(where: { $0.id == correction.id }) { correctionChain[i].done = true }
