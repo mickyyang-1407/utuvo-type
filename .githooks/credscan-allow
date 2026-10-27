@@ -73,3 +73,4 @@ c76a04cff3446b1479e95a13afab35cedcec98f1a89bb240c4f5e508d1cb619f
 
 # Reviewed existing false positive; exact content only: android/app/src/androidTest/kotlin/com/utuvo/type/SmartCleanupTest.kt
 1f8b3a403088a9128ca239bc3960d98367a46a6545b9ec7850fec2779d6597da
+0ab521745d3506ab7a12addf688d579967a751ebb802a863fed6031dc134626e  # iOS42: unchanged Kordan Xcode object ID on line21; only version/build changed

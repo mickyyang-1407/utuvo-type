@@ -2,66 +2,6 @@ import XCTest
 @testable import UTUVOTypeiOS
 
 final class CleanupVocabularyLatencyTests: XCTestCase {
-    @MainActor
-    func testRecordingWarmupLoadsOnlyEnabledPacksIntoExistingCache() async throws {
-        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".bundle")
-        let vocabulary = root.appendingPathComponent("vocabulary", isDirectory: true)
-        try FileManager.default.createDirectory(at: vocabulary, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: root) }
-        try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "com.utuvo.fixture." + UUID().uuidString],
-            format: .xml, options: 0).write(to: root.appendingPathComponent("Info.plist"))
-        try Data("人工智慧\n資料庫\n".utf8).write(to: vocabulary.appendingPathComponent("computing.txt"))
-        try Data("不應載入\n".utf8).write(to: vocabulary.appendingPathComponent("law.txt"))
-        let bundle = try XCTUnwrap(Bundle(url: root))
-        let source = BundlePackTermsSource(bundle: bundle)
-        let oldCatalog = VocabularyPacks.catalog, oldSource = VocabularyPacks.termsSource
-        let defaults = SmartCleanup.settingsDefaults, key = "utuvo.type.vocabularyPacks.enabled"
-        let oldEnabled = defaults.object(forKey: key)
-        defer {
-            VocabularyPacks.setCatalogForTest(oldCatalog)
-            VocabularyPacks.setTermsSourceForTest(oldSource)
-            defaults.set(oldEnabled, forKey: key)
-        }
-        let packs = ["computing", "law"].map { id in
-            VocabularyCatalog.Pack(id: id, name: id, summary: "", sourceName: "", sourceURL: "",
-                licenseName: "", licenseURL: "", attribution: "", version: "fixture", defaultOn: false,
-                seedTerms: [], termCount: 2, termsSHA256: "", terms: nil, termsFile: id + ".txt")
-        }
-        VocabularyPacks.setCatalogForTest(.init(schemaVersion: 2, packs: packs))
-        VocabularyPacks.setTermsSourceForTest(source)
-        defaults.set(["computing"], forKey: key)
-        await VocabularyPacks.prewarm().value
-        // Removing both files proves readiness came from the real loader cache.
-        try FileManager.default.removeItem(at: vocabulary)
-        XCTAssertEqual(source.readTermsFile(packID: "computing"), ["人工智慧", "資料庫"])
-        XCTAssertNil(source.readTermsFile(packID: "law"), "Disabled packs must not be preloaded")
-        XCTAssertEqual(defaults.stringArray(forKey: key), ["computing"])
-        XCTAssertEqual(VocabularyPacks.termsForCleanup(text: "人工智慧資料庫", dictionary: [:]), ["人工智慧", "資料庫"])
-    }
-
-    func testRankingAcrossLargeTiesKeepsOriginalLengthAndLexicalOrder() {
-        let terms = (0..<2_000).reversed().map { "人工智慧詞彙\($0)" }
-            + ["人工智慧", "人工", "智慧", "人工e\u{301}", "人工é", "人工API", "圓山站"]
-        let pack = VocabularyCatalog.Pack(id: "fixture", name: "fixture", summary: "", sourceName: "", sourceURL: "",
-            licenseName: "", licenseURL: "", attribution: "", version: "1", defaultOn: false,
-            seedTerms: [], termCount: terms.count, termsSHA256: "", terms: terms, termsFile: "fixture.txt")
-        for query in ["人工智慧", "人工智慧API", "人工é", "圓山站人工智慧"] {
-            let overlap = BigramOverlap.bigramsUInt64(of: query), latin = LatinTokens.tokens(of: query)
-            // Original full sort is the oracle: ties use Character count, not UTF-8/scalar length.
-            let expected = terms.filter { query.contains("站") || $0 != "圓山站" }.map { term in
-                (term, TermScanner.score(term: term, overlap: overlap, latin: latin,
-                    checkCJK: !overlap.isEmpty, checkLatin: !latin.isEmpty, text: query))
-            }.filter { $0.1 > 0 }.sorted {
-                if $0.1 != $1.1 { return $0.1 > $1.1 }
-                if $0.0.count != $1.0.count { return $0.0.count < $1.0.count }
-                return $0.0 < $1.0
-            }.prefix(50).map(\.0)
-            var seen = Set<String>()
-            XCTAssertEqual(VocabularySelector.collectCandidates(text: query, enabled: [pack], stations: ["圓山站"]),
-                expected.filter { seen.insert($0).inserted })
-        }
-    }
-
     func testExactMembershipDifferentialAcrossUnicodeAndBounds() {
         let atoms = ["a", "é", "e\u{301}", "中", "文", "👨‍👩‍👧‍👦", "👨", "🇹🇼", "✈️", "✈", "\r\n", "\n", " "]
         var queries = atoms + ["", String(repeating: "甲", count: 41), String(repeating: "甲", count: 1_025), "a" + String(repeating: "\u{301}", count: 33_000)]

@@ -401,6 +401,7 @@ final class CredentialSafetyTests: XCTestCase {
         credentials.user = "synthetic-user"
         credentials.password = ["synthetic", "password"].joined(separator: "-")
         let invalid = ["", "not a URL", "http://example.invalid/v1", "http://localhost/v1",
+            "https://example.invalid/v1?api-key=synthetic", "https://example.invalid/v1?x-api-key=synthetic",
             credentials.string!, "https://example.invalid/v1#fragment",
             "https://example.invalid/v1?key=fixture", "https://example.invalid/v1?API_KEY=fixture",
             "https://example.invalid/v1?k%65y=fixture", "https://example.invalid/v1?token=fixture",
@@ -413,7 +414,7 @@ final class CredentialSafetyTests: XCTestCase {
         try SmartCleanup.saveCustom(endpoint: " https://example.invalid/v1?api-version=fixture ", model: " fixture-model ", to: store)
         XCTAssertEqual(store.string(forKey: SmartCleanup.customEndpointKey), "https://example.invalid/v1?api-version=fixture")
         XCTAssertEqual(store.string(forKey: SmartCleanup.customModelKey), "fixture-model")
-        print("B2 iOS: rejected 12 unsafe endpoints; invalid persisted values=0; HTTPS saved")
+        print("B2 iOS: rejected 14 unsafe endpoints; invalid persisted values=0; HTTPS saved")
         store.set("https://example.invalid/v1?key=synthetic", forKey: SmartCleanup.customEndpointKey)
         XCTAssertEqual(SmartCleanup.loadCustomEndpoint(from: store), "")
         XCTAssertNil(store.object(forKey: SmartCleanup.customEndpointKey))

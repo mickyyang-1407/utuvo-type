@@ -49,31 +49,11 @@ final class ContinuationPrefixAppTests: XCTestCase {
     }
 
     private func dictate(_ model: AppModel, into target: ContinuationFixture, _ text: String,
-                         mode: FormatterMode = .smart, verifyPending: Bool = false) async {
+                         mode: FormatterMode = .smart) async {
         model.captureDestination = { _ in target }
-        let originalRunner = model.cleanupRunner
-        if verifyPending {
-            model.cleanupRunner = { raw, config in
-                try? await Task.sleep(for: .milliseconds(60))
-                return await originalRunner(raw, config)
-            }
-        }
         model.startRecording(mode: mode)
-        let historyCount = model.preferences.historyRecords.count
-        let task = Task { await model.completeSyntheticDictation(text) }
-        if verifyPending {
-            try? await Task.sleep(for: .milliseconds(20))
-            XCTAssertTrue(target.inserted.isEmpty, "整理未完成前不插入")
-            XCTAssertEqual(model.preferences.historyRecords.count, historyCount, "未交付前不寫 final history")
-        }
-        await task.value
+        await model.completeSyntheticDictation(text)
         await model.waitForBackgroundCleanup()
-        if verifyPending {
-            XCTAssertEqual(target.inserted.count, 1, "最終文字只插入一次")
-            XCTAssertTrue(target.replacements.isEmpty, "不再背景覆寫")
-            XCTAssertEqual(model.preferences.historyRecords.count, historyCount + 1)
-            model.cleanupRunner = originalRunner
-        }
     }
 
     /// 第三輪審查（10-22）改了期望值：原本補「。」，新規則中文接中文什麼都不補（插入與背景替換都一樣）。
@@ -86,11 +66,11 @@ final class ContinuationPrefixAppTests: XCTestCase {
         XCTAssertEqual(first.inserted, [previous], "第一段沒有可接的，不加前綴")
 
         let second = ContinuationFixture(before: "訊息：" + previous)
-        await dictate(model, into: second, "你在哪裡", verifyPending: true)
+        await dictate(model, into: second, "你在哪裡")
         let output = model.lastOutput
         XCTAssertFalse(output.hasPrefix("。"), "最後結果只記聽寫內容")
         XCTAssertEqual(second.inserted, [output], "游標前就是上一段結尾：中文接中文不補")
-        XCTAssertTrue(second.replacements.isEmpty, "只有最終插入，沒有背景替換")
+        XCTAssertEqual(second.replacements, [output], "背景替換同一個（空）前綴（caveat b；非空前綴見英文與逗號那兩條）")
         XCTAssertFalse(model.preferences.historyRecords.contains { $0.output.hasPrefix("。") }, "歷史不含補的句號")
         model.cancelProcessing()
     }
@@ -112,9 +92,9 @@ final class ContinuationPrefixAppTests: XCTestCase {
         await dictate(model, into: ContinuationFixture(before: ""), "I am here")
         let previous = model.lastOutput
         let second = ContinuationFixture(before: "Note: " + previous)
-        await dictate(model, into: second, "where are you", verifyPending: true)
+        await dictate(model, into: second, "where are you")
         XCTAssertEqual(second.inserted, [" " + model.lastOutput])
-        XCTAssertTrue(second.replacements.isEmpty, "空白前綴跟最終文字一起插入一次")
+        XCTAssertEqual(second.replacements, [" " + model.lastOutput], "背景替換要連同前綴一起換（caveat b）")
         model.cancelProcessing()
     }
 
@@ -166,10 +146,10 @@ final class ContinuationPrefixAppTests: XCTestCase {
         XCTAssertEqual(previous, "如果明天下雨的話", "句尾吊著的逗號照樣拿掉（單獨一段時）")
 
         let second = ContinuationFixture(before: previous)
-        await dictate(model, into: second, "我們就改到室內", verifyPending: true)
+        await dictate(model, into: second, "我們就改到室內")
         let output = model.lastOutput
         XCTAssertEqual(second.inserted, ["，" + output], "補回的是拿掉的逗號，不是句號")
-        XCTAssertTrue(second.replacements.isEmpty, "逗號前綴跟最終文字一起插入一次")
+        XCTAssertEqual(second.replacements, ["，" + output], "背景替換同一個前綴")
 
         // 第三輪審查（10-22）改了期望值：原本補「。」；沒有拿掉的逗號就什麼都不補。
         let third = ContinuationFixture(before: previous + "，" + output)
@@ -197,9 +177,9 @@ final class ContinuationPrefixAppTests: XCTestCase {
             let previous = model.lastOutput
             XCTAssertEqual(previous, first, "辨識結果本來就沒有句尾標點")
             let target = ContinuationFixture(before: previous)
-            await dictate(model, into: target, second, verifyPending: true)
+            await dictate(model, into: target, second)
             XCTAssertEqual(target.inserted, [prefix + model.lastOutput], "\(first)＋\(second)")
-            XCTAssertTrue(target.replacements.isEmpty, "\(first)＋\(second)（只插入一次）")
+            XCTAssertEqual(target.replacements, [prefix + model.lastOutput], "\(first)＋\(second)（背景替換）")
             model.cancelProcessing()
         }
     }

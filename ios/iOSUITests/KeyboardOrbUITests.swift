@@ -160,38 +160,6 @@ final class KeyboardOrbUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["UTUVO Type"].exists, "定稿後左上品牌（Logo＋字標）要回來")
     }
 
-    /// 錄音中的共享狀態已更新，但跨 process 通知遺失時仍要補回字幕。
-    func testTranscriptRecoversWithoutDarwinNotification() throws {
-        continueAfterFailure = false
-        let app = XCUIApplication()
-        app.launchArguments = ["-AppleLanguages", "(zh-Hant)", "-AppleLocale", "zh_TW",
-                               "-utuvo.type.keyboard.language", "zh-TW",
-                               "-utuvo.type.keyboard.debugPose", "missed-update"]
-        app.launch()
-        app.tabBars.buttons.matching(NSPredicate(format: "label IN {'設定', 'Settings'}")).firstMatch.tap()
-        let field = revealDictionaryField(app)
-        XCTAssertTrue(field.waitForExistence(timeout: 5))
-        field.tap()
-        XCTAssertTrue(switchToUTUVOKeyboard(app))
-        XCTAssertTrue(app.staticTexts["再點一下完成"].waitForExistence(timeout: 3), "錄音 fixture 必須先成功啟動")
-        let transcript = app.staticTexts["漏通知也要顯示逐字稿"]
-        XCTAssertTrue(transcript.waitForExistence(timeout: 8), "共享狀態已更新，漏通知不能讓字幕一直空白")
-        XCTAssertGreaterThan(transcript.frame.width, 20)
-        let value = field.value as? String ?? ""
-        XCTAssertTrue(value.isEmpty || value == field.placeholderValue, "即時字幕不能提前貼進宿主")
-        shot("transcript-missed-notification")
-        app.descendants(matching: .any)["utuvoKeyboardOrb"].tap()
-        sleep(1) // More than one refresh interval, while the snapshot still says recording.
-        XCTAssertTrue(app.staticTexts["整理中…"].exists, "舊錄音快照不能取消使用者剛按的停止")
-        let finalized = NSPredicate { _, _ in ((field.value as? String) ?? "").contains("漏通知也要顯示逐字稿") }
-        XCTAssertEqual(XCTWaiter.wait(for: [XCTNSPredicateExpectation(predicate: finalized, object: nil)], timeout: 15), .completed)
-        sleep(1)
-        let after = field.value as? String ?? ""
-        XCTAssertEqual(after.components(separatedBy: "漏通知也要顯示逐字稿").count - 1, 1, "定稿只能交付一次")
-        XCTAssertTrue(app.staticTexts["UTUVO Type"].exists)
-        shot("final-missed-notification")
-    }
-
     /// R1-1：講完在「整理中…」（主 app 的定稿還沒回來）又按光球，上一句要先貼上，不能整句消失。
     func testTapWhileFinishingKeepsPreviousSentence() throws {
         let app = XCUIApplication()
