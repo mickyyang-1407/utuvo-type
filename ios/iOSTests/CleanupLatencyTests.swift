@@ -4,50 +4,6 @@ import UTUVOTypeCore
 
 @MainActor
 final class CleanupLatencyTests: XCTestCase {
-    func testSuccessfulClaudeDoesNotResolveLocalModelAvailability() async {
-        let state = CleanupFixtureState()
-        let localModel: @Sendable () -> SmartCleanup.OnDeviceCompletion? = {
-            state.fallback()
-            return { _, _ in Self.input }
-        }
-        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW",
-            configuration: { Self.config(.claude) }, terms: { _ in [] },
-            transport: { request in state.request(request); return Self.response(request) },
-            onDevice: localModel(), log: { _, _, _, _ in })
-        XCTAssertEqual(result, Self.output)
-        XCTAssertEqual(state.requests.count, 1)
-        XCTAssertEqual(state.fallbacks, 0, "A healthy cloud request must not query Apple/Gemma readiness")
-    }
-
-    func testFailedClaudeResolvesLocalModelOnceAndKeepsFallback() async {
-        let state = CleanupFixtureState()
-        let localModel: @Sendable () -> SmartCleanup.OnDeviceCompletion? = {
-            state.fallback()
-            return { _, _ in "我們明天下午三點開會。" }
-        }
-        let result = await SmartCleanup.finalize(Self.input, language: "zh-TW",
-            configuration: { Self.config(.claude) }, terms: { _ in [] },
-            transport: { request in state.request(request); return Self.response(request, code: 503) },
-            onDevice: localModel(), log: { outcome, _, _, _ in state.log(outcome) })
-        XCTAssertEqual(result, Self.output)
-        XCTAssertEqual(state.requests.count, 1)
-        XCTAssertEqual(state.fallbacks, 1)
-        XCTAssertEqual(state.logs, ["http(503)", "local:candidate"])
-    }
-
-    func testDirectCloudCleanAlsoSkipsLocalAvailability() async {
-        let state = CleanupFixtureState()
-        let localModel: @Sendable () -> SmartCleanup.OnDeviceCompletion? = {
-            state.fallback()
-            return nil
-        }
-        let result = await SmartCleanup.clean(Self.input, language: "zh-TW",
-            configuration: { Self.config(.claude) }, terms: { _ in [] },
-            transport: { Self.response($0) }, onDevice: localModel(), log: { _, _, _, _ in })
-        XCTAssertEqual(result, Self.output)
-        XCTAssertEqual(state.fallbacks, 0)
-    }
-
     private nonisolated static let input = "我們明天下午三點開會"
     /// 模型回「三點」；輸出與先貼出的本機版同一套數字格式（2026-09-24 起整理結果也過 normalizeNumbers）。
     private nonisolated static let output = "我們明天下午3:00開會。"

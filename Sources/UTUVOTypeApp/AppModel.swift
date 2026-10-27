@@ -79,8 +79,6 @@ final class AppModel: ObservableObject {
     // cleanup 完成後用 AXReplacementGate 確認「同一欄位、同一內容、同一前綴」才覆寫。
     private var pendingCleanupTask: Task<Void, Never>?
     private var destination: (any DictationDestination)?
-    private var clipboardDestination: (any DictationDestination)?
-    var captureClipboardDestination: ((Int32?) -> (any DictationDestination)?)?
     private var capturedPID: Int32?
     /// Ask anything（2026-10-13）：這次錄音是問問題／對選取文字下指令，不是聽寫。
     private var askActive = false
@@ -245,12 +243,6 @@ final class AppModel: ObservableObject {
     // Isolated fixtures can exercise the actual one-shot branch without starting a provider.
     var legacyFormatterRunner: ((String) async throws -> String)?
     var onDeliveryEvent: ((String) -> Void)?
-    /// Overrides only apply to isolated production-path tests.
-    var dictationBudgetForTesting: (cloud: TimeInterval, local: TimeInterval)?
-    private func recordDictationEvent(_ event: String, turn: UUID) {
-        deliveryLog.info("dictation turn=\(turn.uuidString, privacy: .public) outcome=\(event, privacy: .public)")
-        onDeliveryEvent?(event)
-    }
     private let legacyFirstUsePermissionKey = "utuvo.type.firstUsePermissionPrompted"
     private let permissionOnboardingAttemptedKey = "utuvo.type.permissionOnboardingAttempted"
     private let permissionOnboardingCompletedKey = "utuvo.type.permissionOnboardingCompleted"
@@ -1965,7 +1957,7 @@ final class AppModel: ObservableObject {
                                           useLocalFormatter: localBackgroundCleanup, sink: sink)
                 return
             }
-            await deliverFinalDictation(normalizedText, raw: transcript, duration: audioDuration,
+            await deliverImmediate(normalizedText, raw: transcript, duration: audioDuration,
                                    historyID: historyID, audioPath: audioPath, token: token, context: context,
                                    dictionary: dictionary, useLocalFormatter: localBackgroundCleanup,
                                    countsTowardStats: sink.countsTowardStats)
@@ -2401,13 +2393,6 @@ final class AppModel: ObservableObject {
         activeMode = mode
         capturedPID = expectedPID ?? (preferences.isolation == nil ? NSWorkspace.shared.frontmostApplication?.processIdentifier : nil)
         destination = captureDestination(capturedPID)
-        if let captureClipboardDestination {
-            clipboardDestination = captureClipboardDestination(capturedPID)
-        } else if preferences.isolation == nil, let pid = capturedPID {
-            clipboardDestination = CapturedClipboardDestination(pid: pid, method: preferences.pasteMethod,
-                                                                handling: preferences.clipboardHandling)
-        }
-        if destination == nil { destination = clipboardDestination }
         // context-awareness-v1：脈絡跟目的地同一刻抓（Typeless 也是開始時抓），不是 ASR 結束後才讀。
         capturedContext = (operationToken, captureContext(preferences.includeSurroundingContext,
                                                           preferences.contextBlockedSites))
@@ -2420,7 +2405,6 @@ final class AppModel: ObservableObject {
         speculation?.asr.cancel(); speculation?.cleanup?.task.cancel(); speculation = nil
         pendingCleanupTask?.cancel(); pendingCleanupTask = nil
         destination?.invalidate(); destination = nil
-        clipboardDestination?.invalidate(); clipboardDestination = nil
     }
 
     /// Test/QA entry: same production formatting and delivery, never records audio.
@@ -2457,118 +2441,86 @@ final class AppModel: ObservableObject {
         [.traditionalChinese, .english].contains(preferences.transcriptionLanguage)
     }
 
-    /// Ordinary smart dictation resolves one bounded candidate before touching the host field.
-    private func deliverFinalDictation(_ original: String, raw: String, duration: TimeInterval,
+    private func deliverImmediate(_ original: String, raw: String, duration: TimeInterval,
                                   historyID: UUID, audioPath: String?, token: UUID, context: LimitedAppContext,
                                   dictionary: [String: String], useLocalFormatter: Bool,
                                   countsTowardStats: Bool = true) async {
-        let original = deliveryOriginal(original)
-        let budgets = preferences.isolation != nil ? dictationBudgetForTesting : nil
-        let cloudBudget = budgets?.cloud ?? SmartCleanup.clipboardPasteTimeout
-        let localBudget = budgets?.local ?? SmartCleanup.backgroundTimeout
-        let config = cleanupConfig(original: original, context: context, dictionary: dictionary)
-        let target = destination
-        let clipboard = clipboardDestination
-        let before = target?.textBeforeCursor
-        let previous = continuationPrevious()
-        let terms = VocabularyPacks.latinTermsForCleanedText(personal: dictionary, enabled: config.enabledPacks)
-        let finishMood = moodApplies
+        let (original, originalMark) = (deliveryOriginal(original), finishDroppedMark(original))
         let trailing = preferences.appendTrailingSpace ? " " : ""
-        let command = preferences.localEditorCommand
-        let model = preferences.localEditorModel
-        let script = preferences.outputScript.rawValue
-        let isolated = preferences.isolation != nil
-        let prompt = try? await makePrompt(transcript: raw, context: context, dictionary: dictionary,
-                                          variant: config.variant)
-        statusMessage = preferences.tr("整理中…", "Cleaning up…")
-        recordDictationEvent(useLocalFormatter ? "route-local" : "route-cloud", turn: token)
-        notify()
-        func accepted(_ candidate: String?) -> String? {
-            guard let candidate else { return nil }
-            let normalized = Normalizer.normalizeNumbers(candidate)
-            let named = Normalizer.applyVocabulary(normalized, dictionary: dictionary, latinTerms: terms)
-            let source = Normalizer.applyVocabulary(Normalizer.normalizeNumbers(original), dictionary: dictionary,
-                                                   latinTerms: terms)
-            guard SmartCleanup.accepts(original: source, cleaned: named) else { return nil }
-            return named
-        }
-        let localRun = localBackgroundRunner
-        let local: @Sendable () async -> String? = {
-            if let localRun { return await localRun(raw, context, dictionary) }
-            guard !isolated, let prompt, !command.isEmpty || !model.isEmpty else { return nil }
-            let candidate: String?
-            if !command.isEmpty {
-                candidate = try? await LocalFormatterProcessClient(command: command, outputScript: script)
-                    .format(prompt: prompt, model: model)
-            } else {
-                candidate = try? await OllamaFormatterClient(model: model).format(prompt: prompt, model: model)
-            }
-            return candidate.flatMap { FormatterOutputGuard.sanitize($0, source: raw, mode: .smart) }
-        }
-        let first: String?
-        if useLocalFormatter {
-            first = await SmartCleanup.withinDeadline(seconds: localBudget) { await local() }
-        } else {
-            let work = cleanupWork(raw: raw, config: config)
-            first = await SmartCleanup.withinDeadline(seconds: cloudBudget) { await work() }
-        }
-        guard token == operationToken, !Task.isCancelled else { return }
-        recordDictationEvent(first == nil ? "candidate-unavailable" : "candidate-ready", turn: token)
-        var candidate = accepted(first)
-        // A cloud timeout never consumes the local formatter's separate deadline.
-        if candidate == nil && !useLocalFormatter {
-            recordDictationEvent("local-fallback", turn: token)
-            candidate = accepted(await SmartCleanup.withinDeadline(seconds: localBudget) { await local() })
-        }
-        guard token == operationToken, !Task.isCancelled else { return }
-        let selected = candidate ?? original
-        let named = config.enabled && config.autoList ? OutputShape.expandingInlineNumberedList(selected) : selected
-        let output = finishMood ? SentenceMood.finish(named) : named
-        let mark = finishMood ? SentenceMood.finishDroppedMark(named) : ""
-        let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: output,
-                                             droppedMark: previous?.mark)
-        let payload = prefix + output + trailing
-        lastOutput = output
-        // Save raw + final once, including an undelivered result that the user can recover.
-        guard commitResult(output: output, raw: raw, duration: duration, historyID: historyID,
-                           audioPath: audioPath, context: context,
-                           note: candidate == nil ? preferences.tr("智慧整理未完成；使用本機規則結果", "Smart cleanup unavailable; using deterministic text") : nil,
-                           sink: .newEntry(countsTowardStats: countsTowardStats)) else { return }
-        var deliveredTarget: (any DictationDestination)?
-        var insertionAttempted = false
-        let targetWasCurrent = target?.isCurrentForInsertion ?? false
-        if let target, targetWasCurrent {
-            insertionAttempted = true
-            let accepted = await target.insert(payload)
-            guard token == operationToken else { return }
-            if accepted || target.textPresent(payload) { deliveredTarget = target }
-        }
-        // Chromium can claim AX writes succeeded without accepting the text. Only
-        // use the separately captured original clipboard field, never the current one.
-        let clipboardWasCurrent = clipboard?.isCurrentForInsertion
-        if deliveredTarget == nil, let clipboard, clipboardWasCurrent == true,
-           target?.textPresent(payload) != true {
-            insertionAttempted = true
-            if await clipboard.insert(payload) { deliveredTarget = clipboard }
-        }
+        let config = cleanupConfig(original: original, context: context, dictionary: dictionary)
         guard token == operationToken else { return }
-        isProcessing = false
-        guard let target = deliveredTarget else {
-            // A one-shot submit marks its destination used even when it throws.
-            // That is an attempted insertion failure, not evidence of a field change.
-            let changed = !insertionAttempted && !(clipboardWasCurrent ?? targetWasCurrent)
-            recordDictationEvent(changed ? "skipped-target-changed" : "insertion-rejected", turn: token)
-            keepUndelivered(output, historyID: historyID, reason: changed ? .destinationChanged : .pasteFailed)
+        let lateCheck = destination
+        // context-awareness-2：游標前就是上一段的結尾 → 先補空白／拿掉的「，」（不補「。」）。插入、事後替換、晚到檢查都算同一個前綴；
+        // 歷史、最後結果、修改追蹤只記聽寫內容本身。
+        let before = destination?.textBeforeCursor
+        let previous = continuationPrevious()
+        let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: original,
+                                             droppedMark: previous?.mark)
+        guard let target = destination, await target.insert(prefix + original + trailing) else {
+            // 2026-09-24 實機（苑涵 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
+            // 這裡原本直接 return——不貼字、不寫歷史。改成跟 Fast 一樣走剪貼簿貼上（仍檢查前景 App 沒換）；
+            // 貼之前先在同一個時限內整理，能整理就貼整理版，否則貼本機整理版。
+            await pasteWithoutCapture(original: original, originalMark: originalMark, raw: raw, duration: duration,
+                                      historyID: historyID,
+                                      audioPath: audioPath, token: token, context: context, dictionary: dictionary,
+                                      config: config, useLocalFormatter: useLocalFormatter,
+                                      sink: .newEntry(countsTowardStats: countsTowardStats),
+                                      latePayload: prefix + original + trailing,
+                                      alreadyDelivered: { lateCheck?.textPresent(prefix + original + trailing) ?? false })
             return
         }
-        rememberDelivered(output, droppedMark: mark, target: target, payload: payload)
-        watchEdits(output)
-        statusMessage = target.confirmsHostDelivery
-            ? preferences.tr("已整理並貼上", "Formatted and inserted")
-            : preferences.tr("已送出貼上，請確認輸入欄位", "Paste submitted; check the input field")
-        logDeliveryTiming("final-insert")
-        recordDictationEvent(target.confirmsHostDelivery ? "delivered" : "insertion-api-accepted", turn: token)
+        guard token == operationToken else { return }
+        rememberDelivered(original, droppedMark: originalMark, target: target, payload: prefix + original + trailing)
+        lastOutput = original
+        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: raw, output: original,
+            duration: duration, mode: activeMode, appName: context.appName,
+            bundleIdentifier: context.foregroundBundleIdentifier, audioPath: audioPath),
+            countsTowardStats: countsTowardStats)
+        isProcessing = false
+        statusMessage = preferences.tr("已貼上", "Inserted")
+        logDeliveryTiming("ax-insert")
+        watchEdits(original)
+        onDeliveryEvent?("inserted")
         notify()
+        guard target.supportsCorrection else { onDeliveryEvent?("refused"); target.invalidate(); return }
+        let run = useLocalFormatter ? nil : cleanupWork(raw: raw, config: config)
+        let localRun = localBackgroundRunner
+        pendingCleanupTask = Task { [weak self] in
+            let cleaned: String?
+            if useLocalFormatter {
+                cleaned = await SmartCleanup.withinDeadline { [weak self] in
+                    if let localRun { return await localRun(raw, context, dictionary) }
+                    guard let self else { return nil }
+                    return await self.localBackgroundCleanup(raw, context: context, dictionary: dictionary)
+                }
+            } else {
+                cleaned = await run?()
+            }
+            guard let self else { target.invalidate(); return }
+            // 整理模型讀的是原始逐字稿（「三點」），先貼出的版本已轉成「3點」：數字格式先對齊，否則把關會把整段擋掉。
+            guard !Task.isCancelled, token == self.operationToken, !self.isRecording,
+                  let checked = cleaned.map(Normalizer.normalizeNumbers),
+                  SmartCleanup.accepts(original: original, cleaned: checked,
+                                       relaxed: !useLocalFormatter && config.provider == .claude),
+                  case let named = self.applyingVocabulary(checked, dictionary: dictionary),
+                  case let cleaned = self.moodApplies ? SentenceMood.finish(named) : named,
+                  case let cleanedPrefix = prefix.isEmpty ? ""
+                      : SentenceMood.joinPrefix(before: before, previous: previous?.text, next: cleaned,
+                                                droppedMark: previous?.mark),
+                  target.replaceInsertedText(with: cleanedPrefix + cleaned + trailing) else {
+                target.invalidate()
+                if token == self.operationToken { self.onDeliveryEvent?("refused") }
+                return
+            }
+            self.lastOutput = cleaned
+            self.rememberDelivered(cleaned, droppedMark: self.finishDroppedMark(named), target: target,
+                                   payload: cleanedPrefix + cleaned + trailing)
+            self.watchEdits(cleaned)   // 背景整理換字後，追蹤的是換過的版本
+            self.preferences.replaceHistoryOutput(id: historyID, with: cleaned)
+            self.statusMessage = self.preferences.tr("背景整理已套用", "Background cleanup applied")
+            self.onDeliveryEvent?("applied")
+            self.notify()
+        }
     }
 
     private func logDeliveryTiming(_ path: String) {
@@ -2713,7 +2665,7 @@ final class AppModel: ObservableObject {
     private func makePrompt(
         transcript: String,
         context: LimitedAppContext,
-        dictionary: [String: String], variant: CleanupVariant? = nil
+        dictionary: [String: String]
     ) async throws -> String {
         let dictionaryText = dictionary
             .sorted { $0.key < $1.key }
@@ -2742,7 +2694,7 @@ final class AppModel: ObservableObject {
             prompt += cleanupTerms.joined(separator: "、")
         }
         // app-shell-7：選了非預設的語言變體才多一行（`.none` 是空字串，提示詞不變）。
-        prompt += (variant ?? preferences.effectiveLanguageVariant).promptBlock
+        prompt += preferences.effectiveLanguageVariant.promptBlock
         if let preset = preferences.preset(for: context.foregroundBundleIdentifier),
            !preset.promptHint.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             prompt += "\n\n目前 App preset（僅作語氣提示，不可新增事實）：\n"

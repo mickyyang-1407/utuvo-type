@@ -12,12 +12,9 @@ private final class LockedCounter: @unchecked Sendable {
 private final class CapturedFixture: DictationDestination {
     var supportsCorrection = true
     var valid = true
-    var isCurrentForInsertion: Bool { valid }
-    var insertions = 0
-    var rejectsInsertion = false
     var text = ""
     var replacements = 0
-    func insert(_ text: String) async -> Bool { guard valid, !rejectsInsertion else { return false }; insertions += 1; self.text = text; return true }
+    func insert(_ text: String) async -> Bool { guard valid else { return false }; self.text = text; return true }
     func replaceInsertedText(with text: String) -> Bool {
         guard valid else { return false }; self.text = text; replacements += 1; return true
     }
@@ -58,7 +55,7 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertNil(model.pendingStart, "處理完就把排隊的開始送出")
     }
 
-    func testCaptureAtStartAndHistoryFollowSingleFinalInsertion() async throws {
+    func testCaptureOccursAtStartAndImmediateHistoryPrecedesCleanup() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         let target = CapturedFixture(), model = model(context, target: CapturedFixture())
         var captures = 0
@@ -70,7 +67,7 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertFalse(target.text.isEmpty)
         XCTAssertEqual(model.preferences.historyRecords.count, 1)
         await model.waitForBackgroundCleanup()
-        XCTAssertEqual(target.replacements, 0)
+        XCTAssertEqual(target.replacements, 1)
         // 2026-10-02：最後一句不加句號（SentenceMood.finish）——整理版換上去時也一樣。
         XCTAssertEqual(target.text, "合成測試文字 ")
         XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字")
@@ -107,7 +104,7 @@ final class AppModelDeliveryTests: XCTestCase {
         model.cancelProcessing()
     }
 
-    func testLocalSmartFormatterFinishesBeforeSingleInsertion() async throws {
+    func testLocalSmartFormatterRefinesAfterImmediateInsertion() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         let preferences = AppPreferences(isolation: context)
         preferences.cleanupEnabled = false
@@ -128,7 +125,7 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertTrue(target.text.contains("然後"), "Deterministic text should be inserted before the editor responds")
         await model.waitForBackgroundCleanup()
 
-        XCTAssertEqual(target.replacements, 0)
+        XCTAssertEqual(target.replacements, 1)
         XCTAssertTrue(target.text.contains("資料；然後"))
         XCTAssertEqual(model.preferences.historyRecords.first?.output, target.text.trimmingCharacters(in: .whitespaces))
         model.cancelProcessing()
@@ -252,7 +249,7 @@ final class AppModelDeliveryTests: XCTestCase {
             XCTAssertNotNil(model.preferences.historyRecords.first?.note)
             XCTAssertEqual(target.text, "", "不能 AX 插入的目的地一個字都不寫（改走剪貼簿）")
             XCTAssertFalse(events.contains("inserted"))
-            XCTAssertEqual(events.last, "undelivered")
+            XCTAssertEqual(events.last, "fallback")
             model.cancelProcessing()
         }
     }
@@ -268,7 +265,7 @@ final class AppModelDeliveryTests: XCTestCase {
         model.startRecording(mode: .smart)
         await model.completeSyntheticDictation("合成測試文字")
         await model.waitForBackgroundCleanup()
-        XCTAssertEqual(events.last, "undelivered", "目的地已失效不能再嘗試寫入")
+        XCTAssertEqual(events.last, "delivered-late", "字已經在欄位裡：不能再走剪貼簿貼一次")
         XCTAssertEqual(model.preferences.historyRecords.count, 1)
         XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字", "歷史記實際送達的原句")
         model.cancelProcessing()
@@ -301,10 +298,9 @@ final class AppModelDeliveryTests: XCTestCase {
     /// 金鑰錯／斷網：整理回 nil，照樣出字（本機整理版）並寫歷史＋原因。
     func testFallbackStillDeliversWhenCleanupFails() async throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
-        let target = CapturedFixture()
-        let model = model(context, target: target)
+        let model = model(context, target: CapturedFixture())
+        model.captureDestination = { _ in nil }
         model.cleanupRunner = { _, _ in nil }
-        model.localBackgroundRunner = { _, _, _ in nil }
         model.startRecording(mode: .smart)
         await model.completeSyntheticDictation("合成測試文字")
         XCTAssertEqual(model.lastOutput, "合成測試文字")
@@ -313,203 +309,6 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertTrue(note.contains("智慧整理") || note.contains("Smart cleanup"), note)
         model.cancelProcessing()
     }
-
-    func testExplicitInlineListFallbackIsDeliveredOnceAndRespectsPreference() async throws {
-        let raw = "明天的錄音要帶 1.麥克風 2.輔駕 3.腳架 4.個人監聽器 5.耳機還有最重要的 6.耳朵"
-        for lists in [true, false] {
-            let context = try IsolatedContext.make(); defer { context.tearDown() }
-            let target = CapturedFixture(), model = model(context, target: CapturedFixture())
-            model.preferences.cleanupAutoList = lists
-            model.captureDestination = { _ in target }
-            model.cleanupRunner = { _, _ in nil }
-            model.localBackgroundRunner = { _, _, _ in nil }
-            model.startRecording(mode: .smart)
-            await model.completeSyntheticDictation(raw)
-            XCTAssertEqual(target.insertions, 1)
-            XCTAssertEqual(target.replacements, 0)
-            XCTAssertEqual(model.lastOutput.filter { $0 == "\n" }.count, lists ? 6 : 0)
-            XCTAssertTrue(model.lastOutput.contains(lists ? "還有最重要的耳朵" : "耳機還有最重要的"))
-            XCTAssertEqual(model.preferences.historyRecords.first?.output, model.lastOutput)
-            model.cancelProcessing()
-        }
-    }
-    func testPendingCleanupInsertsNothingThenOneFinalResultWithRawHistory() async throws {
-        let context = try IsolatedContext.make(); defer { context.tearDown() }
-        let target = CapturedFixture(), model = model(context, target: target)
-        model.cleanupRunner = { raw, _ in
-            try? await Task.sleep(for: .milliseconds(100))
-            return raw + "。"
-        }
-        model.startRecording(mode: .smart)
-        let task = Task { await model.completeSyntheticDictation("合成測試文字") }
-        try await Task.sleep(for: .milliseconds(30))
-        XCTAssertEqual(target.insertions, 0)
-        XCTAssertTrue(model.preferences.historyRecords.isEmpty)
-        await task.value
-        XCTAssertEqual(target.insertions, 1)
-        XCTAssertEqual(target.replacements, 0)
-        XCTAssertEqual(model.preferences.historyRecords.count, 1)
-        XCTAssertEqual(model.preferences.historyRecords.first?.rawTranscript, "合成測試文字")
-        XCTAssertEqual(model.preferences.historyRecords.first?.output, "合成測試文字")
-    }
-
-    func testCloudTimeoutLeavesIndependentLocalBudgetAndIgnoresLateCandidate() async throws {
-        let context = try IsolatedContext.make(); defer { context.tearDown() }
-        let target = CapturedFixture(), model = model(context, target: target)
-        model.dictationBudgetForTesting = (0.03, 0.2)
-        model.cleanupRunner = { _, _ in
-            await withCheckedContinuation { continuation in
-                DispatchQueue.global().asyncAfter(deadline: .now() + 0.25) {
-                    continuation.resume(returning: "合成測試文字")
-                }
-            }
-        }
-        model.localBackgroundRunner = { raw, _, _ in
-            try? await Task.sleep(for: .milliseconds(60)); return raw + "。"
-        }
-        var events: [String] = []
-        model.onDeliveryEvent = { events.append($0) }
-        model.startRecording(mode: .smart)
-        await model.completeSyntheticDictation("合成測試文字")
-        XCTAssertTrue(events.contains("local-fallback"))
-        XCTAssertEqual(target.insertions, 1)
-        try await Task.sleep(for: .milliseconds(300))
-        XCTAssertEqual(target.insertions, 1)
-        XCTAssertEqual(model.preferences.historyRecords.count, 1)
-    }
-
-    func testCancelOrChangedTargetDuringCleanupNeverInserts() async throws {
-        for cancel in [true, false] {
-            let context = try IsolatedContext.make(); defer { context.tearDown() }
-            let target = CapturedFixture(), model = model(context, target: target)
-            model.startRecording(mode: .smart)
-            let task = Task { await model.completeSyntheticDictation("合成測試文字") }
-            try await Task.sleep(for: .milliseconds(20))
-            if cancel { model.cancelProcessing() } else { target.valid = false }
-            await task.value
-            XCTAssertEqual(target.insertions, 0)
-            XCTAssertEqual(target.replacements, 0)
-            XCTAssertEqual(model.preferences.historyRecords.count, cancel ? 0 : 1)
-        }
-    }
-
-    func testCapturedClipboardDestinationWaitsAndSubmitsOnceWithHonestDiagnostic() async throws {
-        for changeField in [true, false] {
-            let context = try IsolatedContext.make(); defer { context.tearDown() }
-            let preferences = AppPreferences(isolation: context)
-            preferences.cleanupEnabled = true
-            let model = AppModel(preferences: preferences)
-            var field = "captured", submits: [String] = [], events: [String] = []
-            let clipboard = CapturedClipboardDestination(isCurrent: { field == "captured" },
-                submit: { submits.append($0) })
-            model.captureDestination = { _ in clipboard }
-            model.cleanupRunner = { raw, _ in
-                try? await Task.sleep(for: .milliseconds(80)); return raw + "。"
-            }
-            model.onDeliveryEvent = { events.append($0) }
-            model.startRecording(mode: .smart)
-            let task = Task { await model.completeSyntheticDictation("合成測試文字") }
-            try await Task.sleep(for: .milliseconds(20))
-            XCTAssertTrue(submits.isEmpty)
-            if changeField { field = "other" }
-            await task.value
-            XCTAssertEqual(submits.count, changeField ? 0 : 1)
-            XCTAssertFalse(events.contains("delivered"), "Clipboard submission cannot prove host acceptance")
-            XCTAssertEqual(events.contains("insertion-api-accepted"), !changeField)
-            XCTAssertEqual(model.preferences.historyRecords.count, 1)
-            let again = await clipboard.insert("遲到")
-            XCTAssertFalse(again, "The captured clipboard destination is one-shot")
-        }
-    }
-
-    func testRequestKeepsProviderDictionaryVariantAndTrailingSpaceSnapshot() async throws {
-        let context = try IsolatedContext.make(); defer { context.tearDown() }
-        let target = CapturedFixture(), model = model(context, target: target)
-        model.preferences.cleanupProvider = .groq
-        model.preferences.dictionaryJSON = #"{"DAMI music":""}"#
-        model.preferences.setLanguageVariant(.zhTW, for: .traditionalChinese)
-        model.preferences.appendTrailingSpace = true
-        model.cleanupRunner = { _, config in
-            try? await Task.sleep(for: .milliseconds(80))
-            XCTAssertEqual(config.provider, .groq)
-            XCTAssertEqual(config.variant, .zhTW)
-            XCTAssertEqual(config.personal, ["DAMI music": ""])
-            return "我在 Darmy Music 工作。"
-        }
-        model.startRecording(mode: .smart)
-        let task = Task { await model.completeSyntheticDictation("我在 Darmy Music 工作") }
-        try await Task.sleep(for: .milliseconds(20))
-        model.preferences.cleanupProvider = .claude
-        model.preferences.dictionaryJSON = #"{"Darmy Music":"Other Company"}"#
-        model.preferences.setLanguageVariant(.zhCN, for: .traditionalChinese)
-        model.preferences.appendTrailingSpace = false
-        await task.value
-        XCTAssertEqual(target.text, "我在 DAMI music 工作 ")
-        XCTAssertEqual(target.insertions, 1)
-    }
-
-    func testAXNoLandingUsesCapturedClipboardWithoutRerunningCleanupOrDuplicatingLateText() async throws {
-        for outcome in ["no-landing", "late-landing", "changed"] {
-            let context = try IsolatedContext.make(); defer { context.tearDown() }
-            let target = CapturedFixture(); target.rejectsInsertion = true
-            let model = model(context, target: target)
-            var current = true, pastes: [String] = [], events: [String] = []
-            let clipboard = CapturedClipboardDestination(isCurrent: { current }, submit: { pastes.append($0) })
-            model.captureClipboardDestination = { _ in clipboard }
-            let calls = LockedCounter()
-            model.cleanupRunner = { raw, _ in
-                calls.increment(); try? await Task.sleep(for: .milliseconds(80)); return raw + "。"
-            }
-            model.onDeliveryEvent = { events.append($0) }
-            model.startRecording(mode: .smart)
-            let task = Task { await model.completeSyntheticDictation("合成測試文字") }
-            try await Task.sleep(for: .milliseconds(20))
-            if outcome == "changed" { current = false; target.valid = false }
-            if outcome == "late-landing" { target.lateText = "合成測試文字 " }
-            await task.value
-            XCTAssertEqual(calls.value, 1)
-            XCTAssertEqual(pastes.count, outcome == "no-landing" ? 1 : 0)
-            XCTAssertEqual(events.contains("delivered"), outcome == "late-landing")
-            XCTAssertEqual(events.contains("insertion-api-accepted"), outcome == "no-landing")
-            XCTAssertEqual(model.preferences.historyRecords.count, 1)
-        }
-    }
-
-    func testThrowingCapturedClipboardReportsPasteFailureInsteadOfChangedDestination() async throws {
-        enum PasteFixtureError: Error { case denied }
-        for withAXAttempt in [false, true] {
-            let context = try IsolatedContext.make(); defer { context.tearDown() }
-            let preferences = AppPreferences(isolation: context)
-            preferences.cleanupEnabled = true
-            let model = AppModel(preferences: preferences)
-            var submissions = 0, events: [String] = []
-            let clipboard = CapturedClipboardDestination(isCurrent: { true }, submit: { _ in
-                submissions += 1; throw PasteFixtureError.denied
-            })
-            let ax = CapturedFixture(); ax.rejectsInsertion = true
-            model.captureDestination = { _ in
-                if withAXAttempt { return ax }
-                return clipboard
-            }
-            model.captureClipboardDestination = { _ in clipboard }
-            model.cleanupRunner = { raw, _ in raw + "。" }
-            model.onDeliveryEvent = { events.append($0) }
-            model.startRecording(mode: .smart)
-            await model.completeSyntheticDictation("合成測試文字")
-            XCTAssertEqual(submissions, 1)
-            XCTAssertTrue(events.contains("insertion-rejected"))
-            XCTAssertFalse(events.contains("skipped-target-changed"))
-            XCTAssertFalse(events.contains("delivered"))
-            XCTAssertFalse(events.contains("insertion-api-accepted"))
-            XCTAssertEqual(model.preferences.historyRecords.count, 1)
-            let note = model.preferences.historyRecords.first?.note ?? ""
-            XCTAssertTrue(note.contains("貼上失敗") || note.lowercased().contains("paste failed"), note)
-            let status = model.statusMessage
-            XCTAssertTrue(status.contains("貼上失敗") || status.lowercased().contains("paste failed"), status)
-            XCTAssertFalse(note.contains("目的地已變更") || note.contains("destination changed"), note)
-        }
-    }
-
     func testLanguageEligibilitySharesCleanupSupportPredicate() {
         for language in TranscriptionLanguage.allCases {
             let expected = language == .traditionalChinese || language == .english

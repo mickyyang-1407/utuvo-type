@@ -6,8 +6,6 @@ import Foundation
 @MainActor
 protocol DictationDestination: AnyObject {
     var supportsCorrection: Bool { get }
-    var isCurrentForInsertion: Bool { get }
-    var confirmsHostDelivery: Bool { get }
     func insert(_ text: String) async -> Bool
     func replaceInsertedText(with text: String) -> Bool
     func invalidate()
@@ -23,8 +21,6 @@ protocol DictationDestination: AnyObject {
 }
 
 extension DictationDestination {
-    var isCurrentForInsertion: Bool { true }
-    var confirmsHostDelivery: Bool { true }
     func textPresent(_ text: String) -> Bool { false }
     var textBeforeCursor: String? { nil }
     var fieldIdentity: AnyHashable? { nil }
@@ -253,8 +249,6 @@ final class AXCapturedDestination: DictationDestination {
         return true
     }
 
-    var isCurrentForInsertion: Bool { inserted == nil && matches("") }
-
     func insert(_ text: String) async -> Bool {
         guard inserted == nil, !text.isEmpty, text.utf16.count <= 16_384, matches("") else { invalidate(); return false }
         changingOwnText = true
@@ -334,51 +328,4 @@ final class AXCapturedDestination: DictationDestination {
         // uses the actor-isolated lifetime because all references are main-actor bound.
         MainActor.assumeIsolated { removeObservers() }
     }
-}
-
-/// Clipboard-only hosts still get one final paste. Capture a field identity, rather than
-/// trusting whichever field happens to be focused when the formatter finishes.
-@MainActor
-final class CapturedClipboardDestination: DictationDestination {
-    let supportsCorrection = false
-    let confirmsHostDelivery = false
-    private let current: () -> Bool
-    private let submit: (String) throws -> Void
-    private var valid = true
-    private var used = false
-    let fieldIdentity: AnyHashable?
-    let cursorLocation: Int?
-    private let before: String?
-    var textBeforeCursor: String? { isCurrentForInsertion ? before : nil }
-
-    convenience init(pid: Int32, method: PasteMethod, handling: ClipboardHandling) {
-        let element = AXAdapter.focusedElement()
-        let range = element.flatMap(AXAdapter.range)
-        let beforeRange = range.map { NSRange(location: max(0, $0.location - 64), length: min(64, $0.location)) }
-        let before = element.flatMap { el in beforeRange.flatMap { AXAdapter.text(el, $0) } }
-        self.init(fieldIdentity: element.map(AnyHashable.init), cursorLocation: range?.location, before: before,
-                  isCurrent: {
-            guard NSWorkspace.shared.frontmostApplication?.processIdentifier == pid,
-                  let element, let focused = AXAdapter.focusedElement(), CFEqual(element, focused),
-                  let range, AXAdapter.range(focused) == range else { return false }
-            if let beforeRange, AXAdapter.text(focused, beforeRange) != before { return false }
-            return true
-        }, submit: { try ClipboardPaster.paste($0, method: method, handling: handling) })
-    }
-
-    /// Dependency-injected clipboard fixture uses the identical production validity and once gate.
-    init(fieldIdentity: AnyHashable? = nil, cursorLocation: Int? = nil, before: String? = nil,
-         isCurrent: @escaping () -> Bool, submit: @escaping (String) throws -> Void) {
-        self.fieldIdentity = fieldIdentity; self.cursorLocation = cursorLocation; self.before = before
-        current = isCurrent; self.submit = submit
-    }
-    var isCurrentForInsertion: Bool { valid && !used && !Task.isCancelled && current() }
-    func insert(_ text: String) async -> Bool {
-        guard isCurrentForInsertion else { return false }
-        used = true
-        // A sent paste event is not proof that the host app acknowledged the text.
-        do { try submit(text); return true } catch { return false }
-    }
-    func replaceInsertedText(with text: String) -> Bool { false }
-    func invalidate() { valid = false }
 }

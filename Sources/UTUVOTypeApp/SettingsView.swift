@@ -2088,16 +2088,16 @@ struct SettingsView: View {
     /// 預設關閉；使用者必須明確開啟才會在背景 try。
     private var smartCleanupCard: some View {
         settingsCard(
-            title: preferences.tr("智慧整理（選配）", "Smart cleanup (optional)"),
+            title: preferences.tr("智慧整理（背景，選配）", "Smart cleanup (background, optional)"),
             subtitle: preferences.tr(
-                "整理完成後一次貼入。雲端失敗時另試本機整理；目的地已變更時，保留可複製的結果。",
-                "Insert once after cleanup. Cloud failures get a separate local attempt; changed destinations leave a copyable result."
+                "支援的欄位先貼出本機結果，再嘗試修正改口、錯字與贅詞。目的地不支援或已變更時，保留可複製的結果。",
+                "Supported fields receive local text first, then optional fixes for slips, typos and fillers. Unsupported or changed destinations leave a copyable result."
             ),
             icon: "wand.and.stars"
         ) {
             VStack(alignment: .leading, spacing: 12) {
                 Toggle(isOn: $preferences.cleanupEnabled) {
-                    Text(preferences.tr("啟用雲端智慧整理（Smart、中／英、未翻譯、自動送出關閉）", "Enable cloud cleanup (Smart, Chinese/English, no translation, auto-submit off)"))
+                    Text(preferences.tr("啟用背景智慧整理（Smart、中／英、未翻譯、自動送出關閉）", "Enable background cleanup (Smart, Chinese/English, no translation, auto-submit off)"))
                 }
                 .toggleStyle(.switch)
 
@@ -2176,8 +2176,8 @@ struct SettingsView: View {
                 Divider().padding(.vertical, 2)
 
                 Text(preferences.tr(
-                    "辨識語言須明確選中文或英文；自動偵測及其他語言沿用原本的一次整理流程。整理完成後一次貼入；雲端失敗會另試本機整理，仍未完成就使用本機規則結果。等待期間目的地改變，結果保留供複製。",
-                    "Select Chinese or English explicitly. Auto detect and other languages keep the existing one-shot formatting flow. Insert once after cleanup. Cloud failures get a separate local attempt, then fall back to rule-based text. If the destination changes while waiting, keep the result for copying."
+                    "辨識語言須明確選中文或英文；自動偵測及其他語言沿用原本的一次整理流程。已貼出的結果只在游標與內容未變更時修正；繼續打字、服務失敗或逾時都保留原文。",
+                    "Select Chinese or English explicitly. Auto detect and other languages keep the existing one-shot formatting flow. Inserted text is corrected only while the caret and content stay unchanged; typing, service failure or timeout preserves it."
                 ))
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -2357,8 +2357,8 @@ struct SettingsView: View {
                 settingsCard(
                     title: preferences.tr("百鍊 adapter（選配）", "Bailian adapter (optional)"),
                     subtitle: preferences.tr(
-                        "目前不需要登入或 API key 也能使用本機 Fast；雲端辨識與雲端文字整理分別選配，只有手動開啟才使用。",
-                        "No login or API key is needed for local Fast; cloud recognition and cloud text cleanup are separate opt-in settings."
+                        "目前不需要登入或 API key 也能使用本機 Fast；雲端辨識與背景智慧整理各自選配，只有手動開啟才使用。",
+                        "No login or API key is needed for local Fast; cloud recognition and background cleanup are separate opt-in settings."
                     ),
                     icon: "cloud"
                 ) {
