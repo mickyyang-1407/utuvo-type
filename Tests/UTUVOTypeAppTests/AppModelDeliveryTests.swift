@@ -326,3 +326,53 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertFalse(AppModel.backgroundEligible(mode: .smart, translation: .off, autoSubmit: .returnKey, enabled: true, language: "zh-TW"))
     }
 }
+
+
+extension AppModelDeliveryTests {
+    func testListOnlyPresentationPreservesImmediateAndBackgroundDelivery() async throws {
+        for autoList in [true, false] {
+            let context = try IsolatedContext.make(); defer { context.tearDown() }
+            let target = CapturedFixture(), model = model(context, target: target)
+            model.preferences.cleanupAutoList = autoList
+            let raw = "明天要帶 1.耳機 2.腳架還有最重要的 3.耳朵"
+            model.cleanupRunner = { received, _ in XCTAssertEqual(received, raw); return nil }
+            model.startRecording(mode: .smart)
+            await model.completeSyntheticDictation(raw)
+            await model.waitForBackgroundCleanup()
+            XCTAssertEqual(target.replacements, 0, "Failure retains the original immediate route")
+            if autoList {
+                XCTAssertEqual(target.text, "明天要帶：\n1. 耳機\n2. 腳架\n3. 還有最重要的耳朵 ")
+            } else {
+                XCTAssertFalse(target.text.contains("\n"))
+            }
+            XCTAssertEqual(model.preferences.historyRecords.first?.output, target.text.trimmingCharacters(in: .whitespaces))
+            model.cancelProcessing()
+        }
+    }
+
+    func testListOnlyClipboardFallbackKeepsCompleteListInHistory() async throws {
+        let context = try IsolatedContext.make(); defer { context.tearDown() }
+        let target = CapturedFixture(), model = model(context, target: target)
+        model.captureDestination = { _ in nil }
+        model.cleanupRunner = { _, _ in nil }
+        model.startRecording(mode: .smart)
+        await model.completeSyntheticDictation("明天要帶 1.耳機 2.腳架")
+        XCTAssertEqual(model.lastOutput, "明天要帶：\n1. 耳機\n2. 腳架")
+        XCTAssertEqual(model.preferences.historyRecords.first?.output, model.lastOutput)
+        model.cancelProcessing()
+    }
+}
+
+
+extension AppModelDeliveryTests {
+    func testListOnlyExactRecordingExampleKeepsAllFiveItems() async throws {
+        let context = try IsolatedContext.make(); defer { context.tearDown() }
+        let target = CapturedFixture(), model = model(context, target: target)
+        model.cleanupRunner = { _, _ in nil }
+        model.startRecording(mode: .smart)
+        await model.completeSyntheticDictation("明天要錄音的話，第一個我們要帶耳機，二、普價、三、總普、四、節拍器、五、還有踏板。有沒有聽到？")
+        await model.waitForBackgroundCleanup()
+        XCTAssertEqual(target.text, "明天要錄音的話：\n1. 我們要帶耳機\n2. 普價\n3. 總普\n4. 節拍器\n5. 還有踏板。有沒有聽到？ ")
+        model.cancelProcessing()
+    }
+}

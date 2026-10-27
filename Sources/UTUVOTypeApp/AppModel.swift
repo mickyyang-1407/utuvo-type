@@ -2448,15 +2448,16 @@ final class AppModel: ObservableObject {
         let (original, originalMark) = (deliveryOriginal(original), finishDroppedMark(original))
         let trailing = preferences.appendTrailingSpace ? " " : ""
         let config = cleanupConfig(original: original, context: context, dictionary: dictionary)
+        let presented = config.autoList ? OutputShape.expandingInlineNumberedList(original) : original
         guard token == operationToken else { return }
         let lateCheck = destination
         // context-awareness-2：游標前就是上一段的結尾 → 先補空白／拿掉的「，」（不補「。」）。插入、事後替換、晚到檢查都算同一個前綴；
         // 歷史、最後結果、修改追蹤只記聽寫內容本身。
         let before = destination?.textBeforeCursor
         let previous = continuationPrevious()
-        let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: original,
+        let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: presented,
                                              droppedMark: previous?.mark)
-        guard let target = destination, await target.insert(prefix + original + trailing) else {
+        guard let target = destination, await target.insert(prefix + presented + trailing) else {
             // 2026-09-24 實機（苑涵 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
             // 這裡原本直接 return——不貼字、不寫歷史。改成跟 Fast 一樣走剪貼簿貼上（仍檢查前景 App 沒換）；
             // 貼之前先在同一個時限內整理，能整理就貼整理版，否則貼本機整理版。
@@ -2465,21 +2466,21 @@ final class AppModel: ObservableObject {
                                       audioPath: audioPath, token: token, context: context, dictionary: dictionary,
                                       config: config, useLocalFormatter: useLocalFormatter,
                                       sink: .newEntry(countsTowardStats: countsTowardStats),
-                                      latePayload: prefix + original + trailing,
-                                      alreadyDelivered: { lateCheck?.textPresent(prefix + original + trailing) ?? false })
+                                      latePayload: prefix + presented + trailing,
+                                      alreadyDelivered: { lateCheck?.textPresent(prefix + presented + trailing) ?? false })
             return
         }
         guard token == operationToken else { return }
-        rememberDelivered(original, droppedMark: originalMark, target: target, payload: prefix + original + trailing)
-        lastOutput = original
-        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: raw, output: original,
+        rememberDelivered(presented, droppedMark: originalMark, target: target, payload: prefix + presented + trailing)
+        lastOutput = presented
+        preferences.appendHistory(HistoryRecord(id: historyID, rawTranscript: raw, output: presented,
             duration: duration, mode: activeMode, appName: context.appName,
             bundleIdentifier: context.foregroundBundleIdentifier, audioPath: audioPath),
             countsTowardStats: countsTowardStats)
         isProcessing = false
         statusMessage = preferences.tr("已貼上", "Inserted")
         logDeliveryTiming("ax-insert")
-        watchEdits(original)
+        watchEdits(presented)
         onDeliveryEvent?("inserted")
         notify()
         guard target.supportsCorrection else { onDeliveryEvent?("refused"); target.invalidate(); return }
@@ -2503,7 +2504,8 @@ final class AppModel: ObservableObject {
                   SmartCleanup.accepts(original: original, cleaned: checked,
                                        relaxed: !useLocalFormatter && config.provider == .claude),
                   case let named = self.applyingVocabulary(checked, dictionary: dictionary),
-                  case let cleaned = self.moodApplies ? SentenceMood.finish(named) : named,
+                  case let listed = config.autoList ? OutputShape.expandingInlineNumberedList(named) : named,
+                  case let cleaned = self.moodApplies ? SentenceMood.finish(listed) : listed,
                   case let cleanedPrefix = prefix.isEmpty ? ""
                       : SentenceMood.joinPrefix(before: before, previous: previous?.text, next: cleaned,
                                                 droppedMark: previous?.mark),
@@ -2560,7 +2562,8 @@ final class AppModel: ObservableObject {
         }
         guard token == operationToken else { return }
         let elapsed = Int(Date().timeIntervalSince(started) * 1000)
-        var output = original
+        let presented = config.autoList ? OutputShape.expandingInlineNumberedList(original) : original
+        var output = presented
         var outputMark = originalMark
         // 重試沒有貼到欄位：不寫「已用剪貼簿貼上」這種原因。
         var note: String? = sink.isRetry ? nil
@@ -2569,7 +2572,8 @@ final class AppModel: ObservableObject {
         if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers),
            SmartCleanup.accepts(original: original, cleaned: cleaned, relaxed: !useLocalFormatter && config.provider == .claude) {
             let named = applyingVocabulary(cleaned, dictionary: dictionary)
-            output = moodApplies ? SentenceMood.finish(named) : named
+            let listed = config.autoList ? OutputShape.expandingInlineNumberedList(named) : named
+            output = moodApplies ? SentenceMood.finish(listed) : listed
             outputMark = finishDroppedMark(named)
             deliveryLog.info("smart fallback paste: cleanup applied in \(elapsed, privacy: .public) ms")
         } else {
@@ -2589,11 +2593,11 @@ final class AppModel: ObservableObject {
         // AX 寫入回報失敗、但字其實晚到了（整理等待的那幾秒內才出現）：不能再貼第二份。
         if alreadyDelivered() {
             // 欄位裡是先送出的原句，不是整理版：歷史與「最後結果」要記實際送達的那份。
-            lastOutput = original
-            preferences.replaceHistoryOutput(id: historyID, with: original)
-            rememberDelivered(original, droppedMark: originalMark, target: latePayload == nil ? nil : captured,
-                              payload: latePayload ?? original)
-            watchEdits(original)
+            lastOutput = presented
+            preferences.replaceHistoryOutput(id: historyID, with: presented)
+            rememberDelivered(presented, droppedMark: originalMark, target: latePayload == nil ? nil : captured,
+                              payload: latePayload ?? presented)
+            watchEdits(presented)
             statusMessage = preferences.tr("已貼上", "Inserted")
             deliveryLog.info("smart fallback paste: AX text landed late; skipped clipboard paste")
             onDeliveryEvent?("delivered-late")

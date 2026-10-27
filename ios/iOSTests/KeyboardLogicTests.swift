@@ -301,3 +301,31 @@ final class KeyboardLogicTests: XCTestCase {
                                             sharedPartial: "   ", sharedFinal: nil))
     }
 }
+
+
+extension KeyboardLogicTests {
+    func testListOnlyNewlinesKeepProseAndSingleLineRules() {
+        let list = "明天要帶：\n1. 耳機\n2. 腳架"
+        for key in [UIReturnKeyType.send, .done, .next, .continue] {
+            XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: key, keyboardType: .default, text: list))
+            XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: key, keyboardType: .default, text: "第一段\n第二段"))
+        }
+        for kind in [UIKeyboardType.URL, .emailAddress, .numberPad, .phonePad, .webSearch] {
+            XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: .send, keyboardType: kind, text: list))
+        }
+        XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: .search, keyboardType: .default, text: list))
+        XCTAssertFalse(ToneHint.allowsLineBreaks(returnKeyType: .send, keyboardType: .default, text: "1.5dB\n2.5dB"))
+        let final = ToneHint.apply(TextPipeline(dictionary: [:], latinTerms: []).clean(list).output, tone: .chat)
+        XCTAssertEqual(final, list)
+    }
+}
+
+
+extension KeyboardLogicTests {
+    func testListOnlyExactRecordingLayoutSurvivesTheKeyboardPipeline() {
+        let list = "明天要錄音的話：\n1. 我們要帶耳機\n2. 普價\n3. 總普\n4. 節拍器\n5. 還有踏板。有沒有聽到？"
+        let final = ToneHint.apply(TextPipeline(dictionary: [:], latinTerms: []).clean(list).output, tone: .chat)
+        XCTAssertEqual(final, list)
+        XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: .send, keyboardType: .default, text: final))
+    }
+}

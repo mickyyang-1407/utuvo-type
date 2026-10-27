@@ -1614,19 +1614,22 @@ class UTUVOImeService : InputMethodService() {
         if (target == null) {
             // 緊接在上一段後面講（W2-7，同 Mac）：英數字接英數字補一個空白、上一段拿掉的「，」「、」補回；
             // 中文接中文什麼都不插，永遠不補「。」——辨識器在停頓處就交回一段，補句號會把一句話切成兩句。
+            val listed = SmartCleanup.listForDelivery(cleaned, SmartCleanup.isEnabled(this),
+                SmartCleanup.autoList(this) && FieldShape.allowsNumberedLists(inputType) && tone != FieldToneHint.Kind.SEARCH)
+            val presented = if (listed == cleaned) cleaned else fitField(listed, tone, inputType)
             val ic = currentInputConnection
             val previousDictation = lastDictation
             val prefix = DictationJoin.prefix(
-                ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previousDictation), 0)?.toString(), previousDictation, cleaned)
+                ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previousDictation), 0)?.toString(), previousDictation, presented)
             if (prefix.isNotEmpty()) ic?.commitText(prefix, 1)
-            ic?.commitText(cleaned, 1)
-            lastDictation = DictationJoin.remember(previousDictation, cleaned, droppedMark)
-            noteDictation(raw, cleaned, turn)
-            learner.dictationInserted(cleaned)
+            ic?.commitText(presented, 1)
+            lastDictation = DictationJoin.remember(previousDictation, presented, droppedMark)
+            noteDictation(raw, presented, turn)
+            learner.dictationInserted(presented)
             endTurn(turn)
-            val chainId = refine(cleaned, raw, route.context, tone, inputType, prefix)
+            val chainId = refine(presented, raw, route.context, tone, inputType, prefix, validationSource = cleaned)
             // delivery-learning-5：一般聽寫也給一鍵復原（連同接續補的空白／「，」「、」一起收回）。
-            if (ic != null) offerInsertUndo(VoiceUndoPlan.forDictation(prefix, cleaned, cursorOffset(ic) ?: -1, chainId, previousDictation))
+            if (ic != null) offerInsertUndo(VoiceUndoPlan.forDictation(prefix, presented, cursorOffset(ic) ?: -1, chainId, previousDictation))
             return
         }
         keyboard?.setHint(getString(R.string.hint_translating), error = false)
@@ -2025,7 +2028,8 @@ class UTUVOImeService : InputMethodService() {
      */
     private fun refine(inserted: String, raw: String, context: SmartCleanup.CleanupContext = SmartCleanup.CleanupContext(),
                        tone: FieldToneHint.Kind = FieldToneHint.infer(currentInputEditorInfo),
-                       inputType: Int? = currentInputEditorInfo?.inputType, prefix: String = ""): Long? {
+                       inputType: Int? = currentInputEditorInfo?.inputType, prefix: String = "",
+                       validationSource: String = inserted): Long? {
         if (!SmartCleanup.isEnabled(this)) return null
         val id = chain.add(inserted, prefix)
         refining++
@@ -2034,7 +2038,8 @@ class UTUVOImeService : InputMethodService() {
         val cleanupRequest = SmartCleanup.clean(this, raw, { result ->
             request?.let(pendingCleanupRequests::remove)
             refining--
-            val corrected = result?.let { fitField(it, tone, inputType) }
+            val corrected = result?.let { fitField(SmartCleanup.listForDelivery(it, true,
+                SmartCleanup.autoList(this) && FieldShape.allowsNumberedLists(inputType) && tone != FieldToneHint.Kind.SEARCH), tone, inputType) }
             // 整理版這次被 fitField 拿掉的句尾標點（同 Mac：拿掉之前先算），換字之後接著講時用。
             val correctedMark = result?.let { com.utuvo.type.core.SentenceMood.finishDroppedMark(it) }.orEmpty()
             var swapped = false
@@ -2050,7 +2055,7 @@ class UTUVOImeService : InputMethodService() {
             if (!listening && refining == 0) {
                 keyboard?.setHint(getString(if (swapped) R.string.hint_refined else R.string.hint_idle), error = false)
             }
-        }, context = context, validationSource = inserted)
+        }, context = context, validationSource = validationSource)
         request = cleanupRequest
         pendingCleanupRequests += cleanupRequest
         return id

@@ -2,6 +2,44 @@ package com.utuvo.type.core
 
 /** 輸出形狀修整（同 Swift OutputShape）。 */
 object OutputShape {
+
+    private val inlineOrdinal = Regex("""(?:第([1-9][0-9]{0,2}|[一二三四五六七八九十]{1,3})(?:個(?!人|月|星期|禮拜|礼拜)|項|點|步)[ \t，,、：:]*|(?:^|(?<=[ \t\n，,、：:；;]))([1-9][0-9]{0,2}|[一二三四五六七八九十]{1,3})[.、)](?![0-9])[ \t]*)""")
+    private val itemBridge = Regex("""(還有(?:最重要的)?|以及|最重要的)[ \t]*$""")
+    private fun separator(c: Char) = c.isWhitespace() || c in "，,、；;"
+
+    /** Layout only; all item words/values remain, and labels must be exactly1…N. */
+    fun expandingInlineNumberedList(text: String): String {
+        if ('`' in text || "\n\n" in text) return text
+        val markers = inlineOrdinal.findAll(text).toList()
+        if (markers.size < 2 || markers.withIndex().any { (i, m) -> listOrdinal(m.groups[1]?.value ?: m.groupValues[2]) != i + 1 }) return text
+        val bodies = markers.mapIndexed { i, m ->
+            text.substring(m.range.last + 1, markers.getOrNull(i + 1)?.range?.first ?: text.length).trim(::separator)
+        }.toMutableList()
+        if (bodies.any { it.isEmpty() }) return text
+        for (i in 0 until bodies.lastIndex) {
+            val bridge = itemBridge.find(bodies[i]) ?: continue
+            val before = bodies[i].substring(0, bridge.range.first).trim(::separator)
+            if (before.isEmpty()) continue
+            bodies[i] = before
+            bodies[i + 1] = bridge.value.trim() + bodies[i + 1]
+        }
+        var intro = text.substring(0, markers.first().range.first).trim(::separator)
+        if (intro.isNotEmpty() && !intro.endsWith(':') && !intro.endsWith('：')) intro += "："
+        val lines = bodies.mapIndexed { i, body -> "${i + 1}. $body" }
+        return (if (intro.isEmpty()) lines else listOf(intro) + lines).joinToString("\n")
+    }
+
+    private fun listOrdinal(value: String): Int? {
+        value.toIntOrNull()?.let { return it }
+        val digits = mapOf('一' to 1,'二' to 2,'三' to 3,'四' to 4,'五' to 5,'六' to 6,'七' to 7,'八' to 8,'九' to 9)
+        if (value.length == 1) return if (value == "十") 10 else digits[value[0]]
+        val parts = value.split('十')
+        if (parts.size != 2 || parts.any { it.length > 1 }) return null
+        val tens = if (parts[0].isEmpty()) 1 else digits[parts[0][0]] ?: return null
+        val units = if (parts[1].isEmpty()) 0 else digits[parts[1][0]] ?: return null
+        return tens * 10 + units
+    }
+
     /**
      * 單行輸入框：把分段／條列的換行接回一行（換行在單行框裡可能直接觸發送出）。
      * 前面是英文字元（含 . , !）、後面是英數字時補一個空白，其餘直接接上。
