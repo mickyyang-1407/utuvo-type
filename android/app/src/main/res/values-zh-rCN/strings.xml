@@ -177,7 +177,7 @@
     <string name="hint_limit_reached">已录满 %1$d 分钟，自动发送</string>
     <string name="smart_title">智能整理（可选）</string>
     <string name="smart_toggle">智能整理</string>
-    <string name="smart_explain">识别完成后，由你选的服务整理，再一次贴入结果。云端失败时会另试已准备好的本机模型。云端语音偏好与字段上下文默认关闭；如果没有可用的设备端中文语音包，系统服务会作为备用并显示云端提示。</string>
+    <string name="smart_explain">识别完成后先贴出可用结果，再由你选的服务整理改口、赘词和错字。云端语音偏好与字段上下文默认关闭；如果没有可用的设备端中文语音包，系统服务会作为备用并显示云端提示。</string>
     <string name="smart_cloud_speech_toggle">优先使用云端语音识别</string>
     <string name="smart_cloud_speech_explain">只影响 Android 系统语音服务（如 Google 语音）是否走网络识别，音频发到哪里由系统服务决定。跟下面的“用这把 key 识别语音”是两件事，那一项才会把整段录音发送到你选的服务。关闭时优先使用已下载的设备端中文语音包；如果本机语音包不可用，仍会使用系统服务作为备用并提示。</string>
     <string name="smart_cloud_asr_toggle">用这把 key 识别语音</string>
@@ -352,7 +352,7 @@
     <string name="guide_accuracy_1">把常讲的专有名词加入个人词典</string>
     <string name="guide_accuracy_1_detail">人名、品牌、术语加入之后，粘贴时会按词典改正拼写，云端识别与智能整理也会参考这些词。</string>
     <string name="guide_accuracy_2">智能整理（默认开）</string>
-    <string name="guide_accuracy_2_detail">说完先整理赘词、改口和标点，再一次贴入结果。想用云端模型就在设置页填入自己的 key。</string>
+    <string name="guide_accuracy_2_detail">说完先贴出识别结果，再自动删掉赘词、改口、补标点。想用云端模型就在设置页填入自己的 key。</string>
     <string name="guide_accuracy_3">云端识别（选配，需自己的 key）</string>
     <string name="guide_accuracy_3_detail">在设置页保存好 key 后打开“云端识别”，录音会用你的 key 上传识别，专有名词更准；失败会自动改用手机识别。录音会离开手机，介意的话不要打开。</string>
     <string name="guide_problem_header">遇到问题</string>

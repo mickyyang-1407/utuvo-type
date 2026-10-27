@@ -188,7 +188,7 @@
 
     <string name="smart_title">智慧整理（選配）</string>
     <string name="smart_toggle">智慧整理</string>
-    <string name="smart_explain">辨識完成後，由你選的服務整理，再一次貼入結果。雲端失敗時會另試已準備好的本機模型。雲端語音偏好與欄位脈絡預設關閉；若沒有可用的裝置端中文語音包，系統服務會作為備援並顯示雲端提示。</string>
+    <string name="smart_explain">辨識完成先貼出可用結果，再由你選的服務整理改口、贅詞和錯字。雲端語音偏好與欄位脈絡預設關閉；若沒有可用的裝置端中文語音包，系統服務會作為備援並顯示雲端提示。</string>
     <string name="smart_cloud_speech_toggle">優先用雲端語音辨識</string>
     <string name="smart_cloud_speech_explain">只影響 Android 系統語音服務（Google 語音等）走網路辨識，音訊送到哪裡由系統服務決定。跟下面的「用這把 key 辨識語音」是兩件事，那一項才會把整段錄音送到你選的服務。關閉時優先用已下載的裝置端中文語音包；若本機包不可用，仍會用系統服務備援並提示。</string>
     <string name="smart_cloud_asr_toggle">用這把 key 辨識語音</string>
@@ -367,7 +367,7 @@
     <string name="guide_accuracy_1">把常講的專有名詞加進個人字典</string>
     <string name="guide_accuracy_1_detail">人名、品牌、術語加進去之後，貼上時會照字典改正拼法，雲端辨識與智慧整理也會參考這些詞。</string>
     <string name="guide_accuracy_2">智慧整理（預設開）</string>
-    <string name="guide_accuracy_2_detail">講完先整理贅詞、改口與標點，再一次貼入結果。想用雲端模型就在設定頁填自己的 key。</string>
+    <string name="guide_accuracy_2_detail">講完先貼出辨識結果，再自動刪掉贅詞、改口、補標點。想用雲端模型就在設定頁填自己的 key。</string>
     <string name="guide_accuracy_3">雲端辨識（選配，需自己的 key）</string>
     <string name="guide_accuracy_3_detail">在設定頁存好 key 後打開「雲端辨識」，錄音會用你的 key 上傳辨識，專有名詞更準；失敗會自動改用手機辨識。錄音會離開手機，在意的話不要開。</string>
     <string name="guide_problem_header">遇到問題</string>

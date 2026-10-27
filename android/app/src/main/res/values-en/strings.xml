@@ -188,7 +188,7 @@
 
     <string name="smart_title">Smart Refine (optional)</string>
     <string name="smart_toggle">Smart Refine</string>
-    <string name="smart_explain">Waits for your selected cleanup service, then inserts the final result once. Cloud failures get a separate attempt with a prepared local model. Cloud speech preference and field context are off by default; without an on-device Chinese speech pack, the system service is the fallback and a cloud hint appears.</string>
+    <string name="smart_explain">Pastes a usable result first, then lets the service you pick clean up filler, tone and typos. Cloud speech preference and field context are off by default; without an on-device Chinese speech pack, the system service is the fallback and a cloud hint appears.</string>
     <string name="smart_cloud_speech_toggle">Prefer cloud speech recognition</string>
     <string name="smart_cloud_speech_explain">Only affects Android’s system speech service (Google speech and the like) when it recognises over the network — where the audio goes is up to that service. This is separate from “recognise speech with this key” below, which is what uploads the whole recording to the service you choose. When off, a downloaded on-device Chinese pack is preferred; if unavailable, the system service still steps in and says so.</string>
     <string name="smart_cloud_asr_toggle">Recognise speech with this key</string>
@@ -365,7 +365,7 @@
     <string name="guide_accuracy_1">Add names you say often to the personal dictionary</string>
     <string name="guide_accuracy_1_detail">Names, brands and jargon you add get spelled that way when inserted, and cloud recognition and Smart Refine both use them.</string>
     <string name="guide_accuracy_2">Smart Refine (on by default)</string>
-    <string name="guide_accuracy_2_detail">Filler, corrections and punctuation are cleaned up before one final insertion. To use a cloud model, add your own key in Settings.</string>
+    <string name="guide_accuracy_2_detail">The transcript is pasted first, then filler, tone and punctuation get cleaned up. To use a cloud model, add your own key in Settings.</string>
     <string name="guide_accuracy_3">Cloud recognition (optional, needs your own key)</string>
     <string name="guide_accuracy_3_detail">Save a key in Settings, then turn on “Cloud Recognition” — audio is recognised with your key for better results on jargon, and falls back to on-device if it fails. Audio leaves your phone, so skip it if that matters to you.</string>
     <string name="guide_problem_header">Troubleshooting</string>

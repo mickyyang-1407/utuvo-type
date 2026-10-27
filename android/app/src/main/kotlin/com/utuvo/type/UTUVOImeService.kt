@@ -167,7 +167,6 @@ class UTUVOImeService : InputMethodService() {
     /** 雲端語音辨識（選配）：有開關、有 key、語言支援時才錄一份給雲端；失敗照用系統結果。 */
     private val cloudRecorder = CloudRecorder()
     /** 每次離開輸入框就加一：非同步結果回來時用它判斷還是不是同一個欄位。 */
-    private val finalDictation = FinalDictationDelivery()
     private var inputGeneration = 0
     /** onStartInputView 看到的 fieldId：同 App 內換欄位時用它分辨「換欄位」與「同一欄重開鍵盤」。 */
     private var lastStartedFieldId = -1
@@ -323,7 +322,6 @@ class UTUVOImeService : InputMethodService() {
         if (fieldId != lastStartedFieldId) {
             lastStartedFieldId = fieldId
             inputGeneration++
-            finalDictation.cancel()
             dropInsertUndo()   // 換了欄位：剛才那一段不在這裡
         }
         preloadFixers()
@@ -366,7 +364,6 @@ class UTUVOImeService : InputMethodService() {
     }
 
     override fun onFinishInputView(finishingInput: Boolean) {
-        finalDictation.cancel()
         inputGeneration++   // 雲端辨識／英文建議還在路上：回來時已經不是這個輸入框了，丟掉（同 iOS 的 commandID 比對）
         cancelPendingCleanups()
         commitComposition()
@@ -965,11 +962,6 @@ class UTUVOImeService : InputMethodService() {
     }
 
     private fun startListening() {
-        // Preserve the previous utterance while polishing; another mic tap never silently drops it.
-        if (!finalDictation.mayStartRecording()) {
-            keyboard?.setHint(getString(R.string.hint_refining), error = false)
-            return
-        }
         // 改寫模式、沒有選取文字、又還沒選範圍：先請他選「這一段／全部文字」，不要盲錄。
         // 範圍選擇已經在畫面上時，光球是「取消」——不然模式切換列被蓋住就回不去了。
         if (voiceMode == VoiceMode.SPEAK_TO_EDIT &&
@@ -1031,7 +1023,6 @@ class UTUVOImeService : InputMethodService() {
             )
         } else SmartCleanup.CleanupContext(variant = variant)
         // 新的一次：這一次的走向（模式、範圍、整理上下文）現在就記下來，結果晚到時照它走（mobile-keyboard-1）。
-        finalDictation.cancel()
         turns.start(TurnSnapshot(mode, voiceMode, pendingScope, activeCleanupContext))
         if (translateTarget == null) SmartCleanup.warmUp(this)   // 講話的時候先連上智慧整理服務
         startCloudRecording()
@@ -1240,7 +1231,6 @@ class UTUVOImeService : InputMethodService() {
      * 這裡把模式歸零回聽寫也不會讓它的「幫我寫」指示被當成聽寫貼出去；秒數也是它自己的（[VoiceTurns.seconds]）。
      */
     private fun cancelVoiceTurn() {
-        finalDictation.cancel()
         val cancelled = turns.cancel()
         if (cancelled == null) { keyboard?.setCancelVisible(false); return }
         mainHandler.removeCallbacks(restartRunnable)
@@ -1552,7 +1542,7 @@ class UTUVOImeService : InputMethodService() {
      * 一次聽寫完成：寫歷史（**看保留期限**）＋記使用數據（**永遠記**，只有數字）。
      * 這是使用數據的唯一寫入點，App 內與鍵盤內都走這裡。
      */
-    private fun noteDictation(raw: String, output: String, turn: Int = turns.current, countedAsDelivered: Boolean = true) {
+    private fun noteDictation(raw: String, output: String, turn: Int = turns.current) {
         // 這一次按停時算好的秒數：交付晚到時，下一次的開始（秒數歸零重算）或 ✕ 不會把它改成別次的或 0。
         val seconds = turns.seconds(turn) ?: sessionSeconds()
         val app = applicationContext
@@ -1561,7 +1551,7 @@ class UTUVOImeService : InputMethodService() {
             runCatching { HistoryStore.append(app, raw, output, seconds) }
                 .onFailure { Log.w(TAG, "history append failed", it) }
         }
-        if (countedAsDelivered) UsageStore.record(this, output, seconds)
+        UsageStore.record(this, output, seconds)
     }
 
     /**
@@ -1622,71 +1612,21 @@ class UTUVOImeService : InputMethodService() {
         // 這一次之後已經有新的一次開始了：現在的翻譯目標與模式是新的那一次的，不能清掉。
         if (turns.isLatest(turn)) { translateTarget = null; mode = KeyboardMode.Dictate }
         if (target == null) {
+            // 緊接在上一段後面講（W2-7，同 Mac）：英數字接英數字補一個空白、上一段拿掉的「，」「、」補回；
+            // 中文接中文什麼都不插，永遠不補「。」——辨識器在停頓處就交回一段，補句號會把一句話切成兩句。
             val ic = currentInputConnection
-            val generation = inputGeneration
-            val before = ic?.getTextBeforeCursor(512, 0)?.toString()
-            val after = ic?.getTextAfterCursor(200, 0)?.toString()
-            val selection = ic?.getSelectedText(0)?.toString()
-            val preparedCleanup = SmartCleanup.prepareRequest(this, raw, route.context)
-            val selectedOnDevice = preparedCleanup.onDevice
-            val enabled = preparedCleanup.enabled
-            fun present(value: String): String = if (enabled && preparedCleanup.autoList)
-                fitField(com.utuvo.type.core.OutputShape.expandingInlineNumberedList(value), tone, inputType) else value
-            var finalDroppedMark = droppedMark
-            keyboard?.setHint(getString(R.string.hint_refining), error = false)
-            finalDictation.start(cleaned,
-                primary = { done ->
-                    if (!enabled) { done(null); ({}) }
-                    else {
-                        val request = SmartCleanup.clean(this, raw, { result ->
-                            done(result?.let {
-                                finalDroppedMark = com.utuvo.type.core.SentenceMood.finishDroppedMark(it)
-                                fitField(it, tone, inputType)
-                            })
-                        }, context = route.context, validationSource = cleaned, prepared = preparedCleanup)
-                        ({ request.cancel() })
-                    }
-                },
-                localFallback = if (!enabled || selectedOnDevice) null else ({ done ->
-                    val request = SmartCleanup.clean(this, raw, { result ->
-                        done(result?.let {
-                            finalDroppedMark = com.utuvo.type.core.SentenceMood.finishDroppedMark(it)
-                            fitField(it, tone, inputType)
-                        })
-                    }, context = route.context, validationSource = cleaned, forceOnDevice = true, prepared = preparedCleanup)
-                    ({ request.cancel() })
-                }),
-                valid = {
-                    turns.isLive(turn) && turns.isLatest(turn) && generation == inputGeneration &&
-                        ic != null && currentInputConnection === ic &&
-                        before == ic.getTextBeforeCursor(512, 0)?.toString() &&
-                        after == ic.getTextAfterCursor(200, 0)?.toString() &&
-                        selection == ic.getSelectedText(0)?.toString()
-                },
-                deliver = { candidate ->
-                    val output = present(candidate)
-                    val previous = lastDictation
-                    val prefix = DictationJoin.prefix(
-                        ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previous), 0)?.toString(), previous, output)
-                    val accepted = ic?.commitText(prefix + output, 1) == true
-                    if (accepted) {
-                        lastDictation = DictationJoin.remember(previous, output, finalDroppedMark)
-                        noteDictation(raw, output, turn)
-                        learner.dictationInserted(output)
-                        offerInsertUndo(VoiceUndoPlan.forDictation(prefix, output, cursorOffset(ic!!) ?: -1, null, previous))
-                    }
-                    endTurn(turn)
-                    keyboard?.setHint(getString(R.string.hint_idle), error = false)
-                    accepted
-                },
-                retain = { candidate ->
-                    val output = present(candidate)
-                    noteDictation(raw, output, turn, countedAsDelivered = false)
-                    endTurn(turn)
-                    keyboard?.showTranscript(output)
-                    keyboard?.setHint(getString(R.string.hint_idle), error = false)
-                },
-                event = { outcome -> Log.i(TAG, "dictation turn=$turn generation=$generation provider=${if (selectedOnDevice) "local" else preparedCleanup.provider.id} outcome=$outcome") })
+            val previousDictation = lastDictation
+            val prefix = DictationJoin.prefix(
+                ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previousDictation), 0)?.toString(), previousDictation, cleaned)
+            if (prefix.isNotEmpty()) ic?.commitText(prefix, 1)
+            ic?.commitText(cleaned, 1)
+            lastDictation = DictationJoin.remember(previousDictation, cleaned, droppedMark)
+            noteDictation(raw, cleaned, turn)
+            learner.dictationInserted(cleaned)
+            endTurn(turn)
+            val chainId = refine(cleaned, raw, route.context, tone, inputType, prefix)
+            // delivery-learning-5：一般聽寫也給一鍵復原（連同接續補的空白／「，」「、」一起收回）。
+            if (ic != null) offerInsertUndo(VoiceUndoPlan.forDictation(prefix, cleaned, cursorOffset(ic) ?: -1, chainId, previousDictation))
             return
         }
         keyboard?.setHint(getString(R.string.hint_translating), error = false)
