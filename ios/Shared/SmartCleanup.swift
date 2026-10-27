@@ -177,7 +177,7 @@ enum SmartCleanup {
               let url = URL(string: value), let host = url.host, !host.isEmpty else { throw EndpointError.invalidURL }
         guard url.scheme?.lowercased() == "https" else { throw EndpointError.httpsRequired }
         guard url.user == nil, url.password == nil, url.fragment == nil else { throw EndpointError.credentialsInURL }
-        let secretNames: Set<String> = ["key", "api_key", "apikey", "token", "access_token", "authorization"]
+        let secretNames: Set<String> = ["key", "api_key", "api-key", "x-api-key", "apikey", "token", "access_token", "authorization"]
         if URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.contains(where: { secretNames.contains($0.name.lowercased()) }) == true {
             throw EndpointError.credentialsInURL
         }
