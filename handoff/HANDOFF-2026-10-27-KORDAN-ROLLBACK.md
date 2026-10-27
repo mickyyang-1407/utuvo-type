@@ -4,7 +4,7 @@
 
 Mac 0.1.11 (2026102701) restores the Mac App and shared Core at the accepted Kordan PR/build36 point, except the audited SecretStore protection. Kordan's PR itself was iOS; the Mac source here is the corresponding Mac baseline, not code newly written by Kordan. Claude's original provider-specific candidate checks and background correction flow are restored. Later strict/common gates, inline-list expansion and experimental short-sentence cloud skip are absent. Models, prompts, provider choices and user preferences are unchanged.
 
-The complete iOS and shared Core trees match the verified `ios-testflight-0.3.3-42-kordan` tag. Default main now contains that iOS source, rather than leaving it only in an iOS-only tag. No new iOS upload or App Store submission. Android source and its 0.3.3 release remain unchanged.
+The complete iOS and shared Core trees match the verified `ios-testflight-0.3.3-42-kordan` tag. Default main now contains that iOS source, rather than leaving it only in an iOS-only tag. No new iOS upload or App Store submission. Android was unchanged at the initial Mac checkpoint; the subsequent Android0.3.4 rollback is now complete, see [Android handoff](HANDOFF-2026-10-27-KORDAN-ANDROID.md).
 
 Credential protection stays in place: audited macOS SecretStore and its migration tests, hardened signing/profile gates, iOS no-redirect sessions and endpoint validation, clipboard key cleanup, Android credential transport/log/backup protections. Handoff files remain outside Pages docs/.
 

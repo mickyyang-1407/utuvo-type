@@ -6,7 +6,7 @@
 
 | 📱 iPhone | 🤖 Android | 💻 Mac |
 |---|---|---|
-| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.3) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
+| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.4) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
 
 - 🎙 **光球鍵盤**：注音（簡拼、不打聲調）、拼音、聯想詞，點一下光球就能用說的
 - ✍️ **自動整理**：看語意下標點、中英文之間自動留空格
@@ -64,7 +64,7 @@ App Store 版提供：注音邊打邊出候選（簡拼、不打聲調）、拼�
 
 ## Android（APK，測試版）
 
-1. 到 [Android 0.3.3 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.3) 下載 `UTUVO-Type-0.3.3-android.apk`（附 SHA-256）。目前**不在 Google Play**。
+1. 到 [Android 0.3.4 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.4) 下載 `UTUVO-Type-0.3.4-android.apk`（附 SHA-256）。目前**不在 Google Play**。
 2. 手機允許「安裝未知應用程式」後安裝，打開 App 照三步：允許麥克風 → 在系統設定啟用 UTUVO Type 鍵盤 → 切換成 UTUVO Type。
 3. 需要 **Android 10 以上**。聽寫用手機的系統語音服務（多數是 Google 語音）；也可以在設定→智慧整理／雲端辨識填自己的 key。
 
