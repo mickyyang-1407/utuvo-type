@@ -1788,14 +1788,9 @@ object CleanupFidelity {
     fun rejectionReason(original: String, cleaned: String, readings: CjkReadingLookup? = null): String? {
         // FX-3 ④：對比句被翻成相反的意思，來源怎麼讀都不放行（「星期三不是星期四」→「星期四」）。同 Swift。
         if (invertsContrast(original, cleaned)) return "對比句被改成相反的意思"
-        val expanded = OutputShape.expandingInlineNumberedList(original)
-        val sourceItems = numberedListItems(expanded)
-        val outputItems = numberedListItems(cleaned)
-        val comparisonSource = if (expanded != original && sourceItems.size == outputItems.size &&
-            contiguousListOrdinals(cleaned, sourceItems.size)) expanded else original
         val listItems = numberedListItems(cleaned)
-        val allowListFormatting = listItems.size >= 2 && hasListContext(comparisonSource, listItems.size)
-        val sources = prepareSource(comparisonSource, allowListFormatting, listIntroCopula.containsMatchIn(cleaned), listItems)
+        val allowListFormatting = listItems.size >= 2 && hasListContext(original, listItems.size)
+        val sources = prepareSource(original, allowListFormatting, listIntroCopula.containsMatchIn(cleaned), listItems)
         val output = listPrefix.replace(Normalizer.normalizeNumbers(normalizeFullwidthDigits(cleaned)), "")
         val outputTokens = tokens(output, optionalFillerRanges(output))
         val readingsMemo = ReadingMemo(readings)
@@ -1813,16 +1808,6 @@ object CleanupFidelity {
         } else {
             "輸出新增或調動了實詞"
         }
-    }
-
-    private fun contiguousListOrdinals(value: String, count: Int): Boolean {
-        if (count < 2) return false
-        val ordinals = value.lines().mapNotNull { line ->
-            val trimmed = line.trim(' ', '\t')
-            val end = trimmed.indexOfFirst { it in ".、)" }
-            if (end < 0) null else trimmed.substring(0, end).toIntOrNull()
-        }
-        return ordinals == (1..count).toList()
     }
 
     /**
