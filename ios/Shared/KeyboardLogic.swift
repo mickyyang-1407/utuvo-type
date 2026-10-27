@@ -320,18 +320,11 @@ enum ToneHint: Equatable, Sendable {
         returnKeyType == .send ? .chat : .document
     }
 
-    /// Send/done/next describe the Return action, not the field's multiline capability.
-    /// Keep lists in ordinary text editors; only explicit single-line field hints flatten them.
-    static func allowsLineBreaks(returnKeyType: UIReturnKeyType?, keyboardType: UIKeyboardType? = nil) -> Bool {
-        switch keyboardType {
-        case .URL, .emailAddress, .numberPad, .phonePad, .namePhonePad, .decimalPad, .asciiCapableNumberPad, .webSearch:
-            return false
-        default: break
-        }
-        switch returnKeyType {
-        case .search, .go, .join, .route, .google, .yahoo, .emergencyCall: return false
-        default: return true
-        }
+    /// Return 鍵是一般換行（或拿不到）才保留分段換行；送出／搜尋／前往／完成等＝單行框，
+    /// 插入換行可能直接觸發送出（2026-09-19 長文分段一起加）。
+    static func allowsLineBreaks(returnKeyType: UIReturnKeyType?) -> Bool {
+        guard let returnKeyType else { return true }
+        return returnKeyType == .default
     }
 
     /// 最後一句不加句號（2026-10-02 Micky：不要每句、最後都用句號，很 AI）。以前只在聊天框的單句訊息拿掉；

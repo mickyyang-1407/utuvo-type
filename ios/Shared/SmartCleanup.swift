@@ -202,9 +202,7 @@ enum SmartCleanup {
 
     /// 開著，而且有 key（雲端）或手機上的模型可用（Apple Intelligence 或 Gemma）。
     static var isEnabled: Bool {
-        // A configured cloud route already answers this question; do not synchronously
-        // query Apple/Gemma readiness on the keyboard's critical path.
-        enabledPreference && ((DictationRouteSettings.mode == .cloud && !key(for: provider).isEmpty) || OnDeviceCleanup.available)
+        enabledPreference && (OnDeviceCleanup.available || (DictationRouteSettings.mode == .cloud && !key(for: provider).isEmpty))
     }
 
     /// Background cleanup gets 4 seconds for a short sentence and scales to at most 10 seconds for longer text.
@@ -324,7 +322,7 @@ enum SmartCleanup {
                       terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                       transport: @escaping Transport = { try await StrictCleanupSession.shared.send($0) },
                       normalize: @escaping Normalization = { text, traditional in traditional ? TraditionalFixer.shared.fix(text) : text },
-                      onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
+                      onDevice: OnDeviceCompletion? = OnDeviceCleanup.completion,
                       log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
                       onRejected: @escaping Rejection = { _ in }) async -> String? {
         let budget = suppliedBudget ?? CleanupBudget(seconds: timeout)
@@ -340,7 +338,7 @@ enum SmartCleanup {
                 guard config.enabled else { throw Failure.notConfigured }
                 if config.key.isEmpty {
                     // 沒 key：Apple Intelligence 裝置端，同一份指示、同一道把關。
-                    guard let onDevice = onDevice() else { throw Failure.notConfigured }
+                    guard let onDevice else { throw Failure.notConfigured }
                     return try await performOnDevice(text, traditional: traditional, budget: budget,
                                                      terms: terms, complete: onDevice, normalize: normalize,
                                                      context: context, validationSource: validationSource ?? text, dictionary: dictionary,
@@ -367,43 +365,38 @@ enum SmartCleanup {
     /// so an exhausted network request cannot consume the offline fallback's time.
     static func finalize(_ text: String, language: String, context: PromptContext = .init(),
                          forceLocal: Bool = false,
-                         autoList: Bool? = nil,
                          configuration: @escaping @Sendable () -> Configuration = { Self.configuration() },
                          terms: @escaping Terms = { VocabularyPacks.termsForCleanup(text: $0) },
                          transport: @escaping Transport = { try await StrictCleanupSession.shared.send($0) },
-                         onDevice: @autoclosure @escaping @Sendable () -> OnDeviceCompletion? = OnDeviceCleanup.completion,
+                         onDevice: OnDeviceCompletion? = OnDeviceCleanup.completion,
                          log: @escaping Log = { SmartLog.record(outcome: $0, start: $1, input: $2, output: $3) },
                          cloudTimeout: TimeInterval? = nil, localTimeout: TimeInterval? = nil) async -> String? {
         guard !Task.isCancelled else { return nil }
         let configured = configuration()
         guard configured.enabled else { return text }
-        let lists = autoList ?? autoListEnabled
-        func present(_ value: String) -> String { lists ? OutputShape.expandingInlineNumberedList(value) : value }
         let config = Configuration(enabled: true, provider: configured.provider, endpoint: configured.endpoint,
                                    model: configured.model, key: forceLocal ? "" : configured.key)
         if !config.key.isEmpty {
             if let output = await clean(text, language: language, timeout: cloudTimeout ?? cleanupTimeout(for: text),
                                         context: context, configuration: { config }, terms: terms,
-                                        transport: transport, onDevice: nil, log: log) { return present(output) }
+                                        transport: transport, onDevice: nil, log: log) { return output }
             guard !Task.isCancelled else { return nil }
         }
-        if let onDevice = onDevice() {
+        if let onDevice {
             let local = Configuration(enabled: true, provider: config.provider, endpoint: "", model: "", key: "")
             if let output = await clean(text, language: language, timeout: localTimeout ?? (OnDeviceCleanup.usesFallback ? gemmaTimeout(for: text) : 8),
                                         context: context, configuration: { local }, terms: terms,
                                         transport: transport, onDevice: onDevice, log: { outcome, start, input, output in
                                             log("local:" + outcome, start, input, output)
-                                        }) { return present(output) }
+                                        }) { return output }
         }
         guard !Task.isCancelled else { return nil }
         log("raw-fallback", Date(), text, nil)
-        return present(text)
+        return text
     }
 
     /// Existing opt-in warmup. No transcript or authorization is sent.
     static func warmUp() {
-        guard enabledPreference else { return }
-        VocabularyPacks.prewarm()
         if usesOnDevice { OnDeviceCleanup.prewarm(); return }
         guard isEnabled, let url = URL(string: provider.endpoint) else { return }
         var request = URLRequest(url: url, timeoutInterval: 5)
