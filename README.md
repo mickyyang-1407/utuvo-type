@@ -41,7 +41,7 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
-**macOS 自動更新開發狀態：原始碼已加入，0.1.13 安裝檔尚未發布；目前公開下載仍為 0.1.12。** 新版預計在選單及「設定 → 一般 → 軟體更新」提供檢查更新，預設自動檢查與下載、結束 App 時安裝，並驗證更新清單與安裝檔簽章。更新要求重新啟動時，會先等待錄音、轉錄及背景整理完成。發佈後，舊版需先安裝一次含更新器的版本。
+**Mac 0.1.13 已可下載：**[直接下載 DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.13/UTUVO-Type-0.1.13-macOS-arm64.dmg)（Developer ID 簽章＋Apple 公證）。本版加入軟體更新介面，以及錄音、轉錄與背景整理期間的更新重啟保護。App 內自動更新尚未啟用，現階段請手動下載安裝。Kordan 模型、整理 prompt、品質把關設定與既有條列排版維持原樣。
 
 ## iPhone（App Store）
 

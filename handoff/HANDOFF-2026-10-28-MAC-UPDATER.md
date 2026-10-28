@@ -1,6 +1,6 @@
-# Mac updater preparation — 2026-10-28
+# Mac 0.1.13 manual release / updater follow-up — 2026-10-28
 
-Status: source-only update. Implementation, isolated tests and Developer ID / notarized packages are complete. Mac 0.1.13 is not released or installed; current public downloads remain 0.1.12. Archive/feed signing and the real update round trip remain pending. Source publication does not depend on the separate Keychain authorization.
+Status: Mac 0.1.13 (2026102802) installer is publicly released as GitHub Latest. Developer ID / notarized DMG, ZIP and SHA256SUMS.txt are available for manual download. In-app automatic updates are not enabled: archive/feed EdDSA signing and the real update round trip remain pending. The installed daily Mac has not been replaced by this release task.
 
 ## Scope
 
@@ -27,14 +27,22 @@ swift test exit 0 before adding updater tests (App target: 350, four existing sk
 
 Developer ID and notarization outputs, package checks, original checkpoint, source scan and installation proof remain in the local task evidence directory. Follow the workspace handoff for the current completion state.
 
-## Outstanding delivery gates
+## Public manual download
+
+Mac release: https://github.com/mickyyang-1407/utuvo-type/releases/tag/v0.1.13
+
+Direct DMG: https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.13/UTUVO-Type-0.1.13-macOS-arm64.dmg
+
+Release source tags: private v0.1.13 at a88fc1f / public v0.1.13 at8c1dcb2 (each repository has its own history). Product code matches the tested/notarized build; source-only availability documents were updated afterward. Existing Android0.3.5 is still the current APK; no Android/iOS source change in this Mac release.
+
+## Outstanding automatic-update gates
 
 The first sign_update call waited for a macOS Keychain authorization prompt. Micky could not operate the Mac, so the owned signer and runner were stopped. No Keychain permission was changed. Source commits can be pushed independently; do not publish an unsigned feed or claim a working update round trip. Start a fresh signing invocation when the human can complete the system prompt; no password in chat.
 
-Then verify good/tampered archive and feed; publish signed release/assets then signed feed; verify public bytes/signatures; perform a real update from a local signed/notarized bridge build 2026102801 to public build 2026102802. The bridge is local only and must not be released. Preserve installed settings and a recoverable old App backup.
+Manual release/assets are already published. For automatic updates, verify good/tampered archive and feed; publish only the signed feed after confirming it matches the published ZIP; verify public bytes/signatures; perform a real update from a local signed/notarized bridge build 2026102801 to public build 2026102802. The bridge is local only and must not be released. Preserve installed settings and a recoverable old App backup.
 
 Original private feature checkout and pre-existing dirty worktrees are out of scope; never reset or merge them. Public sync uses only the reviewed changed files because histories are independent.
 
 ## Controlled public export
 
-Product code, packaging, tests and this handoff are identical in the two repositories. README retains each repository's existing introduction; only the same updater availability paragraph is added. The public download links, feature summary and Discussions link are preserved. No Android/iOS source, model configuration or cleanup setting changes are included.
+Product code, packaging, tests and this handoff are identical in the two repositories. README retains each repository's existing introduction; the same release-availability paragraph is updated in Chinese and added in English. The public download links, feature summary and Discussions link are preserved. No Android/iOS source, model configuration or cleanup setting changes are included.
