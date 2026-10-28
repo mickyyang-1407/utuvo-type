@@ -14,6 +14,7 @@ let package = Package(
         .executable(name: "utuvo-bench", targets: ["UTUVOBench"]),
         .executable(name: "utuvo-type", targets: ["UTUVOTypeApp"])
     ],
+    dependencies: [.package(url: "https://github.com/sparkle-project/Sparkle", exact: "2.10.0")],
     targets: [
         // 純函式核心：normalizer / routing / prompt loader / fixtures loader。
         // 不准引進任何 SwiftPM dependency，連 XCTest 都隔離在 test target。
@@ -33,13 +34,14 @@ let package = Package(
         // terms 依 cleanup/UI 需求延遲讀取（VocabularyPacks.BundlePackTermsSource）。
         .executableTarget(
             name: "UTUVOTypeApp",
-            dependencies: ["UTUVOTypeCore"],
+            dependencies: ["UTUVOTypeCore", .product(name: "Sparkle", package: "Sparkle", condition: .when(platforms: [.macOS]))],
             path: "Sources/UTUVOTypeApp",
             resources: [
                 .copy("Resources/vocabulary"),
                 // 簡轉繁字典（符號連結到 ios/Shared/Resources/OpenCC；雲端辨識的 TraditionalFixer 用）。
                 .copy("Resources/OpenCC"),
-            ]
+            ],
+            linkerSettings: [.unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]
         ),
         // 測試：normalizer、routing、prompt safety、fixtures、衛生、短句禁大模型。
         // fixtures 與 prompt 範本走 repo 真實檔案，由 TestSupport.repoRoot() 定位。

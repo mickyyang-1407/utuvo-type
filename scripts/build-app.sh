@@ -22,6 +22,13 @@ cp "$BIN_DIR/utuvo-type" "$APP/Contents/MacOS/utuvo-type"
 # SwiftPM Bundle.module resolves this sibling resource bundle in the packaged app.
 cp -R "$BIN_DIR/UTUVOType_UTUVOTypeApp.bundle" "$APP/Contents/Resources/UTUVOType_UTUVOTypeApp.bundle"
 cp "$REPO_ROOT/App/Info.plist" "$APP/Contents/Info.plist"
+SPARKLE="$REPO_ROOT/.build/artifacts/sparkle/Sparkle/Sparkle.xcframework/macos-arm64_x86_64/Sparkle.framework"
+[[ -d "$SPARKLE" ]] || { echo '[build-app] ERROR: Sparkle framework missing' >&2; exit 1; }
+mkdir -p "$APP/Contents/Frameworks"
+ditto "$SPARKLE" "$APP/Contents/Frameworks/Sparkle.framework"
+mkdir -p "$APP/Contents/Resources/ThirdPartyNotices"
+cp "$REPO_ROOT/.build/artifacts/sparkle/Sparkle/LICENSE" "$APP/Contents/Resources/ThirdPartyNotices/Sparkle.txt"
+
 # 內建引擎腳本：DMG／App 版沒有 repo，安裝卡跑的是這份；venv 與模型落在
 # ~/Library/Application Support/UTUVO Type/engine（見 RuntimeBootstrap.engineHome）。
 ENGINE="$APP/Contents/Resources/engine"
@@ -81,6 +88,12 @@ if [ -z "$SIGN_IDENTITY" ]; then
 fi
 if [ -n "$SIGN_IDENTITY" ] && [[ "$IDENTITIES" == *"$SIGN_IDENTITY"* ]]; then
   xattr -cr "$APP"
+  SPARKLE_FRAMEWORK="$APP/Contents/Frameworks/Sparkle.framework"
+  while IFS= read -r nested; do
+    codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$nested"
+  done < <(find "$SPARKLE_FRAMEWORK/Versions/B" -depth \( -name '*.xpc' -o -name '*.app' -o -name Autoupdate \) -print)
+  codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$SPARKLE_FRAMEWORK"
+
   # iCloud 字典同步的 entitlement 只有在 app 裡有 Developer ID 描述檔時系統才放行
   # （沒有的話整支 app 會被擋下來，不是只少一個功能）。描述檔不進 repo：
   #   ~/Library/MobileDevice/Provisioning Profiles/UTUVO_Type_Developer_ID.provisionprofile

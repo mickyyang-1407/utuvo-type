@@ -2435,6 +2435,13 @@ final class AppModel: ObservableObject {
 
     func waitForBackgroundCleanup() async { await pendingCleanupTask?.value }
 
+    /// Read-only update barrier; a new dictation invalidates the earlier idle check.
+    func readyForUpdateRestart() async -> Bool {
+        let turn = operationToken
+        await pendingCleanupTask?.value
+        return turn == operationToken && !isRecording && !isProcessing
+    }
+
     /// 句尾語氣規則是中文／英文的（日文也用「。」、也有「誰」這類字）：其他轉錄語言、以及「自動偵測」
     /// （可能偵測成任何語言）照原樣。
     private var moodApplies: Bool {

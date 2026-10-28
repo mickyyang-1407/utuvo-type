@@ -10,7 +10,7 @@ struct UTUVOTypeAppMain {
     // CLI 介面：第二個進程只發通知給運行中的 app 然後退出。
     static let cliNotification = Notification.Name("com.utuvo.type.cli-command")
     private static let cliCommands: Set<String> = [
-        "--toggle-transcription", "--cancel", "--toggle-post-process"
+        "--toggle-transcription", "--cancel", "--toggle-post-process", "--check-for-updates"
     ]
 
     static func main() {
@@ -37,6 +37,10 @@ struct UTUVOTypeAppMain {
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private static let logger = Logger(subsystem: "com.utuvo.type", category: "appdelegate")
     private let model = AppModel()
+    private lazy var updates = AppUpdater(
+        busy: { [weak self] in self?.model.isRecording == true || self?.model.isProcessing == true },
+        prepareForRestart: { [weak self] in await self?.model.readyForUpdateRestart() ?? false })
+
     private var statusItem: NSStatusItem?
     private var popover: NSPopover?
     private var settingsWindow: NSWindow?
@@ -61,10 +65,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             runSnapshotMode(outputDirectory: snapshotDirectory)
             return
         }
+        updates.start()
         DictionaryCloud.start(model.preferences)
         model.onStateChange = { [weak self] in
             self?.rebuildMenu()
             self?.updateOverlay()
+            self?.updates.resumeIfIdle()
         }
         model.preferences.onShortcutChange = { [weak self] in
             self?.installGlobalShortcut(announce: true)
@@ -107,6 +113,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 switch command {
                 case "--toggle-transcription": self?.model.toggleRecordingFromUI()
                 case "--cancel": self?.model.cancelRecording()
+                case "--check-for-updates": self?.updates.check()
                 case "--toggle-post-process":
                     self?.model.preferences.postProcessingEnabled.toggle()
                 default: break
@@ -172,7 +179,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 onOpenSettings: { [weak self] in self?.showSettings(nil) },
                 onClose: { [weak self] in self?.popover?.performClose(nil) },
                 onQuit: { NSApp.terminate(nil) },
-                onOpenShortcuts: { [weak self] in self?.showSettings(section: .shortcuts) }
+                onOpenShortcuts: { [weak self] in self?.showSettings(section: .shortcuts) },
+                onCheckUpdates: { [weak self] in self?.updates.check() }
             )
         )
         return popover
@@ -192,7 +200,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.appearance = AppBrand.nsAppearance
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
-        let hosting = NSHostingView(rootView: SettingsView(model: model, initialSection: initialSection))
+        let hosting = NSHostingView(rootView: SettingsView(model: model, initialSection: initialSection, updates: updates))
         // 不讓 SwiftUI 替視窗算 min／max size：那個 pass 會對整個 ScrollView 內容做一次
         // 無上限的 sizeThatFits，一般分頁量到約 1 s（09-17 sample 抓到：
         // NSHostingView.viewDidMoveToWindow → updateWindowContentSizeExtrema → minSize），
@@ -242,6 +250,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.refreshPermissionState()
         // 個人字典跟 iPhone 同步（iCloud）；截圖模式不寫 preferences，不同步。
         if ProcessInfo.processInfo.environment["UTUVO_TYPE_SNAPSHOT_DIR"] == nil { DictionaryCloud.start(model.preferences) }
+    }
+
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        guard updates.isRelaunching else { return .terminateNow }
+        // Check again at the actual quit request: work may have begun after the first idle check.
+        updates.terminateAfterWork { sender.reply(toApplicationShouldTerminate: true) }
+        return .terminateLater
     }
 
     func applicationWillTerminate(_ notification: Notification) {
