@@ -71,6 +71,7 @@ struct SettingsView: View {
             : "Recordings past their limit are deleted, but the text stays; entries that only have a recording and can still be retried keep it. Starred entries are never deleted automatically. Failed transcriptions whose recording is still there and can be retried aren't deleted by the text history setting either, so you can retry; everything else follows the text history setting."
     }
 
+    let updates: AppUpdater?
     @ObservedObject var model: AppModel
     @ObservedObject private var preferences: AppPreferences
     @State private var selectedSection: SettingsSection = .general
@@ -121,7 +122,8 @@ struct SettingsView: View {
     @State private var customCleanupEndpointDraft: String = ""
     @State private var customCleanupModelDraft: String = ""
 
-    init(model: AppModel, initialSection: SettingsSection = .general) {
+    init(model: AppModel, initialSection: SettingsSection = .general, updates: AppUpdater? = nil) {
+        self.updates = updates
         self.model = model
         self._preferences = ObservedObject(wrappedValue: model.preferences)
         self._selectedSection = State(initialValue: initialSection)
@@ -366,6 +368,7 @@ struct SettingsView: View {
     private var generalTab: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
+                if let updates { UpdateSettingsView(updates: updates, zh: preferences.isChineseUI) }
                 // 介面語言放 General 最上面（2026-08-21 使用者回饋在 About 找不到）。
                 settingsCard(
                     title: preferences.tr("介面語言與外觀", "Language & Appearance"),

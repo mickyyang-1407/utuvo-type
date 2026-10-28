@@ -19,6 +19,7 @@ struct MenuPopoverView: View {
     let onOpenSettings: () -> Void
     let onClose: () -> Void
     let onQuit: () -> Void
+    let onCheckUpdates: (() -> Void)?
     /// app-shell-5：點快捷鍵卡打開設定 → 快捷鍵（沒給就開一般設定）。
     let onOpenShortcuts: (() -> Void)?
 
@@ -27,13 +28,15 @@ struct MenuPopoverView: View {
         onOpenSettings: @escaping () -> Void,
         onClose: @escaping () -> Void,
         onQuit: @escaping () -> Void,
-        onOpenShortcuts: (() -> Void)? = nil
+        onOpenShortcuts: (() -> Void)? = nil,
+        onCheckUpdates: (() -> Void)? = nil
     ) {
         self.model = model
         self._preferences = ObservedObject(wrappedValue: model.preferences)
         self.onOpenSettings = onOpenSettings
         self.onClose = onClose
         self.onQuit = onQuit
+        self.onCheckUpdates = onCheckUpdates
         self.onOpenShortcuts = onOpenShortcuts
     }
 
@@ -651,6 +654,10 @@ struct MenuPopoverView: View {
                 Button(preferences.tr("取消", "Cancel")) { model.cancelProcessing() }
                     .font(.caption2.weight(.semibold))
                     .buttonStyle(.borderless)
+            }
+            if let onCheckUpdates {
+                Button(preferences.tr("檢查更新…", "Check for Updates…"), action: onCheckUpdates)
+                    .font(.caption2).buttonStyle(.borderless).disabled(model.isRecording || model.isProcessing)
             }
             Button(preferences.tr("結束", "Quit")) { onQuit() }
                 .font(.caption2.weight(.semibold))

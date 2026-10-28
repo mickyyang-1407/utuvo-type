@@ -19,14 +19,30 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1.12</string>
+	<string>0.1.13</string>
 	<key>CFBundleVersion</key>
-	<string>2026102702</string>
+	<string>2026102802</string>
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>UTUVO Type 只在你啟動聽寫時使用麥克風，把語音轉成可貼上的文字。</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>UTUVO Type 只在本機 on-device fallback 可用時使用語音辨識，不保存音訊。</string>
+	<key>SUFeedURL</key>
+	<string>https://mickyyang-1407.github.io/utuvo-type/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>iLfZQsmFNdVMn3i+1Ptg97qrWI3lbCpOZMr6YKvIiEQ=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUAutomaticallyUpdate</key>
+	<true/>
+	<key>SUEnableSystemProfiling</key>
+	<false/>
+	<key>SUVerifyUpdateBeforeExtraction</key>
+	<true/>
+	<key>SURequireSignedFeed</key>
+	<true/>
+	<key>SUSignedFeedFailureExpirationInterval</key>
+	<integer>0</integer>
 </dict>
 </plist>
