@@ -1,6 +1,6 @@
 # Mac updater preparation — 2026-10-28
 
-Status: implementation and isolated tests complete; release signing authorization / publication / real update round trip pending. Do not describe this as a released auto-updater yet.
+Status: source-only update. Implementation, isolated tests and Developer ID / notarized packages are complete. Mac 0.1.13 is not released or installed; current public downloads remain 0.1.12. Archive/feed signing and the real update round trip remain pending. Source publication does not depend on the separate Keychain authorization.
 
 ## Scope
 
@@ -29,8 +29,12 @@ Developer ID and notarization outputs, package checks, original checkpoint, sour
 
 ## Outstanding delivery gates
 
-The first sign_update call is waiting for a macOS Keychain authorization prompt. Micky must complete the system prompt personally; no password in chat. Until resolved: do not publish the feed or claim a working update round trip.
+The first sign_update call waited for a macOS Keychain authorization prompt. Micky could not operate the Mac, so the owned signer and runner were stopped. No Keychain permission was changed. Source commits can be pushed independently; do not publish an unsigned feed or claim a working update round trip. Start a fresh signing invocation when the human can complete the system prompt; no password in chat.
 
 Then verify good/tampered archive and feed; publish signed release/assets then signed feed; verify public bytes/signatures; perform a real update from a local signed/notarized bridge build 2026102801 to public build 2026102802. The bridge is local only and must not be released. Preserve installed settings and a recoverable old App backup.
 
 Original private feature checkout and pre-existing dirty worktrees are out of scope; never reset or merge them. Public sync uses only the reviewed changed files because histories are independent.
+
+## Controlled public export
+
+Product code, packaging, tests and this handoff are identical in the two repositories. README retains each repository's existing introduction; only the same updater availability paragraph is added. The public download links, feature summary and Discussions link are preserved. No Android/iOS source, model configuration or cleanup setting changes are included.

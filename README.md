@@ -2,8 +2,19 @@
 
 ![UTUVO Type — Liquid Glass popover beside the brand mark](docs/assets/hero-readme.png)
 
+**一個還不錯的語音輸入。** 免費、開源（MIT），iPhone、Android、Mac都能用。說話，打出整理好的文字，不用註冊帳號。
 
-> 全本機可用、deterministic-first 的 macOS menu bar 語音輸入 App。
+| 📱 iPhone | 🤖 Android | 💻 Mac |
+|---|---|---|
+| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.5) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
+
+- 🎙 **光球鍵盤**：注音（簡拼、不打聲調）、拼音、聯想詞，點一下光球就能用說的
+- ✍️ **自動整理**：看語意下標點、中英文之間自動留空格
+- 🔒 **本機優先**：Mac 可以完全在本機跑；要用雲端時，用的是你自己填的 key
+- 💬 有問題或想許願，到 [Discussions](https://github.com/mickyyang-1407/utuvo-type/discussions) 留言
+- ⭐ 覺得好用的話，幫我按一顆星，對獨立開發者幫助很大
+
+> **Mac 版**：全本機可用、deterministic-first 的 macOS menu bar 語音輸入 App。
 > 雲端只在你自己選擇雲端 provider 並提供憑證時啟用。
 
 🇹🇼 中文（本檔）｜[English](README.en.md)
@@ -30,7 +41,7 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
-macOS 0.1.13 起，選單及「設定 → 一般 → 軟體更新」可檢查更新，預設自動檢查與下載，於結束 App 時安裝；可在同處關閉。更新清單與安裝檔都經簽章驗證。更新要求重新啟動時，會先等待錄音、轉錄及背景整理完成。舊版需先安裝一次含更新器的版本。
+**macOS 自動更新開發狀態：原始碼已加入，0.1.13 安裝檔尚未發布；目前公開下載仍為 0.1.12。** 新版預計在選單及「設定 → 一般 → 軟體更新」提供檢查更新，預設自動檢查與下載、結束 App 時安裝，並驗證更新清單與安裝檔簽章。更新要求重新啟動時，會先等待錄音、轉錄及背景整理完成。發佈後，舊版需先安裝一次含更新器的版本。
 
 ## iPhone（App Store）
 
