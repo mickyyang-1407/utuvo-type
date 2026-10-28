@@ -32,6 +32,8 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
    into `~/Library/Application Support/UTUVO Type/engine/`. Cloud mode works before that.
 3. Grant Microphone and Accessibility when asked, then press ⌥Space to dictate.
 
+**Mac 0.1.13 is available:** [Download the signed and notarized DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.13/UTUVO-Type-0.1.13-macOS-arm64.dmg). This build adds update controls and restart protection while recording, transcription or cleanup is busy. In-app automatic updates are not enabled yet; install this release manually. Kordan model, cleanup prompt and validation settings, and existing list layout are unchanged.
+
 ## iPhone (App Store)
 
 [Free on the App Store](https://apps.apple.com/app/id6813380439), iOS 18 or later. The keyboard needs Full Access.
