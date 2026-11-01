@@ -84,8 +84,10 @@ class ContinuousDictation(
 
     companion object {
         /**
-         * 段落相接：中文直接接；下一段開頭是拉丁字母／數字、而前一段結尾是拉丁字母／數字或英文標點時補一個空白
+         * 段落相接：下一段開頭是拉丁字母／數字、而前一段結尾是拉丁字母／數字或英文標點時補一個空白
          * （"hello" + "world" → "hello world"、"Hi." + "How" → "Hi. How"）；中文標點後面不補。
+         * 段落邊界是辨識器偵測到的停頓：中文接中文照停頓規則補「，」（前一小句夠長、不是講到一半），
+         * 永遠不補句號；以前直接黏起來，長句會變成一長串沒有標點的字（2026-11-01，見 PauseJoin）。
          */
         fun join(parts: List<String>): String {
             val out = StringBuilder()
@@ -94,6 +96,7 @@ class ContinuousDictation(
                 if (out.isNotEmpty()) {
                     val a = out.last(); val b = p.first()
                     if (isLatinWord(b) && (isLatinWord(a) || a in ".,!?;:")) out.append(' ')
+                    else out.append(com.utuvo.type.core.PauseJoin.mark(out.toString(), p))
                 }
                 out.append(p)
             }

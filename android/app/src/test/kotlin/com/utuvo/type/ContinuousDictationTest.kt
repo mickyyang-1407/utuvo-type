@@ -16,7 +16,8 @@ class ContinuousDictationTest {
         assertEquals(ContinuousDictation.Next.RESTART, s.onSegment("要去錄音室"))
         s.requestStop()
         assertEquals(ContinuousDictation.Next.FINISH, s.onSegment("對母帶。"))
-        assertEquals("我明天下午要去錄音室對母帶。", s.finish())
+        // 「我明天下午」只有 5 個字＝遲疑，不補；接上「要去錄音室」夠長了，停頓補「，」（2026-11-01 PauseJoin）。
+        assertEquals("我明天下午要去錄音室，對母帶。", s.finish())
     }
 
     @Test fun stopWithLastSegmentInFinish() {
@@ -78,7 +79,7 @@ class ContinuousDictationTest {
     @Test fun jumpToShorterNextSentenceWithoutEmptyPartial() {
         val s = session()
         for (p in listOf("我明天下午", "我明天下午要去錄音室", "記得", "記得帶耳機")) s.partial(p)
-        assertEquals("我明天下午要去錄音室記得帶耳機", s.segmentText(""))
+        assertEquals("我明天下午要去錄音室，記得帶耳機", s.segmentText(""))
         for (p in listOf("I will go to the", "I'll go to the studio")) s.partial(p)
         assertEquals("I'll go to the studio", s.segmentText(""))
     }
@@ -95,5 +96,21 @@ class ContinuousDictationTest {
         s.requestStop()
         assertEquals(ContinuousDictation.Next.FINISH, s.onSilence())
         assertEquals("", s.finish())
+    }
+
+    /** 長句講很多段（2026-11-01 回報：七、八十字以上整段沒有標點）：停頓處補逗號，不補句號、遲疑不補。 */
+    @Test fun longDictationKeepsPauseCommas() {
+        val s = session()
+        for (seg in listOf("今天下午我們先把這首歌的混音做完", "低頻的部分還要再", "收一點", "然後明天早上", "再跟客戶確認母帶的版本"))
+            s.onSegment(seg)
+        s.requestStop()
+        assertEquals("今天下午我們先把這首歌的混音做完，低頻的部分還要再收一點，然後明天早上，再跟客戶確認母帶的版本",
+            s.finish())
+    }
+
+    @Test fun chineseSegmentsJoinWithPauseRule() {
+        assertEquals("今天天氣很好，我們去公園", ContinuousDictation.join(listOf("今天天氣很好", "我們去公園")))
+        assertEquals("今天天氣明天出門", ContinuousDictation.join(listOf("今天天氣", "明天出門")))
+        assertEquals("我們下午要搭捷運到中正紀念堂", ContinuousDictation.join(listOf("我們下午要搭捷運到", "中正紀念堂")))
     }
 }
