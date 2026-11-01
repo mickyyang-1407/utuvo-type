@@ -66,8 +66,12 @@ If you installed a development build from Android Studio, uninstall it first (di
 
 ## Install from source (three steps)
 
+Requires an Apple silicon Mac on macOS 14 or later and a Swift 6.0+ toolchain
+(Xcode 16 or later; `Package.swift` uses `swift-tools-version: 6.0`). The Mac app
+and its tests do not build on Linux or Windows.
+
 ```bash
-git clone <repo-url> && cd utuvo-type
+git clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
 ./scripts/bootstrap-runtime.sh   # creates a Python venv, installs deps, downloads the ASR model (~1.2 GB, one time)
 ./scripts/build-app.sh           # builds and signs dist/UTUVO Type.app
 open "dist/UTUVO Type.app"
@@ -111,16 +115,35 @@ The default install is local-only: no account, no API key, no paid requests.
 
 ## Optional cloud
 
-Cloud formatting/transcription is an explicit opt-in adapter (Alibaba
-Bailian/DashScope). Keys are read only from the macOS Keychain or
-`UTUVO_TYPE_BAILIAN_API_KEY`/`DASHSCOPE_API_KEY`, and are never shown in UI,
-logs, fixtures or git.
+Every cloud service is an explicit opt-in that uses your own key; requests go
+straight to the provider you choose, never to a UTUVO server.
+
+- **Alibaba Bailian / DashScope** — speech recognition and text formatting.
+  Key from the macOS Keychain (service `com.utuvo.type.bailian`) or
+  `UTUVO_TYPE_BAILIAN_API_KEY` / `DASHSCOPE_API_KEY`.
+- **Smart cleanup and Ask anything** — Google Gemini, Groq, Bailian, Anthropic
+  Claude, or a custom OpenAI-compatible endpoint (HTTPS only, except
+  loopback; URLs containing credentials are rejected). Keys are stored in the
+  Keychain (service `com.utuvo.type.mac.smartcleanup`); Bailian reuses the key above.
+- **Groq cloud recognition** — off by default. Uses the Groq key saved for
+  Smart cleanup, or `UTUVO_TYPE_GROQ_API_KEY`.
+
+Environment variables take precedence over the Keychain. Keys are never shown
+in UI, logs, fixtures or git.
 
 ## Privacy & security notes
 
 - In fully-local mode, audio never leaves the machine and there is no
   telemetry. See `PRIVACY.md` and `docs/SETUP.md`.
-- The CLI relay (`utuvo-type-cli --toggle-transcription` etc.) uses
+- Network connections that are not dictation: Mac 0.1.13 and later check the
+  update feed (`https://mickyyang-1407.github.io/utuvo-type/appcast.xml`, via
+  Sparkle) automatically by default, without sending a system profile; turn
+  this off under Settings → General → Software Updates. In builds signed with
+  the iCloud entitlement (the released DMG), the personal dictionary syncs with
+  the iPhone app through iCloud key-value storage when you are signed in to iCloud.
+- The CLI relay (running the app binary with an allow-listed flag, e.g.
+  `"/Applications/UTUVO Type.app/Contents/MacOS/utuvo-type" --toggle-transcription`;
+  also `--cancel`, `--toggle-post-process`, `--check-for-updates`) uses
   `DistributedNotificationCenter`, so any local process can trigger its
   allow-listed commands. This matches the threat model of similar tools' CLIs: a local
   attacker already has code execution, and recording is always announced by an
@@ -131,8 +154,15 @@ logs, fixtures or git.
 ```bash
 ./scripts/verify-scaffold.sh    # fixtures, secret hygiene, swift build/test
 ./scripts/run-benchmark.sh      # 30-case deterministic benchmark
-swift test                      # core unit tests
+swift test                      # core and app unit tests (macOS only)
+(cd android && ./gradlew :core:test)   # Android shared text core, runs on the JVM, no emulator
+python3 runtime/tests/test_asr_server.py && python3 runtime/tests/test_editor_startup.py
+python3 scripts/tests/test_vocabulary_catalog.py
+python3 scripts/tests/test_make_zh_hans.py   # needs: pip install opencc-python-reimplemented
 ```
+
+`verify-scaffold.sh` needs `swift` and `jq`. On Linux only the Android core and
+Python tests run; the Swift, iOS and macOS parts need a Mac.
 
 Layout: `Sources/UTUVOTypeCore` (pure core), `Sources/UTUVOTypeApp`
 (AppKit/SwiftUI menu bar app), `Sources/UTUVOBench` (benchmark runner),
@@ -141,7 +171,9 @@ Layout: `Sources/UTUVOTypeCore` (pure core), `Sources/UTUVOTypeApp`
 ## License
 
 [MIT](LICENSE). The UTUVO Type name, logo and branding are excluded; keep
-attribution when redistributing.
+attribution when redistributing. Bundled third-party code, data and models keep
+their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the
+`LICENSE`/`NOTICE.md` files under `ios/Packages/`.
 
 ## Acknowledgements
 
