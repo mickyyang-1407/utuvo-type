@@ -7,7 +7,7 @@ struct MenuPopoverView: View {
     // mode／backend 等狀態住在 preferences（另一個 ObservableObject）；
     // 不宣告 @ObservedObject 的話點模式卡有改值但畫面不重繪，看起來像壞掉。
     @ObservedObject private var preferences: AppPreferences
-    /// 2026-09-24 實機（苑涵 0.1.5）：引擎還在安裝，狀態卡卻寫「準備就緒」，按了聽寫沒反應以為壞了。
+    /// 2026-09-24 實機（家庭測試者 0.1.5）：引擎還在安裝，狀態卡卻寫「準備就緒」，按了聽寫沒反應以為壞了。
     @ObservedObject private var installer = EngineInstaller.shared
     private var engineMissing: Bool {
         preferences.backend == .local && installer.root != nil && !installer.installed

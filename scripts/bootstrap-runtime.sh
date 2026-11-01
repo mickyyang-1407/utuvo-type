@@ -76,7 +76,7 @@ install_standalone_python() {
         | head -1 || true)"
   [ -n "$url" ] || die "查不到獨立版 Python 下載網址；請檢查網路，或自行安裝：brew install python@3.12"
   tmp="$(mktemp -d)"
-  # --progress-bar 用 \r 不換行：app 只看得到同一行（2026-09-24 苑涵實機截圖就停在這）。改成靜音下載＋完成後印大小。
+  # --progress-bar 用 \r 不換行：app 只看得到同一行（2026-09-24 家庭測試者實機截圖就停在這）。改成靜音下載＋完成後印大小。
   # 2026-09-24 無 Python 模擬：GitHub 下載 25 MB 花 147 s，整段零輸出。背景下載、每 3 秒印一行；120 秒沒進度就停。
   curl -fsSL --connect-timeout 20 --max-time 900 "$url" -o "$tmp/python.tar.gz" &
   local curl_pid=$! last=-1 still=0 now
@@ -116,7 +116,7 @@ else
 fi
 
 # 2. 相依套件
-# 2026-09-24 實機（苑涵 0.1.5）：這步約 560 MB、在 1 MB/s 的網路要 10 分鐘，原本 --quiet 整段沒有任何輸出，
+# 2026-09-24 實機（家庭測試者 0.1.5）：這步約 560 MB、在 1 MB/s 的網路要 10 分鐘，原本 --quiet 整段沒有任何輸出，
 # 使用者以為卡死。改成每個套件一行（app 顯示最後一行），並設逾時與重試。
 say "第 2／4 步：下載並安裝相依套件（約 560 MB，網路慢時需要 10 分鐘以上）"
 "$RUNTIME/bin/python" -m ensurepip --upgrade >/dev/null 2>&1 || true

@@ -1,7 +1,7 @@
 import XCTest
 @testable import UTUVOTypeCore
 
-/// 2026-09-24 實機回報（苑涵，Mac 0.1.5 Fast 模式）：講數字不會轉成阿拉伯數字。
+/// 2026-09-24 實機回報（家庭測試者，Mac 0.1.5 Fast 模式）：講數字不會轉成阿拉伯數字。
 /// 規則在 Normalizer（Fast／Smart／iOS 共用），不靠模型。同時驗「該轉」與「不該轉」兩張清單。
 final class NumberNormalizationTests: XCTestCase {
     private let n = Normalizer(options: NormalizerOptions(dictionary: [:], fillerSet: NormalizerOptions.defaultFillers,

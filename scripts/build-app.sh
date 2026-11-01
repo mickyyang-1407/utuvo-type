@@ -39,7 +39,7 @@ cp "$REPO_ROOT/runtime/requirements.txt" "$REPO_ROOT/runtime/utuvo-type-asr" \
    "$REPO_ROOT/runtime/utuvo-type-editor.py" "$ENGINE/runtime/"
 chmod +x "$ENGINE/scripts/bootstrap-runtime.sh" "$ENGINE/runtime/utuvo-type-asr" "$ENGINE/runtime/"*.py
 # 內建 Python（2026-09-24 Micky 核准）：沒有 Python 3.10+ 的 Mac 原本要從 GitHub 下載 25 MB，
-# 實測兩次各約 2.5 與 10 分鐘（苑涵截圖就卡在這）。改成把官方 install_only 壓縮檔原封不動放進 App，
+# 實測兩次各約 2.5 與 10 分鐘（家庭測試者截圖就卡在這）。改成把官方 install_only 壓縮檔原封不動放進 App，
 # 安裝時驗 SHA-256 後解壓——內容與原本從 GitHub 下載的一模一樣。版本固定，換版要一起改這三行。
 PY_TARBALL="cpython-3.12.14-20260901-aarch64-apple-darwin-install_only.tar.gz"
 PY_URL="https://github.com/astral-sh/python-build-standalone/releases/download/20260901/cpython-3.12.14%2B20260901-aarch64-apple-darwin-install_only.tar.gz"

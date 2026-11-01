@@ -225,7 +225,7 @@ final class AppModelDeliveryTests: XCTestCase {
             model.cancelProcessing()
         }
     }
-    /// 2026-09-24 實機（苑涵 0.1.5）：Smart 在不支援 AX 替換的欄位整筆消失（不貼、不寫歷史）。
+    /// 2026-09-24 實機（家庭測試者 0.1.5）：Smart 在不支援 AX 替換的欄位整筆消失（不貼、不寫歷史）。
     /// 新規格：跟 Fast 一樣改走剪貼簿貼一次；貼之前先在時限內整理；一律寫歷史並記原因。
     func testFailedCaptureOrInsertionFallsBackToOnePasteWithHistory() async throws {
         for captureFails in [true, false] {
@@ -288,7 +288,7 @@ final class AppModelDeliveryTests: XCTestCase {
         XCTAssertEqual(stops.value, 1, "閒置滿時限後只卸載一次")
     }
 
-    /// 2026-09-24 實機（苑涵）：講長句時想下一句，0.9 秒靜音就停止聆聽。預設不自動結束；開了也要安靜 3 秒。
+    /// 2026-09-24 實機（家庭測試者）：講長句時想下一句，0.9 秒靜音就停止聆聽。預設不自動結束；開了也要安靜 3 秒。
     func testLongPausesDoNotEndDictationByDefault() throws {
         let context = try IsolatedContext.make(); defer { context.tearDown() }
         XCTAssertFalse(AppPreferences(isolation: context).voiceActivityDetection)

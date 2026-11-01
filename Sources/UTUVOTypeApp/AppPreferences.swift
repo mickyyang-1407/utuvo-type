@@ -688,7 +688,7 @@ final class AppPreferences: ObservableObject {
         ) ?? .off
         self.appendTrailingSpace = defaults.object(forKey: Keys.appendTrailingSpace) as? Bool ?? false
         self.cloudASREnabled = defaults.object(forKey: Keys.cloudASREnabled) as? Bool ?? false
-        // 2026-09-24 實機（苑涵）：講長句時停下來想下一句，0.9 秒靜音就被切斷。預設改關（對齊 Typeless：再按一次才結束）；
+        // 2026-09-24 實機（家庭測試者）：講長句時停下來想下一句，0.9 秒靜音就被切斷。預設改關（對齊 Typeless：再按一次才結束）；
         // 沒動過設定的 0.1.5 使用者升級後也會套用新預設，自己開過的保留。
         self.voiceActivityDetection = defaults.object(forKey: Keys.voiceActivityDetection) as? Bool ?? false
         self.includeSurroundingContext = defaults.object(forKey: Keys.includeSurroundingContext) as? Bool ?? false

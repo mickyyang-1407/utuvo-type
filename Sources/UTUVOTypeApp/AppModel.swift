@@ -508,7 +508,7 @@ final class AppModel: ObservableObject {
         guard !isProcessing else { return }
         prepareDictation(mode: mode)
         guard preferences.isolation == nil else { return }
-        // 2026-09-24 實機（苑涵 0.1.5）：安裝中按聽寫＝錄完才靜靜失敗，使用者以為壞了。開始前就講清楚。
+        // 2026-09-24 實機（家庭測試者 0.1.5）：安裝中按聽寫＝錄完才靜靜失敗，使用者以為壞了。開始前就講清楚。
         if preferences.backend == .local, EngineInstaller.shared.isInstalling {
             let step = EngineInstaller.shared.lastLine
             fail(preferences.tr("本機引擎還在安裝，完成前無法轉文字。\(step)",
@@ -941,7 +941,7 @@ final class AppModel: ObservableObject {
             ? preferences.tr("聆聽中…點選停止以整理並貼上", "Listening… click stop to format and paste")
             : preferences.tr("聆聽中（麥克風：\(micName)）…點選停止以整理並貼上", "Listening (mic: \(micName))… click stop to format and paste")
         notify()
-        // 2026-09-24 實機（苑涵 0.1.5）：AirPods 搶走系統輸入，對著電腦講、錄到的全是靜音，使用者不知道。
+        // 2026-09-24 實機（家庭測試者 0.1.5）：AirPods 搶走系統輸入，對著電腦講、錄到的全是靜音，使用者不知道。
         // 錄音中輸入裝置被換掉＝停下來講清楚；講了 3 秒還幾乎沒聲音＝當場提示用的是哪支麥克風。
         session.onInputDeviceChanged = { [weak self] in
             Task { @MainActor in
@@ -2465,7 +2465,7 @@ final class AppModel: ObservableObject {
         let prefix = SentenceMood.joinPrefix(before: before, previous: previous?.text, next: presented,
                                              droppedMark: previous?.mark)
         guard let target = destination, await target.insert(prefix + presented + trailing) else {
-            // 2026-09-24 實機（苑涵 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
+            // 2026-09-24 實機（家庭測試者 0.1.5）：Chrome／LINE／Electron 等欄位不是原生 AX 文字框，或錄音中按了鍵／點了滑鼠，
             // 這裡原本直接 return——不貼字、不寫歷史。改成跟 Fast 一樣走剪貼簿貼上（仍檢查前景 App 沒換）；
             // 貼之前先在同一個時限內整理，能整理就貼整理版，否則貼本機整理版。
             await pasteWithoutCapture(original: original, originalMark: originalMark, raw: raw, duration: duration,
@@ -2759,7 +2759,7 @@ final class AppModel: ObservableObject {
         }
         let wait = unloadDelayOverride ?? delay
         unloadTask = Task { @MainActor [weak self] in
-            // 2026-09-24 實機（苑涵 0.1.5）：原本 `try? await Task.sleep`——被取消的舊計時器立刻醒來、
+            // 2026-09-24 實機（家庭測試者 0.1.5）：原本 `try? await Task.sleep`——被取消的舊計時器立刻醒來、
             // 當下 isProcessing 已經是 false，就把 server 殺掉 → 每次辨識完都重載模型。取消＝結束，不准往下跑。
             do { try await Task.sleep(for: wait) } catch { return }
             guard !Task.isCancelled, let self, !self.isRecording, !self.isProcessing else { return }
