@@ -48,12 +48,12 @@ final class IOSPipelineTests: XCTestCase {
 
     /// 2026-09-25 量測：設定頁「新增詞彙」存的是「詞 → 空字串」，英文專名修正卻只看輸出寫法，自己加的詞從沒被用上。
     func testVocabularyTermsReachLatinFixer() {
-        let dictionary = ["LemonSqueezy": "", "阿特摩斯": "Atmos", "苑涵": ""]
+        let dictionary = ["LemonSqueezy": "", "阿特摩斯": "Atmos", "混音室": ""]
         let terms = VocabularyPacks.latinTermsForFixer(dictionary: dictionary)
         XCTAssertTrue(terms.contains("LemonSqueezy"), "詞彙模式的詞要進比對表：\(terms.prefix(5))")
         XCTAssertTrue(terms.contains("Atmos"), "替換模式用輸出寫法")
         XCTAssertFalse(terms.contains("阿特摩斯"), "替換模式不用聽錯的寫法")
-        XCTAssertFalse(terms.contains("苑涵"), "沒有拉丁字母的詞不進英文專名表")
+        XCTAssertFalse(terms.contains("混音室"), "沒有拉丁字母的詞不進英文專名表")
         let output = TextPipeline(dictionary: dictionary, latinTerms: terms).clean("麻煩你把 lemon squeezy 的授權寄給我").output
         XCTAssertTrue(output.contains("LemonSqueezy"), "實際輸出：\(output)")
     }
