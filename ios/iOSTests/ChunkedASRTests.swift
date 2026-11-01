@@ -93,7 +93,7 @@ final class ChunkedASRTests: XCTestCase {
     /// T5：相鄰段音訊重疊，文字也重疊 → 只留一份。
     func testJoinRemovesRepeatedText() {
         XCTAssertEqual(ChunkedASR.join(previous: "今天天氣很好", next: "天氣很好我們去公園"),
-                       "今天天氣很好我們去公園")
+                       "今天天氣很好，我們去公園")
     }
 
     /// T6：標點不重複（上一段已經有句號，下一段開頭的句號丟掉）。
@@ -114,10 +114,46 @@ final class ChunkedASRTests: XCTestCase {
         XCTAssertEqual(ChunkedASR.join(previous: "hello world", next: "again"), "hello world again")
     }
 
+    /// 停頓處補逗號（2026-11-01 回報：講超過七、八十字整段沒有標點）。逐條對應 Android `joinAddsPauseComma`。
+    /// 只補「，」、不補句號；前一小句太短（遲疑）、停在「到／再／的」、下一段開頭是語助詞都不補。
+    func testJoinAddsPauseComma() {
+        XCTAssertEqual(ChunkedASR.join(previous: "這個混音的低頻還要再收一點", next: "高頻要平衡一下"),
+                       "這個混音的低頻還要再收一點，高頻要平衡一下")
+        XCTAssertEqual(ChunkedASR.join(previous: "我們下午要搭捷運到", next: "中正紀念堂"), "我們下午要搭捷運到中正紀念堂")
+        XCTAssertEqual(ChunkedASR.join(previous: "我已經把檔案寄給你", next: "了今天"), "我已經把檔案寄給你了今天")
+        XCTAssertEqual(ChunkedASR.join(previous: "今天天氣", next: "明天出門"), "今天天氣明天出門")
+        XCTAssertEqual(ChunkedASR.join(["今天下午我們先把這首歌的混音做完", "低頻的部分還要再", "收一點", "然後明天早上跟客戶確認"]),
+                       "今天下午我們先把這首歌的混音做完，低頻的部分還要再收一點，然後明天早上跟客戶確認")
+    }
+
+    /// 與 Android core `PauseJoinTest` 同一組案例。
+    func testPauseMarkMatchesAndroidPauseJoin() {
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣很好", next: "我們去公園"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我明天下午要去錄音室", next: "記得帶耳機"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "好，那我們下午三點開會", next: "記得帶筆電"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這個混音的低頻還要再收一點", next: "高頻要平衡一下"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣", next: "明天出門"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我明天下午", next: "要去錄音室"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "好，今天很熱", next: "要喝水"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們下午要搭捷運到", next: "中正紀念堂"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我覺得這是一個很好的", next: "機會"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這個方案我覺得可能還要再", next: "想一下"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我已經把檔案寄給你", next: "了今天"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "那我們明天早上再討論", next: "吧"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣很好。", next: "我們去公園"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣很好", next: "。我們去公園"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們今天要討論的是Atmos", next: "母帶"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天要把母帶交給客戶", next: "OK"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "send it to John", next: "tomorrow"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "", next: "今天天氣很好"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣很好", next: ""), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次 Dolby Atmos 母帶做完了", next: "下週交"), "，")
+    }
+
     /// 全部段依序接起來。
     func testJoinAllSegments() {
         let texts = ["今天天氣很好", "天氣很好我們去公園", "公園門口有櫻花"]
-        XCTAssertEqual(ChunkedASR.join(texts), "今天天氣很好我們去公園門口有櫻花")
+        XCTAssertEqual(ChunkedASR.join(texts), "今天天氣很好，我們去公園門口有櫻花")
     }
 
     /// Q3-repair1 ①：前段結尾帶空白／句號時，既不重複也不吃字。
@@ -133,7 +169,7 @@ final class ChunkedASRTests: XCTestCase {
                        "那我們記得收一點。高頻要平衡一下",
                        "next 開頭有空白也不能吃字")
         XCTAssertEqual(ChunkedASR.join(previous: "今天天氣很好", next: "天氣很好我們去公園  "),
-                       "今天天氣很好我們去公園",
+                       "今天天氣很好，我們去公園",
                        "英文／中文都一樣：結尾空白只是被 trim，不影響去重")
         XCTAssertEqual(ChunkedASR.join(previous: "第一段。", next: "。第二段  "), "第一段。第二段")
     }
@@ -236,7 +272,7 @@ final class ChunkedASRTests: XCTestCase {
                                                       language: "zh-TW", hotwords: ["UTUVO"],
                                                       provider: provider, key: "fake-key",
                                                       transport: responder(fake), log: noLog)
-        XCTAssertEqual(text, "今天天氣很好我們去公園門口有櫻花")
+        XCTAssertEqual(text, "今天天氣很好，我們去公園門口有櫻花")
         XCTAssertEqual(fake.prompts.count, 3, "一段一個請求，沒有重送整段")
         XCTAssertTrue(fake.prompts[0].contains("UTUVO"), "每一段都帶同一份熱詞")
         XCTAssertTrue(fake.prompts[1].contains("今天天氣很好"), "第二段帶第一段的結果")

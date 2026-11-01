@@ -1,4 +1,5 @@
 import Foundation
+import UTUVOTypeCore
 
 /// 雲端辨識「邊錄邊傳」：Groq 只收整段檔案，不能真的串流，但它很快（實測講完後 0.51 秒中位／27 秒音檔）。
 /// 所以錄音中偵測到停頓就把那一段先送去辨識、背景並行，講完時只送最後一段，再把各段結果依序接起來。
@@ -226,7 +227,37 @@ enum ChunkedASR {
         if let left = head.last, let right = rest.first, needsSpace(left, right) {
             return head + " " + rest
         }
+        // 4) 切段點就是停頓（≥ minSilenceSeconds）：中文接中文、邊界沒標點時照停頓規則補「，」，
+        //    不然長句接成一長串沒有標點的字（2026-11-01；Android `ChunkedASR.join`＋`PauseJoin` 同一條）。
+        let mark = pauseMark(previous: head, next: rest)
+        if !mark.isEmpty {
+            var trimmedHead = head
+            while let last = trimmedHead.last, last.isWhitespace { trimmedHead.removeLast() }
+            return trimmedHead + mark + rest
+        }
         return head + rest
+    }
+
+    /// 兩段在停頓處相接時要插的標點：「，」或空字串（2026-11-01，Micky 回報講超過七、八十字整段沒有標點）。
+    ///
+    /// 規則與 `PausePunctuator`（裝置端辨識依停頓補標點）同一套，只會更保守；逐條對應 Android core `PauseJoin.mark`：
+    /// - 停頓只補逗號，永遠不補句號；
+    /// - 兩邊都是中文字、邊界沒有標點才補（英數字由上面的空白規則處理）；
+    /// - 前一小句（最後一個標點之後）不到 `PausePunctuator.minClause` 個字＝遲疑，不補；
+    /// - 前一段停在 `PausePunctuator.danglingEndings`（「到」「再」「的」「然後」…）＝後面還有話，不補；
+    /// - 下一段開頭是語助詞（「了」「吧」…＝前一句的尾巴），不補。
+    static func pauseMark(previous: String, next: String) -> String {
+        var a = previous
+        while let last = a.last, last.isWhitespace { a.removeLast() }
+        let b = next.drop(while: { $0.isWhitespace })
+        guard let last = a.last, let first = b.first,
+              PausePunctuator.containsCJK(String(last)), PausePunctuator.containsCJK(String(first)) else { return "" }
+        if Normalizer.sentenceParticles.contains(first) { return "" }
+        if PausePunctuator.danglingEndings.contains(where: { a.hasSuffix($0) }) { return "" }
+        let clause: Substring
+        if let i = a.lastIndex(where: { PausePunctuator.isPunctuation($0) }) { clause = a[a.index(after: i)...] } else { clause = Substring(a) }
+        guard PausePunctuator.clauseLength(String(clause)) >= PausePunctuator.minClause else { return "" }
+        return "，"
     }
 
     /// 只有兩邊都是拉丁字母／數字才需要空白；中文、日文直接接。

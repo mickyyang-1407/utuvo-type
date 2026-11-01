@@ -99,10 +99,10 @@ class ChunkedAsrChunkedTest {
 
     // MARK: - 接段去重（T5–T8）
 
-    /** T5：相鄰段音訊重疊，文字也重疊 → 只留一份。 */
+    /** T5：相鄰段音訊重疊，文字也重疊 → 只留一份。切段點是停頓，前一小句夠長 → 補「，」（2026-11-01）。 */
     @Test
     fun joinRemovesRepeatedText() {
-        assertEquals("今天天氣很好我們去公園",
+        assertEquals("今天天氣很好，我們去公園",
             ChunkedASR.join("今天天氣很好", "天氣很好我們去公園"))
     }
 
@@ -130,8 +130,23 @@ class ChunkedAsrChunkedTest {
     /** 全部段依序接起來。 */
     @Test
     fun joinAllSegments() {
-        assertEquals("今天天氣很好我們去公園門口有櫻花",
+        assertEquals("今天天氣很好，我們去公園門口有櫻花",
             ChunkedASR.join(listOf("今天天氣很好", "天氣很好我們去公園", "公園門口有櫻花")))
+    }
+
+    /**
+     * 停頓處補逗號（2026-11-01 回報：講超過七、八十字整段沒有標點）。逐條對應 iOS `testJoinAddsPauseComma`。
+     * 只補「，」、不補句號；前一小句太短（遲疑）、停在「到／再／的」、下一段開頭是語助詞都不補。
+     */
+    @Test
+    fun joinAddsPauseComma() {
+        assertEquals("這個混音的低頻還要再收一點，高頻要平衡一下",
+            ChunkedASR.join("這個混音的低頻還要再收一點", "高頻要平衡一下"))
+        assertEquals("我們下午要搭捷運到中正紀念堂", ChunkedASR.join("我們下午要搭捷運到", "中正紀念堂"))
+        assertEquals("我已經把檔案寄給你了今天", ChunkedASR.join("我已經把檔案寄給你", "了今天"))
+        assertEquals("今天天氣明天出門", ChunkedASR.join("今天天氣", "明天出門"))
+        assertEquals("今天下午我們先把這首歌的混音做完，低頻的部分還要再收一點，然後明天早上跟客戶確認",
+            ChunkedASR.join(listOf("今天下午我們先把這首歌的混音做完", "低頻的部分還要再", "收一點", "然後明天早上跟客戶確認")))
     }
 
     /** 前段結果當下一段的上下文 prompt：只帶尾巴，長度有上限。 */
@@ -155,7 +170,7 @@ class ChunkedAsrChunkedTest {
     fun joinTrailingWhitespaceDoesNotEatNextSegment() {
         assertEquals("那我們記得收一點。", ChunkedASR.join("那我們記得收一點", "記得收一點。   "))
         assertEquals("那我們記得收一點。高頻要平衡一下", ChunkedASR.join("那我們記得收一點", " 記得收一點。高頻要平衡一下"))
-        assertEquals("今天天氣很好我們去公園", ChunkedASR.join("今天天氣很好", "天氣很好我們去公園  "))
+        assertEquals("今天天氣很好，我們去公園", ChunkedASR.join("今天天氣很好", "天氣很好我們去公園  "))
         assertEquals("第一段。第二段", ChunkedASR.join("第一段。", "。第二段  "))
     }
 
@@ -216,7 +231,7 @@ class ChunkedAsrChunkedTest {
         val segs = segments()
         val text = ChunkedASR.transcribeChunked(segs, flatten(segs), "zh-TW", listOf("UTUVO"), groq, "fake-key",
             transport = { req, _ -> fake.handle(req) }, log = CloudASR.NO_LOG)
-        assertEquals("今天天氣很好我們去公園門口有櫻花", text)
+        assertEquals("今天天氣很好，我們去公園門口有櫻花", text)
         assertEquals(3, fake.prompts.size)
         assertTrue("每一段都帶同一份熱詞", fake.prompts[0].contains("UTUVO"))
         assertTrue("第二段帶第一段的結果", fake.prompts[1].contains("今天天氣很好"))

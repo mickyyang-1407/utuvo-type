@@ -221,6 +221,10 @@ object ChunkedASR {
         if (head.isEmpty()) return rest
         // 3) 拉丁字母之間才補空白（Whisper 英文會回 " world"）；中文本來就沒有空白，不要補。
         if (isLatin(head.last()) && isLatin(rest.first())) return "$head $rest"
+        // 4) 切段點就是停頓（≥ MIN_SILENCE_SECONDS）：中文接中文、邊界沒標點時照停頓規則補「，」，
+        //    不然長句接成一長串沒有標點的字（2026-11-01，見 PauseJoin；iOS ChunkedASR.join 同一條）。
+        val mark = com.utuvo.type.core.PauseJoin.mark(head, rest)
+        if (mark.isNotEmpty()) return head.trimEnd() + mark + rest
         return head + rest
     }
 
