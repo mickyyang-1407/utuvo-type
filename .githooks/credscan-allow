@@ -76,3 +76,4 @@ c76a04cff3446b1479e95a13afab35cedcec98f1a89bb240c4f5e508d1cb619f
 0ab521745d3506ab7a12addf688d579967a751ebb802a863fed6031dc134626e  # iOS42: unchanged Kordan Xcode object ID on line21; only version/build changed
 44639e9fefecc0549ca0de08cd1d946d90e0061662eb2ba65441bd356ed63716
 2d2a7eed51b4e0714bb65a56fbdee71e165565e5e2c32f2ab3d44e12ac044ba5  # 2026-11-01 PII reviewed: THIRD_PARTY_NOTICES.md 加 LiteRT-LM／Sparkle 段落後版本；信箱仍只有 SCOWL／12Dicts 上游授權作者（條款要求保留）
+c08b32e0cb5fba1cdae4641a9e12166e07398c0ffc0ba4f30bea5695ad98fead  # 2026-11-01 PII reviewed: Tests/UTUVOTypeCoreTests/NumberNormalizationTests.swift 註解測試者名字改成「家庭測試者」後版本；電話仍是合成的連號 fixture
