@@ -19,7 +19,7 @@
 
 🇹🇼 中文（本檔）｜[English](README.en.md)
 
-授權：[MIT](LICENSE)。「UTUVO Type」名稱與 logo 不在 MIT 範圍內，請保留出處。
+授權：[MIT](LICENSE)。「UTUVO Type」名稱與 logo 不在 MIT 範圍內，請保留出處。隨附的第三方程式碼、資料與模型沿用各自的授權，見[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)及`ios/Packages/`底下的`LICENSE`／`NOTICE.md`。
 
 ## 系統需求
 
@@ -75,8 +75,10 @@ App Store 版提供：注音邊打邊出候選（簡拼、不打聲調）、拼�
 
 ## 從原始碼安裝（三步驟）
 
+需要Apple Silicon Mac、macOS 14以上，以及Swift 6.0以上的工具鏈（Xcode 16以上；`Package.swift`是`swift-tools-version: 6.0`）。Mac App與它的測試無法在Linux或Windows上建置。
+
 ```bash
-git clone <repo-url> && cd utuvo-type
+git clone https://github.com/mickyyang-1407/utuvo-type.git && cd utuvo-type
 ./scripts/bootstrap-runtime.sh   # 建 Python venv、裝相依、下載 ASR 模型（約 1.2 GB，一次性）
 ./scripts/build-app.sh           # 產生並簽署 dist/UTUVO Type.app
 open "dist/UTUVO Type.app"
@@ -114,7 +116,14 @@ UTUVO Type 是 UTUVO 小型工具系列中的語音輸入 App，package slug 仍
 ./scripts/run-benchmark.sh      # 跑 30 題 deterministic benchmark
 ./scripts/build-app.sh          # 產生 dist/UTUVO Type.app
 open "dist/UTUVO Type.app"      # 啟動 menu bar App
+swift test                      # core與App單元測試（只能在macOS）
+(cd android && ./gradlew :core:test)   # Android共用文字核心，在JVM上跑，不用模擬器
+python3 runtime/tests/test_asr_server.py && python3 runtime/tests/test_editor_startup.py
+python3 scripts/tests/test_vocabulary_catalog.py
+python3 scripts/tests/test_make_zh_hans.py   # 需要：pip install opencc-python-reimplemented
 ```
+
+`verify-scaffold.sh`需要`swift`與`jq`。Linux上只能跑Android core與Python測試；Swift、iOS與macOS的部分需要Mac。
 
 目前預設是 Fast Dictate + 本機優先，不需要任何付費 API 或 API key。本機
 runtime 已放在產品資料夾內；在這台開發機上，App 第一次啟動會自動填入
@@ -163,14 +172,23 @@ deterministic normalizer。若本機 provider 失敗，App 仍會保留原始 tr
 目前 App 的顯示名稱是 **UTUVO Type**，橘色 accent 為 `#F97316`；產品程式碼
 與資料夾仍固定在 `utuvo-type/`。
 
-百鍊模式的 key 只從 macOS Keychain（service `com.utuvo.type.bailian`）或
-`UTUVO_TYPE_BAILIAN_API_KEY`／`DASHSCOPE_API_KEY` 讀取。App 不在 UI、log、
-fixture 或 Git 顯示 key。
+## 選配雲端
+
+所有雲端服務都要你明確開啟、用你自己的key；請求直接送到你選的服務，不經過任何UTUVO伺服器。
+
+- **阿里雲百鍊／DashScope**：語音辨識與文字整理。key從macOS Keychain（service `com.utuvo.type.bailian`）或`UTUVO_TYPE_BAILIAN_API_KEY`／`DASHSCOPE_API_KEY`讀取。
+- **智慧整理與Ask anything**：Google Gemini、Groq、百鍊、Anthropic Claude，或自訂的OpenAI相容端點（除了本機loopback一律要HTTPS；網址帶帳密會被拒絕）。key存在Keychain（service `com.utuvo.type.mac.smartcleanup`）；百鍊共用上面那把key。
+- **Groq雲端辨識**：預設關閉。使用智慧整理頁存的Groq key，或`UTUVO_TYPE_GROQ_API_KEY`。
+
+環境變數優先於Keychain。App不在UI、log、fixture或Git顯示key。
 
 ## 隱私與安全備註
 
 - 完全本機模式下，音訊不離機、無遙測；細節見 `PRIVACY.md` 與 `docs/SETUP.md`。
-- CLI relay（`utuvo-type-cli --toggle-transcription` 等）走
+- 聽寫以外的連線：Mac 0.1.13以後預設會自動檢查更新來源（`https://mickyyang-1407.github.io/utuvo-type/appcast.xml`，透過Sparkle），不傳送系統資訊；可在設定→一般→軟體更新關閉。帶iCloud權限簽署的版本（正式發佈的DMG）在你登入iCloud時，會透過iCloud鍵值儲存跟iPhone版同步個人字典。
+- CLI relay（用白名單參數執行App本體，例如
+  `"/Applications/UTUVO Type.app/Contents/MacOS/utuvo-type" --toggle-transcription`；
+  另有`--cancel`、`--toggle-post-process`、`--check-for-updates`）走
   `DistributedNotificationCenter`，機器內任一進程皆可觸發白名單命令。這與
   同類工具的 CLI 同級：本機攻擊者本來就有程式執行權，且錄音時有 overlay 與
   提示音可見。開源版不做進一步加固，僅在此聲明。
