@@ -264,23 +264,28 @@ enum ChunkedASR {
 
     /// 中文數字與位數（同 Android `PauseJoin.DIGITS`）。
     static let pauseDigits: Set<Character> = Set("零〇一二兩两三四五六七八九十百千萬万億亿")
-    /// 只會接在數字後面的單字單位（同 Android `PauseJoin.UNITS`）。
-    static let pauseUnits: Set<Character> = Set("元塊块個个歲岁倍年月日號号次遍趟秒%％")
-    /// 「分」「公」開頭的要看整個詞：「分鐘」「公里」是單位，「分別」「公司」是一般的話（同 Android `PauseJoin.UNIT_WORDS`）。
-    static let pauseUnitWords = ["分鐘", "分钟", "公里", "公尺", "公斤", "公分", "公升", "公克"]
+    /// 接在數字後面的單位（同 Android `PauseJoin.UNITS`）。「分」收（分數、幾點幾分），代價是「分成三＋分別處理」少一個逗號。
+    static let pauseUnits: Set<Character> = Set("元塊块個个歲岁倍年月日號号次遍趟秒分度%％")
+    /// 「公」開頭的要看整個詞：「公里」是單位，「公司」是一般的話（同 Android `PauseJoin.UNIT_WORDS`）。
+    static let pauseUnitWords = ["公里", "公尺", "公斤", "公分", "公升", "公克"]
 
-    /// 停頓前後是不是同一個數字（「三百」＋「五十萬元」、「休息三」＋「分鐘」、「下午一點」＋「半」）：
-    /// 前一段停在數字或「數字＋點」，下一段是單位、「半」或數字的後半。「晚一點」的「一點」＝一些，
-    /// 只有下一段是「半」或數字時才算時間／小數（同 Android `PauseJoin.numberContinues`）。
+    /// 停頓前後是不是同一個數字（同 Android `PauseJoin.numberContinues`，兩邊同一張表）：
+    /// - 前一段停在「數字＋點」（「三點」「三十七點」）：下一段是數字（含「一」）、「半」或單位就是同一個數；
+    ///   「一點」例外，它常是「一些」（「晚一點」），只有接「半」或數字才算。
+    /// - 前一段停在數字：下一段是「點」「半」、單位，或數字（「一」開頭要後面還是數字／單位／點／半，「一起」「一定」不算）。
     static func numberContinues(_ a: String, _ b: Substring) -> Bool {
         guard let last = a.last, let first = b.first else { return false }
-        let digitNext = pauseDigits.contains(first)
-            && (first != "一" || b.dropFirst().first.map { pauseDigits.contains($0) || pauseUnits.contains($0) || "點点半".contains($0) } == true)
+        let second = b.dropFirst().first
         if "點点".contains(last), let previous = a.dropLast().last, pauseDigits.contains(previous) {
-            return first == "半" || digitNext || (previous != "一" && startsWithUnit(b))
+            if first == "半" || pauseDigits.contains(first) { return true }
+            return previous != "一" && startsWithUnit(b)
         }
         guard pauseDigits.contains(last) else { return false }
-        return first == "半" || digitNext || startsWithUnit(b)
+        if "點点半".contains(first) || startsWithUnit(b) { return true }
+        guard pauseDigits.contains(first) else { return false }
+        guard first == "一" else { return true }
+        guard let second else { return false }
+        return pauseDigits.contains(second) || pauseUnits.contains(second) || "點点半".contains(second)
     }
 
     private static func startsWithUnit(_ b: Substring) -> Bool {

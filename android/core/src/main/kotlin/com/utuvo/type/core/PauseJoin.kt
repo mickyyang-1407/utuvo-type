@@ -34,28 +34,31 @@ object PauseJoin {
     /** 中文數字與位數（同 iOS `ChunkedASR.pauseDigits`）。 */
     const val DIGITS = "零〇一二兩两三四五六七八九十百千萬万億亿"
 
-    /** 只會接在數字後面的單字單位（同 iOS `ChunkedASR.pauseUnits`）。 */
-    const val UNITS = "元塊块個个歲岁倍年月日號号次遍趟秒%％"
+    /** 接在數字後面的單位（同 iOS `ChunkedASR.pauseUnits`）。「分」收（分數、幾點幾分），代價是「分成三＋分別處理」少一個逗號。 */
+    const val UNITS = "元塊块個个歲岁倍年月日號号次遍趟秒分度%％"
 
-    /** 「分」「公」開頭的要看整個詞：「分鐘」「公里」是單位，「分別」「公司」是一般的話（同 iOS `ChunkedASR.pauseUnitWords`）。 */
-    val UNIT_WORDS = listOf("分鐘", "分钟", "公里", "公尺", "公斤", "公分", "公升", "公克")
+    /** 「公」開頭的要看整個詞：「公里」是單位，「公司」是一般的話（同 iOS `ChunkedASR.pauseUnitWords`）。 */
+    val UNIT_WORDS = listOf("公里", "公尺", "公斤", "公分", "公升", "公克")
 
     /**
-     * 停頓前後是不是同一個數字（「三百」＋「五十萬元」、「休息三」＋「分鐘」、「下午一點」＋「半」）：
-     * 前一段停在數字或「數字＋點」，下一段是單位、「半」或數字的後半。「晚一點」的「一點」＝一些，
-     * 只有下一段是「半」或數字時才算時間／小數（同 iOS `ChunkedASR.numberContinues`）。
+     * 停頓前後是不是同一個數字（同 iOS `ChunkedASR.numberContinues`，兩邊同一張表）：
+     * - 前一段停在「數字＋點」（「三點」「三十七點」）：下一段是數字（含「一」）、「半」或單位就是同一個數；
+     *   「一點」例外，它常是「一些」（「晚一點」），只有接「半」或數字才算。
+     * - 前一段停在數字：下一段是「點」「半」、單位，或數字（「一」開頭要後面還是數字／單位／點／半，「一起」「一定」不算）。
      */
     fun numberContinues(a: String, b: String): Boolean {
         val last = a.lastOrNull() ?: return false
         val first = b.firstOrNull() ?: return false
-        val second = b.getOrNull(1)
-        val digitNext = DIGITS.indexOf(first) >= 0 && (first != '一' || second != null &&
-            (DIGITS.indexOf(second) >= 0 || UNITS.indexOf(second) >= 0 || "點点半".indexOf(second) >= 0))
         if ((last == '點' || last == '点') && a.length >= 2 && DIGITS.indexOf(a[a.length - 2]) >= 0) {
-            return first == '半' || digitNext || (a[a.length - 2] != '一' && startsWithUnit(b))
+            if (first == '半' || DIGITS.indexOf(first) >= 0) return true
+            return a[a.length - 2] != '一' && startsWithUnit(b)
         }
         if (DIGITS.indexOf(last) < 0) return false
-        return first == '半' || digitNext || startsWithUnit(b)
+        if ("點点半".indexOf(first) >= 0 || startsWithUnit(b)) return true
+        if (DIGITS.indexOf(first) < 0) return false
+        if (first != '一') return true
+        val second = b.getOrNull(1) ?: return false
+        return DIGITS.indexOf(second) >= 0 || UNITS.indexOf(second) >= 0 || "點点半".indexOf(second) >= 0
     }
 
     private fun startsWithUnit(b: String): Boolean =

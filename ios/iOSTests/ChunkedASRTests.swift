@@ -143,7 +143,9 @@ final class ChunkedASRTests: XCTestCase {
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天先休息三", next: "分鐘再繼續"), "")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這段請重錄三", next: "次就好"), "")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這段路大約有三", next: "公里遠"), "")
-        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們這次要分成三", next: "分別處理"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們約明天下午三", next: "點在公司見面"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "他這次數學考了九十", next: "分"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天量到的體溫是三十七點", next: "一度"), "")
         XCTAssertEqual(ChunkedASR.join(["這次預算總共三百", "五十萬元"]), "這次預算總共三百五十萬元")
     }
 

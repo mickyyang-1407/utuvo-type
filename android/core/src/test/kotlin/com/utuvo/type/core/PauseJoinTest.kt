@@ -46,7 +46,9 @@ class PauseJoinTest {
         assertEquals("", PauseJoin.mark("今天先休息三", "分鐘再繼續"))
         assertEquals("", PauseJoin.mark("這段請重錄三", "次就好"))
         assertEquals("", PauseJoin.mark("這段路大約有三", "公里遠"))
-        assertEquals("，", PauseJoin.mark("我們這次要分成三", "分別處理"))
+        assertEquals("", PauseJoin.mark("我們約明天下午三", "點在公司見面"))
+        assertEquals("", PauseJoin.mark("他這次數學考了九十", "分"))
+        assertEquals("", PauseJoin.mark("今天量到的體溫是三十七點", "一度"))
     }
 
     @Test fun leadingParticleBelongsToPreviousClause() {
