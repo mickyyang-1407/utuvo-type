@@ -245,7 +245,8 @@ enum ChunkedASR {
     /// - 兩邊都是中文字、邊界沒有標點才補（英數字由上面的空白規則處理）；
     /// - 前一小句（最後一個標點之後）不到 `PausePunctuator.minClause` 個字＝遲疑，不補；
     /// - 前一段停在 `PausePunctuator.danglingEndings`（「到」「再」「的」「然後」…）＝後面還有話，不補；
-    /// - 下一段開頭是語助詞（「了」「吧」…＝前一句的尾巴），不補。
+    /// - 下一段開頭是語助詞（「了」「吧」…＝前一句的尾巴），不補；
+    /// - 前一段停在中文數字、下一段接數字或單位（「三百」＋「五十萬元」），是同一個數字講到一半，不補（2026-11-02 審查）。
     static func pauseMark(previous: String, next: String) -> String {
         var a = previous
         while let last = a.last, last.isWhitespace { a.removeLast() }
@@ -253,12 +254,18 @@ enum ChunkedASR {
         guard let last = a.last, let first = b.first,
               PausePunctuator.containsCJK(String(last)), PausePunctuator.containsCJK(String(first)) else { return "" }
         if Normalizer.sentenceParticles.contains(first) { return "" }
+        if pauseNumerals.contains(last) && (pauseNumerals.contains(first) || pauseUnits.contains(first)) { return "" }
         if PausePunctuator.danglingEndings.contains(where: { a.hasSuffix($0) }) { return "" }
         let clause: Substring
         if let i = a.lastIndex(where: { PausePunctuator.isPunctuation($0) }) { clause = a[a.index(after: i)...] } else { clause = Substring(a) }
         guard PausePunctuator.clauseLength(String(clause)) >= PausePunctuator.minClause else { return "" }
         return "，"
     }
+
+    /// 中文數字與位數（同 Android `PauseJoin.NUMERALS`）。
+    static let pauseNumerals: Set<Character> = Set("零〇一二兩两三四五六七八九十百千萬万億亿點点半")
+    /// 接在數字後面的單位／量詞（同 Android `PauseJoin.UNITS`）。
+    static let pauseUnits: Set<Character> = Set("元塊块個个分秒年月日號号歲岁倍次遍趟公%％")
 
     /// 只有兩邊都是拉丁字母／數字才需要空白；中文、日文直接接。
     private static func needsSpace(_ left: Character, _ right: Character) -> Bool {

@@ -1557,9 +1557,19 @@ final class KeyboardViewController: UIInputViewController {
                                                              pending: VoicePending.selection,
                                                              before: textDocumentProxy.documentContextBeforeInput ?? "",
                                                              after: textDocumentProxy.documentContextAfterInput ?? "")
-        mode = KeyboardMode.decide(selectedText: restoredSelection?.text ?? textDocumentProxy.selectedText,
+        let pendingSelection = VoicePending.selection
+        mode = KeyboardMode.decide(selectedText: restoredSelection?.text
+                                       ?? VoiceModes.resumedSelectionText(current: textDocumentProxy.selectedText,
+                                                                          pending: pendingSelection),
                                    translateTarget: target, preferred: preferredMode)
-        if let restoredSelection { selectionAnchor = restoredSelection.anchor } else { captureSelectionAnchor() }
+        if let restoredSelection {
+            selectionAnchor = restoredSelection.anchor
+        } else if (textDocumentProxy.selectedText ?? "").isEmpty, let pendingSelection {
+            // 找不回來也保留改寫意圖；交付時對不上就不動文字（見 VoiceModes.resumedSelectionText）。
+            selectionAnchor = pendingSelection.anchor
+        } else {
+            captureSelectionAnchor()
+        }
         activeCommandID = id
         commandFieldSnapshot = FieldGeneration(documentIdentifier: safeDocumentIdentifier)
         bridgeUpdated()

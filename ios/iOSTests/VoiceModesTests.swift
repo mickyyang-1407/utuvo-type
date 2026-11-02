@@ -835,8 +835,24 @@ final class VoiceModesTests: XCTestCase {
         XCTAssertEqual(restored?.anchor, 3)
         // 現在讀得到選取：照現在的。
         XCTAssertNil(VoiceModes.restoredSelection(current: "今天天氣很好", pending: pending, before: "早安，", after: ""))
-        // 那段被改過、或根本沒存：照聽寫。
+        // 那段被改過、或根本沒存：找不回範圍。
         XCTAssertNil(VoiceModes.restoredSelection(current: nil, pending: pending, before: "早安，今天天氣不錯", after: ""))
         XCTAssertNil(VoiceModes.restoredSelection(current: "", pending: nil, before: "早安，今天天氣很好", after: ""))
+    }
+
+    /// 2026-11-02 審查：宿主只給 50 字前文時，錨點 50＋選取 6 字永遠對不上（前文還是 50 字）。
+    /// 找不回範圍也要維持改寫，交付時回 `.gone` 不動文字——不能降級成聽寫把指令打進文件。
+    func testUnrestorableSelectionKeepsEditIntentAndTouchesNothing() {
+        let window = String(repeating: "字", count: 44) + "今天天氣很好"   // 宿主截斷後的 50 字前文
+        let pending = (text: "今天天氣很好", anchor: 50)
+        XCTAssertNil(VoiceModes.restoredSelection(current: nil, pending: pending, before: window, after: ""))
+        let text = VoiceModes.resumedSelectionText(current: nil, pending: pending)
+        XCTAssertEqual(text, "今天天氣很好")
+        XCTAssertEqual(KeyboardMode.decide(selectedText: text, translateTarget: nil), .edit(selection: "今天天氣很好"))
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: pending.text, anchor: pending.anchor, currentSelection: nil,
+                                                       before: window, after: ""), .gone)
+        // 現在有選取就照現在的；跳出前沒選取就沒有改寫意圖。
+        XCTAssertEqual(VoiceModes.resumedSelectionText(current: "別段", pending: pending), "別段")
+        XCTAssertNil(VoiceModes.resumedSelectionText(current: "", pending: nil))
     }
 }

@@ -28,6 +28,15 @@ class PauseJoinTest {
         assertEquals("", PauseJoin.mark("這個方案我覺得可能還要再", "想一下"))
     }
 
+    /** 2026-11-02 審查：同一個數字講到一半停頓，不能拆成「三百，五十萬元」。 */
+    @Test fun numberSplitAcrossPauseStaysWhole() {
+        assertEquals("", PauseJoin.mark("這次預算總共三百", "五十萬元"))
+        assertEquals("", PauseJoin.mark("這張專輯要付三百五十", "元"))
+        assertEquals("", PauseJoin.mark("我們約明天下午三點", "半在錄音室"))
+        // 數字講完、下一段是別的話：照常補。
+        assertEquals("，", PauseJoin.mark("我們這次的預算是三百萬", "記得先跟老闆確認"))
+    }
+
     @Test fun leadingParticleBelongsToPreviousClause() {
         assertEquals("", PauseJoin.mark("我已經把檔案寄給你", "了今天"))
         assertEquals("", PauseJoin.mark("那我們明天早上再討論", "吧"))

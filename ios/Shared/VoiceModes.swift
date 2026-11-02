@@ -238,6 +238,15 @@ enum VoiceModes {
         return nil
     }
 
+    /// 跳主 App 錄音再回來時拿來判斷模式的選取：現在有選取就用它；選取被收掉時，只要跳出前記過選取，
+    /// 就照那段判斷——**就算那段已經找不回來**（2026-11-02 審查：宿主只給有限的前文時，錨點對不上，
+    /// 以前會降級成聽寫，把「改得簡短一點」這種指令直接打進文件）。找不回來時改寫照跑，交付時
+    /// `selectionReplacement` 回 `.gone`，一個字都不動並提示。
+    static func resumedSelectionText(current: String?, pending: (text: String, anchor: Int)?) -> String? {
+        if let current, !current.isEmpty { return current }
+        return pending?.text
+    }
+
     /// 改寫／問問題要取代錄音開始時的選取，回來時該怎麼取代（2026-11-01 Micky 回報：紫色光球改寫不替換，接在後面）。
     enum SelectionReplacement: Equatable {
         /// 選取還在原處：宿主的 deleteBackward 會刪整段選取，再插入。

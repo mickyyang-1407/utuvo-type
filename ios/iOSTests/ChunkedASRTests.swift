@@ -126,6 +126,15 @@ final class ChunkedASRTests: XCTestCase {
                        "今天下午我們先把這首歌的混音做完，低頻的部分還要再收一點，然後明天早上跟客戶確認")
     }
 
+    /// 2026-11-02 審查：同一個數字講到一半停頓，不能拆成「三百，五十萬元」（同 Android `numberSplitAcrossPauseStaysWhole`）。
+    func testNumberSplitAcrossPauseStaysWhole() {
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算總共三百", next: "五十萬元"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這張專輯要付三百五十", next: "元"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們約明天下午三點", next: "半在錄音室"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們這次的預算是三百萬", next: "記得先跟老闆確認"), "，")
+        XCTAssertEqual(ChunkedASR.join(["這次預算總共三百", "五十萬元"]), "這次預算總共三百五十萬元")
+    }
+
     /// 與 Android core `PauseJoinTest` 同一組案例。
     func testPauseMarkMatchesAndroidPauseJoin() {
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天天氣很好", next: "我們去公園"), "，")
