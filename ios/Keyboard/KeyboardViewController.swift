@@ -29,6 +29,9 @@ final class KeyboardViewController: UIInputViewController {
         var start: Int
     }
     private var pendingScope: PendingScope?
+    /// 錄音開始時選取的起點（UTF-16，＝那時游標前文的長度）；改寫／問問題取代選取時用來找回那段文字。
+    /// 鍵盤跳到主 App 錄音再回來，很多 App 會把選取收成游標（2026-11-01 回報：改寫結果接在後面）。
+    private var selectionAnchor: Int?
     /// 每個模式保留一次復原：插入／取代完成後記住，回來時確認游標與前文都沒動過才准撤。
     private struct UndoAction {
         var inserted: String
@@ -1454,6 +1457,7 @@ final class KeyboardViewController: UIInputViewController {
         }
         mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
                                    translateTarget: pendingTranslateTarget, preferred: preferredMode)
+        captureSelectionAnchor()
         let id = UUID()
         var command = VoiceBridge.Command(action: .start, id: id, language: language.rawValue, sentAt: Date())
         command.polishDictation = mode == .dictate
@@ -1487,6 +1491,7 @@ final class KeyboardViewController: UIInputViewController {
             KeyboardPresence.defaults.removeObject(forKey: Self.pendingTranslateKey)
         }
         VoicePending.setMode(preferredMode)
+        VoicePending.setSelection(selectionAnchor == nil ? nil : textDocumentProxy.selectedText, anchor: selectionAnchor)
 
         switch VoiceBridge.startPlan(state: VoiceBridge.readState()) {
         case .sendCommand:
@@ -1547,8 +1552,14 @@ final class KeyboardViewController: UIInputViewController {
         // 這次的模式是跳出鍵盤前選的：新的 process 沒有 preferredMode，不撈回來就會被 decide()
         // 判成「有選取就改寫」，askAnything 的選取被搶走。
         if let restored = VoicePending.mode { preferredMode = restored }
-        mode = KeyboardMode.decide(selectedText: textDocumentProxy.selectedText,
+        // 回來時選取可能已被宿主收成游標：那段文字還在原處就照跳出前的選取判斷（改寫不能變成聽寫）。
+        let restoredSelection = VoiceModes.restoredSelection(current: textDocumentProxy.selectedText,
+                                                             pending: VoicePending.selection,
+                                                             before: textDocumentProxy.documentContextBeforeInput ?? "",
+                                                             after: textDocumentProxy.documentContextAfterInput ?? "")
+        mode = KeyboardMode.decide(selectedText: restoredSelection?.text ?? textDocumentProxy.selectedText,
                                    translateTarget: target, preferred: preferredMode)
+        if let restoredSelection { selectionAnchor = restoredSelection.anchor } else { captureSelectionAnchor() }
         activeCommandID = id
         commandFieldSnapshot = FieldGeneration(documentIdentifier: safeDocumentIdentifier)
         bridgeUpdated()
@@ -1757,12 +1768,10 @@ final class KeyboardViewController: UIInputViewController {
                 guard let self else { return }
                 do {
                     let result = try await OnDeviceAssistant.editSelection(selection, instruction: raw)
-                    guard let still = textDocumentProxy.selectedText, !still.isEmpty else {
+                    guard replaceSelection(selection, with: result) != nil else {
                         endSegmentWithoutDelivery(message: String(localized: "選取已取消，沒有改動文字"), error: true)
                         return
                     }
-                    deleteBackward() // 有選取時刪掉的是整段選取
-                    insertText(result)
                     StorageIO.write {
                         HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: result, source: .keyboard))
                     }
@@ -1848,19 +1857,15 @@ final class KeyboardViewController: UIInputViewController {
                         let replyRaw = try await OnDeviceAssistant.askAboutSelection(selection: selection, question: raw)
                         let reply = VoiceModes.parseAskReply(replyRaw, hasSelection: true)
                         if reply.isReplace {
-                            // 等待期間選取變了就不取代，改成回答卡讓使用者自己決定。
-                            guard VoiceModes.canReplace(originalSelection: selection,
-                                                        currentSelection: textDocumentProxy.selectedText) else {
+                            // 等待期間選取變了（改選別段、那段被改過）就不取代，改成回答卡讓使用者自己決定。
+                            // 選取只是收成游標、原文還在原處時照樣取代（見 replaceSelection）。
+                            guard let start = replaceSelection(selection, with: reply.text) else {
                                 showAnswerCard(reply.text)
                                 resetBand()
                                 return
                             }
-                            let before = textDocumentProxy.documentContextBeforeInput ?? ""
-                            let cursor = before.utf16.count
-                            deleteBackward()   // 有選取時刪掉的是整段選取
-                            insertText(reply.text)
                             setUndo(inserted: reply.text, replacedOriginal: selection,
-                                    insertEnd: cursor + reply.text.utf16.count)
+                                    insertEnd: start + reply.text.utf16.count)
                             StorageIO.write {
                                 HistoryStore.shared.append(DictationRecord.edit(instruction: raw, result: reply.text, source: .keyboard))
                             }
@@ -2124,6 +2129,32 @@ final class KeyboardViewController: UIInputViewController {
         pendingTranslateTarget = nil
         guard makePendingScope(scope) else { updateTopBar(); return }
         Task { await startRecognition() }
+    }
+
+    private func captureSelectionAnchor() {
+        let selected = textDocumentProxy.selectedText ?? ""
+        selectionAnchor = selected.isEmpty ? nil : (textDocumentProxy.documentContextBeforeInput ?? "").utf16.count
+    }
+
+    /// 用改寫結果取代錄音開始時的選取。回傳取代處的起點（UTF-16）；nil＝選取不見或那段被改過，一個字都沒動。
+    ///
+    /// 以前只要 `selectedText` 還有字就 `deleteBackward()`＋插入：選取其實已經收成游標時，
+    /// 只刪掉游標前一個字，改寫結果接在原文後面（2026-11-01 Micky 回報）。判斷見 `VoiceModes.selectionReplacement`。
+    private func replaceSelection(_ selection: String, with newText: String) -> Int? {
+        let before = textDocumentProxy.documentContextBeforeInput ?? ""
+        let after = textDocumentProxy.documentContextAfterInput ?? ""
+        switch VoiceModes.selectionReplacement(selection: selection, anchor: selectionAnchor,
+                                               currentSelection: textDocumentProxy.selectedText,
+                                               before: before, after: after) {
+        case .liveSelection:
+            deleteBackward() // 有選取時刪掉的是整段選取
+            insertText(newText)
+            return before.utf16.count
+        case .range(let range):
+            return replaceText(in: range, with: newText) ? range.start : nil
+        case .gone:
+            return nil
+        }
     }
 
     /// 範圍改寫的共用流程：重新讀前後文 → 確認那一段還在原處 → 游標移到**範圍結尾** → 往回刪 → 插。
