@@ -43,8 +43,10 @@ final class KeyboardViewController: UIInputViewController {
     private var pendingTranslateTarget: TranslationTarget?
     /// 目前由本鍵盤插進文件、還沒定稿的那段文字。
     private var insertedText = ""
-    /// 上一段聽寫插入的文字：最後一句的句號被拿掉了，緊接著再講時要先補回去（SentenceMood.continuationPrefix）。
+    /// 上一段聽寫插入的文字：緊接著再講時比對游標前是不是它（SentenceMood.joinPrefix）。
     private var lastDictationOutput: String?
+    /// 上一段最後被拿掉的標點（「。」「，」「、」或空字串）：接著講時「，」「、」補回，「。」不補。
+    private var lastDictationDroppedMark = ""
     /// 剛貼上的各段定稿（等背景整理）：連講好幾段也都留著，更正回來依序換（CorrectionChain）。
     private var correctionChain: [CorrectionChain.Entry] = []
     private var chainReturnKeys: [UUID: UIReturnKeyType?] = [:]
@@ -1738,16 +1740,20 @@ final class KeyboardViewController: UIInputViewController {
             let finalLanguage = outputLanguage ?? language.rawValue
             let finalVariant = outputVariant ?? LanguageVariantStore.currentVariant(language: finalLanguage)
             let pipeline = TextPipeline(language: finalLanguage, variant: finalVariant)
-            var cleaned = ToneHint.apply(pipeline.clean(raw).output, tone: tone)
+            let piped = pipeline.clean(raw).output
+            var cleaned = ToneHint.apply(piped, tone: tone)
+            let droppedMark = ToneHint.droppedMark(from: piped, to: cleaned)
             if !ToneHint.allowsLineBreaks(returnKeyType: returnKey, keyboardType: textDocumentProxy.keyboardType, text: SmartCleanup.autoListEnabled ? cleaned : nil) { cleaned = OutputShape.singleLine(cleaned) }
-            // 緊接在上一段後面講：上一段拿掉的句號先補回去，兩段才不會黏成一句。
+            // 緊接在上一段後面講（2026-11-02 Micky：停掉再講前面不要加句號）：同 Mac／Android 的 joinPrefix，
+            // 永遠不補「。」，只補英數字之間的空白、上一段拿掉的「，」「、」。
             if insertedText.isEmpty, !cleaned.isEmpty {
-                let prefix = SentenceMood.continuationPrefix(before: textDocumentProxy.documentContextBeforeInput,
-                                                             previous: lastDictationOutput)
+                let prefix = SentenceMood.joinPrefix(before: textDocumentProxy.documentContextBeforeInput,
+                                                     previous: lastDictationOutput, next: cleaned,
+                                                     droppedMark: lastDictationDroppedMark)
                 if !prefix.isEmpty { insertText(prefix) }
             }
             applyEdit(to: cleaned)
-            if !cleaned.isEmpty { lastDictationOutput = cleaned }
+            if !cleaned.isEmpty { lastDictationOutput = cleaned; lastDictationDroppedMark = droppedMark }
             if !raw.isEmpty {
                 let seconds = recordingSeconds
                 let spoken = cleaned   // let 快照：背景 closure 不能捕捉 var
@@ -1941,7 +1947,9 @@ final class KeyboardViewController: UIInputViewController {
         for correction in state.corrections ?? [] {
             guard correctionChain.contains(where: { $0.id == correction.id && !$0.done }) else { continue }
             let returnKey = chainReturnKeys[correction.id] ?? nil
-            var cleaned = ToneHint.apply(TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)).clean(correction.text).output, tone: ToneHint.infer(returnKeyType: returnKey))
+            let piped = TextPipeline(language: language.rawValue, variant: LanguageVariantStore.currentVariant(language: language.rawValue)).clean(correction.text).output
+            var cleaned = ToneHint.apply(piped, tone: ToneHint.infer(returnKeyType: returnKey))
+            let droppedMark = ToneHint.droppedMark(from: piped, to: cleaned)
             if !ToneHint.allowsLineBreaks(returnKeyType: returnKey, keyboardType: textDocumentProxy.keyboardType, text: SmartCleanup.autoListEnabled ? cleaned : nil) { cleaned = OutputShape.singleLine(cleaned) }
             let before = textDocumentProxy.documentContextBeforeInput ?? ""
             guard let plan = CorrectionChain.plan(entries: correctionChain, id: correction.id, corrected: cleaned, contextBefore: before) else {
@@ -1954,7 +1962,7 @@ final class KeyboardViewController: UIInputViewController {
                 if !edit.insert.isEmpty { insertText(edit.insert) }
             }
             // 整理換掉的正好是最後一段：之後接著講要比對的是換過的文字。
-            if lastDictationOutput == plan.previous { lastDictationOutput = cleaned }
+            if lastDictationOutput == plan.previous { lastDictationOutput = cleaned; lastDictationDroppedMark = droppedMark }
             correctionChain[plan.index].inserted = cleaned
             correctionChain[plan.index].done = true
             learner.dictationInserted(cleaned)

@@ -1,6 +1,7 @@
 import XCTest
 import UIKit
 @testable import UTUVOTypeiOS
+import UTUVOTypeCore
 
 /// 鍵盤純邏輯：模式判定、送出鍵文案、用量統計。
 final class KeyboardLogicTests: XCTestCase {
@@ -327,5 +328,19 @@ extension KeyboardLogicTests {
         let final = ToneHint.apply(TextPipeline(dictionary: [:], latinTerms: []).clean(list).output, tone: .chat)
         XCTAssertEqual(final, list)
         XCTAssertTrue(ToneHint.allowsLineBreaks(returnKeyType: .send, keyboardType: .default, text: final))
+    }
+
+    /// 2026-11-02 Micky：停掉再接著講，前面不要冒出「。」。走鍵盤同一條路：ToneHint.apply → droppedMark → joinPrefix。
+    func testContinuingDictationNeverPrependsPeriod() {
+        func join(_ firstPiped: String, _ next: String) -> String {
+            let first = ToneHint.apply(firstPiped, tone: .chat)
+            let mark = ToneHint.droppedMark(from: firstPiped, to: first)
+            return SentenceMood.joinPrefix(before: "前文" + first, previous: first, next: next, droppedMark: mark)
+        }
+        XCTAssertEqual(join("目前看起來好像還OK。", "有一個問題"), "")      // 拿掉的是「。」→ 不補
+        XCTAssertEqual(join("我到了", "你在哪"), "")                       // 本來就沒標點 → 不補
+        XCTAssertEqual(join("如果明天下雨的話，", "我們就改到室內"), "，")   // 停頓逗號原樣補回
+        XCTAssertEqual(join("I am here", "see you"), " ")                  // 英文接英文補空白
+        XCTAssertEqual(ToneHint.droppedMark(from: "你在哪？", to: ToneHint.apply("你在哪？", tone: .chat)), "")
     }
 }

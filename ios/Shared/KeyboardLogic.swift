@@ -340,9 +340,15 @@ enum ToneHint: Equatable, Sendable {
     }
 
     /// 最後一句不加句號（2026-10-02 Micky：不要每句、最後都用句號，很 AI）。以前只在聊天框的單句訊息拿掉；
-    /// 現在所有輸入框都拿掉，分段長文（有換行）照原樣。緊接著再講時由鍵盤補回句號（SentenceMood.continuationPrefix）。
+    /// 現在所有輸入框都拿掉，分段長文（有換行）照原樣。緊接著再講時不補句號（SentenceMood.joinPrefix）。
     static func apply(_ text: String, tone: ToneHint) -> String {
         SentenceMood.dropFinalPeriod(text)
+    }
+
+    /// `apply` 拿掉的那個句尾標點（沒拿就空字串）：接著講時交給 `SentenceMood.joinPrefix` 的 droppedMark。
+    static func droppedMark(from original: String, to applied: String) -> String {
+        guard original != applied, let mark = original.last(where: { !$0.isWhitespace }) else { return "" }
+        return String(mark)
     }
 }
 
