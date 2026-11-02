@@ -242,6 +242,35 @@ final class CleanupFidelityTests: XCTestCase {
         }
     }
 
+    func testUnpunctuatedSpokenOrdinalsMayBecomeNumbering() {
+        // 2026-11-02 實測：雲端辨識原文沒標點，「第一個是…」換成 1. 2. 3. 被擋。
+        let raw = "我們這次要準備的東西有三個第一個是錄音室的時段要先訂好第二個是樂手的通告要確認第三個是混音師的檔期要問一下"
+        let listed = "我們這次要準備的東西有三個：\n1. 錄音室的時段要先訂好\n2. 樂手的通告要確認\n3. 混音師的檔期要問一下"
+        XCTAssertNil(CleanupFidelity.rejectionReason(original: raw, cleaned: listed))
+        XCTAssertTrue(CleanupFidelity.preservesContent(
+            original: "重點有兩個，第一點是低頻要收，第二點是人聲要往前",
+            cleaned: "重點有兩個：\n1. 低頻要收\n2. 人聲要往前"
+        ))
+
+        // 該擋的照擋：項目內容掉了、沒有變成編號卻把標記刪了、量詞以外的「第一名／第一軌」是內容。
+        XCTAssertFalse(CleanupFidelity.preservesContent(
+            original: raw,
+            cleaned: "我們這次要準備的東西有三個：\n1. 錄音室的時段要先訂好\n2. 混音師的檔期要問一下"
+        ), "Dropping a whole item is still lost content")
+        XCTAssertFalse(CleanupFidelity.preservesContent(
+            original: raw,
+            cleaned: "我們這次要準備的東西有三個，錄音室的時段要先訂好，樂手的通告要確認，混音師的檔期要問一下。"
+        ), "Ordinals may only drop when numbering replaces them")
+        XCTAssertFalse(CleanupFidelity.preservesContent(
+            original: "比賽結果第一名是小雅第二名是小博第三名是小潘",
+            cleaned: "比賽結果：\n1. 小雅\n2. 小博\n3. 小潘"
+        ), "第一名 is content, not a list marker")
+        XCTAssertFalse(CleanupFidelity.preservesContent(
+            original: "這三軌第一軌是kick第二軌是snare第三軌是hihat",
+            cleaned: "這三軌：\n1. kick\n2. snare\n3. hihat"
+        ), "第一軌 is content, not a list marker")
+    }
+
     func testQ2NumberedListConversionsAllowOnlyListMarkersAndItemConnectorsToDrop() {
         let s17 = "今天的工作清單是,第一,更新Pro Tools,第二,匯出Stamps,第三,寫交付說明"
         XCTAssertTrue(CleanupFidelity.preservesContent(

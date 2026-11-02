@@ -72,8 +72,11 @@ public enum CleanupFidelity {
     private static let listPrefix = try! NSRegularExpression(
         pattern: #"(?m)^\s*(?:\d+[.、)](?![0-9])|[一二三四五六七八九十百]+[.、)](?![0-9零〇一二兩两三四五六七八九十百千萬万億亿])|[•*]|-(?![0-9]))\s*"#
     )
+    // 「第一個是／第二點是」帶量詞＋「是」本身就是口說清單標記，前面沒有標點也算：雲端辨識的原文常常一個標點都沒有
+    // （2026-11-02 Claude／OpenAI 都被擋「來源實詞未保留：「第一個是第二個是第三個是」」）。量詞只收清單常用的幾個，
+    // 「第一軌是 kick」「第一遍太快」的「軌／遍」是內容，照舊不能丟。
     private static let spokenListMarker = try! NSRegularExpression(
-        pattern: #"(?m)(?:^|(?<=[，,、：:]))第[一二三四五六七八九十百]+(?:是|[，,、：:])"#
+        pattern: #"(?m)(?:(?:^|(?<=[，,、：:]))第[一二三四五六七八九十百]+(?:是|[，,、：:])|第[一二三四五六七八九十]+(?:個|个|點|点|項|项|件|樣|样)是)"#
     )
     private static let firstlyListMarker = try! NSRegularExpression(
         pattern: #"(?m)(?:^|(?<=[，,、：:\n]))首先[，,、：:]"#
