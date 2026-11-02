@@ -18,7 +18,7 @@ import UTUVOTypeCore
 enum SmartCleanup {
     /// 對齊 iOS `SmartCleanup.Provider`（schemaVersion = 4；Mac 端同時保留 origin 給既有測試）。
     enum Provider: String, CaseIterable, Identifiable, Sendable {
-        case gemini, groq, dashscope, claude, custom
+        case gemini, groq, dashscope, claude, openai, custom
         var id: String { rawValue }
         var origin: String { rawValue }
 
@@ -30,6 +30,7 @@ enum SmartCleanup {
             case .dashscope: return "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
             // Anthropic 的 OpenAI 相容端點（同 iOS／Android 0.3.1）。
             case .claude: return "https://api.anthropic.com/v1/chat/completions"
+            case .openai: return "https://api.openai.com/v1/chat/completions"
             case .custom: return ""
             }
         }
@@ -40,6 +41,8 @@ enum SmartCleanup {
             case .groq: return "openai/gpt-oss-120b"
             case .dashscope: return "qwen3.7-flash"
             case .claude: return "claude-haiku-5-5"
+            // 同 iOS（2026-11-02 實測 104 字長句：gpt-5.4-mini 不推理 1.2 s、不換字）。
+            case .openai: return "gpt-5.4-mini"
             case .custom: return ""
             }
         }
@@ -50,6 +53,7 @@ enum SmartCleanup {
             case .groq: return URL(string: "https://console.groq.com/keys")
             case .dashscope: return URL(string: "https://bailian.console.aliyun.com/")
             case .claude: return URL(string: "https://console.anthropic.com/settings/keys")
+            case .openai: return URL(string: "https://platform.openai.com/api-keys")
             case .custom: return nil
             }
         }
@@ -61,6 +65,8 @@ enum SmartCleanup {
             case .dashscope: return ["enable_thinking": false]
             // Haiku 5.5 預設會先想（每句 300–1,500 個思考 token）；關掉後中位 1.29→0.93 s、CER 不變（2026-10-18）。
             case .claude: return ["thinking": ["type": "disabled"]]
+            // gpt-5.4 系列收 "none"（同 iOS；跟 temperature 0 並用也接受）。
+            case .openai: return ["reasoning_effort": "none"]
             case .custom: return [:]
             }
         }
@@ -520,6 +526,7 @@ enum SmartCleanupProvider: String, CaseIterable, Identifiable, Sendable {
     case groq
     case dashscope
     case claude
+    case openai
     case custom
 
     var id: String { rawValue }
@@ -530,6 +537,7 @@ enum SmartCleanupProvider: String, CaseIterable, Identifiable, Sendable {
         case .groq: return "Groq"
         case .dashscope: return "百鍊（沿用雲端 key）"
         case .claude: return "Claude（整理最準）"
+        case .openai: return "OpenAI"
         case .custom: return "自訂 OpenAI 相容"
         }
     }

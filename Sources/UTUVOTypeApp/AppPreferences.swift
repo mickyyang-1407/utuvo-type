@@ -285,6 +285,10 @@ final class AppPreferences: ObservableObject {
     @Published var cloudASREnabled: Bool {
         didSet { defaults.set(cloudASREnabled, forKey: Keys.cloudASREnabled) }
     }
+    /// 雲端辨識送哪一家（Groq／OpenAI，key 共用智慧整理頁存的那把）。預設 Groq，舊設定不變。
+    @Published var cloudASRProvider: MacCloudASR.Provider {
+        didSet { defaults.set(cloudASRProvider.rawValue, forKey: Keys.cloudASRProvider) }
+    }
     @Published var appendTrailingSpace: Bool {
         didSet { defaults.set(appendTrailingSpace, forKey: Keys.appendTrailingSpace) }
     }
@@ -688,6 +692,7 @@ final class AppPreferences: ObservableObject {
         ) ?? .off
         self.appendTrailingSpace = defaults.object(forKey: Keys.appendTrailingSpace) as? Bool ?? false
         self.cloudASREnabled = defaults.object(forKey: Keys.cloudASREnabled) as? Bool ?? false
+        self.cloudASRProvider = MacCloudASR.Provider(rawValue: defaults.string(forKey: Keys.cloudASRProvider) ?? "") ?? .groq
         // 2026-09-24 實機（家庭測試者）：講長句時停下來想下一句，0.9 秒靜音就被切斷。預設改關（對齊 Typeless：再按一次才結束）；
         // 沒動過設定的 0.1.5 使用者升級後也會套用新預設，自己開過的保留。
         self.voiceActivityDetection = defaults.object(forKey: Keys.voiceActivityDetection) as? Bool ?? false
@@ -1245,6 +1250,7 @@ final class AppPreferences: ObservableObject {
         static let autoSubmit = "utuvo.type.output.autoSubmit"
         static let appendTrailingSpace = "utuvo.type.output.appendTrailingSpace"
         static let cloudASREnabled = "utuvo.type.cloudASR.enabled"
+        static let cloudASRProvider = "utuvo.type.cloudASR.provider"
         static let voiceActivityDetection = "utuvo.type.transcription.voiceActivityDetection"
         static let includeSurroundingContext = "utuvo.type.context.includeSurrounding"
         static let contextBlockedSites = "utuvo.type.context.blockedSites"

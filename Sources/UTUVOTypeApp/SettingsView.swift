@@ -1596,17 +1596,26 @@ struct SettingsView: View {
 
                     if preferences.backend == .local {
                         settingsRow(
-                            preferences.tr("雲端辨識（Groq）", "Cloud recognition (Groq)"),
+                            preferences.tr("雲端辨識", "Cloud recognition"),
                             caption: preferences.tr(
-                                "把錄音送到 Groq Whisper 辨識（用你自己的 Groq key），英文專名較準、出字較快；講完停頓時就先送，按停止時多半已經辨識並整理好。失敗自動改用本機 Qwen3-ASR。錄音會上傳到 Groq。",
-                                "Sends the recording to Groq Whisper (your own Groq key): better with English names and faster. It starts as soon as you pause, so text is usually ready when you stop. Falls back to local Qwen3-ASR on failure. Audio is uploaded to Groq.")
+                                "把錄音送到 Groq Whisper 或 OpenAI（gpt-4o-transcribe）辨識（用你自己的 key），英文專名較準、出字較快；講完停頓時就先送，按停止時多半已經辨識並整理好。失敗自動改用本機 Qwen3-ASR。錄音會上傳到你選的服務。",
+                                "Sends the recording to Groq Whisper or OpenAI (gpt-4o-transcribe) with your own key: better with English names and faster. It starts as soon as you pause, so text is usually ready when you stop. Falls back to local Qwen3-ASR on failure. Audio is uploaded to the service you pick.")
                         ) {
                             Toggle("", isOn: $preferences.cloudASREnabled)
                                 .labelsHidden()
                                 .toggleStyle(.switch)
                         }
-                        if preferences.cloudASREnabled && preferences.cleanupProvider != .groq {
-                            cleanupKeyCard(for: .groq).disabled(preferences.isolation != nil)
+                        if preferences.cloudASREnabled {
+                            Picker(preferences.tr("辨識服務", "Recognition service"), selection: $preferences.cloudASRProvider) {
+                                ForEach(MacCloudASR.Provider.allCases) { provider in
+                                    Text(provider.displayName).tag(provider)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            if preferences.cleanupProvider != preferences.cloudASRProvider.cleanupProvider {
+                                cleanupKeyCard(for: preferences.cloudASRProvider.cleanupProvider)
+                                    .disabled(preferences.isolation != nil)
+                            }
                         }
                     }
                 }
@@ -2124,11 +2133,17 @@ struct SettingsView: View {
                 .disabled(!preferences.cleanupEnabled)
 
                 switch preferences.cleanupProvider {
-                case .gemini, .groq, .claude:
+                case .gemini, .groq, .claude, .openai:
                     cleanupKeyCard(for: preferences.cleanupProvider).disabled(preferences.isolation != nil)
                     if preferences.cleanupProvider == .claude {
                         Text(preferences.tr("用 Anthropic Console 的 API key（依用量計費，可用 API 額度）；Claude Pro／Max 訂閱本身不能直接用。",
                                             "Use an Anthropic Console API key (usage-based; API credits work). A Claude Pro/Max subscription can't be used directly."))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    if preferences.cleanupProvider == .openai {
+                        Text(preferences.tr("用 OpenAI Platform 的 API key（依用量計費，要先加值）；ChatGPT Plus／Pro 訂閱本身不能直接用。同一把 key 也能用在雲端辨識。",
+                                            "Use an OpenAI Platform API key (usage-based; add credit first). A ChatGPT Plus/Pro subscription can't be used directly. The same key also works for cloud recognition."))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

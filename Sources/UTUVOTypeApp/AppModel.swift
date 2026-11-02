@@ -1005,7 +1005,7 @@ final class AppModel: ObservableObject {
             }
         } else if groqActive || localASRConfigured {
             pcmEngineIsGroq = groqActive
-            if pcmEngineIsGroq { MacCloudASR.warmUp() }
+            if pcmEngineIsGroq { MacCloudASR.warmUp(preferences.cloudASRProvider) }
             let token = operationToken
             pcmTask = Task.detached(priority: .userInitiated) { [weak self] in
                 var pcm = Data()
@@ -1095,11 +1095,14 @@ final class AppModel: ObservableObject {
         preferences.backend == .local && !preferences.localASRCommand.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// 本機優先模式＋開了雲端辨識＋有 Groq key＋語言是中／英。
+    /// 診斷用的雲端辨識引擎名（"groq"／"openai"）。
+    private var cloudEngine: String { preferences.cloudASRProvider.rawValue }
+
+    /// 本機優先模式＋開了雲端辨識＋有所選服務（Groq／OpenAI）的 key＋語言是中／英。
     private var groqASRActive: Bool {
         preferences.backend == .local && preferences.cloudASREnabled
             && MacCloudASR.supports(language: preferences.transcriptionLanguage.rawValue)
-            && !MacCloudASR.key().isEmpty
+            && !MacCloudASR.key(for: preferences.cloudASRProvider).isEmpty
     }
 
     /// 停頓點：把目前為止的錄音先辨識；這次會走雲端背景整理的話，拿到文字就用跟停止後**完全相同的輸入**先整理。
@@ -1112,10 +1115,11 @@ final class AppModel: ObservableObject {
         let taiwanFixes = preferences.effectiveLanguageVariant.appliesTaiwanFixes
         let asr: Task<String?, Never>
         if pcmEngineIsGroq {
-            let key = MacCloudASR.key()
+            let provider = preferences.cloudASRProvider
+            let key = MacCloudASR.key(for: provider)
             asr = Task {
                 if case .ok(let text) = await MacCloudASR.transcribe(pcm16: pcm, language: language, hotwords: hotwords,
-                                                                     outputScript: script, key: key,
+                                                                     outputScript: script, key: key, provider: provider,
                                                                      taiwanFixes: taiwanFixes) { return text }
                 return nil
             }
@@ -1303,14 +1307,14 @@ final class AppModel: ObservableObject {
             let pcm = await pcmTask.value
             if let pending = speculation, pending.token == token, MacCloudASR.isQuiet(pcm, from: pending.pcmBytes),
                let text = await pending.asr.value {
-                transcript = text; asrEngine = groqTask == nil ? "local-pause" : "groq-pause"
+                transcript = text; asrEngine = groqTask == nil ? "local-pause" : "\(cloudEngine)-pause"
             }
         }
         // 取消之後不再開始任何辨識（尤其不再把錄音送雲端）。
         if let groqTask, transcript.isEmpty, token == operationToken {
             let pcm = await groqTask.value
-            if case .ok(let text) = await groqTranscribe(pcm) { transcript = text; asrEngine = "groq" }
-            else { asrEngine = "groq-failed" }
+            if case .ok(let text) = await groqTranscribe(pcm) { transcript = text; asrEngine = cloudEngine }
+            else { asrEngine = "\(cloudEngine)-failed" }
         }
         if let cloudTask {
             do {
@@ -1328,7 +1332,7 @@ final class AppModel: ObservableObject {
            token == operationToken {
             do {
                 transcript = try await localASRClient().transcribe(audioURL: result.audioURL)
-                asrEngine = asrEngine == "groq-failed" ? "groq-failed>local" : "local"
+                asrEngine = asrEngine == "\(cloudEngine)-failed" ? "\(cloudEngine)-failed>local" : "local"
             } catch {
                 asrError = asrError ?? error
             }
@@ -1500,7 +1504,8 @@ final class AppModel: ObservableObject {
             language: preferences.transcriptionLanguage.rawValue,
             hotwords: asrHints(limit: 80),
             outputScript: preferences.outputScript,
-            key: MacCloudASR.key(),
+            key: MacCloudASR.key(for: preferences.cloudASRProvider),
+            provider: preferences.cloudASRProvider,
             taiwanFixes: preferences.effectiveLanguageVariant.appliesTaiwanFixes)
     }
 
@@ -1521,7 +1526,8 @@ final class AppModel: ObservableObject {
                 switch await groqTranscribe(pcm) {
                 case .ok(let text): return (text, nil)
                 case .skipped(let why), .failed(let why):
-                    failure = preferences.tr("Groq 雲端辨識沒有結果（\(why)）", "Groq cloud transcription returned nothing (\(why))")
+                    let name = preferences.cloudASRProvider.displayName
+                    failure = preferences.tr("\(name) 雲端辨識沒有結果（\(why)）", "\(name) cloud transcription returned nothing (\(why))")
                 }
             } catch {
                 failure = error.localizedDescription

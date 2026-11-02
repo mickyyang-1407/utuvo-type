@@ -117,6 +117,34 @@ final class MacCloudASRTests: XCTestCase {
         XCTAssertEqual(MacCloudASR.key(environment: ["UTUVO_TYPE_GROQ_API_KEY": " env-key \n"]), "env-key")
     }
 
+    func testOpenAIProviderUsesItsOwnEndpointModelAndKey() async throws {
+        let transport = MockCleanupTransport()
+        transport.register(host: "api.openai.com", status: 200, bodyJSON: ["text": "這次在 Pro Tools 上混音"])
+        let outcome = await MacCloudASR.transcribe(pcm16: pcm(), language: "zh-TW", hotwords: ["Pro Tools"],
+                                                   outputScript: .traditional, key: "fake-openai-key",
+                                                   provider: .openai, transport: transport)
+        XCTAssertEqual(outcome, .ok("這次在 Pro Tools 上混音"))
+        let request = try XCTUnwrap(transport.lastRequest)
+        XCTAssertEqual(request.url?.absoluteString, "https://api.openai.com/v1/audio/transcriptions")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer fake-openai-key")
+        let body = String(decoding: try XCTUnwrap(request.httpBody), as: UTF8.self)
+        XCTAssertTrue(body.contains("gpt-4o-transcribe"))
+        XCTAssertFalse(body.contains("whisper-large-v3"))
+        XCTAssertEqual(MacCloudASR.key(for: .openai, environment: ["UTUVO_TYPE_OPENAI_API_KEY": " oa \n",
+                                                                    "UTUVO_TYPE_GROQ_API_KEY": "gq"]), "oa")
+        XCTAssertEqual(MacCloudASR.Provider.openai.cleanupProvider, .openai)
+    }
+
+    func testOpenAICleanupProviderShape() {
+        let provider = SmartCleanup.Provider.openai
+        XCTAssertEqual(provider.endpoint, "https://api.openai.com/v1/chat/completions")
+        XCTAssertEqual(provider.defaultModel, "gpt-5.4-mini")
+        XCTAssertEqual(provider.extraBody["reasoning_effort"] as? String, "none")
+        XCTAssertTrue(provider.sendsTemperature)
+        XCTAssertFalse(provider.trustsCleanup)
+        XCTAssertEqual(SmartCleanupProvider.openai.endpoint, provider.endpoint)
+    }
+
     func testPCM16Decoding() {
         var data = Data()
         for v: Int16 in [0, 16_384, -32_768] { var le = v.littleEndian; withUnsafeBytes(of: &le) { data.append(contentsOf: $0) } }

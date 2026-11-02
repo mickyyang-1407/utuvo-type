@@ -30,13 +30,27 @@ enum MacCloudASR {
     /// Groq 一次收的錄音上限（秒）；更長的直接跳過（"too-long"）。錄音長度上限也照這個（`RecordingLimits`）。
     static let maxSeconds: TimeInterval = 300
 
-    /// 環境變數 `UTUVO_TYPE_GROQ_API_KEY` 優先（量測工具用 `open --env` 帶入，跟百鍊 key 的環境變數同一套），
-    /// 否則用智慧整理頁存的 Groq key。
-    static func key(environment: [String: String] = ProcessInfo.processInfo.environment) -> String {
-        if let value = environment["UTUVO_TYPE_GROQ_API_KEY"]?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !value.isEmpty { return value }
-        return SmartCleanup.key(for: .groq)
+    /// 雲端辨識送哪一家（2026-11-02 加 OpenAI，同 iOS）：兩家 multipart 格式與回應一樣，只差端點、模型和 key。
+    enum Provider: String, CaseIterable, Identifiable, Sendable {
+        case groq, openai
+        var id: String { rawValue }
+        var displayName: String { self == .groq ? "Groq" : "OpenAI" }
+        var endpoint: URL { self == .groq ? WhisperAudio.groqEndpoint : WhisperAudio.openAIEndpoint }
+        /// key 跟智慧整理頁共用同一把（Keychain `com.utuvo.type.mac.smartcleanup`／rawValue）。
+        var cleanupProvider: SmartCleanupProvider { self == .groq ? .groq : .openai }
+        fileprivate var environmentKey: String { self == .groq ? "UTUVO_TYPE_GROQ_API_KEY" : "UTUVO_TYPE_OPENAI_API_KEY" }
     }
+
+    /// 環境變數 `UTUVO_TYPE_GROQ_API_KEY`／`UTUVO_TYPE_OPENAI_API_KEY` 優先（量測工具用 `open --env` 帶入，跟百鍊 key
+    /// 的環境變數同一套），否則用智慧整理頁存的那家 key。
+    static func key(for provider: Provider = .groq,
+                    environment: [String: String] = ProcessInfo.processInfo.environment) -> String {
+        if let value = environment[provider.environmentKey]?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !value.isEmpty { return value }
+        return SmartCleanup.key(for: provider == .groq ? .groq : .openai)
+    }
+
+    static func key(environment: [String: String]) -> String { key(for: .groq, environment: environment) }
 
     /// 16-bit PCM LE → Float（-1...1）。
     static func samples(fromPCM16 data: Data) -> [Float] {
@@ -90,19 +104,23 @@ enum MacCloudASR {
 
     /// 一次送整段。`transport` 測試可注入；正式走拒絕跨 host redirect 的 session。
     static func transcribe(pcm16: Data, language: String, hotwords: [String], outputScript: OutputScript,
-                           key: String, transport: CleanupTransport = StrictCleanupSession.shared,
+                           key: String, provider: Provider = .groq,
+                           transport: CleanupTransport = StrictCleanupSession.shared,
                            taiwanFixes: Bool = true) async -> Outcome {
+        let name = provider.rawValue
         let samples = samples(fromPCM16: pcm16)
         let seconds = Double(samples.count) / 16_000
         let skip: String? = seconds < 0.25 ? "too-short" : seconds > maxSeconds ? "too-long"
             : key.isEmpty ? "no-key" : !supports(language: language) ? "language" : nil
         if let skip {
-            log.error("groq skipped (\(skip, privacy: .public)): \(pcm16.count, privacy: .public) bytes")
+            log.error("\(name, privacy: .public) skipped (\(skip, privacy: .public)): \(pcm16.count, privacy: .public) bytes")
             return .skipped(skip)
         }
         let started = Date()
         let audio = WhisperAudio.wav(WhisperAudio.trimSilence(samples))
-        let request = WhisperAudio.groqRequest(key: key, wav: audio, language: language, hotwords: hotwords)
+        let request = provider == .groq
+            ? WhisperAudio.groqRequest(key: key, wav: audio, language: language, hotwords: hotwords)
+            : WhisperAudio.openAIRequest(key: key, wav: audio, language: language, hotwords: hotwords)
         let box = OutcomeBox()
         let text = await SmartCleanup.withinDeadline(seconds: WhisperAudio.timeLimit(seconds: seconds)) {
             do {
@@ -122,17 +140,17 @@ enum MacCloudASR {
         }
         let ms = Int(Date().timeIntervalSince(started) * 1000)
         if let text {
-            log.info("groq ok: \(ms, privacy: .public) ms, audio \(seconds, format: .fixed(precision: 2), privacy: .public) s")
+            log.info("\(name, privacy: .public) ok: \(ms, privacy: .public) ms, audio \(seconds, format: .fixed(precision: 2), privacy: .public) s")
             return .ok(text)
         }
         let reason = box.value ?? "timeout"
-        log.error("groq \(reason, privacy: .public): \(ms, privacy: .public) ms")
+        log.error("\(name, privacy: .public) \(reason, privacy: .public): \(ms, privacy: .public) ms")
         return .failed(reason)
     }
 
-    /// 錄音一開始就先連上 Groq（只送 HEAD，不帶 key 與音訊），停下來時省掉 TLS 握手。
-    static func warmUp() {
-        var request = URLRequest(url: WhisperAudio.groqEndpoint, cachePolicy: .reloadIgnoringLocalCacheData,
+    /// 錄音一開始就先連上辨識服務（只送 HEAD，不帶 key 與音訊），停下來時省掉 TLS 握手。
+    static func warmUp(_ provider: Provider = .groq) {
+        var request = URLRequest(url: provider.endpoint, cachePolicy: .reloadIgnoringLocalCacheData,
                                  timeoutInterval: 3)
         request.httpMethod = "HEAD"
         StrictCleanupSession.shared.session.dataTask(with: request).resume()
