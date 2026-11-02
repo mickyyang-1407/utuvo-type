@@ -137,6 +137,13 @@ final class ChunkedASRTests: XCTestCase {
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算是三百萬", next: "公司下週付款"), "，")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算是三百萬", next: "一起去吃飯慶祝"), "，")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算總共三百萬", next: "一千元要另外算"), "")
+        // 第三輪審查：「一點」接「半」／數字是時間或小數；「分鐘」「次」「公里」是單位，「分別」不是。
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們約明天下午一點", next: "半在錄音室"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這個比例大約是一點", next: "五倍"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "今天先休息三", next: "分鐘再繼續"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這段請重錄三", next: "次就好"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這段路大約有三", next: "公里遠"), "")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們這次要分成三", next: "分別處理"), "，")
         XCTAssertEqual(ChunkedASR.join(["這次預算總共三百", "五十萬元"]), "這次預算總共三百五十萬元")
     }
 

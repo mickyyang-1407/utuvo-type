@@ -40,6 +40,13 @@ class PauseJoinTest {
         assertEquals("，", PauseJoin.mark("這次預算是三百萬", "公司下週付款"))
         assertEquals("，", PauseJoin.mark("這次預算是三百萬", "一起去吃飯慶祝"))
         assertEquals("", PauseJoin.mark("這次預算總共三百萬", "一千元要另外算"))
+        // 第三輪審查：「一點」接「半」／數字是時間或小數；「分鐘」「次」「公里」是單位，「分別」不是。
+        assertEquals("", PauseJoin.mark("我們約明天下午一點", "半在錄音室"))
+        assertEquals("", PauseJoin.mark("這個比例大約是一點", "五倍"))
+        assertEquals("", PauseJoin.mark("今天先休息三", "分鐘再繼續"))
+        assertEquals("", PauseJoin.mark("這段請重錄三", "次就好"))
+        assertEquals("", PauseJoin.mark("這段路大約有三", "公里遠"))
+        assertEquals("，", PauseJoin.mark("我們這次要分成三", "分別處理"))
     }
 
     @Test fun leadingParticleBelongsToPreviousClause() {

@@ -34,27 +34,32 @@ object PauseJoin {
     /** 中文數字與位數（同 iOS `ChunkedASR.pauseDigits`）。 */
     const val DIGITS = "零〇一二兩两三四五六七八九十百千萬万億亿"
 
-    /** 只會接在數字後面的單位（同 iOS `ChunkedASR.pauseUnits`）。「公」「分」不收：「公司」「分別」是一般的話。 */
-    const val UNITS = "元塊块個个歲岁倍年月日號号%％"
+    /** 只會接在數字後面的單字單位（同 iOS `ChunkedASR.pauseUnits`）。 */
+    const val UNITS = "元塊块個个歲岁倍年月日號号次遍趟秒%％"
 
-    /** 前一段停在數字上：最後一個字是中文數字，或「三點」這種「數字＋點」（「晚一點」的「一點」是「一些」，不算）。 */
-    fun endsWithNumber(a: String): Boolean {
+    /** 「分」「公」開頭的要看整個詞：「分鐘」「公里」是單位，「分別」「公司」是一般的話（同 iOS `ChunkedASR.pauseUnitWords`）。 */
+    val UNIT_WORDS = listOf("分鐘", "分钟", "公里", "公尺", "公斤", "公分", "公升", "公克")
+
+    /**
+     * 停頓前後是不是同一個數字（「三百」＋「五十萬元」、「休息三」＋「分鐘」、「下午一點」＋「半」）：
+     * 前一段停在數字或「數字＋點」，下一段是單位、「半」或數字的後半。「晚一點」的「一點」＝一些，
+     * 只有下一段是「半」或數字時才算時間／小數（同 iOS `ChunkedASR.numberContinues`）。
+     */
+    fun numberContinues(a: String, b: String): Boolean {
         val last = a.lastOrNull() ?: return false
-        if (DIGITS.indexOf(last) >= 0) return true
-        if (last != '點' && last != '点' || a.length < 2) return false
-        val previous = a[a.length - 2]
-        return previous != '一' && DIGITS.indexOf(previous) >= 0
+        val first = b.firstOrNull() ?: return false
+        val second = b.getOrNull(1)
+        val digitNext = DIGITS.indexOf(first) >= 0 && (first != '一' || second != null &&
+            (DIGITS.indexOf(second) >= 0 || UNITS.indexOf(second) >= 0 || "點点半".indexOf(second) >= 0))
+        if ((last == '點' || last == '点') && a.length >= 2 && DIGITS.indexOf(a[a.length - 2]) >= 0) {
+            return first == '半' || digitNext || (a[a.length - 2] != '一' && startsWithUnit(b))
+        }
+        if (DIGITS.indexOf(last) < 0) return false
+        return first == '半' || digitNext || startsWithUnit(b)
     }
 
-    /** 下一段是同一個數字的後半：單位、「半」、或數字（「一」開頭要後面還是數字／單位，「一起」「一定」不算）。 */
-    fun startsNumberContinuation(b: String): Boolean {
-        val first = b.firstOrNull() ?: return false
-        if (UNITS.indexOf(first) >= 0 || first == '半') return true
-        if (DIGITS.indexOf(first) < 0) return false
-        if (first != '一') return true
-        val second = b.getOrNull(1) ?: return false
-        return DIGITS.indexOf(second) >= 0 || UNITS.indexOf(second) >= 0 || "點点半".indexOf(second) >= 0
-    }
+    private fun startsWithUnit(b: String): Boolean =
+        b.isNotEmpty() && (UNITS.indexOf(b[0]) >= 0 || UNIT_WORDS.any(b::startsWith))
 
     /** [previous] 與 [next] 在停頓處相接時要插的標點：「，」或空字串。 */
     fun mark(previous: String, next: String): String {
@@ -65,7 +70,7 @@ object PauseJoin {
         val first = b.first()
         if (!isHan(last) || !isHan(first)) return ""
         if (PARTICLES.indexOf(first) >= 0) return ""
-        if (endsWithNumber(a) && startsNumberContinuation(b)) return ""
+        if (numberContinues(a, b)) return ""
         if (danglingEndings.any(a::endsWith)) return ""
         if (clauseLength(a.takeLastWhile { !isPunctuation(it) }) < MIN_CLAUSE) return ""
         return "，"

@@ -254,7 +254,7 @@ enum ChunkedASR {
         guard let last = a.last, let first = b.first,
               PausePunctuator.containsCJK(String(last)), PausePunctuator.containsCJK(String(first)) else { return "" }
         if Normalizer.sentenceParticles.contains(first) { return "" }
-        if endsWithNumber(a) && startsNumberContinuation(b) { return "" }
+        if numberContinues(a, b) { return "" }
         if PausePunctuator.danglingEndings.contains(where: { a.hasSuffix($0) }) { return "" }
         let clause: Substring
         if let i = a.lastIndex(where: { PausePunctuator.isPunctuation($0) }) { clause = a[a.index(after: i)...] } else { clause = Substring(a) }
@@ -264,25 +264,28 @@ enum ChunkedASR {
 
     /// 中文數字與位數（同 Android `PauseJoin.DIGITS`）。
     static let pauseDigits: Set<Character> = Set("零〇一二兩两三四五六七八九十百千萬万億亿")
-    /// 只會接在數字後面的單位（同 Android `PauseJoin.UNITS`）。「公」「分」不收：「公司」「分別」是一般的話。
-    static let pauseUnits: Set<Character> = Set("元塊块個个歲岁倍年月日號号%％")
+    /// 只會接在數字後面的單字單位（同 Android `PauseJoin.UNITS`）。
+    static let pauseUnits: Set<Character> = Set("元塊块個个歲岁倍年月日號号次遍趟秒%％")
+    /// 「分」「公」開頭的要看整個詞：「分鐘」「公里」是單位，「分別」「公司」是一般的話（同 Android `PauseJoin.UNIT_WORDS`）。
+    static let pauseUnitWords = ["分鐘", "分钟", "公里", "公尺", "公斤", "公分", "公升", "公克"]
 
-    /// 前一段停在數字上：最後一個字是中文數字，或「三點」這種「數字＋點」（「晚一點」的「一點」是「一些」，不算）。
-    static func endsWithNumber(_ a: String) -> Bool {
-        guard let last = a.last else { return false }
-        if pauseDigits.contains(last) { return true }
-        guard "點点".contains(last), let previous = a.dropLast().last else { return false }
-        return previous != "一" && pauseDigits.contains(previous)
+    /// 停頓前後是不是同一個數字（「三百」＋「五十萬元」、「休息三」＋「分鐘」、「下午一點」＋「半」）：
+    /// 前一段停在數字或「數字＋點」，下一段是單位、「半」或數字的後半。「晚一點」的「一點」＝一些，
+    /// 只有下一段是「半」或數字時才算時間／小數（同 Android `PauseJoin.numberContinues`）。
+    static func numberContinues(_ a: String, _ b: Substring) -> Bool {
+        guard let last = a.last, let first = b.first else { return false }
+        let digitNext = pauseDigits.contains(first)
+            && (first != "一" || b.dropFirst().first.map { pauseDigits.contains($0) || pauseUnits.contains($0) || "點点半".contains($0) } == true)
+        if "點点".contains(last), let previous = a.dropLast().last, pauseDigits.contains(previous) {
+            return first == "半" || digitNext || (previous != "一" && startsWithUnit(b))
+        }
+        guard pauseDigits.contains(last) else { return false }
+        return first == "半" || digitNext || startsWithUnit(b)
     }
 
-    /// 下一段是同一個數字的後半：單位、「半」、或數字（「一」開頭要後面還是數字／單位，「一起」「一定」不算）。
-    static func startsNumberContinuation(_ b: Substring) -> Bool {
+    private static func startsWithUnit(_ b: Substring) -> Bool {
         guard let first = b.first else { return false }
-        if pauseUnits.contains(first) || first == "半" { return true }
-        guard pauseDigits.contains(first) else { return false }
-        guard first == "一" else { return true }
-        guard let second = b.dropFirst().first else { return false }
-        return pauseDigits.contains(second) || pauseUnits.contains(second) || "點点半".contains(second)
+        return pauseUnits.contains(first) || pauseUnitWords.contains(where: { b.hasPrefix($0) })
     }
 
     /// 只有兩邊都是拉丁字母／數字才需要空白；中文、日文直接接。
