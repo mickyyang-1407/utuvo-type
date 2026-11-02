@@ -35,6 +35,11 @@ class PauseJoinTest {
         assertEquals("", PauseJoin.mark("我們約明天下午三點", "半在錄音室"))
         // 數字講完、下一段是別的話：照常補。
         assertEquals("，", PauseJoin.mark("我們這次的預算是三百萬", "記得先跟老闆確認"))
+        // 第二輪審查：「一點」＝一些、「公司」「一起」不是數字的後半。
+        assertEquals("，", PauseJoin.mark("我今天會晚一點", "公司還有事情要處理"))
+        assertEquals("，", PauseJoin.mark("這次預算是三百萬", "公司下週付款"))
+        assertEquals("，", PauseJoin.mark("這次預算是三百萬", "一起去吃飯慶祝"))
+        assertEquals("", PauseJoin.mark("這次預算總共三百萬", "一千元要另外算"))
     }
 
     @Test fun leadingParticleBelongsToPreviousClause() {

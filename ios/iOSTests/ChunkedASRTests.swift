@@ -132,6 +132,11 @@ final class ChunkedASRTests: XCTestCase {
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "這張專輯要付三百五十", next: "元"), "")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們約明天下午三點", next: "半在錄音室"), "")
         XCTAssertEqual(ChunkedASR.pauseMark(previous: "我們這次的預算是三百萬", next: "記得先跟老闆確認"), "，")
+        // 第二輪審查：「一點」＝一些、「公司」「一起」不是數字的後半。
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "我今天會晚一點", next: "公司還有事情要處理"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算是三百萬", next: "公司下週付款"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算是三百萬", next: "一起去吃飯慶祝"), "，")
+        XCTAssertEqual(ChunkedASR.pauseMark(previous: "這次預算總共三百萬", next: "一千元要另外算"), "")
         XCTAssertEqual(ChunkedASR.join(["這次預算總共三百", "五十萬元"]), "這次預算總共三百五十萬元")
     }
 

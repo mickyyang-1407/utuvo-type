@@ -851,6 +851,12 @@ final class VoiceModesTests: XCTestCase {
         XCTAssertEqual(KeyboardMode.decide(selectedText: text, translateTarget: nil), .edit(selection: "今天天氣很好"))
         XCTAssertEqual(VoiceModes.selectionReplacement(selection: pending.text, anchor: pending.anchor, currentSelection: nil,
                                                        before: window, after: ""), .gone)
+        // 第二輪審查：找不回來就不留錨點（anchor nil）。游標移到文件另一處相同文字前面，也不能被當成原選取取代。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: pending.text, anchor: nil, currentSelection: nil,
+                                                       before: window, after: "今天天氣很好，後面還有字"), .gone)
+        // 使用者重新選回同一段：照現在的選取取代。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: pending.text, anchor: nil, currentSelection: "今天天氣很好",
+                                                       before: window, after: ""), .liveSelection)
         // 現在有選取就照現在的；跳出前沒選取就沒有改寫意圖。
         XCTAssertEqual(VoiceModes.resumedSelectionText(current: "別段", pending: pending), "別段")
         XCTAssertNil(VoiceModes.resumedSelectionText(current: "", pending: nil))

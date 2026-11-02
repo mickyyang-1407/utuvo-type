@@ -31,11 +31,30 @@ object PauseJoin {
     /** 同 Normalizer 的 sentenceParticles。 */
     private const val PARTICLES = "了啦喔哦吧呢嗎吗呀啊囉嘛耶欸哈"
 
-    /** 中文數字與位數（同 iOS `ChunkedASR.pauseNumerals`）。 */
-    const val NUMERALS = "零〇一二兩两三四五六七八九十百千萬万億亿點点半"
+    /** 中文數字與位數（同 iOS `ChunkedASR.pauseDigits`）。 */
+    const val DIGITS = "零〇一二兩两三四五六七八九十百千萬万億亿"
 
-    /** 接在數字後面的單位／量詞（同 iOS `ChunkedASR.pauseUnits`）。 */
-    const val UNITS = "元塊块個个分秒年月日號号歲岁倍次遍趟公%％"
+    /** 只會接在數字後面的單位（同 iOS `ChunkedASR.pauseUnits`）。「公」「分」不收：「公司」「分別」是一般的話。 */
+    const val UNITS = "元塊块個个歲岁倍年月日號号%％"
+
+    /** 前一段停在數字上：最後一個字是中文數字，或「三點」這種「數字＋點」（「晚一點」的「一點」是「一些」，不算）。 */
+    fun endsWithNumber(a: String): Boolean {
+        val last = a.lastOrNull() ?: return false
+        if (DIGITS.indexOf(last) >= 0) return true
+        if (last != '點' && last != '点' || a.length < 2) return false
+        val previous = a[a.length - 2]
+        return previous != '一' && DIGITS.indexOf(previous) >= 0
+    }
+
+    /** 下一段是同一個數字的後半：單位、「半」、或數字（「一」開頭要後面還是數字／單位，「一起」「一定」不算）。 */
+    fun startsNumberContinuation(b: String): Boolean {
+        val first = b.firstOrNull() ?: return false
+        if (UNITS.indexOf(first) >= 0 || first == '半') return true
+        if (DIGITS.indexOf(first) < 0) return false
+        if (first != '一') return true
+        val second = b.getOrNull(1) ?: return false
+        return DIGITS.indexOf(second) >= 0 || UNITS.indexOf(second) >= 0 || "點点半".indexOf(second) >= 0
+    }
 
     /** [previous] 與 [next] 在停頓處相接時要插的標點：「，」或空字串。 */
     fun mark(previous: String, next: String): String {
@@ -46,7 +65,7 @@ object PauseJoin {
         val first = b.first()
         if (!isHan(last) || !isHan(first)) return ""
         if (PARTICLES.indexOf(first) >= 0) return ""
-        if (NUMERALS.indexOf(last) >= 0 && (NUMERALS.indexOf(first) >= 0 || UNITS.indexOf(first) >= 0)) return ""
+        if (endsWithNumber(a) && startsNumberContinuation(b)) return ""
         if (danglingEndings.any(a::endsWith)) return ""
         if (clauseLength(a.takeLastWhile { !isPunctuation(it) }) < MIN_CLAUSE) return ""
         return "，"

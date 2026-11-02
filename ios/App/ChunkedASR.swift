@@ -254,7 +254,7 @@ enum ChunkedASR {
         guard let last = a.last, let first = b.first,
               PausePunctuator.containsCJK(String(last)), PausePunctuator.containsCJK(String(first)) else { return "" }
         if Normalizer.sentenceParticles.contains(first) { return "" }
-        if pauseNumerals.contains(last) && (pauseNumerals.contains(first) || pauseUnits.contains(first)) { return "" }
+        if endsWithNumber(a) && startsNumberContinuation(b) { return "" }
         if PausePunctuator.danglingEndings.contains(where: { a.hasSuffix($0) }) { return "" }
         let clause: Substring
         if let i = a.lastIndex(where: { PausePunctuator.isPunctuation($0) }) { clause = a[a.index(after: i)...] } else { clause = Substring(a) }
@@ -262,10 +262,28 @@ enum ChunkedASR {
         return "，"
     }
 
-    /// 中文數字與位數（同 Android `PauseJoin.NUMERALS`）。
-    static let pauseNumerals: Set<Character> = Set("零〇一二兩两三四五六七八九十百千萬万億亿點点半")
-    /// 接在數字後面的單位／量詞（同 Android `PauseJoin.UNITS`）。
-    static let pauseUnits: Set<Character> = Set("元塊块個个分秒年月日號号歲岁倍次遍趟公%％")
+    /// 中文數字與位數（同 Android `PauseJoin.DIGITS`）。
+    static let pauseDigits: Set<Character> = Set("零〇一二兩两三四五六七八九十百千萬万億亿")
+    /// 只會接在數字後面的單位（同 Android `PauseJoin.UNITS`）。「公」「分」不收：「公司」「分別」是一般的話。
+    static let pauseUnits: Set<Character> = Set("元塊块個个歲岁倍年月日號号%％")
+
+    /// 前一段停在數字上：最後一個字是中文數字，或「三點」這種「數字＋點」（「晚一點」的「一點」是「一些」，不算）。
+    static func endsWithNumber(_ a: String) -> Bool {
+        guard let last = a.last else { return false }
+        if pauseDigits.contains(last) { return true }
+        guard "點点".contains(last), let previous = a.dropLast().last else { return false }
+        return previous != "一" && pauseDigits.contains(previous)
+    }
+
+    /// 下一段是同一個數字的後半：單位、「半」、或數字（「一」開頭要後面還是數字／單位，「一起」「一定」不算）。
+    static func startsNumberContinuation(_ b: Substring) -> Bool {
+        guard let first = b.first else { return false }
+        if pauseUnits.contains(first) || first == "半" { return true }
+        guard pauseDigits.contains(first) else { return false }
+        guard first == "一" else { return true }
+        guard let second = b.dropFirst().first else { return false }
+        return pauseDigits.contains(second) || pauseUnits.contains(second) || "點点半".contains(second)
+    }
 
     /// 只有兩邊都是拉丁字母／數字才需要空白；中文、日文直接接。
     private static func needsSpace(_ left: Character, _ right: Character) -> Bool {

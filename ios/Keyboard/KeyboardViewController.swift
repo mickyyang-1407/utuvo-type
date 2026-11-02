@@ -1564,9 +1564,10 @@ final class KeyboardViewController: UIInputViewController {
                                    translateTarget: target, preferred: preferredMode)
         if let restoredSelection {
             selectionAnchor = restoredSelection.anchor
-        } else if (textDocumentProxy.selectedText ?? "").isEmpty, let pendingSelection {
-            // 找不回來也保留改寫意圖；交付時對不上就不動文字（見 VoiceModes.resumedSelectionText）。
-            selectionAnchor = pendingSelection.anchor
+        } else if (textDocumentProxy.selectedText ?? "").isEmpty, pendingSelection != nil {
+            // 找不回來也保留改寫意圖，但**不留錨點**：舊錨點可能剛好對上文件裡另一段相同的字（第二輪審查）。
+            // 沒有錨點時只接受使用者重新選回同一段，否則交付回 .gone、不動文字（見 VoiceModes.resumedSelectionText）。
+            selectionAnchor = nil
         } else {
             captureSelectionAnchor()
         }
