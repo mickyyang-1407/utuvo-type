@@ -224,6 +224,58 @@ enum VoiceModes {
         !originalSelection.isEmpty && originalSelection == (currentSelection ?? "")
     }
 
+    /// 跳主 app 錄音再回來（新的 process）時，用哪一段當選取來判斷模式（2026-11-01）。
+    /// 現在讀得到選取就用它；讀不到、但跳出前存的那段文字還一字不差在原處（選取只是被收成游標）→ 用存的那段；
+    /// 否則 nil（照聽寫）。
+    static func restoredSelection(current: String?, pending: (text: String, anchor: Int)?,
+                                  before: String, after: String) -> (text: String, anchor: Int)? {
+        if let current, !current.isEmpty { return nil }
+        guard let pending else { return nil }
+        if case .range = selectionReplacement(selection: pending.text, anchor: pending.anchor, currentSelection: current,
+                                              before: before, after: after) {
+            return pending
+        }
+        return nil
+    }
+
+    /// 改寫／問問題要取代錄音開始時的選取，回來時該怎麼取代（2026-11-01 Micky 回報：紫色光球改寫不替換，接在後面）。
+    enum SelectionReplacement: Equatable {
+        /// 選取還在原處：宿主的 deleteBackward 會刪整段選取，再插入。
+        case liveSelection
+        /// 選取已經收成游標（鍵盤跳到主 App 錄音再回來，很多 App 會把選取收掉），
+        /// 但那段文字還一字不差在原處：照範圍取代（同 Speak to edit 的 `replaceText`）。
+        case range(TextRange)
+        /// 選取不見、或那段文字被改過：一個字都不動。
+        case gone
+    }
+
+    /// - Parameters:
+    ///   - selection: 錄音開始時的選取（原文，未 trim）。
+    ///   - anchor: 錄音開始時選取的起點（＝那時 `documentContextBeforeInput` 的 UTF-16 長度）；nil＝沒記到。
+    ///   - currentSelection／before／after：現在讀到的宿主狀態。
+    ///
+    /// 以前只看 `selectedText` 還有沒有字就 `deleteBackward()`：選取其實已經收成游標時，
+    /// 刪到的只是游標前一個字，結果接在原文後面。現在：
+    /// - 選取一樣、而且起點沒動（`before` 長度＝起點，選取本身不在 before 裡）→ 照舊；
+    /// - 否則用起點算出範圍，確認那段原文還在原處才取代；
+    /// - 都不成立 → 不動。
+    static func selectionReplacement(selection: String, anchor: Int?, currentSelection: String?,
+                                     before: String, after: String) -> SelectionReplacement {
+        guard !selection.isEmpty else { return .gone }
+        if canReplace(originalSelection: selection, currentSelection: currentSelection),
+           anchor == nil || anchor == before.utf16.count {
+            return .liveSelection
+        }
+        // 使用者改選了別段：不能去動原本那段（也不能動他新選的）。
+        if let currentSelection, !currentSelection.isEmpty, currentSelection != selection { return .gone }
+        guard let anchor, anchor >= 0 else { return .gone }
+        let range = TextRange(start: anchor, end: anchor + selection.utf16.count)
+        // 不用 `targetStillThere`：它的長度檢查在選取剛好是文件最後一段（after 是空的）時會判失敗。
+        guard range.end <= before.utf16.count + after.utf16.count,
+              range.slice(before: before, after: after) == selection else { return .gone }
+        return .range(range)
+    }
+
     // MARK: - 範圍與刪除步數
 
     /// 一段文字在整份文件裡的範圍。**索引單位是 UTF-16 code unit**，因為呼叫端要把它直接餵給

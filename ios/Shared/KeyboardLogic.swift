@@ -395,10 +395,33 @@ enum VoicePending {
         defaults.string(forKey: modeKey).flatMap(VoiceModeKind.init(rawValue:))
     }
 
+    /// 跳主 app 錄音前的選取與它的起點（2026-11-01）：回來時很多 App 已把選取收成游標，
+    /// 新的 process 讀不到選取就會把改寫判成聽寫（指令被當成文字接在後面）。只在這一次指令期間存在，`clear()` 一起清掉。
+    static let selectionKey = "utuvo.type.voice.pendingSelection"
+    static let selectionAnchorKey = "utuvo.type.voice.pendingSelectionAnchor"
+
+    static func setSelection(_ selection: String?, anchor: Int?) {
+        if let selection, !selection.isEmpty, let anchor {
+            defaults.set(selection, forKey: selectionKey)
+            defaults.set(anchor, forKey: selectionAnchorKey)
+        } else {
+            defaults.removeObject(forKey: selectionKey)
+            defaults.removeObject(forKey: selectionAnchorKey)
+        }
+    }
+
+    static var selection: (text: String, anchor: Int)? {
+        guard let text = defaults.string(forKey: selectionKey), !text.isEmpty,
+              defaults.object(forKey: selectionAnchorKey) != nil else { return nil }
+        return (text, defaults.integer(forKey: selectionAnchorKey))
+    }
+
     static func clear() {
         defaults.removeObject(forKey: idKey)
         defaults.removeObject(forKey: translateKey)
         defaults.removeObject(forKey: modeKey)
+        defaults.removeObject(forKey: selectionKey)
+        defaults.removeObject(forKey: selectionAnchorKey)
     }
 
     private static var defaults: UserDefaults { KeyboardPresence.defaults }

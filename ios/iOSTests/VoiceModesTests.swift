@@ -773,4 +773,70 @@ final class VoiceModesTests: XCTestCase {
         XCTAssertNil(KeyboardPresence.defaults.string(forKey: VoicePending.translateKey))
         XCTAssertNil(VoicePending.mode)
     }
+
+    // MARK: - 改寫取代選取（2026-11-01：紫色光球改寫不替換，接在後面）
+
+    func testSelectionStillLiveReplacesAsBefore() {
+        // 選取在原處：before 不含選取本身，長度＝起點。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: "今天天氣很好",
+                                                       before: "早安，", after: "，我們去散步"), .liveSelection)
+        // 沒記到起點（舊流程）：照舊。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: nil, currentSelection: "今天天氣很好",
+                                                       before: "早安，", after: ""), .liveSelection)
+    }
+
+    func testCollapsedSelectionAtEndIsReplacedByRange() {
+        // 從主 App 回來：選取收成游標、停在原選取的結尾；selectedText 還留著舊值也一樣。
+        let before = "早安，今天天氣很好", after = "，我們去散步"
+        let expected = VoiceModes.SelectionReplacement.range(VoiceModes.TextRange(start: 3, end: 9))
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: nil,
+                                                       before: before, after: after), expected)
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: "今天天氣很好",
+                                                       before: before, after: after), expected)
+    }
+
+    func testCollapsedSelectionAtStartIsReplacedByRange() {
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: nil,
+                                                       before: "早安，", after: "今天天氣很好，我們去散步"),
+                       .range(VoiceModes.TextRange(start: 3, end: 9)))
+    }
+
+    func testChangedTextIsNeverTouched() {
+        // 那段文字在等待期間被改過：不動。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: nil,
+                                                       before: "早安，今天天氣不錯", after: ""), .gone)
+        // 沒有起點、選取也不見：不動（以前會刪游標前一個字再接在後面）。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: nil, currentSelection: nil,
+                                                       before: "早安，今天天氣很好", after: ""), .gone)
+        // 選了別段：不動。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: "我們去散步",
+                                                       before: "早安，今天天氣很好，", after: ""), .gone)
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "", anchor: 0, currentSelection: "", before: "", after: ""), .gone)
+    }
+
+    func testCollapsedSelectionAtDocumentEnd() {
+        // 改最後一句（最常見）：after 是空的也要能取代。
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "今天天氣很好", anchor: 3, currentSelection: nil,
+                                                       before: "早安，今天天氣很好", after: ""),
+                       .range(VoiceModes.TextRange(start: 3, end: 9)))
+    }
+
+    func testEmojiSelectionUsesUTF16Range() {
+        XCTAssertEqual(VoiceModes.selectionReplacement(selection: "好👍", anchor: 2, currentSelection: nil,
+                                                       before: "OK好👍", after: ""),
+                       .range(VoiceModes.TextRange(start: 2, end: 5)))
+    }
+
+    func testRestoredSelectionAfterAppBounce() {
+        let pending = (text: "今天天氣很好", anchor: 3)
+        // 回來時選取被收成游標、那段還在原處 → 用跳出前的選取（改寫不會變聽寫）。
+        let restored = VoiceModes.restoredSelection(current: nil, pending: pending, before: "早安，今天天氣很好", after: "")
+        XCTAssertEqual(restored?.text, "今天天氣很好")
+        XCTAssertEqual(restored?.anchor, 3)
+        // 現在讀得到選取：照現在的。
+        XCTAssertNil(VoiceModes.restoredSelection(current: "今天天氣很好", pending: pending, before: "早安，", after: ""))
+        // 那段被改過、或根本沒存：照聽寫。
+        XCTAssertNil(VoiceModes.restoredSelection(current: nil, pending: pending, before: "早安，今天天氣不錯", after: ""))
+        XCTAssertNil(VoiceModes.restoredSelection(current: "", pending: nil, before: "早安，今天天氣很好", after: ""))
+    }
 }
