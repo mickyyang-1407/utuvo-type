@@ -6,7 +6,7 @@
 
 | 📱 iPhone | 🤖 Android | 💻 Mac |
 |---|---|---|
-| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.5) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
+| [App Store 免費下載](https://apps.apple.com/app/id6813380439) | [APK 測試版](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.6) | [DMG（Apple Silicon）](https://github.com/mickyyang-1407/utuvo-type/releases/latest) |
 
 - 🎙 **光球鍵盤**：注音（簡拼、不打聲調）、拼音、聯想詞，點一下光球就能用說的
 - ✍️ **自動整理**：看語意下標點、中英文之間自動留空格
@@ -41,7 +41,7 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
-**Mac 0.1.13 已可下載：**[直接下載 DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.13/UTUVO-Type-0.1.13-macOS-arm64.dmg)（Developer ID 簽章＋Apple 公證）。本版加入軟體更新介面，以及錄音、轉錄與背景整理期間的更新重啟保護。App 內自動更新尚未啟用，現階段請手動下載安裝。Kordan 模型、整理 prompt、品質把關設定與既有條列排版維持原樣。
+**Mac 0.1.14 已可下載：**[直接下載 DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.14/UTUVO-Type-0.1.14-macOS-arm64.dmg)（Developer ID 簽章＋Apple 公證）。本版新增 OpenAI 供應商：智慧整理可選 OpenAI（gpt-5.4-mini），雲端辨識可在 Groq／OpenAI（gpt-4o-transcribe）之間切換，兩者共用同一把 OpenAI API key。App 內自動更新尚未啟用，現階段請手動下載安裝。
 
 ## iPhone（App Store）
 
@@ -66,7 +66,7 @@ App Store 版提供：注音邊打邊出候選（簡拼、不打聲調）、拼�
 
 ## Android（APK，測試版）
 
-1. 到 [Android 0.3.5 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.5) 下載 `UTUVO-Type-0.3.5-android.apk`（附 SHA-256）。目前**不在 Google Play**。
+1. 到 [Android 0.3.6 Release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.6) 下載 `UTUVO-Type-0.3.6-android.apk`（附 SHA-256）。目前**不在 Google Play**。
 2. 手機允許「安裝未知應用程式」後安裝，打開 App 照三步：允許麥克風 → 在系統設定啟用 UTUVO Type 鍵盤 → 切換成 UTUVO Type。
 3. 需要 **Android 10 以上**。聽寫用手機的系統語音服務（多數是 Google 語音）；也可以在設定→智慧整理／雲端辨識填自己的 key。
 

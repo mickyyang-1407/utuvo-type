@@ -181,7 +181,7 @@
     <string name="smart_cloud_speech_toggle">优先使用云端语音识别</string>
     <string name="smart_cloud_speech_explain">只影响 Android 系统语音服务（如 Google 语音）是否走网络识别，音频发到哪里由系统服务决定。跟下面的“用这把 key 识别语音”是两件事，那一项才会把整段录音发送到你选的服务。关闭时优先使用已下载的设备端中文语音包；如果本机语音包不可用，仍会使用系统服务作为备用并提示。</string>
     <string name="smart_cloud_asr_toggle">用这把 key 识别语音</string>
-    <string name="smart_cloud_asr_explain">录音会整段发送到你选的服务（Groq／Gemini／百炼）重新识别，成功才会取代系统结果；失败、超时、录音过长或过短、没有设置 key 都会照常用系统识别。录音会离开手机。自定义 OpenAI 兼容端点不支持这一项。</string>
+    <string name="smart_cloud_asr_explain">录音会整段发送到你选的服务（Groq／Gemini／百炼／OpenAI）重新识别，成功才会取代系统结果；失败、超时、录音过长或过短、没有设置 key 都会照常用系统识别。录音会离开手机。自定义 OpenAI 兼容端点不支持这一项。</string>
     <string name="smart_cloud_asr_test">测试云端识别（点这里开始录音）</string>
     <string name="smart_cloud_asr_recording">录音中，再按一次发送</string>
     <string name="smart_cloud_asr_running">识别中…</string>

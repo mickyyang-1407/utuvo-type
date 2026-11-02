@@ -192,7 +192,7 @@
     <string name="smart_cloud_speech_toggle">優先用雲端語音辨識</string>
     <string name="smart_cloud_speech_explain">只影響 Android 系統語音服務（Google 語音等）走網路辨識，音訊送到哪裡由系統服務決定。跟下面的「用這把 key 辨識語音」是兩件事，那一項才會把整段錄音送到你選的服務。關閉時優先用已下載的裝置端中文語音包；若本機包不可用，仍會用系統服務備援並提示。</string>
     <string name="smart_cloud_asr_toggle">用這把 key 辨識語音</string>
-    <string name="smart_cloud_asr_explain">錄音會整段送到你選的服務（Groq／Gemini／百鍊）重新辨識，成功才取代系統結果；失敗、逾時、太長太短或沒設 key 都照用系統辨識。音訊會離開手機。自訂 OpenAI 相容端點不支援這項。</string>
+    <string name="smart_cloud_asr_explain">錄音會整段送到你選的服務（Groq／Gemini／百鍊／OpenAI）重新辨識，成功才取代系統結果；失敗、逾時、太長太短或沒設 key 都照用系統辨識。音訊會離開手機。自訂 OpenAI 相容端點不支援這項。</string>
     <string name="smart_cloud_asr_test">測試雲端辨識（按這裡開始錄音）</string>
     <string name="smart_cloud_asr_recording">錄音中，再按一次送出</string>
     <string name="smart_cloud_asr_running">辨識中…</string>

@@ -32,7 +32,7 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
    into `~/Library/Application Support/UTUVO Type/engine/`. Cloud mode works before that.
 3. Grant Microphone and Accessibility when asked, then press ⌥Space to dictate.
 
-**Mac 0.1.13 is available:** [Download the signed and notarized DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.13/UTUVO-Type-0.1.13-macOS-arm64.dmg). This build adds update controls and restart protection while recording, transcription or cleanup is busy. In-app automatic updates are not enabled yet; install this release manually. Kordan model, cleanup prompt and validation settings, and existing list layout are unchanged.
+**Mac 0.1.14 is available:** [Download the signed and notarized DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.14/UTUVO-Type-0.1.14-macOS-arm64.dmg). This build adds OpenAI as a provider: Smart Cleanup can use OpenAI (gpt-5.4-mini), and cloud recognition can switch between Groq and OpenAI (gpt-4o-transcribe), sharing one OpenAI API key. In-app automatic updates are not enabled yet; install this release manually.
 
 ## iPhone (App Store)
 
@@ -57,7 +57,7 @@ See [iOS routing, screenshots and validation](docs/IOS-DICTATION-ROUTING.md) and
 
 ## Android (APK, beta)
 
-1. Download `UTUVO-Type-0.3.5-android.apk` (with SHA-256) from the [Android 0.3.5 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.5). It is **not on Google Play** yet.
+1. Download `UTUVO-Type-0.3.6-android.apk` (with SHA-256) from the [Android 0.3.6 release](https://github.com/mickyyang-1407/utuvo-type/releases/tag/android-v0.3.6). It is **not on Google Play** yet.
 2. Allow installing unknown apps, install it, then follow the three steps in the app: allow the microphone → enable the UTUVO Type keyboard in system settings → switch to UTUVO Type.
 3. Needs **Android 10+**. Dictation uses the phone's speech service (usually Google); you can also add your own cloud key under Settings.
 

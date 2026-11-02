@@ -192,7 +192,7 @@
     <string name="smart_cloud_speech_toggle">Prefer cloud speech recognition</string>
     <string name="smart_cloud_speech_explain">Only affects Android’s system speech service (Google speech and the like) when it recognises over the network — where the audio goes is up to that service. This is separate from “recognise speech with this key” below, which is what uploads the whole recording to the service you choose. When off, a downloaded on-device Chinese pack is preferred; if unavailable, the system service still steps in and says so.</string>
     <string name="smart_cloud_asr_toggle">Recognise speech with this key</string>
-    <string name="smart_cloud_asr_explain">The whole recording goes to the service you choose (Groq / Gemini / Bailian) for re-recognition, and only replaces the system result if it succeeds. Failures, timeouts, bad length or no key fall back to the system recogniser. Audio leaves your phone. Custom OpenAI-compatible endpoints don’t support this.</string>
+    <string name="smart_cloud_asr_explain">The whole recording goes to the service you choose (Groq / Gemini / Bailian / OpenAI) for re-recognition, and only replaces the system result if it succeeds. Failures, timeouts, bad length or no key fall back to the system recogniser. Audio leaves your phone. Custom OpenAI-compatible endpoints don’t support this.</string>
     <string name="smart_cloud_asr_test">Test Cloud Recognition (tap to record)</string>
     <string name="smart_cloud_asr_recording">Recording — tap again to send</string>
     <string name="smart_cloud_asr_running">Recognising…</string>
