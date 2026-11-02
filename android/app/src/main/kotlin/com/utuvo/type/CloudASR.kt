@@ -49,7 +49,7 @@ object CloudASR {
     fun route(c: Context): Pair<SmartCleanup.Provider, String>? {
         val selected = SmartCleanup.provider(c)
         val order = listOf(selected) + listOf(SmartCleanup.Provider.GROQ, SmartCleanup.Provider.GEMINI,
-            SmartCleanup.Provider.DASHSCOPE).filter { it != selected }
+            SmartCleanup.Provider.DASHSCOPE, SmartCleanup.Provider.OPENAI).filter { it != selected }
         for (p in order) {
             if (!supports(p)) continue
             val key = SmartCleanup.key(c, p)
@@ -125,6 +125,9 @@ object CloudASR {
                     context: String? = null): Request {
         return when (provider) {
             SmartCleanup.Provider.GROQ -> groqRequest(key, wav, language, hotwords, boundary, context)
+            // OpenAI 跟 Groq 同一種 multipart 格式（Groq 本來就照 OpenAI 做），只換端點和模型（同 iOS／Mac）。
+            SmartCleanup.Provider.OPENAI -> groqRequest(key, wav, language, hotwords, boundary, context,
+                OPENAI_ASR_ENDPOINT, OPENAI_ASR_MODEL)
             SmartCleanup.Provider.GEMINI -> geminiRequest(key, wav, language, hotwords, true, provider, context)
             SmartCleanup.Provider.DASHSCOPE -> dashscopeRequest(key, wav, language, hotwords, provider, context)
             SmartCleanup.Provider.CLAUDE, SmartCleanup.Provider.CUSTOM -> throw Unsupported()
@@ -134,7 +137,9 @@ object CloudASR {
     private fun defaultBoundary() = "----UTUVOCloudASR${UUID.randomUUID()}"
 
     private fun groqRequest(key: String, wav: ByteArray, language: String, hotwords: List<String>,
-                            boundary: String, context: String? = null): Request {
+                            boundary: String, context: String? = null,
+                            endpoint: String = "https://api.groq.com/openai/v1/audio/transcriptions",
+                            model: String = "whisper-large-v3"): Request {
         val body = ByteArrayOutputStream()
         fun field(name: String, value: String) {
             body.write("--$boundary\r\n".toByteArray(Charsets.UTF_8))
@@ -143,7 +148,7 @@ object CloudASR {
         }
         val langCode = languageCode(language) ?: "zh"
         val prompt = groqPrompt(language, hotwords, context)
-        field("model", "whisper-large-v3")
+        field("model", model)
         field("language", langCode)
         field("response_format", "json")
         field("temperature", "0")
@@ -155,7 +160,7 @@ object CloudASR {
         body.write(wav)
         body.write("\r\n".toByteArray(Charsets.UTF_8))
         body.write("--$boundary--\r\n".toByteArray(Charsets.UTF_8))
-        return Request("https://api.groq.com/openai/v1/audio/transcriptions", "POST", mapOf(
+        return Request(endpoint, "POST", mapOf(
             "Authorization" to "Bearer $key",
             "Content-Type" to "multipart/form-data; boundary=$boundary"
         ), body.toByteArray())
@@ -281,12 +286,17 @@ object CloudASR {
     /** 百鍊的語音辨識模型（跟整理用的 qwen3.7-flash 不同）。 */
     const val DASHSCOPE_ASR_MODEL = "qwen3-asr-flash"
 
+    /** OpenAI 雲端辨識（2026-11-02 實測台灣華語 20 秒：1.7 s、繁體、零錯字；gpt-transcribe 會吐簡體）。 */
+    const val OPENAI_ASR_ENDPOINT = "https://api.openai.com/v1/audio/transcriptions"
+    const val OPENAI_ASR_MODEL = "gpt-4o-transcribe"
+
     // MARK: - 解析（純函式）
 
     fun parse(body: ByteArray, provider: SmartCleanup.Provider): String {
         val obj = try { JSONObject(String(body, Charsets.UTF_8)) } catch (e: Exception) { throw Malformed() }
         return when (provider) {
-            SmartCleanup.Provider.GROQ -> if (obj.has("text")) obj.optString("text") else throw Malformed()
+            SmartCleanup.Provider.GROQ, SmartCleanup.Provider.OPENAI ->
+                if (obj.has("text")) obj.optString("text") else throw Malformed()
             SmartCleanup.Provider.GEMINI -> {
                 val parts = obj.optJSONArray("candidates")?.optJSONObject(0)
                     ?.optJSONObject("content")?.optJSONArray("parts")

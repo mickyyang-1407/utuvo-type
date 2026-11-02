@@ -203,6 +203,7 @@
     <string name="smart_provider_gemini">Google Gemini</string>
     <string name="smart_provider_groq">Groq（推荐）</string>
     <string name="smart_provider_claude">Claude（整理最准）</string>
+    <string name="smart_provider_openai">OpenAI</string>
     <string name="smart_provider_dashscope">阿里云百炼</string>
     <string name="smart_provider_custom">自定义（OpenAI 兼容）</string>
     <string name="smart_provider_ondevice">手机上（Gemma 4）</string>
@@ -236,11 +237,13 @@
     <string name="smart_steps_gemini">1. 点击下面的“打开申请页面”，用你的 Google 账号登录 Google AI Studio。\n2. 点击“Create API key”（创建 API 密钥）。\n3. 复制生成的 key，回到这里粘贴、点击“保存”。\n4. 点击“测试”确认可用。</string>
     <string name="smart_steps_groq">1. 点击下面的“打开申请页面”，用 Email 或 Google 账号登录 GroqCloud。\n2. 点击“Create API Key”，取一个名字。\n3. 复制生成的 key（只会显示一次），回到这里粘贴、点击“保存”。\n4. 点击“测试”确认可用。</string>
     <string name="smart_steps_claude">1. 点击下面的“打开申请页面”，登录 Anthropic Console（Claude 的开发者后台）。\n2. 在“API Keys”点击“Create Key”，取一个名字。\n3. 复制生成的 key（只会显示一次），回到这里粘贴、点击“保存”。\n4. 点击“测试”确认可用。</string>
+    <string name="smart_steps_openai">1. 点击下面的“打开申请页面”，登录 OpenAI Platform（OpenAI 的开发者后台）。\n2. 点击“Create new secret key”，取一个名字。\n3. 复制生成的 key（只会显示一次），回到这里粘贴、点击“保存”。\n4. 点击“测试”确认可用。</string>
     <string name="smart_steps_dashscope">1. 打开阿里云百炼控制台，开通模型服务（需要实名认证）。\n2. 在“API-KEY”页面创建 key。\n3. 复制 key，回到这里粘贴、点击“保存”，再点击“测试”。（与下面的云端翻译共用同一个 key）</string>
     <string name="smart_steps_custom">1. 填入任意 OpenAI 兼容服务的端点网址和模型名称（例如自己搭建的服务器）。\n2. 粘贴 key、点击“保存”，再点击“测试”。</string>
     <string name="smart_privacy_gemini">免费，每天约上千次。免费版送出的文字 Google 可能用来改进模型；在 Google Cloud 绑定付款账户（不一定会被收费）就不会。</string>
     <string name="smart_privacy_groq">免费，每天约上千次，速度很快；默认不保留送出的数据。</string>
     <string name="smart_privacy_claude">按用量计费，需要在 Anthropic Console 充值或有 API 额度；Claude Pro／Max 订阅本身不能直接用。Anthropic 默认不拿 API 发送的数据训练模型。Claude 不能识别语音：云端识别会改用你存的 Groq／Gemini key。</string>
+    <string name="smart_privacy_openai">按用量计费，需要在 OpenAI Platform 充值；ChatGPT Plus／Pro 订阅本身不能直接用，要另外申请 API key。OpenAI 默认不拿 API 发送的数据训练模型。同一把 key 也能用于云端识别。</string>
     <string name="smart_privacy_dashscope">新用户有免费额度，之后依用量计费。</string>
     <string name="smart_privacy_custom">文字会发送到你填的端点。</string>
     <string name="smart_log_summary">最近整理：成功 %1$d 次、失败 %2$d 次</string>

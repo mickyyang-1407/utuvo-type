@@ -51,6 +51,27 @@ class CloudAsrTest {
         assertEquals("A、B。", CloudASR.normalizePunctuation("A﹑B﹒"))
     }
 
+    // MARK: - OpenAI 請求（跟 Groq 同格式，只換端點、模型、key）
+
+    @Test
+    fun openAIRequestShapeAndParse() {
+        val openai = SmartCleanup.Provider.OPENAI
+        assertTrue(CloudASR.supports(openai))
+        val wav = CloudASR.wav(FloatArray(4_000))
+        val request = CloudASR.makeRequest(openai, "fake-openai-key", wav, "zh-TW", listOf("Pro Tools"))
+        assertEquals("https://api.openai.com/v1/audio/transcriptions", request.url)
+        assertEquals("Bearer fake-openai-key", request.headers["Authorization"])
+        val body = String(request.body, Charsets.UTF_8)
+        assertTrue(body.contains("name=\"model\"\r\n\r\ngpt-4o-transcribe\r\n"))
+        assertFalse(body.contains("whisper-large-v3"))
+        assertTrue(body.contains("以下是繁體中文（台灣）的語音。常用詞：Pro Tools"))
+        assertEquals("這次在 Pro Tools 上混音",
+            CloudASR.parse(JSONObject().put("text", "這次在 Pro Tools 上混音").toString().toByteArray(), openai))
+        assertEquals("gpt-5.4-mini", openai.model)
+        assertEquals("none", openai.extra().getString("reasoning_effort"))
+        assertFalse(openai.trustsCleanup)
+    }
+
     // MARK: - Groq 請求
 
     @Test

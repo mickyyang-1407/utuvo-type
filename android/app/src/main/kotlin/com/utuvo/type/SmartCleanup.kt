@@ -39,6 +39,8 @@ object SmartCleanup {
         DASHSCOPE("dashscope", "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", "qwen3.7-flash", "https://bailian.console.aliyun.com/"),
         // Anthropic 的 OpenAI 相容端點（同 iOS 0.3.1）。
         CLAUDE("claude", "https://api.anthropic.com/v1/chat/completions", "claude-haiku-5-5", "https://console.anthropic.com/settings/keys"),
+        // 同 iOS／Mac（2026-11-02 實測 104 字長句：gpt-5.4-mini 不推理 1.2 s、不換字）。同一把 key 也能雲端辨識。
+        OPENAI("openai", "https://api.openai.com/v1/chat/completions", "gpt-5.4-mini", "https://platform.openai.com/api-keys"),
         CUSTOM("custom", "", "", null);
 
         /** 同 iOS `trustsCleanup`：Claude 夠守規矩，把關用寬鬆版（2026-10-17 44 句量測：43/44 通過、錯字率 0.278→0.135）。 */
@@ -53,6 +55,8 @@ object SmartCleanup {
             DASHSCOPE -> JSONObject().put("enable_thinking", false)
             // Haiku 5.5 預設會先想（每句 300–1,500 個思考 token，P90 3.7 s；2026-10-18 實測），同 iOS 關掉。
             CLAUDE -> JSONObject().put("thinking", JSONObject().put("type", "disabled"))
+            // gpt-5.4 系列收 "none"（同 iOS；跟 temperature 0 並用也接受）。
+            OPENAI -> JSONObject().put("reasoning_effort", "none")
             CUSTOM -> JSONObject()
         }
     }

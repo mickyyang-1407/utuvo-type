@@ -214,6 +214,7 @@
     <string name="smart_provider_gemini">Google Gemini</string>
     <string name="smart_provider_groq">Groq（推薦）</string>
     <string name="smart_provider_claude">Claude（整理最準）</string>
+    <string name="smart_provider_openai">OpenAI</string>
     <string name="smart_provider_dashscope">阿里雲百鍊</string>
     <string name="smart_provider_custom">自訂（OpenAI 相容）</string>
     <string name="smart_provider_ondevice">手機上（Gemma 4）</string>
@@ -247,11 +248,13 @@
     <string name="smart_steps_gemini">1. 按下面「打開申請頁面」，用你的 Google 帳號登入 Google AI Studio。\n2. 按「Create API key」（建立 API 金鑰）。\n3. 複製產生的 key，回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
     <string name="smart_steps_groq">1. 按下面「打開申請頁面」，用 Email 或 Google 帳號登入 GroqCloud。\n2. 按「Create API Key」，取個名字。\n3. 複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
     <string name="smart_steps_claude">1. 按下面「打開申請頁面」，登入 Anthropic Console（Claude 的開發者後台）。\n2. 在「API Keys」按「Create Key」，取個名字。\n3. 複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
+    <string name="smart_steps_openai">1. 按下面「打開申請頁面」，登入 OpenAI Platform（OpenAI 的開發者後台）。\n2. 按「Create new secret key」，取個名字。\n3. 複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。\n4. 按「測試」確認可以用。</string>
     <string name="smart_steps_dashscope">1. 打開阿里雲百鍊主控台，開通模型服務（需要實名認證）。\n2. 在「API-KEY」頁建立 key。\n3. 複製 key，回到這裡貼上、按「儲存」，再按「測試」。（跟下面雲端翻譯共用同一把 key）</string>
     <string name="smart_steps_custom">1. 填入任何 OpenAI 相容服務的端點網址與模型名稱（例如自己架的伺服器）。\n2. 貼上 key、按「儲存」，再按「測試」。</string>
     <string name="smart_privacy_gemini">免費，每天約上千次。免費版送出的文字 Google 可能用來改進模型；在 Google Cloud 綁定付款帳戶（不一定會被收費）就不會。</string>
     <string name="smart_privacy_groq">免費，每天約上千次，速度很快；預設不保留送出的資料。</string>
     <string name="smart_privacy_claude">依用量計費，要在 Anthropic Console 加值或有 API 額度；Claude Pro／Max 訂閱本身不能直接用。Anthropic 預設不拿 API 送出的資料訓練模型。Claude 不能辨識語音：雲端辨識會改用你存的 Groq／Gemini key。</string>
+    <string name="smart_privacy_openai">依用量計費，要在 OpenAI Platform 加值；ChatGPT Plus／Pro 訂閱本身不能直接用，要另外申請 API key。OpenAI 預設不拿 API 送出的資料訓練模型。同一把 key 也能用在雲端辨識。</string>
     <string name="smart_privacy_dashscope">新用戶有免費額度，之後依用量計費。</string>
     <string name="smart_privacy_custom">文字會送到你填的端點。</string>
     <string name="smart_log_summary">最近整理：成功 %1$d 次、失敗 %2$d 次</string>

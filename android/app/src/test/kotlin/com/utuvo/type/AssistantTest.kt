@@ -17,6 +17,7 @@ class AssistantTest {
     private val groq get() = SmartCleanup.Provider.GROQ
     private val dashscope get() = SmartCleanup.Provider.DASHSCOPE
     private val custom get() = SmartCleanup.Provider.CUSTOM
+    private val openai get() = SmartCleanup.Provider.OPENAI
 
     /** 假的世界：一個 provider 有沒有 key / 端點 / 模型。 */
     private fun pick(selected: SmartCleanup.Provider, keys: Set<SmartCleanup.Provider>,
@@ -52,11 +53,12 @@ class AssistantTest {
     @Test
     fun orderIsSelectedThenGroqGeminiDashscopeCustom() {
         val claude = SmartCleanup.Provider.CLAUDE
-        assertEquals(listOf(dashscope, groq, claude, gemini, custom), AssistantRoutes.order(dashscope))
-        assertEquals(listOf(groq, claude, gemini, dashscope, custom), AssistantRoutes.order(groq))
-        assertEquals(listOf(gemini, groq, claude, dashscope, custom), AssistantRoutes.order(gemini))
-        assertEquals(listOf(claude, groq, gemini, dashscope, custom), AssistantRoutes.order(claude))
-        assertEquals(listOf(custom, groq, claude, gemini, dashscope), AssistantRoutes.order(custom))
+        assertEquals(listOf(dashscope, groq, claude, openai, gemini, custom), AssistantRoutes.order(dashscope))
+        assertEquals(listOf(groq, claude, openai, gemini, dashscope, custom), AssistantRoutes.order(groq))
+        assertEquals(listOf(gemini, groq, claude, openai, dashscope, custom), AssistantRoutes.order(gemini))
+        assertEquals(listOf(claude, groq, openai, gemini, dashscope, custom), AssistantRoutes.order(claude))
+        assertEquals(listOf(openai, groq, claude, gemini, dashscope, custom), AssistantRoutes.order(openai))
+        assertEquals(listOf(custom, groq, claude, openai, gemini, dashscope), AssistantRoutes.order(custom))
     }
 
     /** Claude 用的寬鬆把關（同 iOS testRelaxedGateAcceptsCorrectionsButRejectsAnswers）。 */

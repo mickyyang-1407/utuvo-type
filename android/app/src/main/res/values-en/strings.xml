@@ -214,6 +214,7 @@
     <string name="smart_provider_gemini">Google Gemini</string>
     <string name="smart_provider_groq">Groq (recommended)</string>
     <string name="smart_provider_claude">Claude (most accurate cleanup)</string>
+    <string name="smart_provider_openai">OpenAI</string>
     <string name="smart_provider_dashscope">Alibaba Cloud Model Studio (Bailian)</string>
     <string name="smart_provider_custom">Custom (OpenAI-compatible)</string>
     <string name="smart_provider_ondevice">On device (Gemma 4)</string>
@@ -247,11 +248,13 @@
     <string name="smart_steps_gemini">1. Tap “Open Signup Page” below and sign in to Google AI Studio with your Google account.\n2. Tap “Create API key”.\n3. Copy the key it gives you, come back here, paste it and tap “Save”.\n4. Tap “Test” to confirm it works.</string>
     <string name="smart_steps_groq">1. Tap “Open Signup Page” below and sign in to GroqCloud with email or a Google account.\n2. Tap “Create API Key” and give it a name.\n3. Copy the key (shown only once), come back here, paste it and tap “Save”.\n4. Tap “Test” to confirm it works.</string>
     <string name="smart_steps_claude">1. Tap “Open Signup Page” below and sign in to the Anthropic Console (Claude’s developer dashboard).\n2. Under “API Keys”, tap “Create Key” and give it a name.\n3. Copy the key (shown only once), come back here, paste it and tap “Save”.\n4. Tap “Test” to confirm it works.</string>
+    <string name="smart_steps_openai">1. Tap “Open Signup Page” below and sign in to the OpenAI Platform (OpenAI’s developer dashboard).\n2. Tap “Create new secret key” and give it a name.\n3. Copy the key (shown only once), come back here, paste it and tap “Save”.\n4. Tap “Test” to confirm it works.</string>
     <string name="smart_steps_dashscope">1. Open the Alibaba Cloud Bailian console and activate model service (identity verification required).\n2. Create a key on the “API-KEY” page.\n3. Copy it, come back here, paste it, tap “Save”, then “Test”. (Same key as cloud translation below.)</string>
     <string name="smart_steps_custom">1. Enter the endpoint URL and model name of any OpenAI-compatible service (e.g. your own server).\n2. Paste the key, tap “Save”, then “Test”.</string>
     <string name="smart_privacy_gemini">Free, roughly a thousand requests a day. On the free tier Google may use submitted text to improve models; link a billing account in Google Cloud (you may not be charged) and it stops.</string>
     <string name="smart_privacy_groq">Free, roughly a thousand requests a day, and very fast; submitted data isn’t kept by default.</string>
     <string name="smart_privacy_claude">Billed by usage: add credit in the Anthropic Console or use your API credits; a Claude Pro/Max subscription can’t be used directly. By default Anthropic doesn’t train on API data. Claude can’t transcribe speech: cloud recognition uses your saved Groq/Gemini key instead.</string>
+    <string name="smart_privacy_openai">Billed by usage: add credit in the OpenAI Platform; a ChatGPT Plus/Pro subscription can’t be used directly. By default OpenAI doesn’t train on API data. The same key also works for cloud recognition.</string>
     <string name="smart_privacy_dashscope">New accounts get free credit, then you pay by usage.</string>
     <string name="smart_privacy_custom">Text goes to the endpoint you enter.</string>
     <string name="smart_log_summary">Recent: %1$d succeeded, %2$d failed</string>

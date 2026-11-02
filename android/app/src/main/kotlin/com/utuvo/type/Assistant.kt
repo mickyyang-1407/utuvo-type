@@ -44,6 +44,7 @@ object AssistantRoutes {
         val fallbacks = listOf(
             SmartCleanup.Provider.GROQ,
             SmartCleanup.Provider.CLAUDE,
+            SmartCleanup.Provider.OPENAI,
             SmartCleanup.Provider.GEMINI,
             SmartCleanup.Provider.DASHSCOPE,
             SmartCleanup.Provider.CUSTOM

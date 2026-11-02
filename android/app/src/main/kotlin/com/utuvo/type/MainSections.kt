@@ -857,6 +857,7 @@ class MainSections(private val a: Activity) {
         val providers = listOf(
             SmartCleanup.Provider.GROQ to R.string.smart_provider_groq,
             SmartCleanup.Provider.CLAUDE to R.string.smart_provider_claude,
+            SmartCleanup.Provider.OPENAI to R.string.smart_provider_openai,
             SmartCleanup.Provider.GEMINI to R.string.smart_provider_gemini,
             SmartCleanup.Provider.DASHSCOPE to R.string.smart_provider_dashscope,
             SmartCleanup.Provider.CUSTOM to R.string.smart_provider_custom)
@@ -916,6 +917,7 @@ class MainSections(private val a: Activity) {
                 SmartCleanup.Provider.GROQ -> R.string.smart_steps_groq
                 SmartCleanup.Provider.DASHSCOPE -> R.string.smart_steps_dashscope
                 SmartCleanup.Provider.CLAUDE -> R.string.smart_steps_claude
+                SmartCleanup.Provider.OPENAI -> R.string.smart_steps_openai
                 SmartCleanup.Provider.CUSTOM -> R.string.smart_steps_custom
             })
             privacy.text = a.getString(when (p) {
@@ -923,6 +925,7 @@ class MainSections(private val a: Activity) {
                 SmartCleanup.Provider.GROQ -> R.string.smart_privacy_groq
                 SmartCleanup.Provider.DASHSCOPE -> R.string.smart_privacy_dashscope
                 SmartCleanup.Provider.CLAUDE -> R.string.smart_privacy_claude
+                SmartCleanup.Provider.OPENAI -> R.string.smart_privacy_openai
                 SmartCleanup.Provider.CUSTOM -> R.string.smart_privacy_custom
             })
             signup.visibility = if (p.signupUrl == null) View.GONE else View.VISIBLE

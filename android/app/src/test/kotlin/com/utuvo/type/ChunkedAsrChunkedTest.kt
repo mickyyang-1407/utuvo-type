@@ -310,7 +310,8 @@ class ChunkedAsrChunkedTest {
             transport = { req, _ -> fake.handle(req) })
         repeat(3) { live.submit(fourSeconds()) }
         val text = live.finish(null, fourSeconds())
-        assertEquals("第一段第二段第三段", text)
+        // 「第一段第二段」夠 6 個字，接「第三段」時照停頓規則補「，」（PauseJoin，2026-11-01；同 iOS ChunkedASRTests）。
+        assertEquals("第一段第二段，第三段", text)
         assertEquals(3, fake.index)
     }
 
