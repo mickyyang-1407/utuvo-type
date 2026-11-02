@@ -12,7 +12,7 @@ import FoundationModels
 /// 流程：辨識 → 完整整理（雲端失敗回本機）→ 通過把關 → 一次交付。不可用時明確記錄並交付原文。
 enum SmartCleanup {
     enum Provider: String, CaseIterable, Identifiable, Sendable {
-        case gemini, groq, dashscope, claude, custom
+        case gemini, groq, dashscope, claude, openai, custom
         var id: String { rawValue }
 
         /// OpenAI 相容 chat completions 端點（官方文件 2026-09-19 確認）。
@@ -23,6 +23,7 @@ enum SmartCleanup {
             case .dashscope: return "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions"
             // Anthropic 的 OpenAI 相容端點（Bearer key 可用，2026-10-17 實測）。
             case .claude: return "https://api.anthropic.com/v1/chat/completions"
+            case .openai: return "https://api.openai.com/v1/chat/completions"
             case .custom: return SmartCleanup.customEndpoint
             }
         }
@@ -33,6 +34,8 @@ enum SmartCleanup {
             case .groq: return "openai/gpt-oss-120b"
             case .dashscope: return "qwen3.7-flash"
             case .claude: return "claude-haiku-5-5"
+            // 2026-11-02 實測 104 字長句：gpt-5.4-mini（不推理）1.2 s、不換字；nano 2.1 s、gpt-5.5 2.7 s。
+            case .openai: return "gpt-5.4-mini"
             case .custom: return SmartCleanup.customModel
             }
         }
@@ -44,6 +47,7 @@ enum SmartCleanup {
             case .groq: return URL(string: "https://console.groq.com/keys")
             case .dashscope: return URL(string: "https://bailian.console.aliyun.com/")
             case .claude: return URL(string: "https://console.anthropic.com/settings/keys")
+            case .openai: return URL(string: "https://platform.openai.com/api-keys")
             case .custom: return nil
             }
         }
@@ -55,6 +59,8 @@ enum SmartCleanup {
             case .dashscope: return ["enable_thinking": false]
             // Haiku 5.5 預設會先想：每句只輸出 ~30 個字，卻先吐 300–1,500 個思考 token（2026-10-18 實測，P90 3.7 s）。
             case .claude: return ["thinking": ["type": "disabled"]]
+            // gpt-5.4 系列收 "none"（2026-11-02 實測 reasoning_tokens=0；跟 temperature 0 並用也接受）。
+            case .openai: return ["reasoning_effort": "none"]
             case .custom: return [:]
             }
         }
@@ -774,6 +780,7 @@ enum SmartLog {
         case "groq": return "Groq"
         case "dashscope": return String(localized: "阿里雲百鍊")
         case "claude": return "Claude"
+        case "openai": return "OpenAI"
         case "custom": return String(localized: "自訂服務")
         default: return raw
         }

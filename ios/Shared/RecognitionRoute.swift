@@ -95,14 +95,17 @@ enum DictationRouteSettings {
         set { defaults.set(newValue, forKey: audioConsentKey) }
     }
 
+    /// 能辨識語音的服務（同 `CloudASR.supports`；這份檔案鍵盤 extension 也會編，看不到 CloudASR）。
+    static let asrCapable: [SmartCleanup.Provider] = [.groq, .gemini, .dashscope, .openai]
+
     /// Explicit, pinned ASR selection; changing the polish provider never changes the audio recipient.
     static var asrProvider: SmartCleanup.Provider {
         get {
             if let raw = defaults.string(forKey: asrProviderKey), let provider = SmartCleanup.Provider(rawValue: raw),
-               [.groq, .gemini, .dashscope].contains(provider) { return provider }
+               asrCapable.contains(provider) { return provider }
             let selected = SmartCleanup.provider
-            let resolved = [selected, .groq, .gemini, .dashscope].first {
-                [.groq, .gemini, .dashscope].contains($0) && !SmartCleanup.key(for: $0).isEmpty
+            let resolved = [selected, .groq, .gemini, .dashscope, .openai].first {
+                asrCapable.contains($0) && !SmartCleanup.key(for: $0).isEmpty
             } ?? .groq
             defaults.set(resolved.rawValue, forKey: asrProviderKey)
             return resolved

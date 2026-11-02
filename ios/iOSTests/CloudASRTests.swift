@@ -106,6 +106,26 @@ final class CloudASRTests: XCTestCase {
         XCTAssertTrue(closingString.contains("--\(boundary)--"))
     }
 
+    /// OpenAI 跟 Groq 同格式，只換端點與模型（2026-11-02）；同一把 key 也是整理用的那把。
+    func testOpenAIRequestShape() throws {
+        XCTAssertTrue(CloudASR.supports(.openai))
+        XCTAssertTrue(DictationRouteSettings.asrCapable.contains(.openai))
+        let wav = CloudASR.wav([Float](repeating: 0, count: 4_000))
+        let request = try CloudASR.makeRequest(provider: .openai, key: "fake-openai-key",
+                                              wav: wav, language: "zh-TW", hotwords: ["Atmos"], context: "前一段")
+        XCTAssertEqual(request.url?.absoluteString, "https://api.openai.com/v1/audio/transcriptions")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer fake-openai-key")
+        let body = try XCTUnwrap(request.httpBody)
+        let wavRange = try XCTUnwrap(body.range(of: wav))
+        let text = String(data: body.subdata(in: 0..<wavRange.lowerBound), encoding: .utf8) ?? ""
+        XCTAssertTrue(text.contains("name=\"model\"\r\n\r\ngpt-4o-transcribe\r\n"))
+        XCTAssertTrue(text.contains("name=\"language\"\r\n\r\nzh\r\n"))
+        XCTAssertTrue(text.contains("name=\"prompt\"\r\n\r\n以下是繁體中文（台灣）的語音。常用詞：Atmos\n前一段"))
+        // Groq 不受影響。
+        let groq = try CloudASR.makeRequest(provider: .groq, key: "k", wav: wav, language: "zh-TW", hotwords: [])
+        XCTAssertEqual(groq.url?.absoluteString, "https://api.groq.com/openai/v1/audio/transcriptions")
+    }
+
     // R1-4：100 個熱詞時 prompt 必須截到 ≤200 字元，且含第一個、不含最後一個。
     func testGroqPromptTruncatesAt200CharsWith100Hotwords() throws {
         let hotwords = (1...100).map { "Term\($0)" }
@@ -257,6 +277,7 @@ final class CloudASRTests: XCTestCase {
     func testParseGroqSuccess() throws {
         let data = #"{"text":"明天見"}"#.data(using: .utf8)!
         XCTAssertEqual(try CloudASR.parse(data, provider: .groq), "明天見")
+        XCTAssertEqual(try CloudASR.parse(data, provider: .openai), "明天見")
     }
 
     func testParseGeminiSuccess() throws {

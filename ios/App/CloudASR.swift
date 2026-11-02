@@ -27,7 +27,7 @@ enum CloudASR {
     /// 自訂 OpenAI 相容端點暫不支援雲端辨識（各家請求／解析不同，不強行套）。
     static func supports(_ provider: SmartCleanup.Provider) -> Bool {
         switch provider {
-        case .gemini, .groq, .dashscope: return true
+        case .gemini, .groq, .dashscope, .openai: return true
         case .claude, .custom: return false
         }
     }
@@ -79,6 +79,8 @@ enum CloudASR {
                                                    includeThinkingConfig: true)
         case .dashscope: return try makeDashscopeRequest(key: key, wav: wav, language: language,
                                                          hotwords: hotwords, context: context)
+        case .openai: return WhisperAudio.openAIRequest(key: key, wav: wav, language: language,
+                                                        hotwords: hotwords, context: context)
         case .claude, .custom:
             throw NSError(domain: "CloudASR", code: -1,
                           userInfo: [NSLocalizedDescriptionKey: String(localized: "自訂服務不支援雲端辨識")])
@@ -186,7 +188,7 @@ enum CloudASR {
             throw NSError(domain: "CloudASR", code: 1, userInfo: [NSLocalizedDescriptionKey: "malformed JSON"])
         }
         switch provider {
-        case .groq:
+        case .groq, .openai:
             guard let text = obj["text"] as? String else { throw malformed() }
             return text
         case .gemini:

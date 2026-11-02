@@ -73,6 +73,7 @@ struct SmartCleanupScreen: View {
                 Picker("服務", selection: $provider) {
                     Text("Groq").tag(SmartCleanup.Provider.groq)
                     Text("Claude").tag(SmartCleanup.Provider.claude)
+                    Text("OpenAI").tag(SmartCleanup.Provider.openai)
                     Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
                     Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
                     Text("自訂（OpenAI 相容）").tag(SmartCleanup.Provider.custom)
@@ -91,7 +92,7 @@ struct SmartCleanupScreen: View {
                 }
             }
 
-            Section(provider == .claude ? LocalizedStringKey("申請 API key") : LocalizedStringKey("申請免費 key")) {
+            Section(provider == .claude || provider == .openai ? LocalizedStringKey("申請 API key") : LocalizedStringKey("申請免費 key")) {
                 if provider == .groq {
                     NavigationLink {
                         GuidedTutorialView(kind: .groqKey)
@@ -195,6 +196,7 @@ struct SmartCleanupScreen: View {
                 }
                 Picker("雲端辨識服務", selection: $asrProvider) {
                     Text("Groq").tag(SmartCleanup.Provider.groq)
+                    Text("OpenAI").tag(SmartCleanup.Provider.openai)
                     Text("Google Gemini").tag(SmartCleanup.Provider.gemini)
                     Text("阿里雲百鍊").tag(SmartCleanup.Provider.dashscope)
                 }
@@ -242,6 +244,11 @@ struct SmartCleanupScreen: View {
                     String(localized: "在「API Keys」按「Create Key」，取個名字。"),
                     String(localized: "複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。"),
                     String(localized: "按「測試」確認可以用。")]
+        case .openai:
+            return [String(localized: "按下面「打開申請頁面」，登入 OpenAI Platform（OpenAI 的開發者後台）。"),
+                    String(localized: "按「Create new secret key」，取個名字。"),
+                    String(localized: "複製產生的 key（只會顯示一次），回到這裡貼上、按「儲存」。"),
+                    String(localized: "按「測試」確認可以用。")]
         case .custom:
             return [String(localized: "填入任何 OpenAI 相容服務的端點網址與模型名稱（例如自己架的伺服器）。"),
                     String(localized: "貼上 key、按「儲存」，再按「測試」。")]
@@ -258,6 +265,8 @@ struct SmartCleanupScreen: View {
             return String(localized: "新用戶有免費額度，之後依用量計費。")
         case .claude:
             return String(localized: "依用量計費，要在 Anthropic Console 加值或有 API 額度；Claude Pro／Max 訂閱本身不能直接用，要另外申請 API key。Anthropic 預設不拿 API 送出的資料訓練模型。Claude 不能辨識語音：雲端辨識會改用你存的 Groq／Gemini key。")
+        case .openai:
+            return String(localized: "依用量計費，要在 OpenAI Platform 加值；ChatGPT Plus／Pro 訂閱本身不能直接用，要另外申請 API key。OpenAI 預設不拿 API 送出的資料訓練模型。同一把 key 也能用在下方的雲端辨識。")
         case .custom:
             return String(localized: "文字會送到你填的端點。")
         }

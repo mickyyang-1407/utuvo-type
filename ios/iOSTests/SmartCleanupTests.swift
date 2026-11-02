@@ -46,6 +46,25 @@ final class SmartCleanupTests: XCTestCase {
         XCTAssertEqual(result, "臺灣大學使用 API")
     }
 
+    /// OpenAI（2026-11-02）：gpt-5.4-mini、不推理；temperature 0 跟 reasoning_effort none 可以並用（實測）。
+    func testOpenAIRequestShape() async throws {
+        let body = BodyBox(), url = BodyBox()
+        let out = try await SmartCleanup.complete(system: "s", user: "u", provider: .openai, key: "test-key", transport: { request in
+            body.set(request.httpBody)
+            url.set(request.url?.absoluteString.data(using: .utf8))
+            let data = #"{"choices":[{"message":{"content":"ok"}}]}"#.data(using: .utf8)!
+            return (data, HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!)
+        })
+        XCTAssertEqual(out, "ok")
+        XCTAssertEqual(url.value.flatMap { String(data: $0, encoding: .utf8) }, "https://api.openai.com/v1/chat/completions")
+        let obj = try XCTUnwrap(try JSONSerialization.jsonObject(with: XCTUnwrap(body.value)) as? [String: Any])
+        XCTAssertEqual(obj["model"] as? String, "gpt-5.4-mini")
+        XCTAssertEqual(obj["reasoning_effort"] as? String, "none")
+        XCTAssertEqual(obj["temperature"] as? Int, 0)
+        XCTAssertEqual(SmartLog.providerName("openai"), "OpenAI")
+        XCTAssertNotNil(SmartCleanup.Provider.openai.signupURL)
+    }
+
     func testClaudeRequestOmitsTemperature() async throws {
         let body = BodyBox()
         _ = try? await SmartCleanup.complete(system: "s", user: "u", provider: .claude, key: "test-key", transport: { request in
@@ -57,6 +76,7 @@ final class SmartCleanupTests: XCTestCase {
         XCTAssertNil(obj["temperature"], "Claude 5.5 收到 temperature 會回 400")
         XCTAssertEqual(obj["model"] as? String, "claude-haiku-5-5")
         XCTAssertFalse(CloudASR.supports(.claude))
+        XCTAssertFalse(DictationRouteSettings.asrCapable.contains(.claude))
         // 自動條列（預設開）：iOS 指示裡要找得到被替換的那一句。
         XCTAssertTrue(SmartCleanup.instructions.contains(CleanupPromptRules.paragraphKeepRule))
         XCTAssertTrue(SmartCleanup.systemPrompt(hints: [], context: .init()).contains(CleanupPromptRules.paragraphListRule))

@@ -5,6 +5,10 @@ import Foundation
 public enum WhisperAudio {
     public static let groqEndpoint = URL(string: "https://api.groq.com/openai/v1/audio/transcriptions")!
     public static let groqModel = "whisper-large-v3"
+    /// OpenAI 的辨識端點跟 Groq 同一種 multipart 格式（Groq 本來就是照 OpenAI 做的）。
+    public static let openAIEndpoint = URL(string: "https://api.openai.com/v1/audio/transcriptions")!
+    /// 2026-11-02 實測 20 秒中文：gpt-4o-transcribe 1.7 s、繁體一字不差；gpt-transcribe 吐簡體、gpt-4o-mini-transcribe 用半形逗號。
+    public static let openAIModel = "gpt-4o-transcribe"
     /// iOS 切段用的門檻（20 ms 一格的峰值）；`trimSilence` 預設也用它。
     public static let silenceThreshold: Float = 0.012
 
@@ -90,15 +94,28 @@ public enum WhisperAudio {
     /// `context`＝前一段的辨識結果（邊錄邊傳）；nil＝整段一次送。
     public static func groqRequest(key: String, wav: Data, language: String, hotwords: [String],
                                    context: String? = nil) -> URLRequest {
+        transcriptionRequest(endpoint: groqEndpoint, model: groqModel, key: key, wav: wav, language: language,
+                             hotwords: hotwords, context: context)
+    }
+
+    /// OpenAI 雲端辨識：欄位、prompt、解析都跟 Groq 一樣，只換端點和模型（回應同樣是 `{"text": …}`，用 `parseGroq`）。
+    public static func openAIRequest(key: String, wav: Data, language: String, hotwords: [String],
+                                     context: String? = nil) -> URLRequest {
+        transcriptionRequest(endpoint: openAIEndpoint, model: openAIModel, key: key, wav: wav, language: language,
+                             hotwords: hotwords, context: context)
+    }
+
+    private static func transcriptionRequest(endpoint: URL, model: String, key: String, wav: Data, language: String,
+                                             hotwords: [String], context: String?) -> URLRequest {
         let boundary = "----UTUVOCloudASR\(UUID().uuidString)"
-        var request = URLRequest(url: groqEndpoint)
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
         let langCode = languageCode(for: language) ?? "zh"
         let prompt = groqPrompt(originalLanguage: language, hotwords: hotwords, context: context)
         var body = Data()
-        appendField("model", groqModel, boundary: boundary, to: &body)
+        appendField("model", model, boundary: boundary, to: &body)
         appendField("language", langCode, boundary: boundary, to: &body)
         appendField("response_format", "json", boundary: boundary, to: &body)
         appendField("temperature", "0", boundary: boundary, to: &body)

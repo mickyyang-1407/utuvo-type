@@ -4454,6 +4454,54 @@
         }
       }
     },
+    "按下面「打開申請頁面」，登入 OpenAI Platform（OpenAI 的開發者後台）。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap \"Open sign-up page\" below and sign in to the OpenAI Platform (OpenAI's developer console)."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按下面“打开申请页面”，登录 OpenAI Platform（OpenAI 的开发者后台）。"
+          }
+        }
+      }
+    },
+    "按「Create new secret key」，取個名字。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap \"Create new secret key\" and give it a name."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按“Create new secret key”，取个名字。"
+          }
+        }
+      }
+    },
+    "依用量計費，要在 OpenAI Platform 加值；ChatGPT Plus／Pro 訂閱本身不能直接用，要另外申請 API key。OpenAI 預設不拿 API 送出的資料訓練模型。同一把 key 也能用在下方的雲端辨識。" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Billed by usage: add credit in the OpenAI Platform. A ChatGPT Plus/Pro subscription can't be used directly; you need a separate API key. By default OpenAI doesn't train on data sent through the API. The same key also works for cloud recognition below."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按用量计费，需要在 OpenAI Platform 充值；ChatGPT Plus／Pro 订阅本身不能直接用，要另外申请 API key。OpenAI 默认不拿 API 发送的数据训练模型。同一把 key 也能用在下方的云端识别。"
+          }
+        }
+      }
+    },
     "按「Create API Key」，取個名字。" : {
       "localizations" : {
         "en" : {
