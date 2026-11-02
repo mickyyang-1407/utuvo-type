@@ -353,7 +353,8 @@ final class ChunkedASRTests: XCTestCase {
         await live.submit(fourSeconds(), sequence: 1)
         await live.submit(fourSeconds(), sequence: 0)
         let text = await live.finish(last: nil, whole: fourSeconds(), log: noLog)
-        XCTAssertEqual(text, "第一段第二段第三段", "段號 2 先到也不能排在前面")
+        // 「第一段第二段」夠 6 個字，接「第三段」時照停頓規則補「，」（ChunkedASR.pauseMark，2026-11-01）。
+        XCTAssertEqual(text, "第一段第二段，第三段", "段號 2 先到也不能排在前面")
         XCTAssertEqual(fake.prompts.count, 3)
         XCTAssertTrue(fake.prompts[1].contains("第一段"), "第二段帶的是第一段的文字當上下文")
         XCTAssertTrue(fake.prompts[2].contains("第二段"), "第三段帶的是第二段的文字")
