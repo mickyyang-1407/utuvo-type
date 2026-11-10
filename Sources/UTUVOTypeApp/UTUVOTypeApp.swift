@@ -166,6 +166,27 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         installPostProcessingShortcut()
         installAskShortcut()
         installExplainShortcuts()
+
+        model.onSetupNeeded = { [weak self] in self?.showSetupPopover() }
+        // 新裝的 Mac：App 只有選單列一顆圖示，不自己打開的話使用者不知道還有三步要做。
+        // 三步驟卡還沒完成、而且真的缺東西（權限或本機引擎）才開；--start-hidden／--no-tray 不打擾。
+        let quietLaunch = CommandLine.arguments.contains("--start-hidden") || CommandLine.arguments.contains("--no-tray")
+        if !quietLaunch, !OnboardingCard.isCompleted {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                guard let self else { return }
+                self.model.refreshPermissionState()
+                if self.model.needsPermissionSetup || self.model.localEngineMissing { self.showSetupPopover() }
+            }
+        }
+    }
+
+    /// 把選單列面板打開（已開就不動）。只顯示，不主動跳權限框——權限框留給使用者自己點圖示或按鈕時再出現。
+    private func showSetupPopover() {
+        guard let popover, let button = statusItem?.button, statusItem?.isVisible == true, !popover.isShown else { return }
+        popover.appearance = AppBrand.nsAppearance
+        NSApp.activate(ignoringOtherApps: true)
+        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        popover.contentViewController?.view.window?.makeKey()
     }
 
     private func makePopover() -> NSPopover {

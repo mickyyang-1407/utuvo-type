@@ -45,6 +45,16 @@ final class AppModel: ObservableObject {
 
     let preferences: AppPreferences
     var onStateChange: (() -> Void)?
+    /// 還沒設定好就按了聽寫（本機引擎沒裝）：請外層把三步驟面板打開，不要靜靜失敗。
+    var onSetupNeeded: (() -> Void)?
+
+    /// 新裝的 Mac：本機引擎還沒安裝（雲端後端、或找不到引擎腳本的開發環境不算）。
+    var localEngineMissing: Bool {
+        guard preferences.backend == .local else { return false }
+        let installer = EngineInstaller.shared
+        if !installer.installed { installer.refresh() }
+        return installer.root != nil && !installer.installed
+    }
 
     private var capture: AudioCaptureSession?
     private let feedbackTonePlayer = FeedbackTonePlayer()
@@ -513,6 +523,13 @@ final class AppModel: ObservableObject {
             let step = EngineInstaller.shared.lastLine
             fail(preferences.tr("本機引擎還在安裝，完成前無法轉文字。\(step)",
                                 "The local engine is still installing; dictation works once it finishes. \(step)"))
+            return
+        }
+        // 2026-11-10 Micky 筆電新裝 0.1.14：引擎沒裝時按快捷鍵完全沒反應，以為壞了。講清楚並打開安裝面板。
+        if localEngineMissing {
+            fail(preferences.tr("尚未安裝本機引擎；請在面板按「安裝本機引擎」（約 3 GB，只需一次）",
+                                "The local engine is not installed yet; press “Install local engine” in the panel (about 3 GB, once)"))
+            onSetupNeeded?()
             return
         }
         let generation = operationToken
