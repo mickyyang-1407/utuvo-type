@@ -32,7 +32,7 @@ On first launch the app checks your hardware and suggests a path (Apple silicon 
    into `~/Library/Application Support/UTUVO Type/engine/`. Cloud mode works before that.
 3. Grant Microphone and Accessibility when asked, then press ⌥Space to dictate.
 
-**Mac 0.1.14 is available:** [Download the signed and notarized DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.14/UTUVO-Type-0.1.14-macOS-arm64.dmg). This build adds OpenAI as a provider: Smart Cleanup can use OpenAI (gpt-5.4-mini), and cloud recognition can switch between Groq and OpenAI (gpt-4o-transcribe), sharing one OpenAI API key. In-app automatic updates are not enabled yet; install this release manually.
+**Mac 0.1.15 is available:** [Download the signed and notarized DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.15/UTUVO-Type-0.1.15-macOS-arm64.dmg). This build fixes the first run on a new Mac: the three-step setup panel (permissions, local engine, first dictation) now opens by itself on first launch, and pressing the shortcut before the local engine is installed opens it with an explanation instead of doing nothing. In-app automatic updates are not enabled yet; install this release manually.
 
 ## iPhone (App Store)
 
