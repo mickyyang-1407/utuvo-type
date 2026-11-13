@@ -11,8 +11,8 @@ android {
         applicationId = "com.utuvo.type"
         minSdk = 29
         targetSdk = 36
-        versionCode = 12
-        versionName = "0.3.6"
+        versionCode = 13
+        versionName = "0.3.7"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
