@@ -87,6 +87,12 @@ class UTUVOImeService : InputMethodService() {
         const val NOTICE_MILLIS = 4_000L
         /** 「不用按住，點一下」的提示留 3 秒（mobile-keyboard-2）。 */
         const val HOLD_TIP_MILLIS = 3_000L
+        /**
+         * SpeechRecognizer.ERROR_SERVER_DISCONNECTED（API 31 才有常數）：我們手上的辨識器連著的系統語音服務已經不在了。
+         * 2026-11-13 Pixel 7：鍵盤程式開了 5 天，11-12 Play 商店自動更新「Speech Services by Google」後
+         * 每點一次光球都立刻回 11、聽寫全掛，直到鍵盤程式被重開。重開語音服務（`am force-stop com.google.android.tts`）可穩定重現。
+         */
+        const val ERROR_RECOGNIZER_DISCONNECTED = 11
     }
 
     /** 徽章選的聽寫語言（存在共用 prefs，每次讀，別處改了也會跟到）。 */
@@ -1062,6 +1068,8 @@ class UTUVOImeService : InputMethodService() {
                 }
                 override fun onError(error: Int) {
                     Log.w(TAG, "checkRecognitionSupport error $error")
+                    // 裝置端語音服務重啟過：這個辨識器作廢，下次重建；這次先走雲端。
+                    if (error == ERROR_RECOGNIZER_DISCONNECTED) dropDeadRecognizer(onDevice)
                     if (listening) beginCloud(intent)
                 }
             })
@@ -1126,6 +1134,27 @@ class UTUVOImeService : InputMethodService() {
         }
         val cloud = cloudRecognizer ?: SpeechRecognizer.createSpeechRecognizer(this).also { cloudRecognizer = it }
         begin(cloud, intent, onDevice = false)
+    }
+
+    /** 連著已經不在的語音服務的辨識器丟掉（見 [ERROR_RECOGNIZER_DISCONNECTED]）；下次用到時重建。 */
+    private fun dropDeadRecognizer(dead: SpeechRecognizer?) {
+        dead ?: return
+        runCatching { dead.destroy() }
+        if (dead === onDeviceRecognizer) onDeviceRecognizer = null
+        if (dead === cloudRecognizer) cloudRecognizer = null
+        if (dead === recognizer) recognizer = null
+    }
+
+    /** 丟掉斷線的辨識器、換一個同種類的新的接手這次聽寫（同一個 intent、同一條麥克風 pipe）。 */
+    private fun replaceDeadRecognizer(dead: SpeechRecognizer): SpeechRecognizer? {
+        val onDevice = dead === onDeviceRecognizer
+        dropDeadRecognizer(dead)
+        val fresh = runCatching {
+            if (onDevice && Build.VERSION.SDK_INT >= 33) SpeechRecognizer.createOnDeviceSpeechRecognizer(this).also { onDeviceRecognizer = it }
+            else SpeechRecognizer.createSpeechRecognizer(this).also { cloudRecognizer = it }
+        }.getOrNull()
+        recognizer = fresh
+        return fresh
     }
 
     private fun begin(r: SpeechRecognizer, intent: Intent, onDevice: Boolean) {
@@ -1200,7 +1229,7 @@ class UTUVOImeService : InputMethodService() {
      * 已經有新的一次開始了，舊辨識器晚到的回呼也擋（[VoiceTurns.accepts]）：[listener] 讀寫的 session／錄音
      * 是現在這一次的，舊的結果併進去或報錯收尾會把新的一次拆掉。其餘照舊交給 [listener]，行為跟以前一樣。
      */
-    private fun gatedListener(turn: Int) = object : RecognitionListener {
+    private fun gatedListener(turn: Int): RecognitionListener = object : RecognitionListener {
         override fun onPartialResults(partialResults: Bundle?) {
             if (turns.accepts(turn)) listener.onPartialResults(partialResults)
         }
@@ -2156,6 +2185,21 @@ class UTUVOImeService : InputMethodService() {
                         val text = s.finish()
                         if (text.isNotEmpty()) { finishSession(text); return }
                     }
+                    // 系統語音服務重啟過（自動更新／被收掉）：換一個新的辨識器接著聽，使用者不用重點光球。
+                    ERROR_RECOGNIZER_DISCONNECTED -> {
+                        val dead = recognizer
+                        if (dead != null && !s.stopRequested && listening && restartRetries < 3) {
+                            if (pending.isNotEmpty()) s.onSegment(pending)
+                            restartRetries++
+                            val fresh = replaceDeadRecognizer(dead)
+                            if (fresh != null) {
+                                Log.i(TAG, "speech service disconnected: recreated recognizer (retry $restartRetries)")
+                                fresh.setRecognitionListener(gatedListener(turns.current))
+                                scheduleRestart(150L * restartRetries)
+                                return
+                            }
+                        }
+                    }
                     // 剛結束一段馬上重開，辨識器偶爾回「忙碌」：稍等再試，三次都不行才照錯誤處理。
                     SpeechRecognizer.ERROR_RECOGNIZER_BUSY, SpeechRecognizer.ERROR_CLIENT ->
                         if (!s.stopRequested && listening && restartRetries < 3) {
@@ -2171,6 +2215,8 @@ class UTUVOImeService : InputMethodService() {
                 if (text.isNotEmpty()) { finishSession(text); return }
                 session = null
             }
+            // 斷線卻沒能當場換新（按停了／重試用完）：至少別讓下一次又拿到同一個死掉的辨識器。
+            if (error == ERROR_RECOGNIZER_DISCONNECTED) dropDeadRecognizer(recognizer)
             listening = false
             freezeSessionSeconds()   // 出錯走雲端救援也要在這裡凍結秒數，不能把網路延遲算進去
             // 麥克風同時有兩個人在用（辨識器＋我們的錄音），系統有可能因此報錯。
