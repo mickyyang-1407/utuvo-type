@@ -447,6 +447,10 @@
     <string name="translate_choose_language">Select Translation Language</string>
     <string name="zc_ai_title">AI word choice (context reranking)</string>
     <string name="zc_ai_explain">Reorders Zhuyin whole-sentence candidates using the surrounding text; the model runs on your phone, offline.</string>
+    <string name="smart_style">Cleanup style</string>
+    <string name="smart_style_concise">Concise</string>
+    <string name="smart_style_faithful">Faithful</string>
+    <string name="smart_style_explain">Concise: like Typeless, tightens speech into clean sentences, fixes misheard words and makes lists; numbers, names and who-said-what stay unchanged. Faithful: keeps every word and only removes fillers. Applies to cloud cleanup; the on-device model always uses Faithful.</string>
     <string name="smart_auto_list">Auto lists</string>
     <string name="smart_auto_list_explain">When you talk through steps or key points, format them as 1. 2. 3.; off keeps paragraphs. Works best with Claude.</string>
     <string name="smart_endpoint_invalid">Use an HTTPS endpoint without credentials, key parameters or a fragment.</string>

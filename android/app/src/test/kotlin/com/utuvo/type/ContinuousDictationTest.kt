@@ -1,6 +1,7 @@
 package com.utuvo.type
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ContinuousDictationTest {
@@ -82,6 +83,12 @@ class ContinuousDictationTest {
         assertEquals("我明天下午要去錄音室，記得帶耳機", s.segmentText(""))
         for (p in listOf("I will go to the", "I'll go to the studio")) s.partial(p)
         assertEquals("I'll go to the studio", s.segmentText(""))
+        // 開頭掉一個字的改寫（更短、開頭不同）：舊版整句已涵蓋，不重複。
+        for (p in listOf("我明天下午要去錄音室", "明天下午要去錄音室")) s.partial(p)
+        assertEquals("我明天下午要去錄音室", s.segmentText(""))
+        // 下一句只比前一句短一點點（沒短到一半）也要收起前一句，不能丟。
+        for (p in listOf("今天的混音先做到這裡", "明天再來對母帶")) s.partial(p)
+        assertEquals("今天的混音先做到這裡，明天再來對母帶", s.segmentText(""))
     }
 
     /** 最終結果把前一句改了字：不能再把舊的前句接一次（重複貼上）。 */
@@ -113,4 +120,57 @@ class ContinuousDictationTest {
         assertEquals("今天天氣明天出門", ContinuousDictation.join(listOf("今天天氣", "明天出門")))
         assertEquals("我們下午要搭捷運到中正紀念堂", ContinuousDictation.join(listOf("我們下午要搭捷運到", "中正紀念堂")))
     }
+
+    /** 2026-11-01 Pixel 回報（結構照原句、文字改寫）：辨識器每次重開／換句都把前一句後半段再聽一次、還改幾個字 → 同一段話出現三次。 */
+    private val A = "我想先把母帶放到Google Drive或者甚至是一個網站嗎就是除了這個每週的錄音以外我想要做一個頁面嗎"
+    private val B = "就是除了這個每週的錄音以外我想要做一個可以讓學生看的頁面嗎"
+    private val C = "就是除了這個每週的錄音以外我想要做一個可以讓學生看的每週回顧的頁面或是怎麼做一個完整的一個混音課程的整理你覺得這樣子"
+    private val D = "完整的一個混音課程的整理你覺得這樣子要怎麼開始？"
+    // 段落邊界是停頓：main 的停頓逗號規則（PauseJoin，2026-11-01）會在「網站嗎」後面補「，」。
+    private val ABCD = "我想先把母帶放到Google Drive或者甚至是一個網站嗎，" +
+        "就是除了這個每週的錄音以外我想要做一個可以讓學生看的每週回顧的頁面或是怎麼做一個完整的一個混音課程的整理你覺得這樣子要怎麼開始？"
+
+    @Test fun reheardTailAcrossSegmentsIsNotRepeated() {
+        val s = session()
+        for (seg in listOf(A, B, C)) assertEquals(ContinuousDictation.Next.RESTART, s.onSegment(seg))
+        s.requestStop()
+        s.onSegment(D)
+        assertEquals(ABCD, s.finish())
+    }
+
+    @Test fun reheardTailWithinOneRunIsNotRepeated() {
+        val s = session()
+        // 同一次辨識裡即時結果跳到較短、開頭不同的句子（＝換句），但其實是重聽前一句後半段。
+        for (p in listOf(A.take(20), A, B, C.take(30), C, D.take(5), D)) s.partial(p)
+        assertEquals(ABCD, s.preview(D))
+        assertEquals(ABCD, s.segmentText(""))
+    }
+
+    @Test fun overlapMergeLeavesRealRepeatsAlone() {
+        // 短的重複是真的講了兩次：不能吃掉。
+        assertEquals("好好", ContinuousDictation.join(listOf("好", "好")))
+        assertEquals("對對對，對對對", ContinuousDictation.join(listOf("對對對，", "對對對")))
+        // 沒重疊照常接。
+        assertEquals("我明天下午要去錄音室，對母帶", ContinuousDictation.join(listOf("我明天下午", "要去錄音室", "對母帶")))
+        // 英文只認整字對齊："hearsal" 不是 "rehearsal" 的重聽。
+        assertEquals("the rehearsal tomorrow hearsal notes", ContinuousDictation.join(listOf("the rehearsal tomorrow", "hearsal notes")))
+        // 英文重聽：從重疊處接、用較新的版本。
+        assertEquals("send the mix to John tomorrow morning please",
+            ContinuousDictation.join(listOf("send the mix to John tomorrow", "to John tomorrow morning please")))
+        // Pixel 歷史裡另一種形狀：同一句越聽越長、每一版都被接上（「A／A＋幾個字／A＋更多」）。
+        assertEquals("我的意思是這個插件有很多種用法所以不用擔心",
+            ContinuousDictation.join(listOf("我的意思是這個", "我的意思是這個插件有很多", "我的意思是這個插件有很多種用法", "我的意思是這個插件有很多種用法所以不用擔心")))
+        // 開頭剛好 6 字的重聽也要接上。
+        assertEquals("那因為我還有五套不同的軟體", ContinuousDictation.join(listOf("那因為我還有", "那因為我還有五套不同的軟體")))
+        // 新段整句已經在前文結尾：跳過。
+        assertEquals("今天天氣很好我們去公園散步", ContinuousDictation.join(listOf("今天天氣很好我們去公園散步", "我們去公園散步")))
+    }
+
+    /** 停頓逗號（PauseJoin）＋重聽合併同時發生：重聽的那一段跨過我們剛補的「，」也要認得出來，不能整段再接一次。 */
+    @Test fun reheardTailSpanningAnInsertedPauseCommaIsNotRepeated() {
+        val joined = ContinuousDictation.join(listOf("我想先把母帶放到雲端或者做一個網站嗎", "就是除了每週的錄音以外", "網站嗎就是除了每週的錄音以外我還想做一個頁面"))
+        assertEquals(1, Regex("每週的錄音以外").findAll(joined).count())
+        assertTrue(joined, joined.endsWith("我還想做一個頁面"))
+    }
 }
+

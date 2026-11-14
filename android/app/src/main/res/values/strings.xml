@@ -447,6 +447,10 @@
     <string name="translate_add_language">＋新增語言</string>
     <string name="translate_add_language_short">＋</string>
     <string name="translate_choose_language">選擇翻譯語言</string>
+    <string name="smart_style">整理風格</string>
+    <string name="smart_style_concise">精簡</string>
+    <string name="smart_style_faithful">忠實</string>
+    <string name="smart_style_explain">精簡：像 Typeless，把口語濃縮成簡潔的句子、修正錯字、自動條列；數字、人名、人稱不會被改。忠實：每個字都保留，只拿掉贅詞。只套用在雲端整理；手機上的模型一律用忠實。</string>
     <string name="smart_auto_list">自動條列</string>
     <string name="smart_auto_list_explain">講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。</string>
     <string name="smart_endpoint_invalid">端點須為 HTTPS，且不能包含帳密、金鑰參數或 #。</string>

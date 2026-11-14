@@ -763,6 +763,25 @@ class MainSections(private val a: Activity) {
             text = a.getString(R.string.smart_cloud_speech_explain); textSize = 12f
             setTextColor(0xFF8A8A8A.toInt()); setPadding(0, dp(2), 0, dp(8))
         })
+        // 整理風格（同 iOS 設定 → 智慧整理 → 整理風格）：精簡（預設）／忠實。
+        col.addView(TextView(a).apply { text = a.getString(R.string.smart_style); textSize = 15f; setPadding(0, dp(4), 0, 0) })
+        val styleGroup = RadioGroup(a).apply { orientation = RadioGroup.HORIZONTAL; contentDescription = "smartStyle" }
+        val conciseButton = RadioButton(a).apply {
+            id = View.generateViewId(); text = a.getString(R.string.smart_style_concise); contentDescription = "smartStyleConcise"
+        }
+        val faithfulButton = RadioButton(a).apply {
+            id = View.generateViewId(); text = a.getString(R.string.smart_style_faithful); contentDescription = "smartStyleFaithful"
+        }
+        styleGroup.addView(conciseButton); styleGroup.addView(faithfulButton)
+        styleGroup.check(if (SmartCleanup.style(a) == SmartCleanup.Style.CONCISE) conciseButton.id else faithfulButton.id)
+        styleGroup.setOnCheckedChangeListener { _, checked ->
+            SmartCleanup.setStyle(a, if (checked == conciseButton.id) SmartCleanup.Style.CONCISE else SmartCleanup.Style.FAITHFUL)
+        }
+        col.addView(styleGroup)
+        col.addView(TextView(a).apply {
+            text = a.getString(R.string.smart_style_explain); textSize = 12f
+            setTextColor(0xFF8A8A8A.toInt()); setPadding(0, dp(2), 0, dp(8))
+        })
         // 自動條列（同 iOS／Mac，預設開）。
         col.addView(Switch(a).apply {
             text = a.getString(R.string.smart_auto_list); textSize = 15f

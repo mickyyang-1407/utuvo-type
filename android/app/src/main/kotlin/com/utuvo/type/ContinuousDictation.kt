@@ -32,10 +32,12 @@ class ContinuousDictation(
     /** 收到一次即時結果。回傳預覽要顯示的整段文字。 */
     fun partial(text: String): String {
         val t = text.trim()
-        // 換句的訊號：即時結果歸零（模擬器實測）；或沒有歸零、直接跳到明顯更短而且開頭不同的下一句
+        // 換句的訊號：即時結果歸零（模擬器實測）；或沒有歸零、直接跳到更短而且開頭不同的下一句
         // （別家辨識器可能不送空的即時結果——review 指出）。即時改字（"I will" → "I'll"）開頭相同，不算換句。
+        // 以前要「短一半以上」才算：Pixel 重聽前一句後半段時新句沒短那麼多，前一句整句被丟（2026-11-01）。
+        // 現在只要更短就收起前一句；萬一其實是同一句的改寫，接句時的重疊合併（[join]）會把重複收掉。
         val reset = lastPartial.isNotEmpty() &&
-            (t.isEmpty() || (t.length * 2 < lastPartial.length && commonPrefix(t, lastPartial) < 2))
+            (t.isEmpty() || (t.length < lastPartial.length && commonPrefix(t, lastPartial) < 2))
         if (reset) runUtterances += lastPartial
         lastPartial = t
         return preview(t)
@@ -88,11 +90,19 @@ class ContinuousDictation(
          * （"hello" + "world" → "hello world"、"Hi." + "How" → "Hi. How"）；中文標點後面不補。
          * 段落邊界是辨識器偵測到的停頓：中文接中文照停頓規則補「，」（前一小句夠長、不是講到一半），
          * 永遠不補句號；以前直接黏起來，長句會變成一長串沒有標點的字（2026-11-01，見 PauseJoin）。
+         * 下一段開頭跟前文結尾重疊（辨識器重聽）時從重疊處接，見 [overlapStart]。
          */
         fun join(parts: List<String>): String {
             val out = StringBuilder()
             for (p in parts) {
                 if (p.isEmpty()) continue
+                if (out.isNotEmpty()) {
+                    when (val cut = overlapStart(out, p)) {
+                        ALREADY_THERE -> continue
+                        NO_OVERLAP -> {}
+                        else -> { out.setLength(cut); while (out.isNotEmpty() && out.last() == ' ') out.setLength(out.length - 1) }
+                    }
+                }
                 if (out.isNotEmpty()) {
                     val a = out.last(); val b = p.first()
                     if (isLatinWord(b) && (isLatinWord(a) || a in ".,!?;:")) out.append(' ')
@@ -102,6 +112,45 @@ class ContinuousDictation(
             }
             return out.toString()
         }
+
+        private const val NO_OVERLAP = -1
+        private const val ALREADY_THERE = -2
+        /** 重疊至少要這麼長才算（短詞如「好」「對對對」真的會重複講，不能吃掉）。 */
+        private const val MIN_OVERLAP = 6
+        /** 只在前文最後這麼多字裡找（辨識器重聽的只會是剛剛那幾句）。 */
+        private const val TAIL_WINDOW = 160
+
+        /**
+         * 新的一段開頭跟前文結尾重疊的位置。Pixel 實測（2026-11-01 Micky 截圖）：辨識器重開一段或換句時，
+         * 會把前一句的後半段再聽一次、還改幾個字（「…我想要做一個網站嗎」→ 新段「就是除了…我想要做一個可以讓人家看的網站嗎」），
+         * 直接接上＝同一段話出現三次。新段開頭在前文結尾附近找得到 → 前文從那裡截斷、改用新段（新段是較新的辨識）；
+         * 新段整句已經在前文結尾附近 → 跳過。
+         */
+        private fun overlapStart(acc: CharSequence, next: String): Int {
+            if (next.length < MIN_OVERLAP) return NO_OVERLAP
+            val from = maxOf(0, acc.length - TAIL_WINDOW)
+            // 比對時拿掉停頓補的「，」（PauseJoin.mark）：重聽的那段可能跨過我們剛補的逗號，
+            // 「網站嗎，就是除了」對「網站嗎就是除了」要認得出來（2026-11-14 併停頓逗號＋重聽合併時補）。
+            // `at[i]`＝去掉逗號後第 i 個字在 acc 裡的位置。
+            val at = ArrayList<Int>()
+            val tail = StringBuilder()
+            for (i in from until acc.length) if (acc[i] != PAUSE_MARK) { tail.append(acc[i]); at.add(i) }
+            val probe = next.filter { it != PAUSE_MARK }
+            if (probe.length < MIN_OVERLAP) return NO_OVERLAP
+            // 拉丁字母開頭的段落只認整字對齊（"rehearsal" 不能從 "hearsal" 接）。
+            fun aligned(i: Int) = !isLatinWord(probe.first()) || at[i] == 0 || !isLatinWord(acc[at[i] - 1])
+            var i = tail.indexOf(probe)
+            while (i >= 0) { if (aligned(i)) return ALREADY_THERE; i = tail.indexOf(probe, i + 1) }
+            for (k in minOf(probe.length - 1, tail.length) downTo MIN_OVERLAP) {
+                val head = probe.substring(0, k)
+                var j = tail.lastIndexOf(head)
+                while (j >= 0) { if (aligned(j)) return at[j]; j = if (j == 0) -1 else tail.lastIndexOf(head, j - 1) }
+            }
+            return NO_OVERLAP
+        }
+
+        /** PauseJoin 在停頓處補的標點。 */
+        private const val PAUSE_MARK = '，'
 
         private fun isLatinWord(c: Char) = c.code < 128 && c.isLetterOrDigit()
 
