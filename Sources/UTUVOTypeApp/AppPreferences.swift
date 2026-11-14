@@ -565,6 +565,13 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    /// 整理風格（2026-11-14）：精簡（預設，像 Typeless）／忠實（原本的做法）。同 iOS／Android。
+    @Published var cleanupStyle: CleanupStyle {
+        didSet {
+            defaults.set(cleanupStyle.rawValue, forKey: Keys.cleanupStyle)
+        }
+    }
+
     @Published var customCleanupEndpoint: String {
         didSet {
             defaults.set(customCleanupEndpoint, forKey: Keys.customCleanupEndpoint)
@@ -764,6 +771,7 @@ final class AppPreferences: ObservableObject {
         // 智慧整理服務預設關閉，使用者須明確開啟。
         self.cleanupEnabled = defaults.object(forKey: Keys.cleanupEnabled) as? Bool ?? false
         self.cleanupAutoList = defaults.object(forKey: Keys.cleanupAutoList) as? Bool ?? true
+        self.cleanupStyle = defaults.string(forKey: Keys.cleanupStyle).flatMap(CleanupStyle.init(rawValue:)) ?? .concise
         self.cleanupProvider = SmartCleanupProvider(
             rawValue: defaults.string(forKey: Keys.cleanupProvider) ?? SmartCleanupProvider.gemini.rawValue
         ) ?? .gemini
@@ -1281,6 +1289,7 @@ final class AppPreferences: ObservableObject {
         static let builtInVocabularyPacksMigrated = "utuvo.type.vocabularyPacks.builtInMigrated"
         static let cleanupEnabled = "utuvo.type.smart.enabled"
         static let cleanupAutoList = "utuvo.type.smart.autoList"
+        static let cleanupStyle = "utuvo.type.smart.style"
         static let cleanupProvider = "utuvo.type.smart.provider"
         static let customCleanupEndpoint = "utuvo.type.smart.customEndpoint"
         static let customCleanupModel = "utuvo.type.smart.customModel"

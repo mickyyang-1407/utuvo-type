@@ -2113,6 +2113,20 @@ struct SettingsView: View {
                 }
                 .toggleStyle(.switch)
 
+                VStack(alignment: .leading, spacing: 4) {
+                    Picker(preferences.tr("整理風格", "Cleanup style"), selection: $preferences.cleanupStyle) {
+                        Text(preferences.tr("精簡", "Concise")).tag(CleanupStyle.concise)
+                        Text(preferences.tr("忠實", "Faithful")).tag(CleanupStyle.faithful)
+                    }
+                    .pickerStyle(.segmented)
+                    .fixedSize()
+                    .accessibilityIdentifier("cleanupStylePicker")
+                    Text(preferences.tr("精簡：像 Typeless，把口語濃縮成簡潔的句子、修正錯字、自動條列；數字、人名、人稱不會被改。忠實：每個字都保留，只拿掉贅詞。只套用在雲端整理；本機整理一律用忠實。",
+                                        "Concise: like Typeless, tightens speech into clean sentences, fixes misheard words and makes lists; numbers, names and who-said-what stay unchanged. Faithful: keeps every word and only removes fillers. Applies to cloud cleanup; local cleanup always uses Faithful."))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .disabled(!preferences.cleanupEnabled)
+
                 Toggle(isOn: $preferences.cleanupAutoList) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(preferences.tr("自動條列", "Auto lists"))

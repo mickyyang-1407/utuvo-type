@@ -1895,7 +1895,7 @@ final class AppModel: ObservableObject {
             language: preferences.transcriptionLanguage.rawValue, personal: dictionary,
             enabledPacks: preferences.enabledVocabularyPackIDs, bailianEndpoint: preferences.bailianFormatterEndpoint,
             context: promptContext, validationSource: original, autoList: preferences.cleanupAutoList,
-            variant: preferences.effectiveLanguageVariant)
+            variant: preferences.effectiveLanguageVariant, style: preferences.cleanupStyle)
     }
 
     /// 這次結果記到哪、送到哪（app-shell-v1）。
@@ -2400,7 +2400,8 @@ final class AppModel: ObservableObject {
                                        dictionary: [String: String]) async -> String {
         let config = cleanupConfig(original: original, context: context, dictionary: dictionary)
         guard let checked = await cleanupRunner(transcript, config).map(Normalizer.normalizeNumbers),
-              SmartCleanup.accepts(original: original, cleaned: checked, relaxed: config.provider == .claude) else {
+              SmartCleanup.accepts(original: original, cleaned: checked,
+                                   relaxed: SmartCleanup.relaxedGate(style: config.style, provider: config.provider)) else {
             return original
         }
         return applyingVocabulary(checked, dictionary: dictionary)
@@ -2532,7 +2533,7 @@ final class AppModel: ObservableObject {
             guard !Task.isCancelled, token == self.operationToken, !self.isRecording,
                   let checked = cleaned.map(Normalizer.normalizeNumbers),
                   SmartCleanup.accepts(original: original, cleaned: checked,
-                                       relaxed: !useLocalFormatter && config.provider == .claude),
+                                       relaxed: !useLocalFormatter && SmartCleanup.relaxedGate(style: config.style, provider: config.provider)),
                   case let named = self.applyingVocabulary(checked, dictionary: dictionary),
                   case let listed = config.autoList ? OutputShape.expandingInlineNumberedList(named) : named,
                   case let cleaned = self.moodApplies ? SentenceMood.finish(listed) : listed,
@@ -2600,7 +2601,8 @@ final class AppModel: ObservableObject {
             : preferences.tr("此欄位不支援背景替換，已用剪貼簿貼上", "Field doesn't support background replacement; pasted via clipboard")
         // 2026-10-19 Typeless 對打：這裡再跑一次嚴格把關，會把 Claude 已經用寬鬆把關收下的修正丟掉 → 同一個 provider 規則。
         if let cleaned = rawCleaned.map(Normalizer.normalizeNumbers),
-           SmartCleanup.accepts(original: original, cleaned: cleaned, relaxed: !useLocalFormatter && config.provider == .claude) {
+           SmartCleanup.accepts(original: original, cleaned: cleaned,
+                                relaxed: !useLocalFormatter && SmartCleanup.relaxedGate(style: config.style, provider: config.provider)) {
             let named = applyingVocabulary(cleaned, dictionary: dictionary)
             let listed = config.autoList ? OutputShape.expandingInlineNumberedList(named) : named
             output = moodApplies ? SentenceMood.finish(listed) : listed
