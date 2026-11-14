@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><!-- sparkle-sign-warning:
+IMPORTANT: This file was signed by Sparkle. Any modifications to this file requires re-signing this file with generate_appcast or sign_update! The signed signature will be embedded at the end of this file.
+--><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+  <channel>
+    <title>UTUVO Type Updates</title>
+    <link>https://mickyyang-1407.github.io/utuvo-type/</link>
+    <item>
+      <title>UTUVO Type 0.1.16</title>
+      <pubDate>Sat, 14 Nov 2026 14:15:04 +0000</pubDate>
+      <sparkle:version>2026111401</sparkle:version>
+      <sparkle:shortVersionString>0.1.16</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>14.0.0</sparkle:minimumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <description sparkle:format="plain-text">新增智慧整理「整理風格」：預設「精簡」，像 Typeless 把口語濃縮成簡潔句子、修正聽錯的字、自動條列；選「忠實」保留每個字（＝0.1.15）。New: Cleanup style (Concise by default, Faithful keeps every word).</description>
+      <enclosure url="https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.16/UTUVO-Type-0.1.16-macOS-arm64.zip" length="33308460" type="application/octet-stream" sparkle:edSignature="Dd7HY2nAejc0rnIz6GdhlIG79/0nmXixkwp/wMcM47+UWZPvHCSwR/6M1uc6ctBWS6mdpMOXRLv3jGITqNeJDA=="></enclosure>
+    </item>
+  </channel>
+</rss><!-- sparkle-signatures:
+edSignature: ek4wD0PTYFjru6CD3QVEzT+0xVcFQ3+FZ4GB+eH4zi3bw9gcr8BF3Dm6oA4Ht5s+w8hLRuBckXOpailANSJvAQ==
+length: 1519
+-->
