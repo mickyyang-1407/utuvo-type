@@ -41,7 +41,7 @@ App 第一次啟動會依硬體判定建議路徑（Apple Silicon＋8 GB 以上�
    落在 `~/Library/Application Support/UTUVO Type/engine/`。安裝前仍可用雲端模式。
 3. 依提示授權麥克風與輔助使用，按 ⌥Space 開始聽寫。
 
-**Mac 0.1.15 已可下載：**[直接下載 DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.15/UTUVO-Type-0.1.15-macOS-arm64.dmg)（Developer ID 簽章＋Apple 公證）。本版修正新安裝的 Mac 不知道怎麼開始：第一次開啟會自動打開「三步驟」面板（權限、安裝本機引擎、說一句）；還沒安裝本機引擎就按快捷鍵，也會打開面板並說明。App 內自動更新尚未啟用，現階段請手動下載安裝。
+**Mac 0.1.16 已可下載：**[直接下載 DMG](https://github.com/mickyyang-1407/utuvo-type/releases/download/v0.1.16/UTUVO-Type-0.1.16-macOS-arm64.dmg)（Developer ID 簽章＋Apple 公證）。本版新增智慧整理「整理風格」（設定 → 智慧整理）：預設「精簡」，像 Typeless 一樣把口語濃縮成簡潔的句子、依上下文修正聽錯的字、講步驟或重點時自動條列；數字、人名、人稱與「是A不是B」不會被改，問句照樣是問句。想要每個字都保留，選「忠實」（＝0.1.15 的做法）。只套用在雲端整理，本機整理維持忠實。App 內自動更新尚未啟用，現階段請手動下載安裝。
 
 ## iPhone（App Store）
 
