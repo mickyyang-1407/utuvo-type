@@ -90,6 +90,11 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
     private fun dpi(v: Int) = dp(v.toFloat()).toInt()
 
     private var surface = Surface.VOICE
+    /** 打字鍵盤增刪排序（[TypingSurfaces]）：目前啟用的、照使用者排的順序。 */
+    private var enabledTyping: List<TypingSurfaces.Kind> = TypingSurfaces.DEFAULT_ORDER
+    private val sideKeys = mutableMapOf<TypingSurfaces.Kind, TextView>()
+    private val sideStepDp = 50
+    private val sideCenterYDp = 58 + 60
     private var hantPinyin = false
     private var enterLabel = context.getString(R.string.key_return)
     /** Shift 三態（同 iOS）：關／下一個字大寫／鎖住大寫。 */
@@ -238,12 +243,41 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
         shiftKeyView?.text = if (s == Shift.LOCKED) "⇪" else "⇧"
     }
 
-    /** 鍵盤上左右滑切換語言：語音 → EN → 繁 → 简 → 語音（同 iOS `panned`）。 */
+    /** 鍵盤上左右滑切換：語音 → 啟用的打字鍵盤（照設定的順序）→ 語音（同 iOS `panned`）。全關＝滑了不做事。 */
     private fun swipeSurface(step: Int) {
-        val order = listOf(Surface.VOICE, Surface.EN, Surface.HANT, Surface.HANS)
-        val next = order[(order.indexOf(surface) + step + order.size) % order.size]
+        val next = surfaceOf(TypingSurfaces.next(kindOf(surface), enabledTyping, step))
+        if (next == surface) return
         performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK)
         listener.onSurfaceChanged(next)
+    }
+
+    private fun kindOf(s: Surface): TypingSurfaces.Kind? = when (s) {
+        Surface.VOICE -> null
+        Surface.EN -> TypingSurfaces.Kind.EN
+        Surface.HANT -> TypingSurfaces.Kind.HANT
+        Surface.HANS -> TypingSurfaces.Kind.HANS
+    }
+
+    private fun surfaceOf(k: TypingSurfaces.Kind?): Surface = when (k) {
+        null -> Surface.VOICE
+        TypingSurfaces.Kind.EN -> Surface.EN
+        TypingSurfaces.Kind.HANT -> Surface.HANT
+        TypingSurfaces.Kind.HANS -> Surface.HANS
+    }
+
+    /** 設定頁的「打字鍵盤」：語音面左側只畫啟用的、照順序重新置中。回傳目前的面還在不在（不在＝呼叫端切回語音）。 */
+    fun setEnabledTyping(list: List<TypingSurfaces.Kind>): Boolean {
+        enabledTyping = list
+        val offsets = TypingSurfaces.sideOffsets(list.size, sideStepDp)
+        for ((kind, view) in sideKeys) {
+            val index = list.indexOf(kind)
+            view.visibility = if (index >= 0) VISIBLE else GONE
+            if (index >= 0) (view.layoutParams as? FrameLayout.LayoutParams)?.let { lp ->
+                lp.topMargin = dpi(sideCenterYDp + offsets[index] - 22)
+                view.layoutParams = lp
+            }
+        }
+        return kindOf(surface)?.let { it in list } ?: true
     }
 
     /**
@@ -266,7 +300,10 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
                     }
                 }
             }
-            false
+            // 按下時一定要回 true：回 false 的話系統不會再送 MOVE／UP 過來，空白處的左右滑永遠不會成立
+            // （11-15 模擬器實測：語音區、頂列滑了都沒反應；按鍵上的滑動走 KeyFeedback，所以一直沒發現）。
+            // 只有沒被子 view 接走的觸控才會到這裡，按鈕自己的點擊不受影響。
+            e.actionMasked == MotionEvent.ACTION_DOWN
         }
     }
 
@@ -819,9 +856,10 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
                     if (left) leftMargin = dpi(16) else rightMargin = dpi(16)
                 })
             }
-        side("EN", context.getString(R.string.kb_english), true, -step) { listener.onSurfaceChanged(Surface.EN) }
-        side("繁", context.getString(R.string.kb_hant), true, 0) { listener.onSurfaceChanged(Surface.HANT) }
-        side("简", context.getString(R.string.kb_hans), true, step) { listener.onSurfaceChanged(Surface.HANS) }
+        sideKeys[TypingSurfaces.Kind.EN] = side("EN", context.getString(R.string.kb_english), true, -step) { listener.onSurfaceChanged(Surface.EN) }
+        sideKeys[TypingSurfaces.Kind.HANT] = side("繁", context.getString(R.string.kb_hant), true, 0) { listener.onSurfaceChanged(Surface.HANT) }
+        sideKeys[TypingSurfaces.Kind.HANS] = side("简", context.getString(R.string.kb_hans), true, step) { listener.onSurfaceChanged(Surface.HANS) }
+        setEnabledTyping(enabledTyping)
         // 語音區的 ⌫：長按每 0.08 秒刪一次（同 iOS `deleteLongPress`），滑開把剛刪掉的字補回來。
         side("⌫", context.getString(R.string.key_delete), false, -step, bold = false,
             repeatMs = 80L, onUndo = { listener.onUndoDelete() }) { listener.onDelete() }
@@ -1075,8 +1113,9 @@ class KeyboardView(context: Context, private val listener: Listener) : LinearLay
             textSize = 15f; setTextColor(ink); typeface = Typeface.DEFAULT_BOLD; gravity = Gravity.CENTER
             background = round(keyBg); contentDescription = context.getString(R.string.key_cycle_layout)
             setOnClickListener {
-                val next = when (surface) { Surface.EN -> Surface.HANT; Surface.HANT -> Surface.HANS; else -> Surface.EN }
-                listener.onSurfaceChanged(next)
+                val current = kindOf(surface) ?: return@setOnClickListener
+                val next = TypingSurfaces.nextTyping(current, enabledTyping)
+                if (next != current) listener.onSurfaceChanged(surfaceOf(next))
             }
         }
         top.addView(layoutKey, LinearLayout.LayoutParams(dpi(44), dpi(34)))

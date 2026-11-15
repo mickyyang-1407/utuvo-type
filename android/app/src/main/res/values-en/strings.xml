@@ -454,4 +454,14 @@
     <string name="smart_auto_list">Auto lists</string>
     <string name="smart_auto_list_explain">When you talk through steps or key points, format them as 1. 2. 3.; off keeps paragraphs. Works best with Claude.</string>
     <string name="smart_endpoint_invalid">Use an HTTPS endpoint without credentials, key parameters or a fragment.</string>
+    <string name="typing_keyboards_title">Typing keyboards</string>
+    <string name="typing_keyboards_explain">Voice always comes first. Swiping, the switch key and the buttons on the left of the voice keyboard follow this order and show only the checked ones; uncheck them all to keep voice only. Use ↑↓ to reorder.</string>
+    <string name="typing_kb_en">EN English</string>
+    <string name="typing_kb_hant">繁 Zhuyin</string>
+    <string name="typing_kb_hant_pinyin">繁 Traditional Pinyin</string>
+    <string name="typing_kb_hans">简 Simplified Pinyin</string>
+    <string name="typing_kb_move_up">Move up</string>
+    <string name="typing_kb_move_down">Move down</string>
+    <string name="stop_latency_title">Stop to recognized</string>
+    <string name="stop_latency_value">Median %1$d ms (last %2$d, %3$d sent to the cloud at stop)</string>
 </resources>

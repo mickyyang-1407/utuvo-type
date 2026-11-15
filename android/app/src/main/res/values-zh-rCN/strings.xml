@@ -439,5 +439,15 @@
     <string name="smart_auto_list">自动列表</string>
     <string name="smart_auto_list_explain">讲步骤、流程或几个重点时，整理成 1. 2. 3.；关掉就只分段。用 Claude 效果最好。</string>
     <string name="smart_endpoint_invalid">端点须为 HTTPS，且不能包含账号密码、密钥参数或 #。</string>
+    <string name="typing_keyboards_title">打字键盘</string>
+    <string name="typing_keyboards_explain">语音永远是第一个。左右滑、键盘上的切换键和语音面左侧的按钮，都照这个顺序、只出现打勾的；全部取消就只剩语音。用 ↑↓ 排顺序。</string>
+    <string name="typing_kb_en">EN 英文</string>
+    <string name="typing_kb_hant">繁 注音</string>
+    <string name="typing_kb_hant_pinyin">繁 繁体拼音</string>
+    <string name="typing_kb_hans">简 简体拼音</string>
+    <string name="typing_kb_move_up">往上移</string>
+    <string name="typing_kb_move_down">往下移</string>
+    <string name="stop_latency_title">按停到识别完成</string>
+    <string name="stop_latency_value">中位 %1$d ms（最近 %2$d 次，按停就送云端 %3$d 次）</string>
 </resources>
 

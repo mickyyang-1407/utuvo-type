@@ -454,5 +454,15 @@
     <string name="smart_auto_list">自動條列</string>
     <string name="smart_auto_list_explain">講步驟、流程或幾個重點時，整理成 1. 2. 3.；關掉就只分段。用 Claude 效果最好。</string>
     <string name="smart_endpoint_invalid">端點須為 HTTPS，且不能包含帳密、金鑰參數或 #。</string>
+    <string name="typing_keyboards_title">打字鍵盤</string>
+    <string name="typing_keyboards_explain">語音永遠是第一個。左右滑、鍵盤上的切換鍵和語音面左側的按鈕，都照這個順序、只出現打勾的；全部取消就只剩語音。用 ↑↓ 排順序。</string>
+    <string name="typing_kb_en">EN 英文</string>
+    <string name="typing_kb_hant">繁 注音</string>
+    <string name="typing_kb_hant_pinyin">繁 繁體拼音</string>
+    <string name="typing_kb_hans">简 简体拼音</string>
+    <string name="typing_kb_move_up">往上移</string>
+    <string name="typing_kb_move_down">往下移</string>
+    <string name="stop_latency_title">按停到辨識完成</string>
+    <string name="stop_latency_value">中位 %1$d ms（最近 %2$d 次，按停就送雲端 %3$d 次）</string>
 </resources>
 

@@ -189,6 +189,9 @@ class UTUVOImeService : InputMethodService() {
     private var cloudAsrRunning = false
     /** 取回雲端錄音（按停）的時間：有裝置端文字可退時，雲端重辨識的總時限從這一刻算（capture-latency-v1）。 */
     private var cloudStoppedAtNanos = 0L
+    /** 這一次按停的時間（量「按停到辨識完成」，見 [StopLatencyLog]）；early＝按停當下就送了雲端最後一段。 */
+    private class StopMark(val turn: Int, val atNanos: Long, var early: Boolean)
+    private var stopMark: StopMark? = null
 
     /** capture-latency-1：按停當下就開跑的雲端最後一段，連同它的紀錄與分段工作（取消時一起收掉）。 */
     private class EarlyCloud(val finish: EarlyCloudFinish, val outcomes: CloudASR.OutcomeTap, val live: LiveCloudASR?) {
@@ -320,6 +323,8 @@ class UTUVOImeService : InputMethodService() {
             setInputView(v)
         }
         super.onStartInputView(info, restarting)
+        // 打字鍵盤增刪排序：每次叫出鍵盤讀一次設定；目前那個被關掉就回語音。
+        keyboard?.let { kb -> if (!kb.setEnabledTyping(TypingSurfaces.enabled(this))) switchSurface(KeyboardView.Surface.VOICE) }
         // 2026-10-14（Q3-repair1 review-agy ⑤）：同一個 App 內換欄位不會走 onFinishInputView，
         // 只會再走一次 onStartInputView。雲端辨識／英文建議還在路上時這裡要作廢，
         // 否則回來貼進的是新欄位（同 onFinishInputView 的理由，只是換了觸發點）。
@@ -1198,6 +1203,7 @@ class UTUVOImeService : InputMethodService() {
     private fun stopListening() {
         val s = session
         s?.requestStop()
+        stopMark = StopMark(turns.current, System.nanoTime(), early = false)
         turns.stopped()   // 錄音結束、等結果：✕ 還在，整理中也能取消
         if (restartPending) {
             // 正在兩段之間（辨識器剛結束、還沒重新開始）：沒有下一段會回來了，直接收尾。
@@ -1209,7 +1215,7 @@ class UTUVOImeService : InputMethodService() {
         recognizer?.stopListening()
         finishCloudRecording()
         // capture-latency-1：音訊已經齊了，雲端最後一段現在就送，不等系統辨識器交回最終結果。
-        startEarlyCloudFinish()
+        stopMark?.early = startEarlyCloudFinish()
         listening = false
         keyboard?.setListening(false)
         keyboard?.setHint(getString(R.string.hint_finishing), error = false)
@@ -1338,12 +1344,12 @@ class UTUVOImeService : InputMethodService() {
      * （跟以前「手上有系統文字」時同一個）。系統辨識器的最終結果晚到也不再跟雲端相加。
      * 翻譯不錄雲端、上一次雲端還在跑、沒有錄音：照舊等 onResults 再決定。
      */
-    private fun startEarlyCloudFinish() {
+    private fun startEarlyCloudFinish(): Boolean {
         val turn = turns.current
-        if (earlyJobs.hasPending || cloudAsrRunning || snapshotOf(turn).translateTarget != null) return
-        val samples = cloudSamples?.takeIf { it.isNotEmpty() } ?: return
-        val key = cloudKey?.takeIf { it.isNotEmpty() } ?: return
-        val provider = cloudProvider ?: return
+        if (earlyJobs.hasPending || cloudAsrRunning || snapshotOf(turn).translateTarget != null) return false
+        val samples = cloudSamples?.takeIf { it.isNotEmpty() } ?: return false
+        val key = cloudKey?.takeIf { it.isNotEmpty() } ?: return false
+        val provider = cloudProvider ?: return false
         val live = liveCloud
         val liveLast = liveCloudLastChunk
         liveCloud = null              // 分段工作交給這一份，之後由它收尾或取消
@@ -1358,6 +1364,7 @@ class UTUVOImeService : InputMethodService() {
                 maxBudgetMs = CloudASR.remainingBudgetMs(stoppedAt, samples.size / 16_000.0))
         }
         earlyJobs.begin(turn, EarlyCloud(finish, outcomes, live))
+        return true
     }
 
     /**
@@ -1652,6 +1659,10 @@ class UTUVOImeService : InputMethodService() {
                 ic?.getTextBeforeCursor(DictationJoin.beforeWindow(previousDictation), 0)?.toString(), previousDictation, presented)
             if (prefix.isNotEmpty()) ic?.commitText(prefix, 1)
             ic?.commitText(presented, 1)
+            stopMark?.takeIf { it.turn == turn }?.let { mark ->
+                stopMark = null
+                StopLatencyLog.record(this, (System.nanoTime() - mark.atNanos) / 1_000_000, mark.early)
+            }
             lastDictation = DictationJoin.remember(previousDictation, presented, droppedMark)
             noteDictation(raw, presented, turn)
             learner.dictationInserted(presented)

@@ -18,6 +18,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import com.utuvo.type.core.DictionarySync
 import com.utuvo.type.core.HistoryRetention
@@ -481,10 +482,77 @@ class MainSections(private val a: Activity) {
     }
 
 
+    // ── 按停到辨識完成（同 iOS 設定 → 關於 stopLatencyRow）：有紀錄才顯示 ──
+
+    private var stopLatencyBox: LinearLayout? = null
+
+    fun buildStopLatency(col: LinearLayout) {
+        stopLatencyBox = LinearLayout(a).apply { orientation = LinearLayout.VERTICAL }.also { col.addView(it) }
+        refreshStopLatency()
+    }
+
+    /** 設定頁只組一次：切回設定頁／回到前景時重讀（鍵盤剛聽寫完的那一筆要算進去）。 */
+    fun refreshStopLatency() {
+        val box = stopLatencyBox ?: return
+        box.removeAllViews()
+        val s = StopLatencyLog.summary(a) ?: return
+        header(box, R.string.stop_latency_title)
+        box.addView(TextView(a).apply {
+            text = a.getString(R.string.stop_latency_value, s.medianMs, s.count, s.early); textSize = 15f
+            contentDescription = "stopLatencyRow"
+        })
+    }
+
     // ── 「繁」鍵盤輸入法（注音／拼音，同 iOS SettingsScreen）──
 
     private var hantGroup: RadioGroup? = null
     private var hantPinyinId = 0
+
+    // ── 打字鍵盤增刪排序（同 iOS 設定 → 鍵盤 → 打字鍵盤）──
+
+    fun buildTypingKeyboards(col: LinearLayout) {
+        header(col, R.string.typing_keyboards_title)
+        val list = LinearLayout(a).apply { orientation = LinearLayout.VERTICAL }
+        col.addView(list)
+        col.addView(TextView(a).apply { text = a.getString(R.string.typing_keyboards_explain); textSize = 13f })
+        fun label(k: TypingSurfaces.Kind) = a.getString(when (k) {
+            TypingSurfaces.Kind.EN -> R.string.typing_kb_en
+            TypingSurfaces.Kind.HANT -> if (HantInput.usesPinyin(a)) R.string.typing_kb_hant_pinyin else R.string.typing_kb_hant
+            TypingSurfaces.Kind.HANS -> R.string.typing_kb_hans
+        })
+        fun render() {
+            list.removeAllViews()
+            val order = TypingSurfaces.order(a).toMutableList()
+            val off = TypingSurfaces.off(a).toMutableSet()
+            order.forEachIndexed { i, kind ->
+                val row = LinearLayout(a).apply { orientation = LinearLayout.HORIZONTAL; gravity = Gravity.CENTER_VERTICAL }
+                row.addView(CheckBox(a).apply {
+                    text = label(kind); textSize = 16f; isChecked = kind !in off
+                    contentDescription = "typingKeyboard:${kind.key}"
+                    setOnCheckedChangeListener { _, on ->
+                        if (on) off.remove(kind) else off.add(kind)
+                        TypingSurfaces.save(a, order, off)
+                    }
+                }, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+                fun move(delta: Int) {
+                    val j = i + delta
+                    if (j !in order.indices) return
+                    order[i] = order[j].also { order[j] = order[i] }
+                    TypingSurfaces.save(a, order, off)
+                    render()
+                }
+                for ((arrow, delta, desc) in listOf(Triple("↑", -1, R.string.typing_kb_move_up), Triple("↓", 1, R.string.typing_kb_move_down))) {
+                    row.addView(Button(a).apply {
+                        text = arrow; isEnabled = i + delta in order.indices
+                        contentDescription = a.getString(desc) + "：" + label(kind)
+                        setOnClickListener { move(delta) }
+                    }, LinearLayout.LayoutParams(dp(52), LinearLayout.LayoutParams.WRAP_CONTENT))
+                }
+                list.addView(row)
+            }
+        }
+        render()
+    }
 
     fun buildHantInput(col: LinearLayout) {
         header(col, R.string.hant_input_title)

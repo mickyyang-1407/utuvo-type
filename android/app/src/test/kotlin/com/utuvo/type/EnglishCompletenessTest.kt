@@ -152,6 +152,8 @@ class EnglishCompletenessTest {
             "lang_ja_short", "lang_ko_short", "lang_zh_short",
             "dict_zh_hant_short", "dict_zh_hans_short", "dict_ja_short", "dict_ko_short",
             "kb_hant", "kb_hans", "layer_zhuyin", "layer_pinyin",
+            // 打字鍵盤設定的「繁／简」是文字系統標記，兩種介面語言都一樣（同鍵盤上的 繁／简 鈕）。
+            "typing_kb_hant", "typing_kb_hant_pinyin", "typing_kb_hans",
             "use_zhuyin", "use_pinyin",
             "hant_input_title", "hant_input_zhuyin", "hant_input_pinyin", "hant_input_explain",
             "guide_gesture_2", "guide_gesture_2_detail", "guide_gesture_3", "guide_gesture_3_detail",

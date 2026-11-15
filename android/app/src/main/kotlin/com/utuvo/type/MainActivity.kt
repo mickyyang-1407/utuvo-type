@@ -103,6 +103,7 @@ class MainActivity : Activity() {
         page.visibility = View.VISIBLE
         // 切到歷史分頁就重讀：鍵盤剛聽寫的新紀錄要立刻出現（分頁切換不會觸發 onResume；luna-review A r3）。
         if (index == 1) sections.refreshHistoryAsync()
+        if (index == 2) sections.refreshStopLatency()
         pages.forEach { (i, view) -> if (i != index) view.visibility = View.GONE }
         tabButtons.forEachIndexed { i, b ->
             b.isSelected = i == index
@@ -170,12 +171,14 @@ class MainActivity : Activity() {
         col.addView(title())
         sections.buildInterfaceAndAppearance(col)
         sections.buildFeel(col)
+        sections.buildTypingKeyboards(col)
         sections.buildHantInput(col)
         sections.buildLanguages(col)
         sections.buildDictionary(col)
         sections.buildSmart(col)
         sections.buildPacks(col)
         buildCloudKey(col)
+        sections.buildStopLatency(col)
     }
 
 
@@ -237,6 +240,7 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        sections.refreshStopLatency()
         refresh()
         sections.refreshHantInput()
         sections.refreshLanguages()
